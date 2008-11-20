@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.JComponent;
@@ -51,8 +53,19 @@ import org.workcraft.plugins.petri.VisualPetriNet;
 public class MainWindow extends JFrame implements DockingConstants{
 	private static final long serialVersionUID = 1L;
 	private JDesktopPane jDesktopPane = null;
+	
+	public ActionListener defaultActionListener = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			framework.execJavaScript(e.getActionCommand());
+		}
+	};
 
 	Framework framework;
+	public WorkspaceWindow getWorkspaceView() {
+		return workspaceView;
+	}
+
 	WorkspaceWindow workspaceView;
 	OutputView outputView;
 	ErrorView errorView;
@@ -66,7 +79,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 
 	private JMenuBar menuBar;
 
-	public void createViews() {
+	protected void createViews() {
 		workspaceView  = new WorkspaceWindow(framework);
 		framework.getWorkspace().addListener(workspaceView);
 		workspaceView.setVisible(true);
@@ -250,13 +263,15 @@ public class MainWindow extends JFrame implements DockingConstants{
 		addView (jsView, "JavaScript", output);
 
 		addView (workspaceView, "Workspace", DockingManager.EAST_REGION, 0.8f);
-
+		
+		
 
 		EffectsManager.setPreview(new AlphaPreview(Color.BLACK, Color.BLUE, 0.5f));
 
 		//		consoleView.startup();
 		workspaceView.startup();
 
+//		DockingManager.getLayoutManager().store();
 
 
 		outputView.captureStream();
@@ -290,6 +305,10 @@ public class MainWindow extends JFrame implements DockingConstants{
 		this.setVisible(true);
 
 	}
+	
+	public ActionListener getDefaultActionListener() {
+		return defaultActionListener;
+	}
 
 	public void shutdown() {
 		framework.setConfigVar("gui.lookandfeel", LAF.getCurrentLAF());
@@ -301,26 +320,6 @@ public class MainWindow extends JFrame implements DockingConstants{
 		//consoleView.shutdown();
 		workspaceView.shutdown();
 		setVisible(false);		
-	}
-
-	public void addToWorkspace() {
-		JFileChooser fc = new JFileChooser();
-		fc.setMultiSelectionEnabled(true);
-		fc.addChoosableFileFilter(FileFilters.DOCUMENT_FILES);
-		fc.setFileFilter(fc.getAcceptAllFileFilter());
-		if(fc.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
-			for(File file : fc.getSelectedFiles()) {
-				framework.getWorkspace().add(file.getPath());
-			}
-		}
-	}
-
-	public void saveWorkspaceAs() {
-		JFileChooser fc = new JFileChooser();
-		fc.setFileFilter(FileFilters.WORKSPACE_FILES);
-		if(fc.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
-			framework.getWorkspace().save(FileFilters.checkSaveExtension(fc.getSelectedFile().getPath(), FileFilters.WORKSPACE_EXTENSION));
-		}
 	}
 
 }

@@ -20,6 +20,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.workcraft.dom.AbstractGraphModel;
 import org.workcraft.framework.Framework;
 import org.workcraft.framework.exceptions.DocumentFormatException;
 import org.workcraft.framework.exceptions.InvalidPluginException;
@@ -31,7 +32,7 @@ import org.xml.sax.SAXException;
 
 public class PluginManager {
 	public static final String DEFAULT_MANIFEST = "config"+File.separator+"plugins.xml";
-	public static final String INTERNAL_PLUGINS_PATH = "org" + File.separator + "workcraft"
+	public static final String INTERNAL_PLUGINS_PATH = "bin"+ File.separator + "org" + File.separator + "workcraft"
 	+ File.separator + "plugins";
 	public static final String EXTERNAL_PLUGINS_PATH = "plugins";
 
@@ -159,7 +160,6 @@ public class PluginManager {
 		XmlUtil.saveDocument(doc, path);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void search(File root) {
 		if(!root.exists())
 			return;
@@ -216,8 +216,12 @@ public class PluginManager {
 			System.err.println(e.getMessage());
 		}
 	}
+	
+	public PluginInfo[] getModels() {
+		return getPlugins (AbstractGraphModel.class);		
+	}
 
-	public PluginInfo[] getPluginInfo(String interfaceName) {
+	public PluginInfo[] getPluginsByInterface(String interfaceName) {
 		LinkedList<PluginInfo> list = new LinkedList<PluginInfo>();
 		for(PluginInfo info : plugins)
 			for (String s: info.getInterfaces())
@@ -225,7 +229,24 @@ public class PluginManager {
 					list.add(info);
 		return list.toArray(new PluginInfo[0]);
 	}
-
+	
+	public PluginInfo[] getPluginsBySuperclass(String superclassName) {
+		LinkedList<PluginInfo> list = new LinkedList<PluginInfo>();
+		for(PluginInfo info : plugins)
+			for (String s: info.getSuperclasses())
+				if (s.equals(superclassName))
+					list.add(info);
+		return list.toArray(new PluginInfo[0]);
+	}
+	
+	public PluginInfo[] getPlugins (Class<?> parent) {
+		if (parent.isInterface())
+			return getPluginsByInterface(parent.getName());
+		else
+			return getPluginsBySuperclass(parent.getName());
+		
+	}
+	
 	public Plugin getInstance(PluginInfo info) throws PluginInstantiationException {
 		boolean useFramework = true;
 		Class<?> cls;

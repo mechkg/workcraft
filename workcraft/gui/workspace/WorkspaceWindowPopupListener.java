@@ -53,7 +53,7 @@ class WorkspaceWindowPopupListener extends MouseAdapter {
 			JTree tree = (JTree) e.getComponent();
 			TreePath path = tree.getPathForLocation(e.getX(), e.getY());
 			DefaultMutableTreeNode node = null;
-			
+
 			boolean showWorkspaceItems = true;
 
 			if (path != null) {
@@ -63,27 +63,30 @@ class WorkspaceWindowPopupListener extends MouseAdapter {
 					showWorkspaceItems = false;
 					final WorkspaceEntry we = (WorkspaceEntry) node.getUserObject();
 
-					// add WorkspaceEntry menu items
-					PluginInfo[] handlersInfo = framework.getPluginManager()
-					.getPlugins(FileHandler.class);
+					if (we.getFile() != null) {
+						// add WorkspaceEntry menu items
+						PluginInfo[] handlersInfo = framework.getPluginManager()
+						.getPlugins(FileHandler.class);
 
-					for (PluginInfo info : handlersInfo) {
-						try {
-							FileHandler handler = (FileHandler) framework
-							.getPluginManager().getSingleton(info);
-							if (!handler.accept(we.getFile()))
-								continue;
-							JMenuItem mi = new JMenuItem(info.getDisplayName());
-							handlers.put(mi, handler);
-							mi.addActionListener(new ActionListener() {
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									handlers.get(e.getSource()).execute(we.getFile());
-								}
-							});
-							popup.add(mi);
-						} catch (PluginInstantiationException e1) {
-							System.err.println(e1.getMessage());
+						for (PluginInfo info : handlersInfo) {
+							try {
+								FileHandler handler = (FileHandler) framework
+								.getPluginManager().getSingleton(info, FileHandler.class);
+
+								if (!handler.accept(we.getFile()))
+									continue;
+								JMenuItem mi = new JMenuItem(info.getDisplayName());
+								handlers.put(mi, handler);
+								mi.addActionListener(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										handlers.get(e.getSource()).execute(we.getFile());
+									}
+								});
+								popup.add(mi);
+							} catch (PluginInstantiationException e1) {
+								System.err.println(e1.getMessage());
+							}
 						}
 					}
 
@@ -97,15 +100,11 @@ class WorkspaceWindowPopupListener extends MouseAdapter {
 					popup.add(miRemove);
 				}
 			}
-			
+
 			if (showWorkspaceItems) {
 				for (Component c : wsWindow.createMenu().getMenuComponents())
-				popup.add(c);
+					popup.add(c);
 			}
-
-		
-		
-			
 
 			popup.show(e.getComponent(), e.getX(), e.getY());
 		}

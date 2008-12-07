@@ -15,6 +15,8 @@ import org.workcraft.framework.exceptions.InvalidConnectionException;
 import org.workcraft.framework.exceptions.ModelLoadFailedException;
 import org.workcraft.framework.exceptions.ModelValidationException;
 import org.workcraft.framework.plugins.Plugin;
+import org.workcraft.plugins.petri.Place;
+import org.workcraft.plugins.petri.Transition;
 import org.workcraft.util.XmlUtil;
 
 public abstract class MathModel implements Plugin, Model {
@@ -257,7 +259,8 @@ public abstract class MathModel implements Plugin, Model {
 	public VisualModel getVisualModel() {
 		return null;
 	}
-
+	
+	public abstract Class<?>[] getComponentClasses();
 
 	public String getDisplayName() {
 		DisplayName name = this.getClass().getAnnotation(DisplayName.class);

@@ -12,12 +12,13 @@ import org.workcraft.dom.visual.VisualComponent;
 public class VisualVertex extends VisualComponent {
 	private static double size = 1;
 	private static float strokeWidth = 0.1f;
-	
+
 	public VisualVertex(Vertex vertex) {
 		super(vertex);
 	}
 
-	
+
+	@Override
 	public void draw(Graphics2D g) {
 		Shape shape = new Ellipse2D.Double(getX()-size/2+strokeWidth/2, getY()-size/2+strokeWidth/2,
 				size-strokeWidth, size-strokeWidth);
@@ -27,8 +28,8 @@ public class VisualVertex extends VisualComponent {
 		g.setStroke(new BasicStroke(strokeWidth));
 		g.draw(shape);
 	}
-	
-	
+
+
 	public Rectangle2D getBoundingBox() {
 		return new Rectangle2D.Double(getX()-size/2, getY()-size/2, size, size);
 	}

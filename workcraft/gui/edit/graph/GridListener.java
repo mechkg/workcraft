@@ -2,7 +2,7 @@ package org.workcraft.gui.edit.graph;
 
 /**
  * The <code>GridListener</code> interface defines methods for classes that wish
- * to be notified of the changes in grid parameters. 
+ * to be notified of the changes in grid parameters.
  * @author Ivan Poliakov
  *
  */

@@ -15,7 +15,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class XmlUtil {
-	
+
 	public static void saveDocument(Document doc, String path) throws IOException {
 		try
 		{
@@ -24,7 +24,7 @@ public class XmlUtil {
 			Transformer transformer = tFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
-			FileOutputStream fos = new FileOutputStream(path); 
+			FileOutputStream fos = new FileOutputStream(path);
 
 			DOMSource source = new DOMSource(doc);
 			StreamResult result = new StreamResult(new OutputStreamWriter(fos));
@@ -32,7 +32,7 @@ public class XmlUtil {
 			transformer.transform(source, result);
 			fos.close();
 		} catch (TransformerException e) {
-			System.err.println(e.getMessage());			
+			System.err.println(e.getMessage());
 		}
 	}
 
@@ -45,11 +45,11 @@ public class XmlUtil {
 			return defaultValue;
 		}
 	}
-	
+
 	public static void writeIntAttr (Element element, String attributeName, int value) {
 		element.setAttribute(attributeName, Integer.toString(value));
 	}
-	
+
 	public static double readDoubleAttr (Element element, String attributeName, double defaultValue)  {
 		String attributeValue = element.getAttribute(attributeName);
 		try {
@@ -58,26 +58,26 @@ public class XmlUtil {
 		catch (NumberFormatException e) {
 			return defaultValue;
 		}
-	}	
-	
+	}
+
 	public static void writeDoubleAttr (Element element, String attributeName, double value) {
 		element.setAttribute(attributeName, Double.toString(value));
 	}
-	
+
 	public static boolean readBoolAttr (Element element, String attributeName)  {
 		String attributeValue = element.getAttribute(attributeName);
 		return Boolean.parseBoolean(attributeValue);
 	}
-	
+
 	public static void writeBoolAttr (Element element, String attributeName, boolean value) {
-		element.setAttribute(attributeName, Boolean.toString(value));	
+		element.setAttribute(attributeName, Boolean.toString(value));
 	}
-	
+
 	public static String readStringAttr (Element element, String attributeName)
 	{
 		return element.getAttribute(attributeName);
 	}
-	
+
 	public static void writeStringAttr (Element element, String attributeName, String value) {
 		element.setAttribute(attributeName, (value==null)?"":value);
 	}

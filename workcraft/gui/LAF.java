@@ -8,11 +8,11 @@ import org.jvnet.substance.utils.SubstanceConstants.TabContentPaneBorderKind;
 
 public class LAF {
 	public static String currentLAF = UIManager.getLookAndFeel().getClass().getName();
-	
+
 	public static String getCurrentLAF() {
 		return currentLAF;
 	}
-	
+
 	public static void setLAF(String LAF) {
 		try {
 			UIManager.setLookAndFeel(LAF);
@@ -28,13 +28,13 @@ public class LAF {
 
 		currentLAF = LAF;
 	}
-	
+
 	public static void setDefaultLAF() {
 		setLAF(UIManager.getCrossPlatformLookAndFeelClassName());
 	}
-	
+
 	public static void setSubstanceLAF(String LAF) {
 		setLAF(LAF);
 		UIManager.put(SubstanceLookAndFeel.TABBED_PANE_CONTENT_BORDER_KIND, TabContentPaneBorderKind.SINGLE_FULL);
-	}	
+	}
 }

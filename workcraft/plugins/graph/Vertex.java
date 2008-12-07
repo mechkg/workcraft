@@ -11,7 +11,7 @@ public class Vertex extends Component {
 	public Vertex() {
 		super();
 	}
-	
+
 	public Vertex(Element xmlElement) {
 		super(xmlElement);
 	}

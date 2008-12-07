@@ -16,36 +16,39 @@ import org.workcraft.framework.exceptions.ModelValidationException;
 @VisualClass("org.workcraft.plugins.graph.VisualGraph")
 public class Graph extends MathModel {
 	protected static final Class<?>[] supportedComponents = new Class<?>[] { Vertex.class };
-	
+
 	public Graph(Framework framework) {
 		super(framework);
 	}
-	
+
 	public Graph(Framework framework, Element xmlElement, String sourcePath) throws ModelLoadFailedException {
 		super(framework, xmlElement, sourcePath);
 	}
-	
-	
+
+
+	@Override
 	public Class<?>[] getSupportedComponents() {
 		return supportedComponents;
 	}
 
-	
+
+	@Override
 	public void validate() throws ModelValidationException {
 	}
 
-	
+
+	@Override
 	protected void validateConnection(Connection connection)
-			throws InvalidConnectionException {
+	throws InvalidConnectionException {
 	}
-	
+
 	public Vertex createVertex(String label) {
 		Vertex v = new Vertex();
 		v.setLabel(label);
 		try {
 			addComponent(v);
 		} catch (InvalidComponentException e) {
- 
+
 		} catch (DuplicateIDException e) {
 			e.printStackTrace();
 		}

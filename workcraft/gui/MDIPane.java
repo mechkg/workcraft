@@ -29,192 +29,187 @@ public class MDIPane extends JPanel implements  PropertyChangeListener, ChangeLi
 
 	protected LinkedList<InternalWindow> documentFrames = new LinkedList<InternalWindow>();
 	protected LinkedList<InternalFloaterWindow> floaterFrames = new LinkedList<InternalFloaterWindow>();
-	
+
 	JDesktopPane desktop;
 	JTabbedPane tabs;
 	JPopupMenu tabPopupMenu;
 	JMenuItem menuRestore;
 	JMenuItem menuClose;
-	
+
 	int popupOriginIndex = -1;
-	
+
 	public MDIPane() {
 		super();
 
-		desktop = new JDesktopPane();
-		desktop.setLayout(null);
+		this.desktop = new JDesktopPane();
+		this.desktop.setLayout(null);
 
-		this.setLayout(new BorderLayout());
-		this.add(desktop, BorderLayout.CENTER);
-		
-		tabs = new JTabbedPane();
-		tabs.addChangeListener(this);
-		
-		tabPopupMenu = new JPopupMenu();
-		menuRestore = new JMenuItem ("Restore");
-		menuRestore.addActionListener(new ActionListener() {
+		setLayout(new BorderLayout());
+		this.add(this.desktop, BorderLayout.CENTER);
+
+		this.tabs = new JTabbedPane();
+		this.tabs.addChangeListener(this);
+
+		this.tabPopupMenu = new JPopupMenu();
+		this.menuRestore = new JMenuItem ("Restore");
+		this.menuRestore.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				handleMin (popupOriginIndex);
+				handleMin (MDIPane.this.popupOriginIndex);
 			}
 		});
-		tabPopupMenu.add(menuRestore);
-		tabPopupMenu.addSeparator();
-		
-		menuClose = new JMenuItem("Close");
+		this.tabPopupMenu.add(this.menuRestore);
+		this.tabPopupMenu.addSeparator();
 
-		menuClose.addActionListener(new ActionListener() {
+		this.menuClose = new JMenuItem("Close");
+
+		this.menuClose.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				handleClosing(((InternalWindow) ((DocumentTab)tabs.getTabComponentAt(popupOriginIndex)).getDocumentFrame()), popupOriginIndex);
+				handleClosing(((InternalWindow) ((DocumentTab)MDIPane.this.tabs.getTabComponentAt(MDIPane.this.popupOriginIndex)).getDocumentFrame()), MDIPane.this.popupOriginIndex);
 			}
 		});
-		
-		
-		tabPopupMenu.add(menuClose);
 
-		tabs.addMouseListener(new MouseListener() {
+
+		this.tabPopupMenu.add(this.menuClose);
+
+		this.tabs.addMouseListener(new MouseListener() {
 
 			public void mouseClicked(MouseEvent e) {
-				int tabIndex = tabs.indexAtLocation(e.getX(), e.getY());
+				int tabIndex = MDIPane.this.tabs.indexAtLocation(e.getX(), e.getY());
 				if (tabIndex == -1)
 					return;
 
-				if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
-							handleMin(tabIndex);
-				} 
-				
+				if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1)
+					handleMin(tabIndex);
+
 			}
-			
+
 			public void checkPopup(MouseEvent e) {
 				if (e.isPopupTrigger()) {
-					int tabIndex = tabs.indexAtLocation(e.getX(), e.getY());
+					int tabIndex = MDIPane.this.tabs.indexAtLocation(e.getX(), e.getY());
 					if (tabIndex == -1)
 						return;
-					popupOriginIndex = tabIndex;
-					tabPopupMenu.show(MDIPane.this, e.getX(), e.getY());
+					MDIPane.this.popupOriginIndex = tabIndex;
+					MDIPane.this.tabPopupMenu.show(MDIPane.this, e.getX(), e.getY());
 				}
 			}
-			
+
 
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			public void mousePressed(MouseEvent e) {
 				checkPopup(e);
-				
+
 			}
 
 			public void mouseReleased(MouseEvent e) {
 				checkPopup(e);
 			}
-			
+
 		});
 	}
-	
+
 	public void addFrame(InternalWindow f) {
-		documentFrames.add(f);
+		this.documentFrames.add(f);
 		f.setLayer(2);
-		desktop.add(f);
+		this.desktop.add(f);
 		f.addPropertyChangeListener("maximum", this);
 		//f.ownerMDIPane = this;
-		
+
 	}
-	
+
 	public void addFrame(InternalFloaterWindow f) {
-		floaterFrames.add(f);
+		this.floaterFrames.add(f);
 		f.setLayer(3);
-		desktop.add(f);
+		this.desktop.add(f);
 	}
-	
+
 	protected void handleMax(InternalWindow frame) {
-		if (tabs.getTabCount() == 0) {
-			this.remove(desktop);
-			this.add(tabs, BorderLayout.CENTER);
+		if (this.tabs.getTabCount() == 0) {
+			this.remove(this.desktop);
+			this.add(this.tabs, BorderLayout.CENTER);
 		}
-		
+
 		JPanel p = new JPanel(new BorderLayout());
-		p.add(desktop, BorderLayout.CENTER);
+		p.add(this.desktop, BorderLayout.CENTER);
 		p.setBorder(null);
-		
-		tabs.addTab("?", p);
-		int tabIndex = tabs.getTabCount()-1;
-		
+
+		this.tabs.addTab("?", p);
+		int tabIndex = this.tabs.getTabCount()-1;
+
 		DocumentTab docTab = new DocumentTab(frame.getTitle(), tabIndex);
 		docTab.setDocumentFrame(frame);
-		
+
 		docTab.addTabClosingListener(new TabClosingListener() {
 			public void tabClosing(DocumentTab tab) {
 				handleClosing ((InternalWindow)tab.getDocumentFrame(), -1);
 			}
 		});
-		
-		tabs.setTabComponentAt(tabIndex, docTab);
+
+		this.tabs.setTabComponentAt(tabIndex, docTab);
 
 		frame.setLayer(1);
 		frame.hideTitle();
 		frame.hideBorder();
-		
-		tabs.setSelectedIndex(tabs.getTabCount()-1);
-		
+
+		this.tabs.setSelectedIndex(this.tabs.getTabCount()-1);
+
 		frame.setVisible(true);
 	}
-	
+
 	protected void handleClosing(InternalWindow frame, int tabIndex) {
 		JOptionPane.showMessageDialog(MDIPane.this, "No. \"" + frame.getTitle() + "\" will stay open.");
 	}
-	
+
 	protected void handleMin(int tabIndex) {
-		InternalWindow frame = (InternalWindow)((DocumentTab)tabs.getTabComponentAt(tabIndex)).getDocumentFrame();
-		
+		InternalWindow frame = (InternalWindow)((DocumentTab)this.tabs.getTabComponentAt(tabIndex)).getDocumentFrame();
+
 		frame.showBorder();
 		frame.showTitle();
-		
+
 		frame.setLayer(2);
 		try {
 			frame.setMaximum(false);
 		} catch (PropertyVetoException e) {
 			e.printStackTrace();
 		}
-		
-		tabs.removeTabAt(tabIndex);
-		
-		
-		if (tabs.getTabCount() == 0) {
-			this.remove(tabs);
-			this.add(desktop, BorderLayout.CENTER);
+
+		this.tabs.removeTabAt(tabIndex);
+
+
+		if (this.tabs.getTabCount() == 0) {
+			this.remove(this.tabs);
+			this.add(this.desktop, BorderLayout.CENTER);
 		}
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getNewValue() != null && evt.getNewValue().equals(Boolean.TRUE)) {
+		if (evt.getNewValue() != null && evt.getNewValue().equals(Boolean.TRUE))
 			handleMax((InternalWindow)evt.getSource());
-		} 
 	}
 
 	public void stateChanged(ChangeEvent e) {
-		if (tabs.getSelectedIndex() == -1)
+		if (this.tabs.getSelectedIndex() == -1)
 			return;
-		
-		DocumentTab tab = (DocumentTab)(tabs.getTabComponentAt(tabs.getSelectedIndex()));
+
+		DocumentTab tab = (DocumentTab)(this.tabs.getTabComponentAt(this.tabs.getSelectedIndex()));
 		if (tab == null)
 			return;
-		
-		((JPanel)tabs.getSelectedComponent()).add(desktop);
-		
-		for (InternalWindow f : documentFrames) {
-			if (f.isMaximum()) {
-				
+
+		((JPanel)this.tabs.getSelectedComponent()).add(this.desktop);
+
+		for (InternalWindow f : this.documentFrames)
+			if (f.isMaximum())
 				if (f == tab.getDocumentFrame())
 					f.setVisible(true);
 				else
 					f.setVisible(false);
-			}
-		}
 	}
 }

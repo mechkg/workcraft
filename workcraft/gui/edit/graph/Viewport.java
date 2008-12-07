@@ -9,7 +9,7 @@ import java.util.LinkedList;
 
 /**
  * The <code>Viewport</code> class represents a document viewport. It is used to map the
- * coordinates from user space (i.e. the coordinates as specified by the user) to screen space 
+ * coordinates from user space (i.e. the coordinates as specified by the user) to screen space
  * (i.e. the portion of an on-screen window) and vice versa.
  * 
  * @author Ivan Poliakov
@@ -17,7 +17,7 @@ import java.util.LinkedList;
  */
 public class Viewport {
 	/**
-	 * The scaling factor per zoom level. Increasing the zoom level by 1 will effectively magnify all 
+	 * The scaling factor per zoom level. Increasing the zoom level by 1 will effectively magnify all
 	 * objects by this factor, while decreasing it by 1 will shrink all objects by the same factor.
 	 */
 	protected static final double SCALE_FACTOR = Math.pow(2, 0.125);
@@ -26,12 +26,12 @@ public class Viewport {
 	 * The origin point in user space.
 	 */
 	protected static final Point2D ORIGIN = new Point2D.Double(0,0);
-	
+
 	/**
 	 * Current horizontal view translation in user space.
 	 */
 	protected double tx = 0.0;
-	
+
 	/**
 	 * Current vertical view translation in user space.
 	 */
@@ -39,60 +39,60 @@ public class Viewport {
 
 	/**
 	 * Current view scale factor. The default value is such that there are 16 user space units visible
-	 *  across the vertical axis of the viewport. 
+	 *  across the vertical axis of the viewport.
 	 */
 	protected double scale = 0.0625;
-	
+
 	/**
 	 * The transformation from user space to screen space such that the point (0,0) in user space is
 	 * mapped into the centre of the viewport, the coordinate (1) on Y axis is mapped into the topmost
-	 * vertical coordinate of the viewport, the coordinate (-1) on Y axis is mapped into the bottom 
+	 * vertical coordinate of the viewport, the coordinate (-1) on Y axis is mapped into the bottom
 	 * vertical coordinate of the viewport, and the coordinates on the X axis are mapped in such a way
 	 * as to preserve the aspect ratio of the objects displayed.
 	 */
 	protected AffineTransform userToScreenTransform;
-	
+
 	/**
 	 * The transformation of the user space that takes into account the current pan and zoom values.
 	 */
 	protected AffineTransform viewTransform;
-	
+
 	/**
 	 * The concatenation of the user-to-screen and pan/zoom transforms.
 	 */
 	AffineTransform finalTransform;
-	
+
 	/**
 	 * The reverse of the final (concatenated) transform.
 	 */
 	AffineTransform finalInverseTransform;
-	
+
 	/**
 	 * The current viewport shape.
 	 */
 	protected Rectangle shape;
-	
-	
+
+
 	/**
 	 * The list of listeners to be notified in case of viewport parameters change.
 	 */
 	protected LinkedList<ViewportListener> listeners;
-	
-	
-	
+
+
+
 	/**
 	 * Called when the viewport parameters such as pan and zoom are changed. Updates the corresponding
 	 * transforms, and notifies the change listeners.
 	 */
 	protected void viewChanged() {
-		viewTransform.setToIdentity();
-		viewTransform.scale(scale, scale);
-		viewTransform.translate(tx, ty);
-		
+		this.viewTransform.setToIdentity();
+		this.viewTransform.scale(this.scale, this.scale);
+		this.viewTransform.translate(this.tx, this.ty);
+
 		updateFinalTransform();
-		
+
 		// notify listeners
-		for (ViewportListener l : listeners)
+		for (ViewportListener l : this.listeners)
 			l.viewChanged(this);
 	}
 
@@ -101,30 +101,30 @@ public class Viewport {
 	 * transforms, and notifies the change listeners.
 	 */
 	protected void shapeChanged() {
-		userToScreenTransform.setToIdentity();
-		userToScreenTransform.translate(shape.width/2 + shape.x, shape.height/2 + shape.y);
-		userToScreenTransform.scale(shape.height/2, shape.height/2);
-		
+		this.userToScreenTransform.setToIdentity();
+		this.userToScreenTransform.translate(this.shape.width/2 + this.shape.x, this.shape.height/2 + this.shape.y);
+		this.userToScreenTransform.scale(this.shape.height/2, this.shape.height/2);
+
 		updateFinalTransform();
-		
+
 		// notify listeners
-		for (ViewportListener l: listeners)
+		for (ViewportListener l: this.listeners)
 			l.shapeChanged(this);
 	}
-	
+
 	/**
 	 * Recalculates the final transform by concatenating the user-to-screen transform and the view transform.
 	 */
 	protected void updateFinalTransform() {
-		finalTransform.setTransform(userToScreenTransform);
-		finalTransform.concatenate(viewTransform);
+		this.finalTransform.setTransform(this.userToScreenTransform);
+		this.finalTransform.concatenate(this.viewTransform);
 		try {
-			finalInverseTransform.setTransform(finalTransform.createInverse());
+			this.finalInverseTransform.setTransform(this.finalTransform.createInverse());
 		} catch (NoninvertibleTransformException e) {
-			finalInverseTransform.setToIdentity();
+			this.finalInverseTransform.setToIdentity();
 		}
 	}
-	
+
 	/**
 	 * Initialises the user-to-screen transform according to the viewport parameters,
 	 * and the view transform with the default values.
@@ -138,18 +138,18 @@ public class Viewport {
 	 * The height of the viewport (in pixels)
 	 */
 	public Viewport(int x, int y, int w, int h) {
-		viewTransform = new AffineTransform();
-		userToScreenTransform = new AffineTransform();
-		finalTransform = new AffineTransform();
-		finalInverseTransform = new AffineTransform();
-		shape = new Rectangle();
-		listeners = new LinkedList<ViewportListener>();
-		
+		this.viewTransform = new AffineTransform();
+		this.userToScreenTransform = new AffineTransform();
+		this.finalTransform = new AffineTransform();
+		this.finalInverseTransform = new AffineTransform();
+		this.shape = new Rectangle();
+		this.listeners = new LinkedList<ViewportListener>();
+
 		viewChanged();
-		
+
 		setShape (x,y,w,h);
 	}
-	
+
 	/**
 	 * Initialises the user-to-screen transform according to the viewport parameters,
 	 * and the view transform with the default values.
@@ -159,23 +159,23 @@ public class Viewport {
 	public Viewport(Rectangle shape) {
 		this(shape.x, shape.y, shape.width, shape.height);
 	}
-	
+
 	/**
 	 * 	 @return
 	 * The final transform as an AffineTransform object.
 	 */
 	public AffineTransform getTransform() {
-		return finalTransform;
+		return this.finalTransform;
 	}
-	
+
 	/**
 	 * @return
-	 * The inverse of the final transform as an AffineTransform object. 
+	 * The inverse of the final transform as an AffineTransform object.
 	 */
 	public AffineTransform getInverseTransform() {
-		return finalInverseTransform;
+		return this.finalInverseTransform;
 	}
-	
+
 	/**
 	 * Maps a point in user space into a point in screen space.
 	 * @param pointInUserSpace
@@ -185,10 +185,10 @@ public class Viewport {
 	 */
 	public Point userToScreen (Point2D pointInUserSpace) {
 		Point result = new Point();
-		finalTransform.transform(pointInUserSpace, result);
+		this.finalTransform.transform(pointInUserSpace, result);
 		return result;
 	}
-	
+
 	/**
 	 * Maps a point in screen space into a point in user space.
 	 * @param pointInScreenSpace
@@ -198,14 +198,14 @@ public class Viewport {
 	 */
 	public Point2D screenToUser (Point pointInScreenSpace) {
 		Point2D result = new Point2D.Double();
-		finalInverseTransform.transform(pointInScreenSpace, result);
+		this.finalInverseTransform.transform(pointInScreenSpace, result);
 		return result;
 	}
-	
+
 	/**
 	 * Calculates the size of one screen pixel in user space.
 	 * @return
-	 * X value of the returned point contains the horizontal pixel size, 
+	 * X value of the returned point contains the horizontal pixel size,
 	 * Y value contains the vertical pixel size.
 	 * With the default user-to-screen transform these values are equal.
 	 */
@@ -215,7 +215,7 @@ public class Viewport {
 		originInScreenSpace.y += 1;
 		return screenToUser (originInScreenSpace);
 	}
-	
+
 	/**
 	 * Pans the viewport by the specified amount.
 	 * @param dx
@@ -228,39 +228,39 @@ public class Viewport {
 		originInScreenSpace.x += dx;
 		originInScreenSpace.y += dy;
 		Point2D panInUserSpace = screenToUser (originInScreenSpace);
-		
-		tx += panInUserSpace.getX();
-		ty += panInUserSpace.getY();
-		
+
+		this.tx += panInUserSpace.getX();
+		this.ty += panInUserSpace.getY();
+
 		viewChanged();
 	}
-	
+
 	/**
 	 * Zooms the viewport by the specified amount of levels. One positive level is the magnification
-	 * by 2 to the power of 1/4. Thus, increasing the zoom by 4 levels magnifies the objects to twice 
-	 * their size. One negative level results in the decreasing of the objects size by the same factor. 
+	 * by 2 to the power of 1/4. Thus, increasing the zoom by 4 levels magnifies the objects to twice
+	 * their size. One negative level results in the decreasing of the objects size by the same factor.
 	 * @param levels
 	 * The required change of the zoom level. Use positive value to zoom in, negative value to zoom out.
 	 */
 	public void zoom (int levels) {
-		scale *= Math.pow(SCALE_FACTOR, levels);
-		
-		if (scale < 0.01f)
-				scale = 0.01f;
-		if (scale > 1.0f)
-				scale = 1.0f;
-		
+		this.scale *= Math.pow(SCALE_FACTOR, levels);
+
+		if (this.scale < 0.01f)
+			this.scale = 0.01f;
+		if (this.scale > 1.0f)
+			this.scale = 1.0f;
+
 		viewChanged();
 	}
-	
+
 	/**
 	 * Zooms the viewport by the specified amount of levels. One positive level is the magnification
-	 * by 2 to the power of 1/4. Thus, increasing the zoom by 4 levels magnifies the objects to twice 
+	 * by 2 to the power of 1/4. Thus, increasing the zoom by 4 levels magnifies the objects to twice
 	 * their size. One negative level results in the decreasing of the objects size by the same factor.
 	 * 
 	 * Anchors the viewport to the specified point, i.e. ensures that the point given in screen space
-	 * does not change its coordinates in user space after zoom change is carried out, allowing to zoom 
-	 * "into" or "out of" the specified point. 
+	 * does not change its coordinates in user space after zoom change is carried out, allowing to zoom
+	 * "into" or "out of" the specified point.
 	 * 
 	 * @param levels
 	 * The required change of the zoom level. Use positive value to zoom in, negative value to zoom out.
@@ -270,18 +270,18 @@ public class Viewport {
 	public void zoom (int levels, Point anchor) {
 		Point2D anchorInUserSpace = screenToUser(anchor);
 		zoom(levels);
-		
+
 		viewChanged();
-		
+
 		Point2D anchorInNewSpace = screenToUser(anchor);
-		
-		tx += anchorInNewSpace.getX() - anchorInUserSpace.getX();
-		ty += anchorInNewSpace.getY() - anchorInUserSpace.getY();
-		
+
+		this.tx += anchorInNewSpace.getX() - anchorInUserSpace.getX();
+		this.ty += anchorInNewSpace.getY() - anchorInUserSpace.getY();
+
 		viewChanged();
 	}
-	
-		
+
+
 
 	/**
 	 * Changes the shape of the viewport.
@@ -295,11 +295,11 @@ public class Viewport {
 	 * The height of the new viewport (in pixels)
 	 */
 	public void setShape (int x, int y, int width, int height) {
-		shape.setBounds(x, y, width, height);
+		this.shape.setBounds(x, y, width, height);
 		shapeChanged();
 	}
-	
-	
+
+
 	/**
 	 * Changes the shape of the viewport.
 	 * @param shape
@@ -309,29 +309,29 @@ public class Viewport {
 		setShape(shape.x, shape.y, shape.width, shape.height);
 		shapeChanged();
 	}
-	
+
 	/**
 	 * @return The current viewport shape.
 	 */
 	public Rectangle getShape() {
-		return new Rectangle(shape);
+		return new Rectangle(this.shape);
 	}
-	
+
 	/**
-	 * Registers a new viewport listener that will be notified if viewport parameters change.  
+	 * Registers a new viewport listener that will be notified if viewport parameters change.
 	 * @param listener
 	 * The new listener.
 	 */
 	public void addListener (ViewportListener listener) {
-		listeners.add(listener);		
+		this.listeners.add(listener);
 	}
-	
+
 	/**
 	 * Removes a listener.
 	 * @param listener
 	 * The listener to remove.
 	 */
 	public void removeListener (ViewportListener listener) {
-		listeners.remove(listener);
+		this.listeners.remove(listener);
 	}
 }

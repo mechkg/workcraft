@@ -40,12 +40,11 @@ public class PluginManager {
 	private HashMap <String, Object> singletons;
 
 	private class ClassFileFilter implements FilenameFilter {
-		
+
 		public boolean accept(File dir, String name) {
 			File f = new File(dir.getPath() + File.separator + name);
-			if(f.isDirectory()) {
+			if(f.isDirectory())
 				return true;
-			}
 			if(f.getPath().endsWith(".class"))
 				return true;
 			return false;
@@ -81,15 +80,14 @@ public class PluginManager {
 
 	public PluginManager(Framework framework) {
 		this.framework = framework;
-		singletons = new HashMap<String, Object>();
+		this.singletons = new HashMap<String, Object>();
 	}
 
 	public void printPluginList() {
 		System.out.println("Registered plugins:");
-		for(PluginInfo info : plugins) {
+		for(PluginInfo info : this.plugins)
 			System.out.println(" "+info.getClassName());
-		}
-		System.out.println(""+plugins.size()+" plugin(s) total");
+		System.out.println(""+this.plugins.size()+" plugin(s) total");
 	}
 
 	public void loadManifest() throws IOException, DocumentFormatException {
@@ -124,10 +122,10 @@ public class PluginManager {
 			throw(new DocumentFormatException());
 
 		NodeList nl = xmlroot.getElementsByTagName("plugin");
-		plugins.clear();
+		this.plugins.clear();
 		for(int i = 0; i < nl.getLength(); i++) {
 			PluginInfo info = new PluginInfo((Element) nl.item(i));
-			plugins.add(info);
+			this.plugins.add(info);
 		}
 	}
 
@@ -151,7 +149,7 @@ public class PluginManager {
 		doc.appendChild(root);
 		root = doc.getDocumentElement();
 
-		for(PluginInfo info : plugins) {
+		for(PluginInfo info : this.plugins) {
 			Element e = doc.createElement("plugin");
 			info.toXml(e);
 			root.appendChild(e);
@@ -165,20 +163,20 @@ public class PluginManager {
 			return;
 
 		if(root.isDirectory()) {
-			File[] list = root.listFiles(classFilter);
+			File[] list = root.listFiles(this.classFilter);
 
-			for(File f : list) {
+			for(File f : list)
 				if(f.isDirectory())
 					search(f);
 				else {
 					System.out.println("Class file found: " + f.getPath());
 					Class<?> cls;
 					try {
-						cls = activeLoader.findClass(f);
+						cls = this.activeLoader.findClass(f);
 
 						if(Plugin.class.isAssignableFrom(cls)) {
 							PluginInfo info = new PluginInfo(cls);
-							plugins.add(info);
+							this.plugins.add(info);
 							System.out.println("  plugin found: " + cls.getName());
 						} else
 							System.out.println("  not a plugin class, ignored");
@@ -195,19 +193,18 @@ public class PluginManager {
 					}
 
 				}
-			}
 		}
 	}
 
 	public void reconfigure() {
 		System.out.println("Reconfiguring plugins...");
-		plugins.clear();
-		activeLoader = new PluginClassLoader();
+		this.plugins.clear();
+		this.activeLoader = new PluginClassLoader();
 		search(new File(INTERNAL_PLUGINS_PATH));
 		search(new File(EXTERNAL_PLUGINS_PATH));
-		activeLoader = null;
+		this.activeLoader = null;
 
-		System.out.println("" + plugins.size() + " plugin(s) found");
+		System.out.println("" + this.plugins.size() + " plugin(s) found");
 
 		try {
 			saveManifest();
@@ -216,37 +213,37 @@ public class PluginManager {
 			System.err.println(e.getMessage());
 		}
 	}
-	
+
 	public PluginInfo[] getModels() {
-		return getPlugins (MathModel.class);		
+		return getPlugins (MathModel.class);
 	}
 
 	public PluginInfo[] getPluginsByInterface(String interfaceName) {
 		LinkedList<PluginInfo> list = new LinkedList<PluginInfo>();
-		for(PluginInfo info : plugins)
+		for(PluginInfo info : this.plugins)
 			for (String s: info.getInterfaces())
 				if (s.equals(interfaceName))
 					list.add(info);
 		return list.toArray(new PluginInfo[0]);
 	}
-	
+
 	public PluginInfo[] getPluginsBySuperclass(String superclassName) {
 		LinkedList<PluginInfo> list = new LinkedList<PluginInfo>();
-		for(PluginInfo info : plugins)
+		for(PluginInfo info : this.plugins)
 			for (String s: info.getSuperclasses())
 				if (s.equals(superclassName))
 					list.add(info);
 		return list.toArray(new PluginInfo[0]);
 	}
-	
+
 	public PluginInfo[] getPlugins (Class<?> parent) {
 		if (parent.isInterface())
 			return getPluginsByInterface(parent.getName());
 		else
 			return getPluginsBySuperclass(parent.getName());
-		
+
 	}
-	
+
 	public Object getInstance(PluginInfo info, Class<?>expectedClass) throws PluginInstantiationException {
 		boolean useFramework = true;
 		Class<?> cls;
@@ -256,11 +253,11 @@ public class PluginManager {
 		} catch (ClassNotFoundException e) {
 			throw new PluginInstantiationException ("Class not found: " + info.getClassName() + "(" + e.getMessage()+ ")");
 		}
-		
+
 		if (!expectedClass.isAssignableFrom(cls))
-			throw new PluginInstantiationException ("plugin class " + cls.getName() + ", is not inherited from expected class " 
+			throw new PluginInstantiationException ("plugin class " + cls.getName() + ", is not inherited from expected class "
 					+ expectedClass.getName());
-		
+
 		Constructor<?> ctor = null;
 
 		try {
@@ -269,137 +266,136 @@ public class PluginManager {
 		} catch (NoSuchMethodException e) {
 		}
 
-		if (ctor == null) {
+		if (ctor == null)
 			try {
 				useFramework = false;
 				ctor = cls.getConstructor(new Class<?>[] { });
 			} catch (SecurityException e) {
 			} catch (NoSuchMethodException e) {
 			}
-		}
 
 
-		if (ctor == null)
-			throw new PluginInstantiationException ("Plugin class \"" + cls.getName() + "\" does not define an appropriate constructor or the constructor is inaccessible. " +
-			"A constructor which takes a Framework argument, or a constructor without agruments must be accessible.");
+			if (ctor == null)
+				throw new PluginInstantiationException ("Plugin class \"" + cls.getName() + "\" does not define an appropriate constructor or the constructor is inaccessible. " +
+				"A constructor which takes a Framework argument, or a constructor without agruments must be accessible.");
 
-		
-		try {
-			Object ret;
 
-			if (useFramework)
-				ret = ctor.newInstance(framework);
-			else
-				ret = ctor.newInstance();
-			
-			return ret;
-		} catch (IllegalArgumentException e) {
-			throw new PluginInstantiationException ("Plugin class \"" + cls.getName() + "\" could not be instantiated: " + e.getMessage());
-		} catch (InstantiationException e) {
-			throw new PluginInstantiationException ("Plugin class \"" + cls.getName() + "\" could not be instantiated: " + e.getMessage());
-		} catch (IllegalAccessException e) {
-			throw new PluginInstantiationException ("Plugin class \"" + cls.getName() + "\" could not be instantiated: " + e.getMessage());
-		} catch (InvocationTargetException e) {
-			throw new PluginInstantiationException ("Plugin class \"" + cls.getName() + "\" could not be instantiated: " + e.getMessage());
-		}
+			try {
+				Object ret;
+
+				if (useFramework)
+					ret = ctor.newInstance(this.framework);
+				else
+					ret = ctor.newInstance();
+
+				return ret;
+			} catch (IllegalArgumentException e) {
+				throw new PluginInstantiationException ("Plugin class \"" + cls.getName() + "\" could not be instantiated: " + e.getMessage());
+			} catch (InstantiationException e) {
+				throw new PluginInstantiationException ("Plugin class \"" + cls.getName() + "\" could not be instantiated: " + e.getMessage());
+			} catch (IllegalAccessException e) {
+				throw new PluginInstantiationException ("Plugin class \"" + cls.getName() + "\" could not be instantiated: " + e.getMessage());
+			} catch (InvocationTargetException e) {
+				throw new PluginInstantiationException ("Plugin class \"" + cls.getName() + "\" could not be instantiated: " + e.getMessage());
+			}
 	}
 
 	public Object getSingleton(PluginInfo info, Class<?> expectedClass) throws PluginInstantiationException {
-		Object ret = singletons.get(info.getClassName());
+		Object ret = this.singletons.get(info.getClassName());
 		if (ret == null) {
 			ret = getInstance(info, expectedClass);
-			singletons.put(info.getClassName(), ret);
+			this.singletons.put(info.getClassName(), ret);
 		}
 		return ret;
 	}
-	
+
 	public static Object createVisualClassFor (Object object, Class<?> expectedClass) throws VisualModelConstructionException {
 		// Find the corresponding visual class
 		VisualClass vcat = object.getClass().getAnnotation(VisualClass.class);
-		
+
 		// The component/connection does not define a visual representation
 		if (vcat == null)
 			return null;
-		
+
 		try {
 			Class<?> visualClass = Class.forName(vcat.value());
 			Constructor<?> ctor = visualClass.getConstructor(object.getClass());
 			Object visual = ctor.newInstance(object);
-			
+
 			if (!expectedClass.isAssignableFrom(visual.getClass()))
-				throw new VisualModelConstructionException ("visual class " + visual.getClass().getName() + 
-						", created for object of class " + object.getClass().getName() + ", is not inherited from " 
+				throw new VisualModelConstructionException ("visual class " + visual.getClass().getName() +
+						", created for object of class " + object.getClass().getName() + ", is not inherited from "
 						+ expectedClass.getName());
-			
+
 			return visual;
-			
+
 		} catch (ClassNotFoundException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be loaded for class " + object.getClass().getName());
 		} catch (SecurityException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be instantiated due to security exception: " + e.getMessage());
 		} catch (NoSuchMethodException e) {
 			throw new VisualModelConstructionException("visual class " + vcat.value() +
-					" does not declare the required constructor " + vcat.value() + 
+					" does not declare the required constructor " + vcat.value() +
 					"(" + object.getClass().getName() +")" );
 		} catch (IllegalArgumentException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be instantiated due to illegal argument exception: " + e.getMessage());
 		} catch (InstantiationException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be instantiated: " + e.getMessage());
 		} catch (IllegalAccessException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be instantiated due to inaccesibility of the constructor: " + e.getMessage());
 		} catch (InvocationTargetException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be instantiated: " + e.getTargetException().getMessage());
 		}
 	}
-	
+
 	public static Object createVisualClassFor (Object object, Class<?> expectedClass, Element xmlElement) throws VisualModelConstructionException {
 		// Find the corresponding visual class
 		VisualClass vcat = object.getClass().getAnnotation(VisualClass.class);
-		
+
 		// The component/connection does not define a visual representation
 		if (vcat == null)
 			return null;
-		
+
 		try {
 			Class<?> visualClass = Class.forName(vcat.value());
 			Constructor<?> ctor = visualClass.getConstructor(object.getClass(), Element.class);
 			Object visual = ctor.newInstance(object, xmlElement);
-			
+
 			if (!expectedClass.isAssignableFrom(visual.getClass()))
-				throw new VisualModelConstructionException ("visual class " + visual.getClass().getName() + 
-						", created for object of class " + object.getClass().getName() + ", is not inherited from " 
+				throw new VisualModelConstructionException ("visual class " + visual.getClass().getName() +
+						", created for object of class " + object.getClass().getName() + ", is not inherited from "
 						+ expectedClass.getName());
-			
+
 			return visual;
-			
+
 		} catch (ClassNotFoundException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be loaded for class " + object.getClass().getName());
 		} catch (SecurityException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be instantiated due to security exception: " + e.getMessage());
 		} catch (NoSuchMethodException e) {
 			throw new VisualModelConstructionException("visual class " + vcat.value() +
-					" does not declare the required constructor " + vcat.value() + 
+					" does not declare the required constructor " + vcat.value() +
 					"(" + object.getClass().getName() + ", " + Element.class.getName()+")" );
 		} catch (IllegalArgumentException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be instantiated due to illegal argument exception: " + e.getMessage());
 		} catch (InstantiationException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be instantiated: " + e.getMessage());
 		} catch (IllegalAccessException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be instantiated due to inaccesibility of the constructor: " + e.getMessage());
 		} catch (InvocationTargetException e) {
-			throw new VisualModelConstructionException ("visual class " + vcat.value() + 
+			throw new VisualModelConstructionException ("visual class " + vcat.value() +
 					" could not be instantiated: " + e.getTargetException().getMessage());
 		}
-	}	
+	}
 }

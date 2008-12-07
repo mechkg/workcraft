@@ -9,7 +9,7 @@ public class Place extends Component {
 	public Place() {
 		super();
 	}
-	
+
 	public Place(Element xmlElement) {
 		super(xmlElement);
 	}

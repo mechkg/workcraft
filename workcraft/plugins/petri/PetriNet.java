@@ -24,68 +24,72 @@ public class PetriNet extends MathModel {
 	public PetriNet(Framework framework) {
 		super(framework);
 	}
-	
+
 	public PetriNet(Framework framework, Element xmlElement, String sourcePath) throws ModelLoadFailedException {
 		super(framework, xmlElement, sourcePath);
 	}
-	
-	
-	
+
+
+
+	@Override
 	public int addComponent(Component component, boolean autoAssignID)
-			throws InvalidComponentException, DuplicateIDException {
+	throws InvalidComponentException, DuplicateIDException {
 		int id = super.addComponent(component, autoAssignID);
-		
+
 		if (component instanceof Place)
-			places.add((Place)component);
+			this.places.add((Place)component);
 		else if (component instanceof Transition)
-			transitions.add((Transition)component);
-		
+			this.transitions.add((Transition)component);
+
 		return id;
 	}
 
-	
+
+	@Override
 	public Class<?>[] getSupportedComponents() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	
+
+	@Override
 	public void validate() throws ModelValidationException {
 		// TODO Auto-generated method stub
 
 	}
 
-	
+
+	@Override
 	protected void validateConnection(Connection connection)
-			throws InvalidConnectionException {
+	throws InvalidConnectionException {
 		// TODO Auto-generated method stub
 	}
-	
+
 	public Place createPlace(String label) {
 		Place newPlace = new Place();
 		newPlace.setLabel(label);
 		try {
 			addComponent(newPlace, true);
 		} catch (InvalidComponentException e) {
-			e.printStackTrace();			
+			e.printStackTrace();
 		} catch (DuplicateIDException e) {
-			e.printStackTrace();			
+			e.printStackTrace();
 		}
-		
+
 		return newPlace;
 	}
-	
+
 	public Transition createTransition(String label) {
 		Transition newTransition = new Transition();
 		newTransition.setLabel(label);
 		try {
 			addComponent(newTransition, true);
 		} catch (InvalidComponentException e) {
-			e.printStackTrace();			
+			e.printStackTrace();
 		} catch (DuplicateIDException e) {
-			e.printStackTrace();			
+			e.printStackTrace();
 		}
-		
+
 		return newTransition;
 	}
 

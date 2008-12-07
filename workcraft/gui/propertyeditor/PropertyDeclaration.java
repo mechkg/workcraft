@@ -5,7 +5,7 @@ public class PropertyDeclaration {
 	public String getter;
 	public String setter;
 	public Class<?> cls;
-	
+
 	public PropertyDeclaration (String name, String getter, String setter, Class<?> cls ) {
 		this.name = name;
 		this.getter = getter;

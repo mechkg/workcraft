@@ -6,5 +6,5 @@ import org.workcraft.framework.plugins.Plugin;
 
 public interface Layout extends Plugin {
 	public boolean isApplicableTo(Class<?> visualModelClass);
-	public void doLayout (VisualModel visualModel) throws LayoutFailedException;	
+	public void doLayout (VisualModel visualModel) throws LayoutFailedException;
 }

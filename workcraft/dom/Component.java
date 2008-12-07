@@ -7,12 +7,12 @@ import java.util.Set;
 import org.w3c.dom.Element;
 import org.workcraft.util.XmlUtil;
 
-public abstract class Component {	
+public abstract class Component {
 	protected int ID = -1;
 	protected String label = "";
 
 	public String getLabel() {
-		return label;
+		return this.label;
 	}
 
 	public void setLabel(String label) {
@@ -20,55 +20,55 @@ public abstract class Component {
 	}
 
 	protected Hashtable<String, String> customProperties = new Hashtable<String, String>();
-	
+
 	protected HashSet<Component> preset = new HashSet<Component>();
-	protected HashSet<Component> postset = new HashSet<Component>();	
-	
+	protected HashSet<Component> postset = new HashSet<Component>();
+
 	public Component() {
 	}
-	
+
 	public Component (Element xmlElement) {
-		ID = XmlUtil.readIntAttr(xmlElement, "ID", ID);
-		label = XmlUtil.readStringAttr(xmlElement, "label");
+		this.ID = XmlUtil.readIntAttr(xmlElement, "ID", this.ID);
+		this.label = XmlUtil.readStringAttr(xmlElement, "label");
 	}
-	
+
 	public void setID(Integer id) {
 		this.ID = id;
 	}
 
 	public Integer getID() {
-		return ID;
+		return this.ID;
 	}
-	
+
 	public void addToPreset (Component component) {
-		preset.add(component);
+		this.preset.add(component);
 	}
-	
+
 	public void removeFromPreset(Component component) {
-		preset.remove(component);
+		this.preset.remove(component);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public Set<Component> getPreset() {
-		return (Set<Component>)preset.clone();
+		return (Set<Component>)this.preset.clone();
 	}
-	
+
 	public void addToPostset (Component component) {
-		preset.add(component);
+		this.preset.add(component);
 	}
-	
+
 	public void removeFromPostset(Component component) {
-		preset.remove(component);
+		this.preset.remove(component);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public Set<Component> getPostset() {
-		return (Set<Component>)postset.clone();		
-	}	
-	
+		return (Set<Component>)this.postset.clone();
+	}
+
 	public void toXML (Element componentElement) {
-		XmlUtil.writeIntAttr(componentElement, "ID", ID);
-		XmlUtil.writeStringAttr(componentElement, "label", label);
+		XmlUtil.writeIntAttr(componentElement, "ID", this.ID);
+		XmlUtil.writeStringAttr(componentElement, "label", this.label);
 		XmlUtil.writeStringAttr(componentElement, "class", this.getClass().getName());
 	}
 }

@@ -12,20 +12,20 @@ import org.workcraft.gui.propertyeditor.PropertyEditorTable;
 @SuppressWarnings("serial")
 public class PropertyView extends JPanel {
 	private PropertyEditorTable propertyTable;
-	private JScrollPane scrollProperties;	
-	
+	private JScrollPane scrollProperties;
+
 	public PropertyView (Framework framework) {
-		propertyTable = new PropertyEditorTable();
-		
-		scrollProperties = new JScrollPane();
-		scrollProperties.setViewportView(propertyTable);
-		
-		this.setLayout(new BorderLayout(0,0));
-		this.add(scrollProperties, BorderLayout.CENTER);
+		this.propertyTable = new PropertyEditorTable();
+
+		this.scrollProperties = new JScrollPane();
+		this.scrollProperties.setViewportView(this.propertyTable);
+
+		setLayout(new BorderLayout(0,0));
+		this.add(this.scrollProperties, BorderLayout.CENTER);
 	}
-	
+
 	public void setObject (PropertyEditable o) {
-		propertyTable.setObject(o);
+		this.propertyTable.setObject(o);
 
 	}
 }

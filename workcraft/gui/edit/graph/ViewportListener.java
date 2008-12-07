@@ -2,7 +2,7 @@ package org.workcraft.gui.edit.graph;
 
 /**
  * The <code>ViewportListener</code> interface defines methods for classes that wish
- * to be notified of the changes in viewport parameters. 
+ * to be notified of the changes in viewport parameters.
  * @author Ivan Poliakov
  *
  */
@@ -13,8 +13,8 @@ public interface ViewportListener {
 	 * The viewport that has sent the notification.
 	 */
 	public void shapeChanged (Viewport sender);
-	
-	
+
+
 	/**
 	 * Called when viewport parameters (pan or zoom) change.
 	 * @param sender

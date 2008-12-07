@@ -34,7 +34,7 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.workcraft.dom.AbstractGraphModel;
+import org.workcraft.dom.Model;
 import org.workcraft.framework.exceptions.DocumentFormatException;
 import org.workcraft.framework.exceptions.ModelLoadFailedException;
 import org.workcraft.framework.plugins.PluginManager;
@@ -138,6 +138,9 @@ public class Framework {
 
 	private boolean inGUIMode = false;
 	private boolean shutdownRequested = false;
+	private boolean GUIRestartRequested = false;
+
+
 	private boolean silent = false;
 
 	private MainWindow mainWindow;
@@ -300,52 +303,65 @@ public class Framework {
 		javaScriptCompilation.setSourceName(sourceName);
 		return (Script) Context.call(javaScriptCompilation);
 	}	
-
+	
 	public void startGUI() {
 		if (inGUIMode) {
 			System.out.println ("Already in GUI mode");
 			return;
 		}
+		
+		GUIRestartRequested = false;
 
 		System.out.println ("Switching to GUI mode...");
-
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				mainWindow = new MainWindow(Framework.this);
-				mainWindow.startup();
-				
-				Context.call(new ContextAction() {
-					public Object run(Context cx) {
-						Object guiScriptable = Context.javaToJS(mainWindow, systemScope);
-						ScriptableObject.putProperty(systemScope, "gui", guiScriptable);
-						systemScope.setAttributes("gui", ScriptableObject.READONLY);	
-
-						return null;
-
-					}
-				});
-				
+		
+		
+		if (SwingUtilities.isEventDispatchThread()) {
+			mainWindow = new MainWindow(Framework.this);
+			mainWindow.startup();
+		} else
+			try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				public void run() {
+					mainWindow = new MainWindow(Framework.this);
+					mainWindow.startup();
+				}
+			});
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		
+		Context.call(new ContextAction() {
+			public Object run(Context cx) {
+				Object guiScriptable = Context.javaToJS(mainWindow, systemScope);
+				ScriptableObject.putProperty(systemScope, "gui", guiScriptable);
+				systemScope.setAttributes("gui", ScriptableObject.READONLY);
+				return null;
 
 			}
-			
-			
 		});
-
 		
-
-				
 		System.out.println ("Now in GUI mode.");
 		inGUIMode = true;
+
 	}
 
 	public void shutdownGUI() {
 		if (inGUIMode) {
 			mainWindow.shutdown();
-			mainWindow.dispose();
 			mainWindow = null;
 			inGUIMode = false;
-			System.out.println ("Now in console mode.");
+			
+			Context.call(new ContextAction() {
+				public Object run(Context cx) {
+					ScriptableObject.deleteProperty(systemScope, "gui");
+					return null;
+				}
+			});
+			
 		}
+		System.out.println ("Now in console mode.");
 	}
 
 	public void shutdown() {
@@ -390,11 +406,11 @@ public class Framework {
 		Context.call(setargs);
 	}
 
-	public AbstractGraphModel load(String path) throws ModelLoadFailedException {
+	public Model load(String path) throws ModelLoadFailedException {
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			org.w3c.dom.Document xmldoc;
-			AbstractGraphModel model;
+			Model model;
 			DocumentBuilder db;
 
 			db = dbf.newDocumentBuilder();
@@ -420,7 +436,7 @@ public class Framework {
 
 			Class<?> modelClass = Class.forName(modelClassName);
 			Constructor<?> ctor = modelClass.getConstructor(Framework.class, Element.class, String.class);
-			model = (AbstractGraphModel)ctor.newInstance(this, modelElement, path);
+			model = (Model)ctor.newInstance(this, modelElement, path);
 
 			return model;
 
@@ -446,8 +462,10 @@ public class Framework {
 			throw new ModelLoadFailedException("Cannot instatniate model: " + e.getMessage());			
 		}
 	}
+	
+//	public VisualAbstractModel loadVisual
 
-	public void save(AbstractGraphModel model, String path) throws ModelSaveFailedException {
+	public void save(Model model, String path) throws ModelSaveFailedException {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		org.w3c.dom.Document doc; 
 		DocumentBuilder db;
@@ -504,5 +522,14 @@ public class Framework {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	public void restartGUI() {
+		GUIRestartRequested = true;
+		shutdownGUI();
+	}
+	
+	public boolean isGUIRestartRequested() {
+		return GUIRestartRequested;
 	}
 }

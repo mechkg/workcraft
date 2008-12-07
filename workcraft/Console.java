@@ -15,45 +15,45 @@ public class Console {
 		for (String s: args) {
 			arglist.push(s);
 		}
-		
+
 		boolean silent = false;
-		
+
 		for (String s: args) {
 			if (s.equals("-silent")) {
 				silent = true;
 				arglist.remove(s);
 			}
 		}
-		
+
 		if (!silent)
 			System.out.println ("Workcraft 2 (Metastability strikes back) dev version\n");
-		
+
 		if (!silent)
 			System.out.println ("Initialising framework...");
 
 		Framework framework  = new Framework();
-		
+
 		framework.setSilent(silent);
 
 		BufferedReader in = new BufferedReader (new InputStreamReader (System.in));
 
 		framework.initJavaScript();
 		framework.initPlugins();
-		
+
 		if (!silent)
 			System.out.println ("Running startup scripts...");
 
 		try {
 			framework.execJavaScript(new File ("scripts/functions.js"));
 			framework.execJavaScript(new File ("scripts/startup.js"));
-			
+
 		} catch (FileNotFoundException e2) {
 			System.err.println ("System script file not found: "+e2.getMessage());
 		}
 
 		if (!silent)
 			System.out.println("Startup complete.\n\n");
-		
+
 		for (String arg: args) {
 			if (arg.equals("-gui")) {
 				framework.startGUI();
@@ -61,9 +61,9 @@ public class Console {
 			}
 			if (arg.startsWith("-exec:")) {
 				arglist.remove(arg);
-				
+
 				framework.setArgs(arglist);				
-				
+
 				try {
 					if (!silent)
 						System.out.println ("Executing "+ arg.substring(6) + "...");
@@ -79,8 +79,6 @@ public class Console {
 				}
 			}
 		}
-		
-		
 
 		while (true) {
 			if (framework.shutdownRequested()) {
@@ -89,26 +87,27 @@ public class Console {
 					if (!silent)
 						System.out.println ("Shutting down...");
 					framework.execJavaScript(new File ("scripts/shutdown.js"));
-					
+
 				} catch (FileNotFoundException e) {
 					System.err.println ("System script file not found: "+e.getMessage());
 				}
 				System.exit(0);
 			}
-			
+
 			if (framework.isInGUIMode()) {
 				try {
 					Thread.sleep(50);
 				} catch (InterruptedException e1) {
 				}
-			}
-			
-			else {
+			} else {
+				if (framework.isGUIRestartRequested())
+					framework.startGUI();
+				else {
 					System.out.print ("js>");
 					try {
 						String line = in.readLine();
 						Object result = framework.execJavaScript(line);
-						
+
 						Context.enter();
 						String out = Context.toString(result);
 						Context.exit();
@@ -127,6 +126,7 @@ public class Console {
 						break;
 					}
 				}
+			}
 		}
 	}
 }

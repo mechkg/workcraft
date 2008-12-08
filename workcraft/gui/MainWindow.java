@@ -7,9 +7,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
@@ -32,6 +34,7 @@ import org.jvnet.substance.utils.SubstanceConstants.TabContentPaneBorderKind;
 import org.workcraft.dom.MathModel;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.framework.Framework;
+import org.workcraft.framework.ModelSaveFailedException;
 import org.workcraft.framework.exceptions.PluginInstantiationException;
 import org.workcraft.framework.exceptions.VisualModelConstructionException;
 import org.workcraft.framework.plugins.PluginInfo;
@@ -72,13 +75,13 @@ public class MainWindow extends JFrame implements DockingConstants{
 
 
 	JPanel content;
-	
+
 	DefaultDockingPort rootDockingPort;
 	Dockable outputDockable;
 	Dockable lastEditorDockable;
 
 	InternalWindow testDoc;
-	
+
 	GraphEditorPane editorInFocus;
 
 	private JMenuBar menuBar;
@@ -92,9 +95,9 @@ public class MainWindow extends JFrame implements DockingConstants{
 		this.outputView = new OutputView(this.framework);
 		this.errorView = new ErrorView(this.framework);
 		this.jsView = new JavaScriptView(this.framework);
-		
+
 		this.toolboxView = new ToolboxView(this.framework);
-		
+
 		this.lastEditorDockable = null;
 		this.outputDockable = null;
 		this.editorInFocus = null;
@@ -215,7 +218,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 
 		attachDockableListener(dockable);
 		return dockable;
-	
+
 	}
 
 	public Dockable addView(JComponent view, String name, Dockable neighbour, String relativeRegion, float split) {
@@ -239,13 +242,13 @@ public class MainWindow extends JFrame implements DockingConstants{
 		attachDockableListener(dockable);
 		return dockable;
 	}
-	
+
 	public void addEditorView(WorkspaceEntry we) {
 		if (we.getModel() == null) {
 			JOptionPane.showMessageDialog(this, "The selected entry is not a Workcraft model, and cannot be edited.", "Cannot open editor", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-			
+
 		VisualModel visualModel = we.getModel().getVisualModel();
 
 		if (visualModel == null) {
@@ -254,18 +257,18 @@ public class MainWindow extends JFrame implements DockingConstants{
 				try {
 					visualModel = (VisualModel)PluginManager.createVisualClassFor(we.getModel().getMathModel(), VisualModel.class);
 					we.setModel(visualModel);
-					
+
 				} catch (VisualModelConstructionException e) {
 					JOptionPane.showMessageDialog(this, e.getMessage(), "Error creating visual model", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 			}
 		}
-		
-		GraphEditorPane editor = new GraphEditorPane(this, visualModel);
+
+		GraphEditorPane editor = new GraphEditorPane(this, we);
 		String dockableTitle = visualModel.getTitle() + " - " + visualModel.getDisplayName();
 		Dockable dockable;
-		
+
 		if (lastEditorDockable == null) {
 			dockable = addView (editor, dockableTitle, outputDockable, NORTH_REGION, 0.8f);
 		} else {
@@ -273,7 +276,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 		}
 
 		requestFocus(editor);
-		
+
 		lastEditorDockable = dockable;
 	}
 
@@ -339,9 +342,6 @@ public class MainWindow extends JFrame implements DockingConstants{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		//addView (new GraphEditorPane(gr), "Graph", DockingManager.CENTER_REGION, 0.5f);
-
-		//addView (new JPanel(), "No open documents", DockingManager.CENTER_REGION, 0.5f);
 
 		outputDockable = addView (this.outputView, "Output", DockingManager.SOUTH_REGION, 0.8f);
 		addView (this.errorView, "Problems", outputDockable);
@@ -355,45 +355,10 @@ public class MainWindow extends JFrame implements DockingConstants{
 		gr.getRoot().add(vv);
 
 		DockingManager.display(outputDockable);
-
-		//propertyView.setObject(vv);
-
-
 		EffectsManager.setPreview(new AlphaPreview(Color.BLACK, Color.GRAY, 0.5f));
 
-		//consoleView.startup();
 		this.workspaceView.startup();
 
-		//		DockingManager.getLayoutManager().store();
-
-
-
-
-		//		content.addFrame(consoleView);
-		//		content.addFrame(workspaceView);
-
-
-		/*		content = new JPanel();
-		this.setContentPane(content);
-
-
-		createViews();
-
-		content.addFrame(consoleView);
-		content.addFrame(workspaceView);
-
-
-
-
-		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
-
-
-		consoleView.startup();
-		workspaceView.startup();
-
-
-		 */
 		setVisible(true);
 
 	}
@@ -422,7 +387,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 			PluginInfo info = dialog.getSelectedModel();
 			try {
 				MathModel mathModel = (MathModel)this.framework.getPluginManager().getInstance(info, MathModel.class);
-				
+
 				if (!dialog.getModelTitle().isEmpty())
 					mathModel.setTitle(dialog.getModelTitle());
 
@@ -431,8 +396,8 @@ public class MainWindow extends JFrame implements DockingConstants{
 					WorkspaceEntry we = this.framework.getWorkspace().add(visualModel);
 					if (dialog.openInEditorSelected())
 						addEditorView (we);
-						//rootDockingPort.dock(new GraphEditorPane(visualModel), CENTER_REGION);
-						//addView(new GraphEditorPane(visualModel), mathModel.getTitle() + " - " + mathModel.getDisplayName(), DockingManager.NORTH_REGION, 0.8f);
+					//rootDockingPort.dock(new GraphEditorPane(visualModel), CENTER_REGION);
+					//addView(new GraphEditorPane(visualModel), mathModel.getTitle() + " - " + mathModel.getDisplayName(), DockingManager.NORTH_REGION, 0.8f);
 				} else
 					this.framework.getWorkspace().add(mathModel);
 			} catch (PluginInstantiationException e) {
@@ -442,27 +407,64 @@ public class MainWindow extends JFrame implements DockingConstants{
 			}
 		}
 	}
-	
+
 	public void requestFocus (GraphEditorPane sender) {
 		if (editorInFocus != null)
 			editorInFocus.removeFocus();
-		
+
 		sender.grantFocus();
 		editorInFocus = sender;
 		toolboxView.setToolsForModel(editorInFocus.getModel());
 		framework.deleteJavaScriptProperty("_vmodel", framework.getJavaScriptGlobalScope());
 		framework.setJavaScriptProperty("_vmodel", sender.getModel(), framework.getJavaScriptGlobalScope(), true);
 	}
-	
+
 	public ToolboxView getToolboxView() {
 		return toolboxView;
 	}
 
 	public void save(WorkspaceEntry we) {
-		
+		if (we.getFile() == null) {
+			saveAs(we);
+			return;
+		}
+
+		try {
+			this.framework.save(we.getModel(), we.getFile().getPath());
+			we.setUnsaved(false);
+		} catch (ModelSaveFailedException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage(), "Save error", JOptionPane.ERROR_MESSAGE);
+		}				
 	}
 
 	public void saveAs(WorkspaceEntry we) {
+		JFileChooser fc = new JFileChooser();
+		fc.setFileFilter(FileFilters.DOCUMENT_FILES);
+		if(fc.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
+			String path = fc.getSelectedFile().getPath();
+			if (fc.getSelectedFile().exists())
+				if (!path.endsWith(FileFilters.DOCUMENT_EXTENSION))
+					path += ".work";
+
+			File f = new File(path);
+			if (f.exists());
+				if (JOptionPane.showConfirmDialog(this, "The file \"" + f.getName()+"\" already exists. Do you want to overwrite it?", "Confirm", JOptionPane.YES_NO_OPTION)==JOptionPane.NO_OPTION)
+					return;
+			try {
+				
+				this.framework.save(we.getModel(), path);
+				we.setFile(fc.getSelectedFile());
+				we.setUnsaved(false);
+			} catch (ModelSaveFailedException e) {
+				JOptionPane.showMessageDialog(this, e.getMessage(), "Save error", JOptionPane.ERROR_MESSAGE);
+			}				
+		}
+	}
+
+	public void repaintCurrentEditor() {
+		if (editorInFocus != null)
+			editorInFocus.repaint();
+			
 		
 	}
 }

@@ -61,6 +61,7 @@ public abstract class VisualNode implements PropertyEditable, Selectable {
 	public void setY(double y) {
 		this.transform.translate(0, y - this.transform.getTranslateY());
 	}
+	
 
 	public abstract void draw (Graphics2D g);
 

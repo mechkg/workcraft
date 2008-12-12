@@ -2,6 +2,7 @@ package org.workcraft.dom.visual;
 
 import java.awt.Graphics2D;
 import java.util.LinkedList;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.workcraft.dom.Component;
@@ -19,25 +20,25 @@ public class VisualModel implements Plugin, Model {
 	protected VisualComponentGroup root;
 
 	protected LinkedList<Selectable> selection = new LinkedList<Selectable>();
-	
+
 	protected LinkedList<VisualModelListener> listeners;
 
 	public VisualModel(MathModel model) throws VisualModelConstructionException {
-		this.mathModel = model;
-		this.root = new VisualComponentGroup(null);
-		this.listeners = new LinkedList<VisualModelListener>();
-		
+		mathModel = model;
+		root = new VisualComponentGroup(null);
+		listeners = new LinkedList<VisualModelListener>();
+
 		// create a default flat structure
 		for (Component component : model.getComponents()) {
 			VisualComponent visualComponent = (VisualComponent)PluginManager.createVisualComponent(component, root);
 			if (visualComponent != null)
-				this.root.add(visualComponent);
+				root.add(visualComponent);
 		}
 
 		for (Connection connection : model.getConnections()) {
 			VisualConnection visualConnection = (VisualConnection)PluginManager.createVisualComponent(connection, root);
 			if (visualConnection != null)
-				this.root.add(visualConnection);
+				root.add(visualConnection);
 		}
 	}
 
@@ -50,22 +51,22 @@ public class VisualModel implements Plugin, Model {
 		if (nodes.getLength() != 1)
 			throw new VisualModelConstructionException ("<visual-model> section of the document must contain one, and only one root group");
 
-		this.root = new VisualComponentGroup ((Element)nodes.item(0), mathModel, null);
+		root = new VisualComponentGroup ((Element)nodes.item(0), mathModel, null);
 	}
 
 	public void toXML(Element xmlVisualElement) {
 		// create root group element
 		Element rootGroupElement = xmlVisualElement.getOwnerDocument().createElement("group");
-		this.root.toXML(rootGroupElement);
+		root.toXML(rootGroupElement);
 		xmlVisualElement.appendChild(rootGroupElement);
 	}
 
 	public void draw (Graphics2D g) {
-		this.root.draw(g);
+		root.draw(g);
 	}
 
 	public VisualComponentGroup getRoot() {
-		return this.root;
+		return root;
 	}
 
 	/**
@@ -73,24 +74,24 @@ public class VisualModel implements Plugin, Model {
 	 * @return the selection.
 	 */
 	public LinkedList<Selectable> selection() {
-		return this.selection;
+		return selection;
 	}
 
 	/**
 	 * Select all components, connections and groups from the <code>root</code> group.
 	 */
 	public void selectAll() {
-		this.selection.clear();
-		this.selection.addAll(this.root.components);
-		this.selection.addAll(this.root.connections);
-		this.selection.addAll(this.root.childGroups);
+		selection.clear();
+		selection.addAll(root.components);
+		selection.addAll(root.connections);
+		selection.addAll(root.childGroups);
 	}
 
 	/**
 	 * Clear selection.
 	 */
 	public void selectNone() {
-		this.selection.clear();
+		selection.clear();
 	}
 
 	/**
@@ -101,7 +102,7 @@ public class VisualModel implements Plugin, Model {
 	 * @return if <code>so</code> is selected
 	 */
 	public boolean isObjectSelected(Selectable so) {
-		return this.selection.contains(so);
+		return selection.contains(so);
 	}
 
 	/**
@@ -110,7 +111,7 @@ public class VisualModel implements Plugin, Model {
 	 */
 	public void addToSelection(Selectable so) {
 		if(!isObjectSelected(so))
-			this.selection.add(so);
+			selection.add(so);
 	}
 
 	/**
@@ -118,12 +119,12 @@ public class VisualModel implements Plugin, Model {
 	 * @param so an object to deselect.
 	 */
 	public void removeFromSelection(Selectable so) {
-		this.selection.remove(so);
+		selection.remove(so);
 	}
 
 
 	public MathModel getMathModel() {
-		return this.mathModel;
+		return mathModel;
 	}
 
 
@@ -133,56 +134,56 @@ public class VisualModel implements Plugin, Model {
 
 
 	public String getTitle() {
-		return this.mathModel.getTitle();
+		return mathModel.getTitle();
 	}
 
 
 	public String getDisplayName() {
-		return this.mathModel.getDisplayName();
+		return mathModel.getDisplayName();
 	}
-	
+
 	public void addListener(VisualModelListener listener) {
-		listeners.add(listener);		
+		listeners.add(listener);
 	}
-	
+
 	public void removeListener(VisualModelListener listener) {
 		listeners.remove(listener);
 	}
-	
+
 	public void fireModelStructureChanged() {
 		for (VisualModelListener l : listeners)
 			l.modelStructureChanged();
 		mathModel.fireModelStructureChanged();
 	}
-	
+
 	public void fireComponentPropertyChanged(Component c) {
 		for (VisualModelListener l : listeners)
 			l.componentPropertyChanged(c);
-		
+
 		mathModel.fireComponentPropertyChanged(c);
 	}
-	
+
 	public void fireConnectionPropertyChanged(Connection c) {
 		for (VisualModelListener l : listeners)
 			l.connectionPropertyChanged(c);
-		
+
 		mathModel.fireConnectionPropertyChanged(c);
 	}
-	
+
 	public void fireVisualNodePropertyChanged(VisualNode n) {
-		for (VisualModelListener l : listeners) 
+		for (VisualModelListener l : listeners)
 			l.visualNodePropertyChanged(n);
 	}
-	
+
 	public void fireLayoutChanged() {
-		for (VisualModelListener l : listeners) 
+		for (VisualModelListener l : listeners)
 			l.layoutChanged();
 	}
 
 	public void addListener(MathModelListener listener) {
 		mathModel.addListener(listener);
 	}
-	
+
 	public void removeListener (MathModelListener listener) {
 		mathModel.removeListener(listener);
 	}
@@ -195,10 +196,10 @@ public class VisualModel implements Plugin, Model {
 		Connection con = mathModel.connect(first.getReferencedComponent(), second.getReferencedComponent());
 		VisualConnection ret = new VisualConnection(con, first, second);
 		root.add(ret);
-		
+
 		fireModelStructureChanged();
-		
+
 		return ret;
 	}
-	
+
 }

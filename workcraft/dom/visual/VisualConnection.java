@@ -14,7 +14,7 @@ public class VisualConnection implements Selectable {
 	Connection refConnection;
 	VisualComponent first;
 	VisualComponent second;
-	
+
 
 	public VisualConnection(Connection refConnection, VisualComponent first, VisualComponent second) {
 		this.refConnection = refConnection;
@@ -27,7 +27,7 @@ public class VisualConnection implements Selectable {
 		g.setColor(Color.BLUE);
 		g.setStroke(new BasicStroke(0.1f));
 		g.draw(line);
-		
+
 	}
 
 	public void toXML(Element vconElement) {
@@ -35,7 +35,7 @@ public class VisualConnection implements Selectable {
 	}
 
 	public Connection getReferencedConnection() {
-		return this.refConnection;
+		return refConnection;
 	}
 
 	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
@@ -47,7 +47,7 @@ public class VisualConnection implements Selectable {
 	}
 
 	public boolean hitTestInUserSpace(Point2D pointInUserSpace) {
-		return false;		
+		return false;
 	}
 
 	public Rectangle2D getBoundingBoxInLocalSpace() {

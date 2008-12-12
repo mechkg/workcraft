@@ -6,13 +6,13 @@ import org.workcraft.dom.Component;
 public abstract class VisualComponent extends VisualNode {
 	Component refComponent = null;
 	VisualComponentGroup parent;
-	
+
 	public VisualComponent(Component refComponent, VisualComponentGroup parent) {
 		super(parent);
 		this.refComponent = refComponent;
 		this.parent = parent;
 	}
-	
+
 	public VisualComponent(Component refComponent, Element xmlElement, VisualComponentGroup parent) {
 		super(xmlElement, parent);
 		this.refComponent = refComponent;
@@ -20,7 +20,7 @@ public abstract class VisualComponent extends VisualNode {
 	}
 
 	public Component getReferencedComponent() {
-		return this.refComponent;
+		return refComponent;
 	}
 
 }

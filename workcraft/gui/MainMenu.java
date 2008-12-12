@@ -12,11 +12,11 @@ import javax.swing.KeyStroke;
 
 public class MainMenu extends JMenuBar {
 	private static final long serialVersionUID = 1L;
-	
+
 	JMenu mnFile, mnView, mnSettings;
 	JMenuItem miShowPropertyEditor;
-	
-	
+
+
 
 	private String[] lafCaptions = new String[] {
 			"Java default",
@@ -66,22 +66,22 @@ public class MainMenu extends JMenuBar {
 		miOpenModel.addActionListener(frame.getDefaultActionListener());
 		miOpenModel.setActionCommand("gui.openWork()");
 
-		
+
 		JMenuItem miSaveWorkspace = new JMenuItem();
 		miSaveWorkspace.setText("Save workspace");
 		miSaveWorkspace.setMnemonic(KeyEvent.VK_O);
 		miSaveWorkspace.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 		miSaveWorkspace.addActionListener(frame.getDefaultActionListener());
 		miSaveWorkspace.setActionCommand("gui.saveWorkspace()");
-		
+
 		mnFile.add(miNewModel);
 		mnFile.add(miOpenModel);
 
 		mnFile.addSeparator();
 		mnFile.add(miShutdownGUI);
 		mnFile.add(miExit);
-		
-		
+
+
 		// View
 		mnView = new JMenu();
 		mnView.setText ("View");
@@ -89,10 +89,10 @@ public class MainMenu extends JMenuBar {
 		JMenu mnLAF = new JMenu();
 		mnLAF.setText("Look and Feel");
 
-		for(int i=0; i<this.lafClasses.length; i++) {
+		for(int i=0; i<lafClasses.length; i++) {
 			JMenuItem miLAFItem = new JMenuItem();
-			miLAFItem.setText(this.lafCaptions[i]);
-			final String lafClass = this.lafClasses[i];
+			miLAFItem.setText(lafCaptions[i]);
+			final String lafClass = lafClasses[i];
 			miLAFItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frame.setLAF(lafClass);
@@ -100,16 +100,16 @@ public class MainMenu extends JMenuBar {
 			});
 			mnLAF.add(miLAFItem);
 		}
-		
+
 		JMenu mnWindows = new JMenu();
 		mnWindows.setText("Windows");
-		
+
 		JMenuItem miShowPropertyEditor = new JCheckBoxMenuItem();
 		miShowPropertyEditor.setText("Property editor");
 		miSaveWorkspace.setActionCommand("gui.togglePropertyEditorVisible()");
 
 		mnWindows.add(miShowPropertyEditor);
-		
+
 		mnView.add(mnWindows);
 		mnView.addSeparator();
 		mnView.add(mnLAF);
@@ -121,7 +121,7 @@ public class MainMenu extends JMenuBar {
 		JMenuItem miReconfigure = new JMenuItem("Reconfigure plugins");
 		miReconfigure.addActionListener(frame.getDefaultActionListener());
 		miReconfigure.setActionCommand("framework.getPluginManager().reconfigure()");
-		
+
 		mnSettings.add(miReconfigure);
 
 		add(mnFile);

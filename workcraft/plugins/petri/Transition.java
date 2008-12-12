@@ -8,7 +8,7 @@ import org.workcraft.dom.VisualClass;
 @DisplayName("Transition")
 @VisualClass("org.workcraft.plugins.petri.VisualTransition")
 public class Transition extends Component {
-	
+
 	public Transition() {
 		super();
 	}

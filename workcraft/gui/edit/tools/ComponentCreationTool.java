@@ -16,7 +16,7 @@ import org.workcraft.gui.events.GraphEditorMouseEvent;
 
 public class ComponentCreationTool implements GraphEditorTool {
 	protected Class<?> componentClass;
-	
+
 	public ComponentCreationTool (Class<?> componentClass) {
 		this.componentClass = componentClass;
 	}
@@ -40,7 +40,7 @@ public class ComponentCreationTool implements GraphEditorTool {
 	}
 
 	public void mouseClicked(GraphEditorMouseEvent e) {
-	
+
 	}
 
 	public void mouseEntered(GraphEditorMouseEvent e) {
@@ -64,14 +64,14 @@ public class ComponentCreationTool implements GraphEditorTool {
 			ctor = componentClass.getConstructor();
 			Component comp = (Component)ctor.newInstance();
 			VisualComponent vComp = (VisualComponent)PluginManager.createVisualComponent(comp, e.getModel().getRoot());
-			
+
 			vComp.setX(e.getX());
 			vComp.setY(e.getY());
-			
+
 			e.getEditor().getModel().getMathModel().addComponent(comp);
 			e.getEditor().getModel().getRoot().add(vComp);
 			e.getEditor().getModel().fireModelStructureChanged();
-			
+
 		} catch (SecurityException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

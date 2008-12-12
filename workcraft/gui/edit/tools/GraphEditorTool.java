@@ -16,7 +16,7 @@ public interface GraphEditorTool {
 
 	public void drawInUserSpace(GraphEditorPane editor, Graphics2D g);
 	public void drawInScreenSpace(GraphEditorPane editor, Graphics2D g);
-	
+
 	public String getName();
 	public String getIconPath();
 }

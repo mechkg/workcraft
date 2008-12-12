@@ -4,7 +4,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -20,7 +19,7 @@ public class VisualVertex extends VisualComponent {
 	public VisualVertex(Vertex vertex, VisualComponentGroup parent) {
 		super(vertex, parent);
 	}
-	
+
 	public VisualVertex(Vertex vertex, Element xmlElement, VisualComponentGroup parent) {
 		super(vertex, xmlElement, parent);
 	}
@@ -35,10 +34,10 @@ public class VisualVertex extends VisualComponent {
 				size-strokeWidth);
 
 		g.setStroke(new BasicStroke(strokeWidth));
-		
+
 		g.setColor(Color.WHITE);
 		g.fill(shape);
-		g.setColor(Color.BLACK);				
+		g.setColor(Color.BLACK);
 		g.draw(shape);
 	}
 

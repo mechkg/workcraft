@@ -179,6 +179,11 @@ public class VisualModel implements Plugin, Model {
 		for (VisualModelListener l : listeners)
 			l.layoutChanged();
 	}
+	
+	public void fireSelectionChanged() {
+		for (VisualModelListener l : listeners)
+			l.selectionChanged();
+	}
 
 	public void addListener(MathModelListener listener) {
 		mathModel.addListener(listener);

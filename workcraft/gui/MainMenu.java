@@ -13,7 +13,7 @@ import javax.swing.KeyStroke;
 public class MainMenu extends JMenuBar {
 	private static final long serialVersionUID = 1L;
 
-	JMenu mnFile, mnView, mnSettings;
+	JMenu mnFile, mnEdit, mnView, mnTools, mnSettings, mnHelp;
 	JMenuItem miShowPropertyEditor;
 
 
@@ -113,7 +113,15 @@ public class MainMenu extends JMenuBar {
 		mnView.add(mnWindows);
 		mnView.addSeparator();
 		mnView.add(mnLAF);
-
+		
+		// Edit
+		mnEdit = new JMenu();
+		mnEdit.setText("Edit");
+		
+		// Tools
+		mnTools = new JMenu();
+		mnTools.setText("Tools");
+		
 		// Settings
 		mnSettings = new JMenu();
 		mnSettings.setText("Settings");
@@ -123,9 +131,16 @@ public class MainMenu extends JMenuBar {
 		miReconfigure.setActionCommand("framework.getPluginManager().reconfigure()");
 
 		mnSettings.add(miReconfigure);
+		
+		// Help
+		mnHelp = new JMenu();
+		mnHelp.setText("Help");
 
 		add(mnFile);
+		add(mnEdit);
 		add(mnView);
+		add(mnTools);
 		add(mnSettings);
+		add(mnHelp);
 	}
 }

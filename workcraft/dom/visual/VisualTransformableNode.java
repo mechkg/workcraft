@@ -130,7 +130,7 @@ public abstract class VisualTransformableNode extends VisualNode {
 	public Rectangle2D getBoundingBoxInUserSpace() {
 		Rectangle2D bb = getBoundingBoxInParentSpace();
 		VisualComponentGroup p = parent;
-
+		
 		while (p != null) {
 			_tmp[0] = bb.getMinX();
 			_tmp[1] = bb.getMinY();

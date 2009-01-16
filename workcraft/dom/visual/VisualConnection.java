@@ -139,7 +139,7 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 	public void draw(Graphics2D g) {
 		g.setColor(Coloriser.colorise(userColor, colorisation));
 		g.setStroke(new BasicStroke((float)width));
-
+		
 		Line2D line = new Line2D.Double(lineStart, lineEnd);
 		g.draw(line);
 
@@ -191,7 +191,7 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 	}
 
 	public int hitTestInParentSpace(Point2D pointInParentSpace) {
-		if (distanceToConnection(pointInParentSpace) < arrowWidth)
+		if (distanceToConnection(pointInParentSpace) < hitThreshold)
 			return 1;
 		else
 			return 0;
@@ -199,7 +199,20 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 
 	public Rectangle2D getBoundingBoxInParentSpace() {
 		Rectangle2D bb = new Rectangle2D.Double(lineStart.getX(), lineStart.getY(), 0, 0);
-		bb.add(arrowHeadPosition);		
+		bb.add(arrowHeadPosition);
+		Point2D lineVec = new Point2D.Double(arrowHeadPosition.getX() - lineStart.getX(), arrowHeadPosition.getY() - lineStart.getY());
+		
+		double mag = lineVec.distance(0, 0);
+
+		if (mag==0)
+			return bb;
+		
+		lineVec.setLocation(lineVec.getY()*hitThreshold/mag, -lineVec.getX()*hitThreshold/mag);
+		bb.add(lineStart.getX() + lineVec.getX(), lineStart.getY() + lineVec.getY());
+		bb.add(arrowHeadPosition.getX() + lineVec.getX(), arrowHeadPosition.getY() + lineVec.getY());
+		bb.add(lineStart.getX() - lineVec.getX(), lineStart.getY() - lineVec.getY());
+		bb.add(arrowHeadPosition.getX() - lineVec.getX(), arrowHeadPosition.getY() - lineVec.getY());
+				
 		return bb;
 	}
 

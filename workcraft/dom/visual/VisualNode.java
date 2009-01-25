@@ -16,37 +16,22 @@ import org.workcraft.gui.propertyeditor.PropertyEditable;
 
 
 public abstract class VisualNode implements PropertyEditable {
-	protected LinkedList<PropertyDeclaration> propertyDeclarations;
-	protected LinkedList<PropertyChangeListener> propertyChangeListeners;
-	protected Color colorisation;
-	protected VisualGroup parent;
-
-	public VisualNode(VisualGroup parent) {
-		this.parent = parent;
-		colorisation = null;
-		
-		propertyChangeListeners = new LinkedList<PropertyChangeListener>();
-		propertyDeclarations = new LinkedList<PropertyDeclaration>();
-	}
-
-	public VisualNode (Element xmlElement, VisualGroup parent) {
-		this(parent);
-	}
+	protected LinkedList<PropertyDeclaration> propertyDeclarations = new LinkedList<PropertyDeclaration>();
+	protected LinkedList<PropertyChangeListener> propertyChangeListeners = new LinkedList<PropertyChangeListener>();
+	protected Color colorisation = null;
+	protected VisualGroup parent = null;
 	
-	public void toXML(Element xmlElement) {
-	}
-
+	public abstract void draw (Graphics2D g);
+	public abstract void toXML(Element xmlElement);
+	public abstract int hitTestInParentSpace(Point2D pointInParentSpace);
+	
 	public VisualGroup getParent() {
 		return parent;
 	}
 	
 	public void setParent(VisualGroup parent) {
 		this.parent = parent;		
-	}
-	
-	public abstract void draw (Graphics2D g);
-
-	public abstract int hitTestInParentSpace(Point2D pointInParentSpace);
+	}	
 	
 	public int hitTestInAncestorSpace(Point2D pointInUserSpace, VisualGroup ancestor) throws NotAnAncestorException {
 		

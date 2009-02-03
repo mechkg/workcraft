@@ -11,10 +11,13 @@ import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.LinkedList;
 
+import javax.swing.JOptionPane;
+
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.dom.visual.VisualTransformableNode;
+import org.workcraft.framework.exceptions.PasteException;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 
@@ -36,24 +39,24 @@ public class SelectionTool extends AbstractTool {
 	private Point2D snapOffset;
 	private LinkedList<VisualNode> savedSelection = new LinkedList<VisualNode>();
 	private int selectionMode;
-	
-	
+
+
 	protected void clearSelection(VisualModel model) {
 		for (VisualNode so : model.getSelection())
 			so.clearColorisation();
 		model.selectNone();
 	}
-	
+
 	protected void addToSelection(VisualModel model, VisualNode so) {
 		model.addToSelection(so);
 		so.setColorisation(selectionColor);
 	}
-	
+
 	protected void removeFromSelection(VisualModel model, VisualNode so) {
 		model.removeFromSelection(so);
 		so.clearColorisation();
 	}
-	
+
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e) {
 		VisualModel model = e.getEditor().getModel();
@@ -89,11 +92,11 @@ public class SelectionTool extends AbstractTool {
 		}
 		else if(drag==DRAG_SELECT) {
 			LinkedList<VisualNode> hit = model.hitObjects(selectionRect(e.getPosition()));
-			
+
 			clearSelection(model);
 			for (VisualNode so: savedSelection)
 				addToSelection(model, so);
-			
+
 			for(VisualNode so : hit)
 				if(selectionMode==SELECTION_ADD)
 					addToSelection(model, so);
@@ -154,11 +157,11 @@ public class SelectionTool extends AbstractTool {
 		if(e.getButton()==MouseEvent.BUTTON1) {
 			if (drag == DRAG_SELECT)
 				model.fireSelectionChanged();
-			
+
 			drag = DRAG_NONE;
 		}
 	}
-	
+
 	private void grayOutNotActive(VisualModel model)
 	{
 		model.getRoot().setColorisation(new Color(255, 255, 255));
@@ -166,14 +169,14 @@ public class SelectionTool extends AbstractTool {
 		for(VisualNode node : model.getSelection())
 			node.setColorisation(selectionColor);
 	}
-	
+
 	@Override
 	public void keyPressed(GraphEditorKeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_DELETE) {
 			e.getModel().deleteSelection();
 			e.getEditor().repaint();
 		}
-		
+
 		if (!e.isCtrlDown())
 		{
 			switch (e.getKeyCode()) {
@@ -185,7 +188,7 @@ public class SelectionTool extends AbstractTool {
 				break;
 			}
 		}
-		
+
 		if (e.isCtrlDown()) {
 			switch(e.getKeyCode()){
 			case KeyEvent.VK_G: 
@@ -199,6 +202,13 @@ public class SelectionTool extends AbstractTool {
 			case KeyEvent.VK_C: 
 				e.getModel().copy(Toolkit.getDefaultToolkit().getSystemClipboard(), null);
 				break;
+			case KeyEvent.VK_V:
+				try {
+					e.getModel().paste(Toolkit.getDefaultToolkit().getSystemClipboard(), prevPosition);
+					e.getEditor().repaint();
+				} catch (PasteException e1) {
+					JOptionPane.showMessageDialog(null, "Paste failed:\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		}
 	}
@@ -253,7 +263,7 @@ public class SelectionTool extends AbstractTool {
 			model.fireSelectionChanged();
 		}
 		drag = DRAG_NONE;
-		
+
 	}
 
 	private Rectangle2D selectionRect(Point2D currentPosition) {
@@ -314,9 +324,9 @@ public class SelectionTool extends AbstractTool {
 	public String getName() {
 		return "Select";
 	}
-	
+
 	public int getHotKeyCode() {
 		return KeyEvent.VK_S;
 	}
-	
+
 }

@@ -3,8 +3,10 @@ package org.workcraft.dom.visual;
 import java.awt.Graphics2D;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,11 +24,16 @@ import org.workcraft.dom.Connection;
 import org.workcraft.dom.MathModel;
 import org.workcraft.dom.MathModelListener;
 import org.workcraft.dom.Model;
+import org.workcraft.framework.ComponentFactory;
+import org.workcraft.framework.ConnectionFactory;
 import org.workcraft.framework.exceptions.InvalidConnectionException;
+import org.workcraft.framework.exceptions.ModelLoadFailedException;
 import org.workcraft.framework.exceptions.NotAnAncestorException;
-import org.workcraft.framework.exceptions.VisualModelConstructionException;
+import org.workcraft.framework.exceptions.PasteException;
+import org.workcraft.framework.exceptions.VisualComponentCreationException;
+import org.workcraft.framework.exceptions.VisualConnectionCreationException;
+import org.workcraft.framework.exceptions.VisualModelInstantiationException;
 import org.workcraft.framework.plugins.Plugin;
-import org.workcraft.framework.plugins.PluginManager;
 import org.workcraft.gui.edit.tools.GraphEditorTool;
 import org.workcraft.util.XmlUtil;
 
@@ -40,46 +47,85 @@ public class VisualModel implements Plugin, Model {
 	protected HashMap<Integer, VisualComponent> refIDToVisualComponentMap = new HashMap<Integer, VisualComponent>();
 	protected HashMap<Integer, VisualConnection> refIDToVisualConnectionMap = new HashMap<Integer, VisualConnection>();
 
-	public VisualModel(MathModel model) throws VisualModelConstructionException {
+	public VisualModel(MathModel model) throws VisualModelInstantiationException {
 		mathModel = model;
 		root = new VisualGroup();
 		currentLevel = root;
-		
 
-		// create a default flat structure
-		for (Component component : model.getComponents()) {
-			VisualComponent visualComponent = PluginManager.createVisualComponent(component);
-			if (visualComponent != null) {
-				root.add(visualComponent);
-				addComponent(visualComponent);
+		try {
+			// create a default flat structure
+			for (Component component : model.getComponents()) {
+				VisualComponent visualComponent;
+				visualComponent = ComponentFactory.createVisualComponent(component);
+				if (visualComponent != null) {
+					root.add(visualComponent);
+					addComponent(visualComponent);
+				}
 			}
-		}
 
-		for (Connection connection : model.getConnections()) {
-			
-			VisualConnection visualConnection = PluginManager.createVisualConnection(connection, getComponentByRefID(connection.getFirst().getID()),
-																						getComponentByRefID(connection.getSecond().getID()));
-			if (visualConnection != null) {
-				root.add(visualConnection);
-				addConnection(visualConnection);
+			for (Connection connection : model.getConnections()) {
+
+				VisualConnection visualConnection = ConnectionFactory.createVisualConnection(connection, this);
+				if (visualConnection != null) {
+					root.add(visualConnection);
+					addConnection(visualConnection);
+				}
 			}
+		} catch (VisualComponentCreationException e) {
+			throw new VisualModelInstantiationException ("Failed to create visual component: " + e.getMessage());
+		} catch (VisualConnectionCreationException e) {
+			throw new VisualModelInstantiationException("Failed to create visual connection:" + e.getMessage());
 		}
 	}
 
-	public VisualModel(MathModel mathModel, Element visualElement) throws VisualModelConstructionException {
+	public VisualModel(MathModel mathModel, Element visualElement) throws VisualModelInstantiationException {
 		this.mathModel = mathModel;
-
-		// load structure from XML
-		List<Element> nodes = XmlUtil.getChildElements("group", visualElement);
-
-		if (nodes.size() != 1)
-			throw new VisualModelConstructionException ("<visual-model> section of the document must contain one, and only one root group");
-
-		root = new VisualGroup (nodes.get(0), this);
+		root = new VisualGroup();
 		currentLevel = root;
+
+		try {
+			pasteFromXML(visualElement, new Point2D.Double(0,0));
+		} catch (PasteException e) {
+			throw new VisualModelInstantiationException("pasteFromXML failed: " + e.getMessage());
+		}
 	}
 	
-	public static void nodesToXml (Element parentElement, Collection <? extends VisualNode> nodes) {
+	protected void pasteFromXML (Element visualElement, Point2D location) throws PasteException {
+		List<Element> compElements = XmlUtil.getChildElements("component", visualElement);
+		List<Element> conElements = XmlUtil.getChildElements("connection", visualElement);
+		List<Element> groupElements = XmlUtil.getChildElements("group", visualElement);
+		
+		try 
+		{
+		for (Element e: compElements) {
+			VisualComponent vcomp = ComponentFactory.createVisualComponent(e, this);
+			vcomp.setX(vcomp.getX() + location.getX());
+			vcomp.setY(vcomp.getY() + location.getY());
+			currentLevel.add(vcomp);
+			addComponent(vcomp);
+		}
+		
+		for (Element e: groupElements) {
+			VisualGroup group = new VisualGroup (e, this);
+			group.loadDeferredConnections(this);
+			group.setX(group.getX() + location.getX());
+			group.setY(group.getY() + location.getY());
+			currentLevel.add(group);
+		}
+		
+		for (Element e: conElements) {
+			VisualConnection vcon = ConnectionFactory.createVisualConnection(e, this);
+			currentLevel.add(vcon);
+		}
+		} catch (VisualConnectionCreationException e) {
+			throw new PasteException ("Cannot create visual connection: " + e.getMessage());
+			
+		} catch (VisualComponentCreationException e) {
+			throw new PasteException ("Cannot create visual component: " + e.getMessage());
+		}
+	}
+
+	public static void nodesToXML (Element parentElement, Collection <? extends VisualNode> nodes) {
 		for (VisualNode node : nodes) {
 			if (node instanceof VisualComponent) {
 				VisualComponent vc = (VisualComponent)node;
@@ -99,28 +145,24 @@ public class VisualModel implements Plugin, Model {
 	}	
 
 	public void toXML(Element xmlVisualElement) {
-		// create root group element
-		Element rootGroupElement = xmlVisualElement.getOwnerDocument().createElement("group");
-		root.toXML(rootGroupElement);
-		xmlVisualElement.appendChild(rootGroupElement);
+		nodesToXML (xmlVisualElement, root.getChildren());
 	}
-	
+
 	public void selectionToXML(Element xmlElement) {
 		Element mathElement = XmlUtil.createChildElement("model", xmlElement);
 		XmlUtil.writeStringAttr(mathElement, "class", getMathModel().getClass().getName());
 		Element visualElement = XmlUtil.createChildElement("visual-model", xmlElement);
-		XmlUtil.writeStringAttr(visualElement, "class", getClass().getName());
-		
+
 		LinkedList<Component> referencedComponents = new LinkedList<Component>();
 		LinkedList<Connection> referencedConnections = new LinkedList<Connection>();
-		
+
 		for (VisualNode n : selection)
 			if (n instanceof VisualComponent)
 				referencedComponents.add( ((VisualComponent)n).getReferencedComponent());
 			else if (n instanceof VisualConnection)
 				referencedConnections.add( ((VisualConnection)n).getReferencedConnection());
-		
-		VisualModel.nodesToXml(visualElement, selection);
+
+		VisualModel.nodesToXML(visualElement, selection);
 		MathModel.componentsToXML(mathElement, referencedComponents);
 		MathModel.connectionsToXML(mathElement, referencedConnections);
 	}
@@ -145,8 +187,8 @@ public class VisualModel implements Plugin, Model {
 	 * Select all components, connections and groups from the <code>root</code> group.
 	 */
 	public void selectAll() {;
-		selection.clear();
-		selection.addAll(root.children);
+	selection.clear();
+	selection.addAll(root.children);
 	}
 
 	/**
@@ -241,7 +283,7 @@ public class VisualModel implements Plugin, Model {
 		for (VisualModelListener l : listeners)
 			l.layoutChanged();
 	}
-	
+
 	public void fireSelectionChanged() {
 		for (VisualModelListener l : listeners)
 			l.selectionChanged();
@@ -258,7 +300,7 @@ public class VisualModel implements Plugin, Model {
 	public VisualNode[] getSelection() {
 		return selection.toArray(new VisualNode[0]);
 	}
-	
+
 	public void validateConnection(VisualComponent first, VisualComponent second) throws InvalidConnectionException {
 		mathModel.validateConnection(new Connection (first.getReferencedComponent(), second.getReferencedComponent()));
 	}
@@ -266,72 +308,62 @@ public class VisualModel implements Plugin, Model {
 	public VisualConnection connect(VisualComponent first, VisualComponent second) throws InvalidConnectionException {
 		Connection con = mathModel.connect(first.getReferencedComponent(), second.getReferencedComponent());
 		VisualConnection ret = new VisualConnection(con, first, second);
-		
+
 		VisualGroup group = VisualNode.getCommonParent(first, second);
-		
+
 		group.add(ret);
 		addConnection(ret);
 		connectionAdded(ret);
-		
+
 		fireModelStructureChanged();
 		return ret;
 	}
 
-	protected final void addComponent(VisualComponent component) {
+	public final void addComponent(VisualComponent component) {
 		refIDToVisualComponentMap.put(component.getReferencedComponent().getID(), component);
 		componentAdded(component);
 	}
-	
-	protected final void addConnection(VisualConnection connection) {
+
+	public final void addConnection(VisualConnection connection) {
 		connection.getFirst().addConnection(connection);
 		connection.getSecond().addConnection(connection);
 
 		refIDToVisualConnectionMap.put(connection.getReferencedConnection().getID(), connection);
 		connectionAdded(connection);
 	}
-	
-	protected final void addGroup(VisualGroup group) {
-		groupAdded(group);		
-	}
-	
+
 	protected void componentAdded(VisualComponent component) {
 	}
-	
+
 	protected void connectionAdded(VisualConnection connection) {
 	}
-	
+
 	protected void componentRemoved(VisualComponent component) {
 	}
-	
+
 	protected void connectionRemoved(VisualConnection connection) {
 	}
-	
-	protected void groupAdded(VisualGroup group) {
-	}
-	
-	protected void groupRemoved(VisualGroup group) {
-	}
-	
+
 	public ArrayList<Class<? extends GraphEditorTool>> getAdditionalToolClasses() {
 		return new ArrayList<Class<? extends GraphEditorTool>>();				
 	}
-	
+
 	public void clearColorisation() {
 		root.clearColorisation();
 	}
 
 	VisualGroup currentLevel;
-	
+
 	public VisualGroup getCurrentLevel() {
 		return currentLevel;
 	}
-	
+
 	public void setCurrentLevel(VisualGroup newCurrentLevel) {
 		selection.clear();
 		currentLevel = newCurrentLevel;
 		fireSelectionChanged();
 	}
-	
+
 	private List<VisualTransformableNode> getTransformableSelection()
 	{
 		ArrayList<VisualTransformableNode> result = new ArrayList<VisualTransformableNode>();
@@ -356,18 +388,18 @@ public class VisualModel implements Plugin, Model {
 			currentLevel.remove(node);
 			group.add(node);
 		}
-		
+
 		ArrayList<VisualConnection> connectionsToGroup = new ArrayList<VisualConnection>();
 		for(VisualConnection connection : currentLevel.connections)
 		{
 			if(connection.first.isDescendantOf(group) && 
-			   connection.second.isDescendantOf(group))
+					connection.second.isDescendantOf(group))
 				connectionsToGroup.add(connection);
 		}
-		
+
 		for(VisualConnection connection : connectionsToGroup)
 			group.add(connection);
-		
+
 		selection.clear();
 		selection.add(group);
 		fireSelectionChanged();
@@ -390,9 +422,9 @@ public class VisualModel implements Plugin, Model {
 				currentLevel.remove(group);
 			}
 		}
-		
+
 		selection.clear();
-		
+
 		for(VisualNode node : unGrouped)
 			selection.add(node);
 		fireSelectionChanged();
@@ -403,38 +435,37 @@ public class VisualModel implements Plugin, Model {
 			removeGroup(g);
 		for (VisualComponent c: group.components)
 			removeComponent(c);
-		
+
 		selection.remove(group);
 		group.getParent().remove(group);
-		
-		groupRemoved(group);
+
 		// connections will get deleted automatically
 	}
-	
+
 	protected void removeComponent(VisualComponent component) {
 		for (VisualConnection con : component.getConnections())
 			removeConnection(con);
 		mathModel.removeComponent(component.refComponent);
-		
+
 		selection.remove(component);
 		component.getParent().remove(component);
-		
+
 		refIDToVisualComponentMap.remove(component.getReferencedComponent().getID());		
 		componentRemoved(component);
 	}
-	
+
 	protected void removeConnection(VisualConnection connection) {
 		connection.getFirst().removeConnection(connection);
 		connection.getSecond().removeConnection(connection);
 		mathModel.removeConnection(connection.getReferencedConnection());
-		
+
 		selection.remove(connection);
 		connection.getParent().remove(connection);
-	
+
 		refIDToVisualConnectionMap.remove(connection.getReferencedConnection().getID());
 		connectionRemoved(connection);
 	}
-	
+
 	/**
 	 * Deletes the selection.
 	 * @author Ivan Poliakov
@@ -443,7 +474,7 @@ public class VisualModel implements Plugin, Model {
 		LinkedList<VisualConnection> connectionsToDelete = new LinkedList<VisualConnection>();
 		LinkedList<VisualComponent> componentsToDelete = new LinkedList<VisualComponent>();
 		LinkedList<VisualGroup> groupsToDelete = new LinkedList<VisualGroup>();
-		
+
 		for (VisualNode node: selection) {
 			if (node instanceof VisualGroup)
 				groupsToDelete.add((VisualGroup)node);
@@ -452,7 +483,7 @@ public class VisualModel implements Plugin, Model {
 			else if (node instanceof VisualConnection)
 				connectionsToDelete.add((VisualConnection)node);
 		}
-		
+
 		for (VisualConnection con : connectionsToDelete)
 			removeConnection(con);
 		for (VisualComponent comp : componentsToDelete)
@@ -460,7 +491,7 @@ public class VisualModel implements Plugin, Model {
 		for (VisualGroup g: groupsToDelete)
 			removeGroup(g);
 	}
-	
+
 	public void copy(Clipboard clipboard, ClipboardOwner clipboardOwner) {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		Document doc; DocumentBuilder db;
@@ -473,16 +504,40 @@ public class VisualModel implements Plugin, Model {
 		}
 
 		Element root = doc.createElement("workcraft-clipboard-contents");
+
 		doc.appendChild(root);
 		root = doc.getDocumentElement();
 		selectionToXML(root);		
 		clipboard.setContents(new TransferableDocument(doc), clipboardOwner);
 	}
-	
-	public void paste() {
-		
+
+	public void paste(Clipboard clipboard, Point2D where) throws PasteException {
+		try {
+			Document doc = (Document)clipboard.getData(TransferableDocument.DOCUMENT_FLAVOR);
+			
+			Element root = doc.getDocumentElement();
+			if (!root.getTagName().equals("workcraft-clipboard-contents"))
+				return;
+
+			Element mathModelElement = XmlUtil.getChildElement("model", root);
+			Element visualModelElement = XmlUtil.getChildElement("visual-model", root);
+
+			if (mathModelElement == null || visualModelElement == null)
+				throw new PasteException("Structure of clipboard XML is invalid.");
+			
+			mathModel.pasteFromXML(mathModelElement);
+			pasteFromXML(visualModelElement, where);
+
+
+		} catch (UnsupportedFlavorException e) {
+			return;
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ModelLoadFailedException e) {
+			throw new PasteException (e.getMessage());
+		}
 	}
-	
+
 	public void cut(Clipboard clipboard, ClipboardOwner clipboardOwner) {
 		copy(clipboard, clipboardOwner);
 		deleteSelection();
@@ -491,7 +546,7 @@ public class VisualModel implements Plugin, Model {
 	public VisualComponent getComponentByRefID(Integer id) {
 		return refIDToVisualComponentMap.get(id);
 	}
-	
+
 	private Point2D transformToCurrentSpace(Point2D pointInRootSpace)
 	{
 		if(currentLevel == root)
@@ -506,7 +561,7 @@ public class VisualModel implements Plugin, Model {
 		currentLevel.getParentToLocalTransform().transform(newPoint, newPoint);
 		return newPoint;
 	}
-	
+
 	public VisualNode hitNode(Point2D pointInRootSpace)
 	{
 		return currentLevel.hitNode(transformToCurrentSpace(pointInRootSpace));

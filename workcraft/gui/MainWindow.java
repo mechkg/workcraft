@@ -3,8 +3,6 @@ package org.workcraft.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -41,23 +39,73 @@ import org.workcraft.framework.exceptions.PluginInstantiationException;
 import org.workcraft.framework.exceptions.VisualModelInstantiationException;
 import org.workcraft.framework.plugins.PluginInfo;
 import org.workcraft.framework.workspace.WorkspaceEntry;
+import org.workcraft.gui.actions.ScriptedAction;
+import org.workcraft.gui.actions.ScriptedActionListener;
 import org.workcraft.gui.edit.graph.GraphEditorPanel;
 import org.workcraft.gui.edit.graph.ToolboxWindow;
 import org.workcraft.gui.workspace.WorkspaceWindow;
 
+@SuppressWarnings("serial")
 public class MainWindow extends JFrame implements DockingConstants{
-	private static final long serialVersionUID = 1L;
-	public ActionListener defaultActionListener = new ActionListener() {
+	public static class Actions {
+		public static final ScriptedAction CREATE_WORK_ACTION = new ScriptedAction() {
+			public String getScript() {
+				return "mainWindow.createWork()";
+			}
+			public String getText() {
+				return "Create work...";
+			};
+		};
+		public static final ScriptedAction OPEN_WORK_ACTION = new ScriptedAction() {
+			public String getScript() {
+				return "mainWindow.openWork()";
+			}
+			public String getText() {
+				return "Open work...";
+			};
+		};
+		public static final ScriptedAction SAVE_WORK_ACTION = new ScriptedAction() {
+			public String getScript() {
+				return "mainWindow.save()";
+			}
+			public String getText() {
+				return "Save";
+			};
+		};
+		public static final ScriptedAction EXIT_ACTION = new ScriptedAction() {
+			public String getScript() {
+				return "framework.shutdown()";
+			}
+			public String getText() {
+				return "Exit";
+			};
+		};
+		public static final ScriptedAction SHUTDOWN_GUI_ACTION = new ScriptedAction() {
+			public String getScript() {
+				return "framework.shutdownGUI()";
+			}
+			public String getText() {
+				return "Shutdown GUI";
+			};
+		};
+		public static final ScriptedAction RECONFIGURE_PLUGINS_ACTION = new ScriptedAction() {
+			public String getScript() {
+				return "framework.getPluginManager().reconfigure()";
+			}
+			public String getText() {
+				return "Reconfigure plugins";
+			};
+		};
+	}
 
-		public void actionPerformed(ActionEvent e) {
-			framework.execJavaScript(e.getActionCommand());
+	private final ScriptedActionListener defaultActionListener = new ScriptedActionListener() {
+		public void actionPerformed(ScriptedAction e) {
+			System.out.println ("Scripted action \"" + e.getText()+"\":\n"+e.getScript());			
+			framework.execJavaScript(e.getScript());
 		}
 	};
-
-	Framework framework;
-	public WorkspaceWindow getWorkspaceView() {
-		return workspaceView;
-	}
+	
+	private Framework framework;
 
 	WorkspaceWindow workspaceView;
 	OutputView outputView;
@@ -81,7 +129,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 	GraphEditorPanel editorInFocus;
 
 	private JMenuBar menuBar;
-	
+
 	private String lastSavePath = null;
 	private String lastOpenPath = null;
 
@@ -127,6 +175,10 @@ public class MainWindow extends JFrame implements DockingConstants{
 
 		framework.setConfigVar("gui.lookandfeel", laf);
 		framework.restartGUI();
+	}
+
+	public WorkspaceWindow getWorkspaceView() {
+		return workspaceView;
 	}
 
 
@@ -275,7 +327,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 					dockable = addView (editor, dockableTitle, lastEditorDockable);
 
 				lastEditorDockable = dockable;
-				
+
 				requestFocus(editor);
 	}
 
@@ -303,7 +355,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 		String h = framework.getConfigVar("gui.main.height");
 		int width = (w==null)?800:Integer.parseInt(w);
 		int height = (h==null)?600:Integer.parseInt(h);
-		
+
 		lastSavePath = framework.getConfigVar("gui.main.lastSavePath");
 		lastOpenPath = framework.getConfigVar("gui.main.lastOpenPath");
 
@@ -331,7 +383,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 		Dockable wsvd = addView (workspaceView, "Workspace", DockingManager.EAST_REGION, 0.8f);
 		addView (propertyView, "Property Editor", wsvd, DockingManager.NORTH_REGION, 0.5f);
 		addView (toolboxView, "Editor Tools", wsvd, DockingManager.NORTH_REGION, 0.5f);
-		
+
 
 		DockingManager.display(outputDockable);
 		DockingManager.setFloatingEnabled(true);
@@ -346,7 +398,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 
 	}
 
-	public ActionListener getDefaultActionListener() {
+	public ScriptedActionListener getDefaultActionListener() {
 		return defaultActionListener;
 	}
 
@@ -354,7 +406,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 		framework.setConfigVar("gui.main.maximised", Boolean.toString((getExtendedState() & JFrame.MAXIMIZED_BOTH)!=0) );
 		framework.setConfigVar("gui.main.width", Integer.toString(getWidth()));
 		framework.setConfigVar("gui.main.height", Integer.toString(getHeight()));
-		
+
 		if (lastSavePath != null)
 			framework.setConfigVar("gui.main.lastSavePath", lastSavePath);
 		if (lastOpenPath != null)
@@ -403,8 +455,11 @@ public class MainWindow extends JFrame implements DockingConstants{
 		editorInFocus = sender;
 
 		toolboxView.setToolsForModel(editorInFocus.getModel());
-		framework.deleteJavaScriptProperty("_vmodel", framework.getJavaScriptGlobalScope());
-		framework.setJavaScriptProperty("_vmodel", sender.getModel(), framework.getJavaScriptGlobalScope(), true);
+		framework.deleteJavaScriptProperty("visualModel", framework.getJavaScriptGlobalScope());
+		framework.setJavaScriptProperty("visualModel", sender.getModel(), framework.getJavaScriptGlobalScope(), true);
+		
+		framework.deleteJavaScriptProperty("model", framework.getJavaScriptGlobalScope());
+		framework.setJavaScriptProperty("model", sender.getModel().getMathModel(), framework.getJavaScriptGlobalScope(), true);
 		
 		editorInFocus.requestFocusInWindow();
 	}
@@ -412,18 +467,18 @@ public class MainWindow extends JFrame implements DockingConstants{
 	public ToolboxWindow getToolboxWindow() {
 		return toolboxView;
 	}
-	
+
 	public void openWork() {
 		JFileChooser fc = new JFileChooser();
 		fc.setDialogType(JFileChooser.OPEN_DIALOG);
-		
+
 		if (lastOpenPath != null)
 			fc.setCurrentDirectory(new File(lastOpenPath));
-		
+
 		fc.setFileFilter(FileFilters.DOCUMENT_FILES);
 		fc.setMultiSelectionEnabled(true);
 		fc.setDialogTitle("Open work file(s))");
-		
+
 		if (fc.showDialog(this, "Open") == JFileChooser.APPROVE_OPTION) {
 			for (File f : fc.getSelectedFiles()) {
 				try {
@@ -448,7 +503,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 			framework.save(we.getModel(), we.getFile().getPath());
 			we.setUnsaved(false);
 			lastSavePath = we.getFile().getParent();	
-			
+
 		} catch (ModelSaveFailedException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Save error", JOptionPane.ERROR_MESSAGE);
 		}
@@ -475,7 +530,7 @@ public class MainWindow extends JFrame implements DockingConstants{
 
 		fc.setSelectedFile(new File(title));
 		fc.setFileFilter(FileFilters.DOCUMENT_FILES);
-		
+
 		if (lastSavePath != null)
 			fc.setCurrentDirectory(new File(lastSavePath));
 
@@ -515,6 +570,10 @@ public class MainWindow extends JFrame implements DockingConstants{
 
 	public PropertyView getPropertyView() {
 		return propertyView;
+	}
+
+	public Framework getFramework() {
+		return framework;
 	}
 
 }

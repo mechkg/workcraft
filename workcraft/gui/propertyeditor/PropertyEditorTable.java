@@ -20,6 +20,9 @@ public class PropertyEditorTable extends JTable implements PropertyEditor {
 
 		model = new PropertyEditorTableModel();
 		setModel(model);
+		
+		setTableHeader(null);
+
 
 		propertyClasses = new HashMap<Class<?>, PropertyClass>();
 		propertyClasses.put(int.class, new IntegerProperty());

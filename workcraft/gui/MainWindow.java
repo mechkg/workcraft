@@ -376,8 +376,9 @@ public class MainWindow extends JFrame {
 		EffectsManager.setPreview(new AlphaPreview(Color.BLACK, Color.GRAY, 0.5f));
 
 		workspaceWindow.startup();
-
+		
 		setVisible(true);
+		
 		loadDockingLayout();
 		DockableWindow.updateHeaders(rootDockingPort);
 

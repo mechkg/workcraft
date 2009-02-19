@@ -280,7 +280,6 @@ public class SelectionTool extends AbstractTool {
 				node.setY(node.getY()+dy);
 				node.firePropertyChanged("transform");
 			}
-
 		
 		model.fireLayoutChanged();
 	}

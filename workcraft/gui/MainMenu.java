@@ -11,6 +11,7 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 import org.workcraft.dom.visual.VisualModel;
+import org.workcraft.framework.Exporter;
 import org.workcraft.framework.Framework;
 import org.workcraft.framework.exceptions.OperationCancelledException;
 import org.workcraft.framework.exceptions.PluginInstantiationException;
@@ -26,15 +27,15 @@ public class MainMenu extends JMenuBar {
 	class LayoutAction extends ScriptedAction {
 		String layoutClassName;
 		String layoutText;
-		
+
 		public LayoutAction(Layout layout) {
 			layoutClassName = layout.getClass().getName();
 			layoutText = layout.getDisplayName();
 		}
-		
+
 		public String getScript() {
 			return "layout = framework.getPluginManager().getSingletonByName(\""+layoutClassName+"\");\n" +
-					"layout.doLayout(visualModel);";
+			"layout.doLayout(visualModel);";
 		}
 		public String getText() {
 			return layoutText;
@@ -43,7 +44,7 @@ public class MainMenu extends JMenuBar {
 	class ToggleWindowAction extends ScriptedAction {
 		private int windowID;
 		private String windowTitle;
-		
+
 		public ToggleWindowAction(DockableWindow window) {
 			windowID = window.getID();
 			windowTitle = window.getTitle();
@@ -55,8 +56,26 @@ public class MainMenu extends JMenuBar {
 			return windowTitle;
 		}
 	}
-	
+	class ExportAction extends ScriptedAction {
+		private String exporterClassName;
+		private String displayName;
+		
+		public ExportAction(Exporter exporter) {
+			exporterClassName = exporter.getClass().getName();
+			displayName = exporter.getDescription();
+		}
+
+		public String getScript() {
+			return "mainWindow.exportTo(\""+exporterClassName+"\");";
+		}
+
+		public String getText() {
+			return displayName;
+		}
+	}
+
 	private JMenu mnFile, mnEdit, mnView, mnTools = null, mnSettings, mnHelp, mnWindows;
+	private JMenu mnExport;
 	private JMenu mnLayout = null;
 
 	private MainWindow mainWindow;
@@ -117,13 +136,21 @@ public class MainMenu extends JMenuBar {
 		miSaveWorkspace.addScriptedActionListener(mainWindow.getDefaultActionListener());
 
 		ScriptedActionMenuItem miSaveWorkspaceAs = new ScriptedActionMenuItem(WorkspaceWindow.Actions.SAVE_WORKSPACE_AS_ACTION);
-		miSaveWorkspaceAs.addScriptedActionListener(mainWindow.getDefaultActionListener());		
+		miSaveWorkspaceAs.addScriptedActionListener(mainWindow.getDefaultActionListener());
+
+		ScriptedActionMenuItem miImport = new ScriptedActionMenuItem(MainWindow.Actions.IMPORT_ACTION);
+		miImport.addScriptedActionListener(mainWindow.getDefaultActionListener());		
+
+		mnExport = new JMenu("Export");
+		mnExport.setEnabled(false);
 
 		mnFile.add(miNewModel);
 		mnFile.add(miOpenModel);
 		mnFile.add(miSaveWork);
 		mnFile.add(miSaveWorkAs);
-
+		mnFile.addSeparator();
+		mnFile.add(miImport);
+		mnFile.add(mnExport);
 
 		mnFile.addSeparator();
 		mnFile.add(miSaveWorkspace);
@@ -157,15 +184,15 @@ public class MainMenu extends JMenuBar {
 
 		mnWindows = new JMenu();
 		mnWindows.setText("Windows");
-		
-	/*	ScriptedActionMenuItem miSaveLayout = new ScriptedActionMenuItem(MainWindow.Actions.SAVE_UI_LAYOUT);
+
+		/*	ScriptedActionMenuItem miSaveLayout = new ScriptedActionMenuItem(MainWindow.Actions.SAVE_UI_LAYOUT);
 		miSaveLayout.addScriptedActionListener(mainWindow.getDefaultActionListener());		
 		mnView.add(miSaveLayout);
 
 		ScriptedActionMenuItem miLoadLayout = new ScriptedActionMenuItem(MainWindow.Actions.LOAD_UI_LAYOUT);
 		miLoadLayout.addScriptedActionListener(mainWindow.getDefaultActionListener());		
 		mnView.add(miLoadLayout);*/
-		
+
 		mnView.add(mnWindows);
 		mnView.addSeparator();
 		mnView.add(mnLAF);
@@ -194,20 +221,27 @@ public class MainMenu extends JMenuBar {
 		add(mnSettings);
 		add(mnHelp);
 	}
-	
+
 	private void addLayout (Layout layout) {
 		if (mnLayout == null)
 			mnLayout = new JMenu("Layout");
-		
+
 		ScriptedActionMenuItem miLayoutMenuItem = new ScriptedActionMenuItem(new LayoutAction(layout));
 		miLayoutMenuItem.addScriptedActionListener(mainWindow.getDefaultActionListener());
 		mnLayout.add(miLayoutMenuItem);
+	}
+	
+	private void addExporter (Exporter exporter) {
+		ScriptedActionMenuItem miExport = new ScriptedActionMenuItem(new ExportAction(exporter));
+		miExport.addScriptedActionListener(mainWindow.getDefaultActionListener());
+		mnExport.add(miExport);
+		mnExport.setEnabled(true);
 	}
 
 	final public void setMenuForModel(VisualModel model) {
 		if (mnTools != null)
 			remove(mnTools);
-		
+
 		mnTools = null;
 		mnLayout = null;
 
@@ -221,26 +255,43 @@ public class MainMenu extends JMenuBar {
 		try {
 			for (PluginInfo info : layoutPluginInfo) {
 				Layout layout = (Layout)framework.getPluginManager().getSingleton(info);
-				
+
 				if (layout.isApplicableTo(model))
 					addLayout(layout);
 			}
 		} catch (PluginInstantiationException e) {
 			System.err.println ("Could not instantiate layout plugin class: " + e.getMessage() + " (skipped)");
 		}
-		
+
 		if (mnLayout != null)
 			mnTools.add(mnLayout);
 
-		
+
 		if (mnTools.getMenuComponentCount() > 0)
 			add(mnTools, getComponentIndex(mnSettings));
 		else
 			mnTools = null;
 
+		mnExport.removeAll();
+		mnExport.setEnabled(false);
+
+		PluginInfo[] exportPluginInfo = framework.getPluginManager().getPluginsByInterface(Exporter.class.getName());
+
+		try {
+			for (PluginInfo info : exportPluginInfo) {
+				Exporter exporter = (Exporter)framework.getPluginManager().getSingleton(info);
+
+				if (exporter.isApplicableTo(model))
+					addExporter(exporter);
+			}
+		}  catch (PluginInstantiationException e) {
+			System.err.println ("Could not instantiate export plugin class: " + e.getMessage() + " (skipped)");
+		}
+
+
 		doLayout();
 	}
-	
+
 	final public void registerUtilityWindow(DockableWindow window) {
 		ScriptedActionCheckBoxMenuItem miWindowItem = new ScriptedActionCheckBoxMenuItem(new ToggleWindowAction(window));
 		miWindowItem.addScriptedActionListener(mainWindow.getDefaultActionListener());
@@ -248,13 +299,13 @@ public class MainMenu extends JMenuBar {
 		windowItems.put (window.getID(), miWindowItem);
 		mnWindows.add(miWindowItem);
 	}
-	
+
 	final public void utilityWindowClosed (int ID) {
 		ScriptedActionCheckBoxMenuItem mi = windowItems.get(ID);
 		if (mi!=null)
 			mi.setSelected(false);
 	}
-	
+
 	final public void utilityWindowDisplayed (int ID) {
 		ScriptedActionCheckBoxMenuItem mi = windowItems.get(ID);
 		if (mi!=null)

@@ -21,30 +21,43 @@ public class STG extends PetriNet {
 		addComponentSupport(SignalTransition.class);
 		removeComponentSupport(Transition.class);
 	}
-	
+
 	public Set<SignalTransition>getSignalTransitions() {
 		HashSet<SignalTransition> ret = new HashSet<SignalTransition>();
-		
+
 		for (Transition t : getTransitions())
 			if (t instanceof SignalTransition)
 				ret.add((SignalTransition)t);
-		
+
 		return ret;
 	}
-	
+
 	public void assignInstances() {
-		HashMap<String, Integer> instanceCounter = new HashMap<String, Integer>();
-		
+		HashMap<String, InstanceCounter> instanceCounterMap = new HashMap<String, InstanceCounter>();
+
 		for (SignalTransition t : getSignalTransitions()) {
 			String signalName = t.getSignalName();
-			
-			Integer instance = instanceCounter.get(signalName);
-			if (instance == null)
-				instance = new Integer(1);
-			
-			t.setInstance(instance);
-			
-			instanceCounter.put(signalName, ++instance);
+
+			InstanceCounter instanceCounter = instanceCounterMap.get(signalName);
+
+			if (instanceCounter == null)
+				instanceCounter = new InstanceCounter();
+
+			switch (t.getDirection()) {
+			case PLUS:
+				t.setInstance(instanceCounter.plusCounter++);
+				break;
+			case MINUS:
+				t.setInstance(instanceCounter.minusCounter++);
+				break;
+			}
+
+			instanceCounterMap.put(signalName, instanceCounter);
 		}
 	}
+}
+
+class InstanceCounter {
+	public int plusCounter = 1;
+	public int minusCounter = 1;
 }

@@ -4,13 +4,17 @@ import java.awt.geom.Point2D;
 import java.util.HashSet;
 
 import org.w3c.dom.Element;
+import org.workcraft.dom.Component;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualConnection;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.dom.visual.VisualModelEventListener;
 import org.workcraft.dom.visual.VisualNode;
+import org.workcraft.framework.ComponentFactory;
 import org.workcraft.framework.exceptions.InvalidConnectionException;
+import org.workcraft.framework.exceptions.VisualComponentCreationException;
+import org.workcraft.framework.exceptions.VisualConnectionCreationException;
 import org.workcraft.framework.exceptions.VisualModelInstantiationException;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.VisualPetriNet;
@@ -126,23 +130,24 @@ public class VisualSTG extends VisualPetriNet  {
 				VisualPlace place = new VisualPlace(implicitPlace);
 				Point2D p = con.getPointOnConnection(0.5);
 				place.setX(p.getX()); place.setY(p.getY());
-				
+
 				VisualConnection con1 = new VisualConnection(con.getRefCon1(), con.getFirst(), place);
 				VisualConnection con2 = new VisualConnection(con.getRefCon2(), place, con.getSecond());
-				
+
 				addComponent(place);
 				addConnection(con1);
 				addConnection(con2);
 				group.add(place);
 				group.add(con1);
 				group.add(con2);
-				
+
 				removeVisualConnectionOnly(con);
-				
+
 				return super.connect(first, place);
 			}
 		}
-		
+
+
 		if (first instanceof ImplicitPlaceArc)
 			if (second instanceof VisualSignalTransition) {
 				ImplicitPlaceArc con = (ImplicitPlaceArc)first;
@@ -153,73 +158,89 @@ public class VisualSTG extends VisualPetriNet  {
 				VisualPlace place = new VisualPlace(implicitPlace);
 				Point2D p = con.getPointOnConnection(0.5);
 				place.setX(p.getX()); place.setY(p.getY());
-				
+
 				VisualConnection con1 = new VisualConnection(con.getRefCon1(), con.getFirst(), place);
 				VisualConnection con2 = new VisualConnection(con.getRefCon2(), place, con.getSecond());
-				
+
 				addComponent(place);
 				addConnection(con1);
 				addConnection(con2);
 				group.add(place);
 				group.add(con1);
 				group.add(con2);
-				
+
 				removeVisualConnectionOnly(con);
-				
+
 				return super.connect(place, second);
-				
 			}
-		
-		
-		
-		return super.connect(first, second);			
+
+		// do a default connection and check if it produced an implicit place
+
+		VisualConnection ret = super.connect(first, second);
+
+		VisualConnection implicit = null;
+
+		if (ret.getFirst() instanceof VisualPlace)
+			implicit = maybeMakeImplicit((VisualPlace)ret.getFirst());
+		else if (ret.getSecond() instanceof VisualPlace)
+			implicit = maybeMakeImplicit((VisualPlace)ret.getSecond());
+
+		if (implicit != null)
+			return implicit;
+		else
+			return ret;
 	}
 
 	private void removeVisualConnectionOnly(VisualConnection connection) {
 		connection.getFirst().removeConnection(connection);
 		connection.getSecond().removeConnection(connection);
-		
+
 		connection.getParent().remove(connection);
 		selection().remove(connection);
 		connection.removeListener(getPropertyChangeListener());
 	}
-	
+
 	private void removeVisualComponentOnly(VisualComponent component) {
 		component.getParent().remove(component);
 		selection().remove(component);
 		component.removeListener(getPropertyChangeListener());
 	}
-	
-	private void makeImplicit (VisualPlace place) {
+
+	private VisualConnection maybeMakeImplicit (VisualPlace place) {
+		if (place.getPreset().size() != 1 || place.getPostset().size() != 1)
+			return null; // not an implicit place
+
 		Connection refCon1 = null, refCon2 = null;
-		
+
 		VisualComponent first = place.getPreset().iterator().next();
 		VisualComponent second = place.getPostset().iterator().next();
 
-		
+
 		for (VisualConnection con:	place.getConnections()) {
 			if (con.getFirst() == place)
 				refCon1 = con.getReferencedConnection();
 			else if (con.getSecond() == place)
 				refCon2 = con.getReferencedConnection();
-			
+
 			removeVisualConnectionOnly(con);
 		}
-		
+
 		removeVisualComponentOnly(place);
-		
+
 		ImplicitPlaceArc con = new ImplicitPlaceArc(first, second, refCon1, refCon2, place.getReferencedPlace());
-		
+
 		VisualNode.getCommonParent(first, second).add(con);
 		addConnection(con);
+
+		return con;
 	}
-	
+
 	@Override
 	protected void removeConnection(VisualConnection connection) {
 		if (connection instanceof ImplicitPlaceArc) {
 			connection.getFirst().removeConnection(connection);
 			connection.getSecond().removeConnection(connection);
-			
+
 			getMathModel().removeConnection(((ImplicitPlaceArc) connection).getRefCon1());
 			getMathModel().removeConnection(((ImplicitPlaceArc) connection).getRefCon2());
 			getMathModel().removeComponent(((ImplicitPlaceArc) connection).getImplicitPlace());
@@ -228,31 +249,37 @@ public class VisualSTG extends VisualPetriNet  {
 			selection().remove(connection);
 
 			connection.removeListener(getPropertyChangeListener());
-			
+
 			fireConnectionRemoved(connection);		
-			
+
 		} else {
 			super.removeConnection(connection);
-			
+
 			VisualComponent c1 = connection.getFirst();
 			VisualComponent c2 = connection.getSecond();
 			VisualPlace place = null;
-			
+
 			if (c1 instanceof VisualPlace)
 				place = (VisualPlace)c1;
 			if (c2 instanceof VisualPlace)
 				place = (VisualPlace)c2;
-			
+
 			if (place!=null) 
-				if (place.getPreset().size() == 1 && place.getPostset().size() == 1)
-					makeImplicit (place);
+				maybeMakeImplicit (place);
 		}
 	}
-	
+
 	public VisualSTG(STG model) throws VisualModelInstantiationException {
 		super(model);
-		addListener(new Listener());		
+
+		for (VisualComponent c : getRoot().getComponents()) {
+			if (c instanceof VisualPlace)
+				maybeMakeImplicit((VisualPlace)c);
+		}
+
+
 	}
+
 
 	public VisualSTG(STG model, Element element) throws VisualModelInstantiationException {
 		super(model, element);

@@ -43,7 +43,7 @@ import org.workcraft.gui.edit.tools.GraphEditorTool;
 import org.workcraft.util.XmlUtil;
 
 public class VisualModel implements Plugin, Model {
-	
+
 	class VisualPropertyChangeListener implements PropertyChangeListener {
 		public void onPropertyChanged(String propertyName, Object sender) {
 			if (sender instanceof VisualComponent)
@@ -52,7 +52,7 @@ public class VisualModel implements Plugin, Model {
 				fireConnectionPropertyChanged(propertyName, (VisualConnection)sender);
 		}
 	}
-	
+
 	public class RenamedVisualReferenceResolver implements VisualReferenceResolver {
 		public VisualComponent getComponentByRefID(int ID) {
 			return VisualModel.this.getComponentByRefID(ID);
@@ -66,7 +66,7 @@ public class VisualModel implements Plugin, Model {
 			return mathModel.getReferenceResolver().getConnectionByID(ID);
 		}
 	}
-	
+
 	public class ModelListener implements MathModelListener {
 		public void onModelStructureChanged() {
 			fireLayoutChanged();
@@ -76,10 +76,10 @@ public class VisualModel implements Plugin, Model {
 				fireComponentPropertyChanged(propertyName, getComponentByRefID( ((Component)n).getID()));			
 		}
 	}
-	
+
 	private VisualPropertyChangeListener propertyChangeListener = new VisualPropertyChangeListener();
 	private RenamedVisualReferenceResolver referenceResolver = new RenamedVisualReferenceResolver();
-	
+
 	private MathModel mathModel;
 	private VisualGroup root;
 
@@ -103,38 +103,29 @@ public class VisualModel implements Plugin, Model {
 		});
 	}
 
+	protected final void createDefaultFlatStructure() throws VisualComponentCreationException, VisualConnectionCreationException {
+		for (Component component : mathModel.getComponents()) {
+			VisualComponent visualComponent;
+			visualComponent = ComponentFactory.createVisualComponent(component);
+			if (visualComponent != null) {
+				root.add(visualComponent);
+				addComponent(visualComponent);
+			}
+		}
+
+		for (Connection connection : mathModel.getConnections()) {
+			VisualConnection visualConnection = ConnectionFactory.createVisualConnection(connection, getReferenceResolver());
+			VisualNode.getCommonParent(visualConnection.getFirst(), visualConnection.getSecond()).add(visualConnection);
+			addConnection(visualConnection);
+		}
+	}
+
+
 	public VisualModel(MathModel model) throws VisualModelInstantiationException {
 		mathModel = model;
 		root = new VisualGroup();
 		currentLevel = root;
-
-		try {
-			// create a default flat structure
-			for (Component component : model.getComponents()) {
-				VisualComponent visualComponent;
-				visualComponent = ComponentFactory.createVisualComponent(component);
-				if (visualComponent != null) {
-					root.add(visualComponent);
-					addComponent(visualComponent);
-				}
-			}
-
-			for (Connection connection : model.getConnections()) {
-
-				VisualConnection visualConnection = ConnectionFactory.createVisualConnection(connection, getReferenceResolver());
-				if (visualConnection != null) {
-					root.add(visualConnection);
-					addConnection(visualConnection);
-				}
-			}
-		} catch (VisualComponentCreationException e) {
-			throw new VisualModelInstantiationException ("Failed to create visual component: " + e.getMessage());
-		} catch (VisualConnectionCreationException e) {
-			throw new VisualModelInstantiationException("Failed to create visual connection:" + e.getMessage());
-		}
-		
 		addXMLSerialisable();
-		
 		mathModel.addListener(mathModelListener);
 	}
 
@@ -149,9 +140,9 @@ public class VisualModel implements Plugin, Model {
 		} catch (PasteException e) {
 			throw new VisualModelInstantiationException(e);
 		}
-		
+
 		addXMLSerialisable();
-		
+
 		mathModel.addListener(mathModelListener);
 	}
 
@@ -224,20 +215,20 @@ public class VisualModel implements Plugin, Model {
 		for (VisualNode n : nodes)
 			referenceds.addAll(n.getReferences());
 	}
-	
+
 	public Rectangle2D getSelectionBoundingBox() {
 		Rectangle2D selectionBB = new Rectangle2D.Double();
-		
+
 		if (selection.isEmpty()) return selectionBB;
-		
+
 		selectionBB = selection.getFirst().getBoundingBoxInParentSpace();
-		
+
 		for (VisualNode vn: selection) {
 			Rectangle2D.union(selectionBB, vn.getBoundingBoxInParentSpace(), selectionBB);
 		}
 		return selectionBB;
 	}
-	
+
 	/*
 	 * Apply transformation to each node position, if possible
 	 * @author Stan
@@ -248,14 +239,14 @@ public class VisualModel implements Plugin, Model {
 		for (VisualNode node: nodes) {
 			if (node instanceof VisualGroup) {
 				//TODO: group rotate
-/*				VisualGroup vg=(VisualGroup)node;
+				/*				VisualGroup vg=(VisualGroup)node;
 				Point2D offset = new Point2D.Double(0,0);
 				AffineTransform gt = vg.getAncestorToParentTransform(vg.getParent());
 				gt.transform(offset, offset);
 				gt.
-				*/
+				 */
 				//.transform(pointInParentSpace, _tmpPoint)
-				
+
 			} else if (node instanceof VisualConnection) {
 				//TODO: any path point translations for connections
 			} else if (node instanceof VisualTransformableNode) {
@@ -267,12 +258,12 @@ public class VisualModel implements Plugin, Model {
 			}
 		}
 	}
-	
+
 	public void translateSelection(double tx, double ty) {
 		AffineTransform t = new AffineTransform();
-		
+
 		t.translate(tx, ty);
-		
+
 		Point2D np;
 		for (VisualNode node: selection) {
 			if (node instanceof VisualTransformableNode) {
@@ -284,33 +275,33 @@ public class VisualModel implements Plugin, Model {
 			}
 		}
 	}
-	
+
 	public void scaleSelection(double sx, double sy) {
 		Rectangle2D selectionBB = getSelectionBoundingBox();
 		// create rotation matrix
 		AffineTransform t = new AffineTransform();
-		
+
 		t.translate(selectionBB.getCenterX(), selectionBB.getCenterY());
 		t.scale(sx, sy);
 		t.translate(-selectionBB.getCenterX(), -selectionBB.getCenterY());
-		
+
 		// translate nodes by t
 		transformNodePosition(selection, t);
 	}
-	
+
 	public void rotateSelection(double theta) {
 		Rectangle2D selectionBB = getSelectionBoundingBox();
 		// create rotation matrix
 		AffineTransform t = new AffineTransform();
-		
+
 		t.translate(selectionBB.getCenterX(), selectionBB.getCenterY());
 		t.rotate(theta);
 		t.translate(-selectionBB.getCenterX(), -selectionBB.getCenterY());
-		
+
 		// translate nodes by t
 		transformNodePosition(selection, t);
 	}
-	
+
 	private void selectionToXML(Element xmlElement) {
 		Element mathElement = XmlUtil.createChildElement("model", xmlElement);
 		XmlUtil.writeStringAttr(mathElement, "class", getMathModel().getClass().getName());
@@ -446,17 +437,17 @@ public class VisualModel implements Plugin, Model {
 	public void validateConnection(VisualNode first, VisualNode second) throws InvalidConnectionException {
 		if (first instanceof VisualComponent && second instanceof VisualComponent) {
 			mathModel.validateConnection(new Connection (((VisualComponent)first).getReferencedComponent(),
-				((VisualComponent)second).getReferencedComponent()));
+					((VisualComponent)second).getReferencedComponent()));
 		}
 		else throw new InvalidConnectionException("Only connections between components are allowed"); 
 	}
 
 	public VisualConnection connect(VisualNode first, VisualNode second) throws InvalidConnectionException {
 		validateConnection(first, second);
-		
+
 		VisualComponent firstComponent = (VisualComponent)first;
 		VisualComponent secondComponent = (VisualComponent)second;
-		
+
 		Connection con = mathModel.connect(firstComponent.getReferencedComponent(), secondComponent.getReferencedComponent());
 		VisualConnection ret = new VisualConnection(con, firstComponent, secondComponent);
 
@@ -471,7 +462,7 @@ public class VisualModel implements Plugin, Model {
 	public final void addComponent(VisualComponent component) {
 		refIDToVisualComponentMap.put(component.getReferencedComponent().getID(), component);
 		component.addListener(propertyChangeListener);
-		
+
 		fireComponentAdded(component);
 	}
 
@@ -486,9 +477,9 @@ public class VisualModel implements Plugin, Model {
 
 		if (connection.getReferencedConnection() != null)
 			refIDToVisualConnectionMap.put(connection.getReferencedConnection().getID(), connection);
-		
+
 		connection.addListener(propertyChangeListener);
-		
+
 		fireConnectionAdded(connection);
 	}
 
@@ -496,7 +487,7 @@ public class VisualModel implements Plugin, Model {
 		for (VisualModelEventListener l : listeners)
 			l.onConnectionAdded(connection);
 	}
-	
+
 	public ArrayList<Class<? extends GraphEditorTool>> getAdditionalToolClasses() {
 		return new ArrayList<Class<? extends GraphEditorTool>>();				
 	}
@@ -600,7 +591,7 @@ public class VisualModel implements Plugin, Model {
 
 		component.removeListener(propertyChangeListener);
 		refIDToVisualComponentMap.remove(component.getReferencedComponent().getID());		
-		
+
 		fireComponentRemoved(component);
 	}
 
@@ -619,7 +610,7 @@ public class VisualModel implements Plugin, Model {
 
 		connection.removeListener(propertyChangeListener);
 		refIDToVisualConnectionMap.remove(connection.getReferencedConnection().getID());
-		
+
 		fireConnectionRemoved(connection);		
 	}
 
@@ -704,7 +695,7 @@ public class VisualModel implements Plugin, Model {
 		} catch (LoadFromXMLException e) {
 			throw new PasteException (e);
 		}
-		
+
 		return null;
 	}
 
@@ -722,8 +713,8 @@ public class VisualModel implements Plugin, Model {
 	public VisualComponent getComponentByRefID(Integer id) {
 		return refIDToVisualComponentMap.get(id);
 	}
-	
-	
+
+
 	private Point2D transformToCurrentSpace(Point2D pointInRootSpace)
 	{
 		if(currentLevel == root)

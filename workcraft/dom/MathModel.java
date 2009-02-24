@@ -29,7 +29,7 @@ public abstract class MathModel implements Plugin, Model {
 			return getConnectionByRenamedID(ID);
 		}
 	}
-	
+
 	private int componentIDCounter = 0;
 	private int connectionIDCounter = 0;;
 
@@ -41,7 +41,7 @@ public abstract class MathModel implements Plugin, Model {
 	private LinkedList<MathModelListener> listeners = new LinkedList<MathModelListener>();;
 
 	private HashSet<Class<? extends Component>> supportedComponents = new HashSet<Class<? extends Component>>();
-	
+
 	private XMLSerialisation serialisation = new XMLSerialisation();
 	private RenamedReferenceResolver referenceResolver = new RenamedReferenceResolver();
 
@@ -49,17 +49,23 @@ public abstract class MathModel implements Plugin, Model {
 
 	final public static void nodesToXML(Element parentElement,
 			Collection<? extends MathNode> nodes) {
-		for (MathNode n : nodes) {
-			Element element = null;
-			if (n instanceof Component)
-			 element = XmlUtil.createChildElement("component",
-					parentElement);
-			else if (n instanceof Connection)
-				 element = XmlUtil.createChildElement("connection",
-							parentElement);
-			element.setAttribute("class", n.getClass().getName());
-			n.serialiseToXML(element);
-		}
+		Element element;
+
+		for (MathNode n : nodes)
+			if (n instanceof Component) {
+				element = XmlUtil.createChildElement("component",
+						parentElement);
+				element.setAttribute("class", n.getClass().getName());				
+				n.serialiseToXML(element);
+			}
+
+		for (MathNode n : nodes) 
+			if (n instanceof Connection) {
+				element = XmlUtil.createChildElement("connection",
+						parentElement);
+				element.setAttribute("class", n.getClass().getName());
+				n.serialiseToXML(element);
+			}
 	}
 
 	private void addSerialisationObjects() {
@@ -73,7 +79,7 @@ public abstract class MathModel implements Plugin, Model {
 				nodesToXML(element, connections.values());
 			}
 		});
-		
+
 		serialisation.addDeserialiser(new XMLDeserialiser() {
 			public String getTagName() {
 				return MathModel.class.getSimpleName();
@@ -88,7 +94,7 @@ public abstract class MathModel implements Plugin, Model {
 	public MathModel() {
 		addSerialisationObjects();
 	}
-	
+
 	abstract protected void onComponentAdded(Component component);
 
 	abstract protected void onComponentRemoved(Component component);
@@ -96,18 +102,18 @@ public abstract class MathModel implements Plugin, Model {
 	abstract protected void onConnectionAdded(Connection connection);
 
 	abstract protected void onConnectionRemoved(Connection connection);
-	
+
 	final public int addComponent(Component component) {
 		component.setID(getNextComponentID());
 		components.put(component.getID(), component);
-		
+
 		onComponentAdded(component);
-		
+
 		return component.getID();
 	}
 
 	final public int addConnection(Connection connection)
-			throws InvalidConnectionException {
+	throws InvalidConnectionException {
 		// first validate that this connection is allowed, e.g. disallow user
 		// to connect Petri net place to another Petri net place
 		validateConnection(connection);
@@ -119,7 +125,7 @@ public abstract class MathModel implements Plugin, Model {
 
 		connection.setID(getNextConnectionID());
 		connections.put(connection.getID(), connection);
-		
+
 		onConnectionAdded(connection);
 
 		return connection.getID();
@@ -132,22 +138,22 @@ public abstract class MathModel implements Plugin, Model {
 	final public void addComponentSupport(Class<? extends Component> componentClass) {
 		supportedComponents.add(componentClass);
 	}
-	
+
 	final public void removeComponentSupport(Class<? extends Component> componentClass) {
 		supportedComponents.remove(componentClass);
 	}
-	
+
 	final public boolean isComponentSupported(Component component) {
 		return supportedComponents.contains(component.getClass());
 	}
 
 	public final Connection connect(Component first, Component second)
-			throws InvalidConnectionException {
+	throws InvalidConnectionException {
 		return createConnection(first, second);
 	}
 
 	public Connection createConnection(Component first, Component second)
-			throws InvalidConnectionException {
+	throws InvalidConnectionException {
 		Connection con = new Connection(first, second);
 		addConnection(con);
 		return con;
@@ -226,7 +232,7 @@ public abstract class MathModel implements Plugin, Model {
 	}
 
 	final public void pasteFromXML(Element modelElement)
-			throws LoadFromXMLException {
+	throws LoadFromXMLException {
 		componentRenames.clear();
 		connectionRenames.clear();
 
@@ -236,7 +242,7 @@ public abstract class MathModel implements Plugin, Model {
 
 			for (Element e : componentNodes) {
 				Component component = ComponentFactory.createComponent(e);
-				
+
 				if (!isComponentSupported(component))
 					throw new InvalidComponentException("Unsupported component: " + component.getClass().getName());
 
@@ -302,16 +308,16 @@ public abstract class MathModel implements Plugin, Model {
 	final public void setTitle(String title) {
 		this.title = title;
 	}
-	
+
 	abstract public void validate() throws ModelValidationException;
 
 	abstract public void validateConnection(Connection connection)
-			throws InvalidConnectionException;
+	throws InvalidConnectionException;
 
 	public final void addXMLSerialiser(XMLSerialiser serialiser) {
 		serialisation.addSerialiser(serialiser);
 	}
-	
+
 	public final void addXMLDeserialiser(XMLDeserialiser deserialiser) {
 		serialisation.addDeserialiser(deserialiser);
 	}
@@ -319,7 +325,7 @@ public abstract class MathModel implements Plugin, Model {
 	public final void serialiseToXML(Element componentElement) {
 		serialisation.serialise(componentElement);
 	}
-	
+
 	public final void deserialiseFromXML(Element modelElement) throws LoadFromXMLException {
 		serialisation.deserialise(modelElement);
 	}
@@ -327,5 +333,5 @@ public abstract class MathModel implements Plugin, Model {
 	public RenamedReferenceResolver getReferenceResolver() {
 		return referenceResolver;
 	}
-	
+
 }

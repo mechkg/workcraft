@@ -82,6 +82,7 @@ public class ToolboxWindow extends JPanel implements ToolProvider, GraphEditorKe
 		button.setSelected(selected);
 		button.setFont(button.getFont().deriveFont(9.0f));
 		button.setToolTipText(tool.getName());
+	
 		
 		int hotKeyCode = tool.getHotKeyCode(); 
 		if ( hotKeyCode != -1)
@@ -117,6 +118,9 @@ public class ToolboxWindow extends JPanel implements ToolProvider, GraphEditorKe
 		}
 
 		this.add(button);
+		
+		if (selected)
+			selectTool(tool);
 	}
 	
 	private void clearTrackers() {

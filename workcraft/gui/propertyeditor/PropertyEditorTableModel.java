@@ -91,24 +91,10 @@ public class PropertyEditorTableModel extends AbstractTableModel {
 			PropertyDescriptor desc = declarations[row]; 
 			
 			if (rowClasses[row] != null)
-				desc.setValue(object, rowClasses[row].fromCellEditorValue(value));
-			else {
-				Class<?> type = desc.getType();
-				
-				if (!type.isPrimitive())
-					desc.setValue(object, type.cast(value));
-				else {
-					if (type.equals(double.class)) {
-						Double boxedValue = (Double)value; 
-						double unboxedValue = boxedValue.doubleValue();
-						desc.setValue(object, unboxedValue);												
-					} else if (type.equals(int.class)) {
-						Integer boxedValue = (Integer)value; 
-						int unboxedValue = boxedValue.intValue();
-						desc.setValue(object, unboxedValue);												
-					} else throw new RuntimeException ("");
-				}
-			}
+				value = rowClasses[row].fromCellEditorValue(value);
+			
+			desc.setValue(object, value);
+			
 			object.firePropertyChanged(desc.getName());
 		} catch (Throwable e) {
 			e.printStackTrace();

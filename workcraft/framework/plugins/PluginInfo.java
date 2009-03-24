@@ -93,6 +93,13 @@ public class PluginInfo implements Comparable<PluginInfo> {
 	public String[] getInterfaces() {
 		return interfaceNames.clone();
 	}
+	
+	public boolean isInterfaceImplemented(String interfaceClassName) {
+		for (String s : interfaceNames)
+			if (s.equals(interfaceClassName))
+				return true;
+		return false;
+	}
 
 	public String[] getSuperclasses() {
 		return superclassNames.clone();

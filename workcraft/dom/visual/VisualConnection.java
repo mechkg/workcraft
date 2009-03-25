@@ -44,11 +44,50 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 
 		public void addAnchorPoint(Point2D pt);
 		public Rectangle2D getBoundingBox();
+
+		public VisualConnectionAnchorPoint[] getAnchorPointComponents();
 	}
 
 	class Polyline implements ConnectionImplementation {
-		private ArrayList<Point2D> anchorPoints = new ArrayList<Point2D>();
-		
+				
+		class PolylineAnchorPoint extends VisualConnectionAnchorPoint { 
+			private int index;
+			private double size = 0.25;
+			private Color fillColor = Color.BLUE.darker();
+
+			Shape shape = new Rectangle2D.Double(
+					-size / 2,
+					-size / 2,
+					size,
+					size);
+
+			public PolylineAnchorPoint(int index) {
+				this.index = index;
+			}
+
+			public Rectangle2D getBoundingBoxInLocalSpace() {
+				return new Rectangle2D.Double(-size/2, -size/2, size, size);
+			}
+
+			public int hitTestInLocalSpace(Point2D pointInLocalSpace) {
+				if (getBoundingBoxInLocalSpace().contains(pointInLocalSpace))
+					return 1;
+				else
+					return 0;
+			}
+
+			@Override
+			protected void drawInLocalSpace(Graphics2D g) {
+				g.setColor(Coloriser.colorise(fillColor, getColorisation()));
+				g.fill(shape);
+			}
+
+			public int getIndex() {
+				return index;
+			}
+		}
+
+		private ArrayList<PolylineAnchorPoint> anchorPoints = new ArrayList<PolylineAnchorPoint>();
 		
 		private double[] polylineSegmentLengthsSq;
 		private double polylineLengthSq;
@@ -60,7 +99,7 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 		public void draw(Graphics2D g) {
 			Path2D connectionPath = new Path2D.Double();
 			connectionPath.moveTo(firstCenter.getX(), firstCenter.getY());
-			for (Point2D pt : anchorPoints) {
+			for (PolylineAnchorPoint pt : anchorPoints) {
 				connectionPath.lineTo(pt.getX(), pt.getY());				
 			}
 			connectionPath.lineTo(secondCenter.getX(), secondCenter.getY());
@@ -116,14 +155,14 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 			getNearestSegment(pt, result);
 			return result;
 		}
-		
+
 		private int getNearestSegment (Point2D pt, Point2D pointOnSegment) {
 			double min = Double.MAX_VALUE;
 			int nearest = -1;
 
 			for (int i=0; i<getSegmentCount(); i++) {
 				Line2D segment = getSegment(i);
-				
+
 				Point2D a = new Point2D.Double ( pt.getX() - segment.getX1(), pt.getY() - segment.getY1() );
 				Point2D b = new Point2D.Double ( segment.getX2() - segment.getX1(), segment.getY2() - segment.getY1() );
 
@@ -131,7 +170,7 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 				b.setLocation(b.getX() / magB, b.getY() / magB);
 
 				double magAonB = a.getX() * b.getX() + a.getY() * b.getY();
-				
+
 				if (magAonB < 0)
 					magAonB = 0;
 				if (magAonB > magB)
@@ -140,7 +179,7 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 				a.setLocation(segment.getX1() + b.getX() * magAonB, segment.getY1() + b.getY() * magAonB);
 
 				double dist = new Point2D.Double(pt.getX() - a.getX(), pt.getY() - a.getY()).distance(0,0);
-				
+
 				if (dist < min) {
 					min = dist;
 					if (pointOnSegment != null)
@@ -156,12 +195,12 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 			return anchorPoints.size() + 1;		
 		}
 
-		private Point2D getAnchorPoint(int index) {
+		private Point2D getAnchorPointLocation(int index) {
 			if (index == 0)
 				return firstCenter;
 			if (index > anchorPoints.size())
 				return secondCenter;
-			return anchorPoints.get(index-1);
+			return anchorPoints.get(index-1).getPosition();
 		}
 
 		private Line2D getSegment(int index) {
@@ -170,7 +209,7 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 			if (index > segments-1)
 				throw new RuntimeException ("Segment index is greater than number of segments");
 
-			return new Line2D.Double(getAnchorPoint(index), getAnchorPoint(index+1));
+			return new Line2D.Double(getAnchorPointLocation(index), getAnchorPointLocation(index+1));
 		}
 
 		private Rectangle2D getSegmentBoundsWithThreshold (Line2D segment) {
@@ -199,12 +238,29 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 			Point2D pointOnConnection = new Point2D.Double();
 			int nearestSegment = getNearestSegment(userLocation, pointOnConnection);
 			
+			PolylineAnchorPoint ap = new PolylineAnchorPoint(nearestSegment);
+			ap.addListener(new PropertyChangeListener() {
+				public void onPropertyChanged(String propertyName, Object sender) {
+					VisualConnection.this.update();
+				}
+			});
+			
+			ap.setPosition(pointOnConnection);
+
 			if (anchorPoints.size() == 0)
-				anchorPoints.add(pointOnConnection);
-			
-			anchorPoints.add(nearestSegment, pointOnConnection);
-			
-			update();
+				anchorPoints.add(ap);
+			else
+				anchorPoints.add(nearestSegment, ap);
+
+			VisualConnection.this.update();
+
+			firePropertyChanged("anchors");
+		}
+
+		public void removeAnchorPoint (int index) {
+			anchorPoints.remove(index);
+			VisualConnection.this.update();
+			firePropertyChanged("anchors");
 		}
 
 		public double getDistanceToConnection(Point2D pt) {
@@ -216,6 +272,10 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 					min = dist;
 			}
 			return min;
+		}
+
+		public VisualConnectionAnchorPoint[] getAnchorPointComponents() {
+			return anchorPoints.toArray(new VisualConnectionAnchorPoint[0]);
 		}
 	}
 
@@ -242,9 +302,6 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 	private double lineWidth = defaultLineWidth;
 	private double arrowWidth = defaultArrowWidth;
 	private double arrowLength = defaultArrowLength;
-	
-	
-	private Point2D uberPt = new Point2D.Double();
 
 	protected void initialise() {
 		first.addListener(this);
@@ -362,11 +419,11 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 	public Point2D getPointOnConnection(double t) {
 		return impl.getPointOnConnection(t);
 	}
-	
+
 	public Point2D getNearestPointOnConnection(Point2D pt) {
 		return impl.getNearestPointOnConnection(pt);
 	}
-	
+
 	public void addAnchorPoint (Point2D userPoint) {
 		impl.addAnchorPoint(userPoint);
 	}
@@ -459,11 +516,6 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 		Shape transformedArrowBounds = arrowTransform.createTransformedShape(arrowBounds);
 
 		impl.draw(g);
-		
-		Shape uberShape = new Ellipse2D.Double(uberPt.getX() - 0.1, uberPt.getY() - 0.1, 0.2, 0.2);
-		
-		
-		g.draw(uberShape);
 
 		/*Shape clip = g.getClip();
 
@@ -484,8 +536,6 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 		return refConnection;
 	}
 	public double distanceToConnection (Point2D pointInParentSpace) {
-		uberPt = impl.getNearestPointOnConnection(pointInParentSpace);
-				
 		return impl.getDistanceToConnection(pointInParentSpace);
 	}
 
@@ -524,5 +574,9 @@ public class VisualConnection extends VisualNode implements PropertyChangeListen
 		Set<MathNode> ret = new HashSet<MathNode>();
 		ret.add(getReferencedConnection());
 		return ret;
+	}
+
+	public VisualConnectionAnchorPoint[] getAnchorPointComponents() {
+		return impl.getAnchorPointComponents();
 	}
 }

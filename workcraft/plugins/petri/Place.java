@@ -41,7 +41,7 @@ public class Place extends Component {
 				return Place.class.getSimpleName();
 			}
 			public void serialise(Element element) {
-				XmlUtil.writeIntAttr(element, "tokens", tokens);				
+				XmlUtil.writeIntAttr(element, "tokens", tokens);			
 			}
 		});
 	}

@@ -50,6 +50,11 @@ public class ImplicitPlaceArc extends VisualConnection {
 		});
 	}
 	
+	@Override
+	public boolean isReferring(int ID) {
+		return refCon1.getID()==ID||refCon2.getID()==ID;
+	}
+	
 	private void addPropertyDeclarations() {
 		addPropertyDeclaration(new PropertyDeclaration ("Tokens", "getTokens", "setTokens", int.class));
 		
@@ -75,26 +80,34 @@ public class ImplicitPlaceArc extends VisualConnection {
 		this.refCon1 = refCon1;
 		this.refCon2 = refCon2;
 		this.implicitPlace = implicitPlace;
-
+		
 		addPropertyDeclarations();
 		addXMLSerialiser();
 	}
+
+	
 	
 	public ImplicitPlaceArc(Element xmlElement, VisualReferenceResolver referenceResolver) {
 		super();
 		
+		Element element2 = XmlUtil.getChildElement(VisualConnection.class.getSimpleName(), xmlElement);
+		int ID = XmlUtil.readIntAttr(element2, "ID", -1);
+		setID(ID);
+		
+		int firstID = XmlUtil.readIntAttr(element2, "first", -1);
+		int secondID = XmlUtil.readIntAttr(element2, "second", -1);
+		
+		first = referenceResolver.getVisualComponentByID(firstID);
+		second = referenceResolver.getVisualComponentByID(secondID);
+
 		Element element = XmlUtil.getChildElement(ImplicitPlaceArc.class.getSimpleName(), xmlElement);
 		
 		implicitPlace = (Place)referenceResolver.getComponentByID(XmlUtil.readIntAttr(element, "placeRef", -1));
 		refCon1 = referenceResolver.getConnectionByID(XmlUtil.readIntAttr(element, "refCon1", -1));
 		refCon2 = referenceResolver.getConnectionByID(XmlUtil.readIntAttr(element, "refCon2", -1));
 		
-		first = referenceResolver.getComponentByRefID(refCon1.getFirst().getID());
-		second = referenceResolver.getComponentByRefID(refCon2.getSecond().getID());
-
-		
 		readXMLConnectionProperties(element);
-		
+
 		addPropertyDeclarations();
 		addXMLSerialiser();
 		

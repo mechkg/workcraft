@@ -463,7 +463,29 @@ public class VisualModel implements Plugin, Model {
 		Element visualElement = XmlUtil.createChildElement("visual-model", xmlElement);
 
 		HashSet<MathNode> references = new HashSet<MathNode>();
+		
+		LinkedList <VisualNode> unselect = new LinkedList<VisualNode>();
+		
+		// remove partial connections from selection
+		for (VisualNode vn : selection) {
+			if (vn instanceof VisualConnection) {
+				VisualConnection vc = (VisualConnection)vn;
+				if (!selection.contains(vc.getFirst())||!selection.contains(vc.getSecond())) {
+					unselect.add(vn);
+				}
+			}
+		}
+		
+		for (VisualNode vn : unselect) {
+			removeFromSelection(vn);
+			vn.clearColorisation();
+		}
+		
+		if (!unselect.isEmpty()) {
+			fireSelectionChanged();
+		}		
 
+		
 		gatherReferences (selection, references);
 
 		nodesToXML(visualElement, selection);

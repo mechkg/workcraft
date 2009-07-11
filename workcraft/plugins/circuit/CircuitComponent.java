@@ -1,15 +1,23 @@
 package org.workcraft.plugins.circuit;
 
+import java.util.HashSet;
+
 import org.w3c.dom.Element;
 import org.workcraft.dom.Component;
 import org.workcraft.dom.DisplayName;
 import org.workcraft.dom.VisualClass;
 import org.workcraft.dom.XMLSerialiser;
+import org.workcraft.plugins.circuit.Contact.IOType;
 
 @DisplayName("Component")
 @VisualClass("org.workcraft.plugins.circuit.VisualCircuitComponent")
 
 public class CircuitComponent extends Component {
+	
+	private HashSet<Contact> inputs = new HashSet<Contact>();
+	private HashSet<Contact> outputs = new HashSet<Contact>();
+	
+	
 	public CircuitComponent(Element xmlElement) {
 		super(xmlElement);
 		addXMLSerialisable();
@@ -18,9 +26,22 @@ public class CircuitComponent extends Component {
 	public CircuitComponent() {
 		super();
 		
+		
 		addXMLSerialisable();
 	}
+	
+	public Contact addInput(String label) {
+		Contact c = new Contact(label, IOType.input);
+		inputs.add(c);
+		return c;
+	}
 
+	public Contact addOutput(String label) {
+		Contact c = new Contact(label, IOType.output);
+		outputs.add(c);
+		return c;
+	}
+	
 //	public int getTokens() {
 //		return tokens;
 //	}
@@ -36,7 +57,7 @@ public class CircuitComponent extends Component {
 			}
 			public void serialise(Element element) {
 				
-//				XmlUtil.writeIntAttr(element, "tokens", tokens);			
+//				XmlUtil.writeIntAttr(element, "tokens", tokens);
 			}
 		});
 	}

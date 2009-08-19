@@ -15,6 +15,7 @@ import javax.swing.JPopupMenu;
 
 import org.w3c.dom.Element;
 import org.workcraft.dom.visual.PopupMenuBuilder;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.framework.plugins.HotKeyDeclaration;
 import org.workcraft.gui.Coloriser;
@@ -231,24 +232,19 @@ public class VisualPlace extends VisualComponent {
 
 	public Rectangle2D getBoundingBoxInLocalSpace() {
 		double size = CommonVisualSettings.getSize();
-		return new Rectangle2D.Double(-size/2, -size/2, size, size);	}
+		return new Rectangle2D.Double(-size/2, -size/2, size, size);	
+		}
 
 
-	public int hitTestInLocalSpace(Point2D pointInLocalSpace) {
+	public Touchable hitTestInLocalSpace(Point2D pointInLocalSpace) {
 		double size = CommonVisualSettings.getSize();
 		
 		if (pointInLocalSpace.distanceSq(0, 0) < size*size/4)
-			return 1;
+			return this;
 		else
-			return 0;
+			return null;
 	}
 
-	public Rectangle2D getBoundingBox() {
-		double size = CommonVisualSettings.getSize();
-		
-		return new Rectangle2D.Double(-size/2, -size/2, size, size);
-	}
-	
 	public Place getReferencedPlace() {
 		return (Place)getReferencedComponent();
 	}

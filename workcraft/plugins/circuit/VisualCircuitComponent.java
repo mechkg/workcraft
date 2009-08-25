@@ -7,7 +7,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashSet;
 
-import org.w3c.dom.Element;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.shared.CommonVisualSettings;
@@ -29,11 +28,6 @@ public class VisualCircuitComponent extends VisualComponent {
 
 	}
 
-	public VisualCircuitComponent(CircuitComponent component, Element xmlElement) {
-		super(component, xmlElement);
-	}
-
-	
 	protected Rectangle2D getContactLabelBB(Graphics2D g) {
 		double maxi, maxo;
 		double ysumi, ysumo;

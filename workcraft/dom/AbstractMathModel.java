@@ -37,6 +37,7 @@ public abstract class AbstractMathModel implements Plugin, XMLSerialisable, Math
 	private XMLSerialisation serialisation = new XMLSerialisation();
 
 	private String title = "";
+
 	
 	private Group root = new Group();
 	
@@ -297,6 +298,13 @@ public abstract class AbstractMathModel implements Plugin, XMLSerialisable, Math
 	final public String getTitle() {
 		return title;
 	}
+	
+	public String getReference() {
+		return "#mathModel";		
+	}
+	
+	public void setReference(String reference) {
+	}
 
 	/**
 	 * @see org.workcraft.dom.Model#getVisualModel()
@@ -382,13 +390,18 @@ public abstract class AbstractMathModel implements Plugin, XMLSerialisable, Math
 	public final void deserialise(Element modelElement, ReferenceResolver refResolver) throws DeserialisationException {
 		serialisation.deserialise(modelElement, refResolver);
 	}
-	/* (non-Javadoc)
-	 * @see org.workcraft.dom.Kojo#getRoot()
-	 */
-	public Group getRoot() {
+
+	public final Group getRoot() {
 		return root;	
 	}
-
+	
+	public final void setRoot(HierarchyNode root) {
+		if (root instanceof Group) 
+		{
+			this.root = (Group)root;
+		} else
+			throw new RuntimeException("The root node of a math model must be a group.");
+	}
 
 	public ReferenceProducer getReferenceProducer() {
 		return new ReferenceProducer() {

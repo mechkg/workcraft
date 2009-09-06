@@ -31,7 +31,10 @@ import org.workcraft.framework.exceptions.InvalidConnectionException;
 import org.workcraft.framework.exceptions.NodeCreationException;
 import org.workcraft.framework.exceptions.NotAnAncestorException;
 import org.workcraft.framework.exceptions.PasteException;
+import org.workcraft.framework.observation.ObservableStateImpl;
 import org.workcraft.framework.observation.SelectionChangeEvent;
+import org.workcraft.framework.observation.StateEvent;
+import org.workcraft.framework.observation.StateObserver;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.util.XmlUtil;
 
@@ -39,7 +42,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	private Model mathModel;
 	private VisualGroup currentLevel;
 	private Set<Node> selection = new HashSet<Node>();
-	private TransformEventPropagator eventPropagator = new TransformEventPropagator();
+	private ObservableStateImpl observableState = new ObservableStateImpl();
 
 	public AbstractVisualModel(VisualGroup root) {
 		this (null, root);
@@ -57,17 +60,19 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		super(root);
 		this.mathModel = mathModel;
 		currentLevel = root;
-		eventPropagator.attach(root);
+
+		new TransformEventPropagator().attach(root);
+		new RemovedNodeDeselector(this).attach(root);
 	}
 
 	protected final void createDefaultFlatStructure() throws NodeCreationException {
 		HashMap <MathNode, VisualComponent> createdNodes = new HashMap <MathNode, VisualComponent>();
 		HashMap <VisualConnection, MathConnection> createdConnections = new	HashMap <VisualConnection, MathConnection>();
-		
+
 		for (Node n : mathModel.getRoot().getChildren()) {
 			if (n instanceof MathConnection) {
 				MathConnection connection = (MathConnection)n;
-				
+
 				// Will create incomplete instance, setConnection() needs to be called later to finalise.
 				// This is to avoid cross-reference problems.
 				VisualConnection visualConnection = NodeFactory.createVisualConnection(connection);
@@ -89,7 +94,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 					createdNodes.get(mc.getSecond()), mc);
 		}
 	}
-	
+
 	private static Rectangle2D bbUnion(Rectangle2D bb1, Rectangle2D bb2)
 	{
 		if(bb1 == null)
@@ -167,9 +172,9 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	public Set<Node> selection() {
 		return selection;
 	}
-	
+
 	private void notifySelectionChanged() {
-		notify(new SelectionChangeEvent(this));	
+		sendNotification(new SelectionChangeEvent(this));	
 	}
 
 	/**
@@ -188,7 +193,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	public void selectNone() {
 		if (!selection.isEmpty()) {
 			selection.clear();
-			
+
 			notifySelectionChanged();
 		}
 	}
@@ -202,28 +207,31 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		for (Node node : nodes)
 			validateSelection(node);
 	}
-	
+
 	public boolean isSelected(Node node) {
 		return selection.contains(node);
 	}
-	
+
 	public void select(Collection<Node> nodes) {
 		if (nodes.isEmpty()) {
 			selectNone();
 			return;
 		}
-		
+
 		validateSelection(nodes);
 
 		selection.clear();
 		selection.addAll(nodes);
-		
+
 		notifySelectionChanged();
 	}
 
 	public void select(Node node) {
+		if (selection.contains(node) && selection.size() == 1)
+			return;
+
 		validateSelection(node);
-		
+
 		selection.clear();
 		selection.add(node);
 
@@ -231,29 +239,40 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	}
 
 	public void addToSelection(Node node) {
+		if (selection.contains(node))
+			return;
+
 		validateSelection(node);
 		selection.add(node);
-		
+
 		notifySelectionChanged();
 	}
 
 	public void addToSelection(Collection<Node> nodes) {
 		validateSelection(nodes);
+
+		int sizeBefore = selection.size();
+
 		selection.addAll(nodes);
-		
-		notifySelectionChanged();
+
+		if (sizeBefore != selection.size())
+			notifySelectionChanged();
 	}
 
 	public void removeFromSelection(Node node) {
-		selection.remove(node);
+		if (selection.contains(node))
+			selection.remove(node);
 
 		notifySelectionChanged();
 	}
-	
+
 	public void removeFromSelection(Collection<Node> nodes) {
+		int sizeBefore = selection.size();
+
 		selection.removeAll(nodes);
 
-		notifySelectionChanged();
+		if (sizeBefore != selection.size())
+			notifySelectionChanged();
 	}
 
 	public Model getMathModel() {
@@ -324,15 +343,15 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		Collection<Node> selected = getGroupableSelection();
 		if(selected.size() <= 1)
 			return;
-		
+
 		VisualGroup group = new VisualGroup();
-		
+
 		currentLevel.add(group);
 
 		currentLevel.reparent(selected, group);
 
 		ArrayList<Node> connectionsToGroup = new ArrayList<Node>();
-		
+
 		for(VisualConnection connection : Hierarchy.getChildrenOfType(currentLevel, VisualConnection.class))
 		{
 			if(connection.getFirst().isDescendantOf(group) && 
@@ -340,9 +359,9 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 				connectionsToGroup.add(connection);
 			}
 		}
-		
+
 		currentLevel.reparent(connectionsToGroup, group);
-		
+
 		select(group);
 	}
 
@@ -365,11 +384,11 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 			else
 				toSelect.add(node);
 		}
-		
+
 		select(toSelect);
 	}
 
-/*protected void removeGroup(VisualGroup group) {
+	/*protected void removeGroup(VisualGroup group) {
 		removeNodes(group.getChildren());
 
 		((Container)group.getParent()).remove(group);
@@ -474,6 +493,18 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		selectionRect.setRect(min.getX(), min.getY(), max.getX()-min.getX(), max.getY()-min.getY());
 
 		return currentLevel.hitObjects(selectionRect);
+	}
+
+	public void addObserver(StateObserver obs) {
+		observableState.addObserver(obs);
+	}
+
+	public void removeObserver(StateObserver obs) {
+		observableState.removeObserver(obs);
+	}
+
+	public void sendNotification(StateEvent e) {
+		observableState.sendNotification(e);
 	}
 
 }

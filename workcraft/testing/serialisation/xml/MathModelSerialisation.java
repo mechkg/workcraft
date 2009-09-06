@@ -34,6 +34,8 @@ public class MathModelSerialisation {
 
 			DataAccumulator accum = new DataAccumulator();
 			serialiser.export(stg, accum, null);
+			
+			System.out.println (new String(accum.getData()));
 
 			// deserialise
 			XMLDeserialiser deserisaliser = new XMLDeserialiser();

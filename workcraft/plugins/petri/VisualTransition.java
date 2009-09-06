@@ -7,12 +7,14 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+import org.workcraft.dom.DisplayName;
 import org.workcraft.dom.visual.VisualComponent;
-import org.workcraft.framework.plugins.HotKeyDeclaration;
+import org.workcraft.framework.plugins.Hotkey;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
-@HotKeyDeclaration(KeyEvent.VK_T)
+@Hotkey(KeyEvent.VK_T)
+@DisplayName ("Transition")
 public class VisualTransition extends VisualComponent {
 
 	public VisualTransition(Transition transition) {
@@ -23,14 +25,6 @@ public class VisualTransition extends VisualComponent {
 		return (Transition)getReferencedComponent();
 	}
 	
-	public boolean isEnabled() {
-		return getTransition().isEnabled();
-	}
-	
-	public void fire() {
-		getTransition().fire();
-	}
-
 	@Override
 	public void draw(Graphics2D g) {
 		drawLabelInLocalSpace(g);

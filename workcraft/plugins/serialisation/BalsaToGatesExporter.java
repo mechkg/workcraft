@@ -7,16 +7,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.workcraft.dom.Model;
-import org.workcraft.framework.exceptions.DeserialisationException;
-import org.workcraft.framework.exceptions.ModelValidationException;
-import org.workcraft.framework.exceptions.SerialisationException;
-import org.workcraft.framework.interop.SynchronousExternalProcess;
-import org.workcraft.framework.serialisation.Exporter;
-import org.workcraft.framework.util.Export;
-import org.workcraft.framework.util.Import;
+import org.workcraft.exceptions.DeserialisationException;
+import org.workcraft.exceptions.ModelValidationException;
+import org.workcraft.exceptions.SerialisationException;
+import org.workcraft.interop.SynchronousExternalProcess;
 import org.workcraft.plugins.balsa.BalsaCircuit;
 import org.workcraft.plugins.layout.PetriNetToolsSettings;
+import org.workcraft.serialisation.Exporter;
 import org.workcraft.util.DummyRenamer;
+import org.workcraft.util.Export;
+import org.workcraft.util.FileUtils;
+import org.workcraft.util.Import;
 
 public class BalsaToGatesExporter implements Exporter {
 	private static String mpsatArgsFormat = "-R -f -$1 -p0 -@ -cl";
@@ -32,19 +33,19 @@ public class BalsaToGatesExporter implements Exporter {
 		
 		File synthesised = new File(tempDir, "RESULT");
 		
-		synthesiseStg(original, synthesised);
+		synthesiseStg(original, synthesised, false);
 		
 		FileUtils.copyFileToStream(synthesised, out);
 	}
 
-	public static void synthesiseStg(File original, File synthesised)
+	public static void synthesiseStg(File original, File synthesised, boolean withMpsat)
 			throws IOException {
 		File tempDir = createTempDirectory();
 		
-		File unfolding = new File(tempDir, "composition.mci");
 		File renamed = new File(tempDir, "renamed.g");
 		File renamed2 = new File(tempDir, "renamed2.g");
-		
+
+
 		DummyRenamer.rename(original, renamed);
 		
 		try {
@@ -60,18 +61,48 @@ public class BalsaToGatesExporter implements Exporter {
 		
 		FileUtils.copyFile(renamed, new File(original.getAbsolutePath()+".ren"));
 		FileUtils.copyFile(renamed2, new File(original.getAbsolutePath()+".ren2"));
+
+		if(withMpsat)
+		{
+			File contracted = new File(tempDir, "contracted.g");
+			
+			contractDummies(renamed, contracted);
+			
+			File unfolding = new File(tempDir, "composition.mci");
+			
+			makeUnfolding(contracted, unfolding);
+			
+			File csc_resolved_mci = new File(tempDir, "resolved.mci");
+			
+			resolveConflicts(unfolding, csc_resolved_mci);
+			
+			mpsatMakeEqn(csc_resolved_mci, synthesised);
+		}
+		else
+		{
+			petrifyMakeEqn(renamed, synthesised);
+		}
+	}
+
+	private static void petrifyMakeEqn(File original, File synthesised) throws IOException {
+		SynchronousExternalProcess process = new SynchronousExternalProcess(
+				new String[]{
+						"petrify",
+						"-hide",
+						".dummy",
+						"-eqn",
+						synthesised.getAbsolutePath(),
+						"-cg",
+						original.getAbsolutePath()
+				}, ".");
 		
-		File contracted = new File(tempDir, "contracted.g");
+		process.start(500000);
 		
-		contractDummies(renamed2, contracted);
+		System.out.println("Petrify complex gate synthesis output: ");
+		System.out.write(process.getOutputData());System.out.println();System.out.println("----------------------------------------");
 		
-		makeUnfolding(contracted, unfolding);
-		
-		File csc_resolved_mci = new File(tempDir, "resolved.mci");
-		
-		resolveConflicts(unfolding, csc_resolved_mci);
-		
-		synthesise(csc_resolved_mci, synthesised);
+		System.out.println("Petrify complex gate synthesis errors: ");
+		System.out.write(process.getErrorData());System.out.println();System.out.println("----------------------------------------");
 	}
 
 	private static void contractDummies(File original, File contracted) throws IOException {
@@ -94,7 +125,7 @@ public class BalsaToGatesExporter implements Exporter {
 		System.out.write(process.getErrorData());System.out.println();System.out.println("----------------------------------------");
 	}
 
-	private static void synthesise(File cscResolvedMci, File synthesised) throws IOException 
+	private static void mpsatMakeEqn(File cscResolvedMci, File synthesised) throws IOException 
 	{
 		SynchronousExternalProcess process = new SynchronousExternalProcess(
 				new String[]{

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<workcraft-config>
+  <group name="RandomLayout">
+    <var name="startX" value="0.0"/>
+    <var name="rangeX" value="30.0"/>
+    <var name="startY" value="0.0"/>
+    <var name="rangeY" value="30.0"/>
+  </group>
+  <group name="gui">
+    <var name="main.height" value="1150"/>
+    <var name="main.lastSavePath" value="/home/mech/temp"/>
+    <var name="lookandfeel" value="org.jvnet.substance.skin.SubstanceMistSilverLookAndFeel"/>
+    <var name="main.width" value="1920"/>
+    <var name="main.maximised" value="false"/>
+    <var name="main.lastOpenPath" value="/home/mech/balsa/share/balsa/parts"/>
+  </group>
+  <group name="DotLayout">
+    <var name="dotCommand" value="dot"/>
+    <var name="dotPositionScaleFactor" value="0.02"/>
+    <var name="tmpGraphFilePath" value="tmp.dot"/>
+  </group>
+  <group name="CommonVisualSettings">
+    <var name="fillColor" value="#ffffff"/>
+    <var name="backgroundColor" value="#ffffff"/>
+    <var name="foregroundColor" value="#0"/>
+    <var name="strokeWidth" value="0.1"/>
+    <var name="size" value="1.0"/>
+  </group>
+  <group name="SDFS">
+    <var name="VisualSettings.enabledRegisterColor" value="#99ff99"/>
+    <var name="VisualSettings.size" value="1.0"/>
+    <var name="VisualSettings.tokenColor" value="#0"/>
+    <var name="VisualSettings.backgroundColor" value="#ffffff"/>
+    <var name="VisualSettings.useGlobal" value="true"/>
+    <var name="VisualSettings.foregroundColor" value="#0"/>
+    <var name="VisualSettings.strokeWidth" value="0.1"/>
+    <var name="VisualSettings.fillColor" value="#ffffff"/>
+    <var name="VisualSettings.disabledRegisterColor" value="#ffffff"/>
+  </group>
+  <group name="PetriTools">
+    <var name="mpsatCommand" value="mpsat"/>
+    <var name="punfCommand" value="punf"/>
+    <var name="dummyRenameCommand" value="dummyRename"/>
+    <var name="pcompCommand" value="pcomp"/>
+  </group>
+</workcraft-config>

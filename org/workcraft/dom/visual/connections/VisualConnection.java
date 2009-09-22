@@ -37,7 +37,8 @@ import org.workcraft.observation.TransformObserver;
 
 public class VisualConnection extends VisualNode implements
 		PropertyChangeListener, Node, Drawable, Connection,
-		TransformObserver, DependentNode, VisualConnectionInfo, ObservableHierarchy {
+		TransformObserver, DependentNode, VisualConnectionInfo, 
+		ObservableHierarchy {
 	
 	public enum ConnectionType 
 	{
@@ -127,7 +128,7 @@ public class VisualConnection extends VisualNode implements
 		if (connectionType!=t) {
 			observableHierarchyImpl.sendNotification(new NodesDeletingEvent(this, graphic));
 			observableHierarchyImpl.sendNotification(new NodesDeletedEvent(this, graphic));
-
+			
 			if (t==ConnectionType.POLYLINE) { 
 				graphic = new Polyline(this);
 			}
@@ -281,7 +282,7 @@ public class VisualConnection extends VisualNode implements
 		} else
 			this.transformDispatcher = dispatcher;
 	}
-
+	
 	public ConnectionGraphic getGraphic() {
 		return graphic;
 	}

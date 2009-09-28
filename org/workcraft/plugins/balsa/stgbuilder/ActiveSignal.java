@@ -21,15 +21,9 @@
 
 package org.workcraft.plugins.balsa.stgbuilder;
 
+import org.workcraft.plugins.balsa.protocols.ActiveSignalTransition;
 
-interface Transition
-{
-}
-
-public interface TransitionOutput
-{
-}
-
-interface ReadonlyTransition
-{
+public interface ActiveSignal {
+	public ActiveSignalTransition getPlus();
+	public ActiveSignalTransition getMinus();
 }

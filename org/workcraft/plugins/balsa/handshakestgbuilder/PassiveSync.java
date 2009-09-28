@@ -19,12 +19,13 @@
 *
 */
 
-package org.workcraft.plugins.balsa.handshakebuilder;
+package org.workcraft.plugins.balsa.handshakestgbuilder;
 
-import org.workcraft.plugins.balsa.handshakestgbuilder.HandshakeStgBuilder;
-import org.workcraft.plugins.balsa.handshakestgbuilder.PassivePushStg;
+import org.workcraft.plugins.balsa.stgbuilder.InputEvent;
+import org.workcraft.plugins.balsa.stgbuilder.OutputEvent;
 
-public interface PassivePush extends PassiveSync, DataHandshake
+public interface PassiveSync extends StgInterface
 {
-	PassivePushStg buildStg(HandshakeStgBuilder builder);
+	public InputEvent go();
+	public OutputEvent done();
 }

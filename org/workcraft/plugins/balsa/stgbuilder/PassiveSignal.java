@@ -19,8 +19,11 @@
 *
 */
 
-package org.workcraft.plugins.balsa.handshakebuilder;
+package org.workcraft.plugins.balsa.stgbuilder;
 
-public interface PassiveSync extends Handshake
-{
+import org.workcraft.plugins.balsa.protocols.PassiveSignalTransition;
+
+public interface PassiveSignal {
+	public PassiveSignalTransition getPlus();
+	public PassiveSignalTransition getMinus();
 }

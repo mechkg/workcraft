@@ -19,12 +19,14 @@
 *
 */
 
-package org.workcraft.plugins.balsa.handshakebuilder;
+package org.workcraft.plugins.balsa.stgbuilder;
 
-import org.workcraft.plugins.balsa.handshakestgbuilder.ActivePullStg;
-import org.workcraft.plugins.balsa.handshakestgbuilder.HandshakeStgBuilder;
-
-public interface ActivePull extends ActiveSync, DataHandshake
+public interface StrictPetriBuilder extends TypedStrictStgBuilder<OutputEvent, InputEvent, StgPlace, InputOutputEvent>
 {
-	ActivePullStg buildStg(HandshakeStgBuilder builder);
+	StgPlace buildPlace(int tokenCount);
+	InputOutputEvent buildTransition();
+	void connect(StgPlace place, OutputEvent transition);
+	void connect(InputEvent transition, StgPlace place);
+	void addReadArc(StgPlace place, InputOutputEvent transition);
+	void connect(InputEvent t1, OutputEvent t2);
 }

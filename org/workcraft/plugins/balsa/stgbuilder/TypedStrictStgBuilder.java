@@ -19,8 +19,14 @@
 *
 */
 
-package org.workcraft.plugins.balsa.handshakebuilder;
+package org.workcraft.plugins.balsa.stgbuilder;
 
-public interface ActiveSync extends Handshake
+public interface TypedStrictStgBuilder<TO extends OutputEvent, TI extends InputEvent, TP extends StgPlace, TD extends InputOutputEvent>
 {
+	TP buildPlace(int tokenCount);
+	TD buildTransition();
+	void connect(TP place, TO transition);
+	void connect(TI transition, TP place);
+	void addReadArc(TP place, TD transition);
+	void connect(TI t1, TO t2);
 }

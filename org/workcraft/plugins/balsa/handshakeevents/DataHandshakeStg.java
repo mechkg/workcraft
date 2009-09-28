@@ -19,19 +19,11 @@
 *
 */
 
-package org.workcraft.plugins.balsa.stg;
+package org.workcraft.plugins.balsa.handshakeevents;
 
-import java.util.Map;
+import org.workcraft.plugins.balsa.stgbuilder.Event;
 
-import org.workcraft.plugins.balsa.components.DecisionWait;
-import org.workcraft.plugins.balsa.handshakestgbuilder.StgHandshake;
-import org.workcraft.plugins.balsa.stgbuilder.StgBuilder;
-
-public class DecisionWaitStgBuilder extends ComponentStgBuilder<DecisionWait> {
-
-	@Override
-	public void buildStg(DecisionWait component, Map<String, StgHandshake> handshakes, StgBuilder builder) {
-		
-	}
-  
+public interface DataHandshakeStg extends SyncStg
+{
+	public Event dataRelease();
 }

@@ -21,12 +21,12 @@
 
 package org.workcraft.plugins.balsa.handshakestgbuilder;
 
-import org.workcraft.plugins.balsa.stgbuilder.StgTransition;
-import org.workcraft.plugins.balsa.stgbuilder.TransitionOutput;
+import org.workcraft.plugins.balsa.stgbuilder.InputEvent;
+import org.workcraft.plugins.balsa.stgbuilder.OutputEvent;
 
 
-public interface ActiveSyncStg extends StgHandshake
+public interface ActiveSync extends StgInterface
 {
-	public StgTransition getActivate();
-	public TransitionOutput getDeactivate();
+	public OutputEvent go();
+	public InputEvent done();
 }

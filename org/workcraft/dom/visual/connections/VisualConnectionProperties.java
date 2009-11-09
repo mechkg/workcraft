@@ -19,8 +19,25 @@
 *
 */
 
-package org.workcraft.serialisation.xml;
+package org.workcraft.dom.visual.connections;
 
-public interface ChainDeserialiser {
-	public void setNodeDeserialiser (NodeDeserialiser deserialiser);
+import java.awt.Color;
+import java.awt.geom.Point2D;
+
+import org.workcraft.dom.visual.Touchable;
+import org.workcraft.dom.visual.connections.VisualConnection.ScaleMode;
+
+public interface VisualConnectionProperties {
+	public Color getDrawColor();
+	public double getLineWidth();
+	public double getArrowWidth();
+	public double getArrowLength();
+	public boolean hasArrow();
+	
+	public Point2D getFirstCenter();
+	public Touchable getFirstShape();
+	
+	public Point2D getSecondCenter();
+	public Touchable getSecondShape();
+	public ScaleMode getScaleMode();
 }

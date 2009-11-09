@@ -1,28 +1,29 @@
 /*
-*
-* Copyright 2008,2009 Newcastle University
-*
-* This file is part of Workcraft.
-* 
-* Workcraft is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-* 
-* Workcraft is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-* 
-* You should have received a copy of the GNU General Public License
-* along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
+ *
+ * Copyright 2008,2009 Newcastle University
+ *
+ * This file is part of Workcraft.
+ * 
+ * Workcraft is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Workcraft is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 package org.workcraft.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -118,7 +119,24 @@ public class MainWindow extends JFrame {
 			public String getText() {
 				return "Save work as...";
 			};
-		};		
+		};
+		public static final ScriptedAction CLOSE_ACTIVE_EDITOR_ACTION = new ScriptedAction() {
+			public String getScript() {
+				return tryOperation("mainWindow.closeActiveEditor();");
+			}
+			public String getText() {
+				return "Close active work";
+			};
+		};	
+		
+		public static final ScriptedAction CLOSE_ALL_EDITORS_ACTION = new ScriptedAction() {
+			public String getScript() {
+				return tryOperation("mainWindow.closeEditorWindows();");
+			}
+			public String getText() {
+				return "Close all works";
+			};
+		};	
 		public static final ScriptedAction EXIT_ACTION = new ScriptedAction() {
 			public String getScript() {
 				return tryOperation("framework.shutdown();");
@@ -178,19 +196,6 @@ public class MainWindow extends JFrame {
 				return "Settings...";
 			}
 		};
-		
-		public static final String tryOperation (String operation) {
-			return "try\n" +
-			"{\n" +
-			operation + "\n" +
-			"}\n" +
-			"catch (err)\n" +
-			"{\n" +
-			"  if (!(err.javaException instanceof Packages.org.workcraft.framework.exceptions.OperationCancelledException)) {\n" +
-			"    printlnerr (err);\n" +
-			"  }\n" +
-			"}";
-		}
 	}
 
 	private final ScriptedActionListener defaultActionListener = new ScriptedActionListener() {
@@ -309,7 +314,7 @@ public class MainWindow extends JFrame {
 		int ID = getNextDockableID();
 
 		DockableWindowContentPanel panel = new DockableWindowContentPanel(this, ID, name, component, options);
-		DockableWindow dockable = new DockableWindow(panel, persistentID);
+		DockableWindow dockable = new DockableWindow(this, panel, persistentID);
 		DockingManager.registerDockable(dockable);
 
 		IDToDockableWindowMap.put(ID, dockable);
@@ -368,6 +373,8 @@ public class MainWindow extends JFrame {
 
 			editorWindows.add(editorWindow);
 			requestFocus(editor);
+			
+			enableWorkActions();
 	}
 
 	private void registerUtilityWindow(DockableWindow dockableWindow) {
@@ -392,7 +399,7 @@ public class MainWindow extends JFrame {
 
 		content = new JPanel(new BorderLayout(0,0));
 		setContentPane(content);
-		
+
 		PerspectiveManager pm = (PerspectiveManager)DockingManager.getLayoutManager();
 		pm.add(new Perspective("defaultWorkspace", "defaultWorkspace"));
 		pm.setCurrentPerspective("defaultWorkspace", true);
@@ -438,14 +445,13 @@ public class MainWindow extends JFrame {
 
 		DockingManager.display(outputDockable);
 		EffectsManager.setPreview(new AlphaPreview(Color.BLACK, Color.GRAY, 0.5f));
-		
 
 		workspaceWindow.startup();
 
 		setVisible(true);
 
 		loadDockingLayout();
-		DockableWindow.updateHeaders(rootDockingPort);
+		DockableWindow.updateHeaders(rootDockingPort, getDefaultActionListener());
 
 		registerUtilityWindow (outputDockable);
 		registerUtilityWindow (problems);
@@ -454,21 +460,36 @@ public class MainWindow extends JFrame {
 		registerUtilityWindow (propertyEditor);
 		registerUtilityWindow (toolbox);
 		utilityWindows.add(documentPlaceholder);
+		
+		disableWorkActions();
+	}
+
+	private void disableWorkActions() {
+		Actions.CLOSE_ACTIVE_EDITOR_ACTION.setEnabled(false);
+		Actions.CLOSE_ALL_EDITORS_ACTION.setEnabled(false);
+		Actions.SAVE_WORK_ACTION.setEnabled(false);
+		Actions.SAVE_WORK_AS_ACTION.setEnabled(false);
+	}
+	
+	private void enableWorkActions() {
+		Actions.CLOSE_ACTIVE_EDITOR_ACTION.setEnabled(true);
+		Actions.CLOSE_ALL_EDITORS_ACTION.setEnabled(true);
+		Actions.SAVE_WORK_ACTION.setEnabled(true);
+		Actions.SAVE_WORK_AS_ACTION.setEnabled(true);
 	}
 
 	public ScriptedActionListener getDefaultActionListener() {
 		return defaultActionListener;
 	}
 
-	public void maximizeDockableWindow(int ID) {
+	public void toggleDockableWindowMaximized(int ID) {
 		DockableWindow dockableWindow = IDToDockableWindowMap.get(ID);
 
 		if (dockableWindow != null) {
 			DockingManager.toggleMaximized(dockableWindow);
 			dockableWindow.setMaximized(!dockableWindow.isMaximized());
-
 		} else {
-			System.err.println ("maximizeDockableWindow: window with ID="+ID+" was not found.");
+			System.err.println ("toggleDockableWindowMaximized: window with ID="+ID+" was not found.");
 		}
 	}
 
@@ -496,8 +517,9 @@ public class MainWindow extends JFrame {
 				if (we.isTemporary())
 					framework.getWorkspace().remove(we);
 
-				if (DockingManager.isMaximized(dockableWindow))
-					DockingManager.toggleMaximized(dockableWindow);
+				if (DockingManager.isMaximized(dockableWindow)) {
+					toggleDockableWindowMaximized(dockableWindow.getID());
+				}
 
 				editorWindows.remove(dockableWindow);
 
@@ -505,12 +527,13 @@ public class MainWindow extends JFrame {
 					DockingManager.registerDockable(documentPlaceholder);
 					DockingManager.dock(documentPlaceholder, dockableWindow, DockingConstants.CENTER_REGION);
 					utilityWindows.add(documentPlaceholder);
+					
+					disableWorkActions();
 				}
 
 				DockingManager.close(dockableWindow);
 				DockingManager.unregisterDockable(dockableWindow);
 				dockableWindow.setClosed(true);
-
 			} else {
 				// handle utility window close
 				mainMenu.utilityWindowClosed(ID);
@@ -559,7 +582,7 @@ public class MainWindow extends JFrame {
 			if (parentDir != null)
 				if (!parentDir.exists())
 					parentDir.mkdirs();
-			
+
 			FileOutputStream os = new FileOutputStream(file);  
 			pers.store(os, pmodel);
 			os.close();
@@ -606,7 +629,7 @@ public class MainWindow extends JFrame {
 	public void shutdown() throws OperationCancelledException {
 		closeEditorWindows();
 
-		
+
 		if (framework.getWorkspace().isChanged() && ! framework.getWorkspace().isTemporary()) {
 			int result = JOptionPane.showConfirmDialog(this, "Current workspace has unsaved changes.\nSave before closing?",
 					"Confirm", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE); 
@@ -616,7 +639,7 @@ public class MainWindow extends JFrame {
 			else if (result == JOptionPane.CANCEL_OPTION)
 				throw new OperationCancelledException("Operation cancelled by user.");
 		}
-		
+
 		saveDockingLayout();
 
 		content.remove(rootDockingPort);
@@ -697,7 +720,7 @@ public class MainWindow extends JFrame {
 	public ToolboxWindow getToolboxWindow() {
 		return toolboxWindow;
 	}
-	
+
 	private void printCause (Throwable e) {
 		e.printStackTrace();
 		System.err.println ("-------------" + e);
@@ -726,7 +749,7 @@ public class MainWindow extends JFrame {
 					JOptionPane.showMessageDialog(this, "A problem was encountered while trying to load \"" + f.getPath()
 							+"\".\nPlease see Problems window for details.", "Load failed", JOptionPane.ERROR_MESSAGE);
 					printCause(e);
-					
+
 				}
 			}
 			lastOpenPath = fc.getCurrentDirectory().getPath();
@@ -875,7 +898,7 @@ public class MainWindow extends JFrame {
 			lastOpenPath = fc.getCurrentDirectory().getPath();
 		}
 	}
-	
+
 	public void runModelChecker(String modelCheckerClassName) {
 		try {
 			ModelChecker checker = (ModelChecker)framework.getPluginManager().getSingletonByName(modelCheckerClassName);
@@ -888,7 +911,7 @@ public class MainWindow extends JFrame {
 			e.printStackTrace();
 		}	
 	}
-	                                                           
+
 
 	public void doLayout (String layoutClassName) {
 		try {
@@ -902,10 +925,10 @@ public class MainWindow extends JFrame {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void exportTo(String exporterClassName) throws OperationCancelledException {
 		Exporter exporter;
-		
+
 		try {
 			exporter = (Exporter)framework.getPluginManager().getSingletonByName(exporterClassName);
 		} catch (PluginInstantiationException e1) {
@@ -983,15 +1006,29 @@ public class MainWindow extends JFrame {
 	public Framework getFramework() {
 		return framework;
 	}
+	
+	public void closeActiveEditor() throws OperationCancelledException {
+		for (DockableWindow w : editorWindows) {
+				Component component = w.getContentPanel().getContent();
+				if (component == editorInFocus) {
+					closeDockableWindow(w.getID());
+					break;
+				}
+			}
+	}
 
 	public void closeEditorWindows() throws OperationCancelledException {
 		LinkedHashSet<DockableWindow> windowsToClose = new LinkedHashSet<DockableWindow>(editorWindows);
 
 		for (DockableWindow w : windowsToClose) {
-			closeDockableWindow(w.getID());
+			if (DockingManager.isMaximized(w))
+				toggleDockableWindowMaximized(w.getID());
 		}
+
+		for (DockableWindow w : windowsToClose)
+			closeDockableWindow(w.getID());
 	}
-	
+
 	public void editSettings() {
 		PersistentPropertyEditorDialog dlg = new PersistentPropertyEditorDialog(this);
 		dlg.setModal(false);

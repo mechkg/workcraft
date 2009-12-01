@@ -21,20 +21,16 @@
 
 package org.workcraft.parsers.breeze;
 
-import java.util.List;
 
-interface BreezeInstance<Port>
-{
-	List<Port> ports();
-}
-
-interface BreezeDefinition
-{
-	<Port> BreezeInstance<Port> instantiate(BreezeFactory<Port> factory, ParameterValueList parameters);
-}
-
-interface BreezeFactory<Port>
-{
-	BreezeInstance<Port> create(PrimitivePart declaration, ParameterScope parameters);
-	void connect(Port port1, Port port2);
+public class EmptyValueList implements ParameterValueList {
+	private static EmptyValueList instance = new EmptyValueList();
+	public static EmptyValueList instance(){ return instance; }
+	
+	@Override public String get(int index) {
+		throw new IndexOutOfBoundsException();
+	}
+	
+	@Override public int size() {
+		return 0;
+	}
 }

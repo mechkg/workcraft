@@ -117,7 +117,7 @@ public class DotLayout implements Layout, PluginConsumer {
 		} catch (SerialisationException e) {
 			throw new LayoutFailedException(e);
 		} finally {
-			cleanUp();			
+			cleanUp();
 		}
 	}
 

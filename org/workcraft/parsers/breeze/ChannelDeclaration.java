@@ -18,8 +18,16 @@
 * along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
-package org.workcraft.plugins.balsa.protocols;
 
-public interface PassiveSignalTransition extends PassiveEvent {
+package org.workcraft.parsers.breeze;
 
+public class ChannelDeclaration {
+	
+	public ChannelDeclaration(ChannelType type, int width) {
+		this.type = type;
+		this.width = width;
+	}
+	
+	public final ChannelType type;
+	public final int width;
 }

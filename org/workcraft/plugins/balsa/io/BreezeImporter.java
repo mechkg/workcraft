@@ -19,20 +19,26 @@
 *
 */
 
-package org.workcraft.plugins.interop;
+package org.workcraft.plugins.balsa.io;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 import org.workcraft.dom.Model;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.interop.Importer;
+import org.workcraft.parsers.breeze.BreezeLibrary;
+import org.workcraft.parsers.breeze.DefaultBreezeFactory;
+import org.workcraft.parsers.breeze.EmptyValueList;
+import org.workcraft.parsers.breeze.javacc.BreezeParser;
+import org.workcraft.parsers.lisp.LispNode;
 import org.workcraft.parsers.lisp.LispParser;
 import org.workcraft.parsers.lisp.ParseException;
+import org.workcraft.plugins.balsa.BalsaCircuit;
 
 public class BreezeImporter implements Importer {
+	private static final String ABSPATH = "/share/tech/common/components";
 
 	@Override
 	public boolean accept(File file) {
@@ -48,14 +54,23 @@ public class BreezeImporter implements Importer {
 	@Override
 	public Model importFrom(InputStream in) throws DeserialisationException,
 			IOException {
+		BreezeLibrary lib = new BreezeLibrary();
+		String balsaHome = System.getenv("BALSA_HOME");
+		if (balsaHome == null || balsaHome.isEmpty())
+			throw new DeserialisationException("BALSA_HOME environment variable not set -- cannot load primitive parts definitions.");
+		lib.registerPrimitives(new File(balsaHome + ABSPATH));
 		
 		try {
-			List<Object> list = LispParser.parse(in);
-			System.out.println(list);			
-		} catch (ParseException e) {
+			lib.registerParts(in);
+		} catch (org.workcraft.parsers.breeze.javacc.ParseException e) {
 			throw new DeserialisationException(e);
 		}
-
-		throw new DeserialisationException("Not implemented");
+		
+		BalsaCircuit circuit = new BalsaCircuit();
+		DefaultBreezeFactory factory = new DefaultBreezeFactory(circuit);
+		
+		lib.get("BMU").instantiate(lib, factory, EmptyValueList.instance());
+		
+		return circuit;
 	}
 }

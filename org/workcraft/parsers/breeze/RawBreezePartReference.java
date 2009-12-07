@@ -18,8 +18,34 @@
 * along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
-package org.workcraft.plugins.balsa.protocols;
 
-public interface ActiveSignalTransition extends ActiveEvent {
+package org.workcraft.parsers.breeze;
 
+import java.util.List;
+
+public class RawBreezePartReference {
+
+	private final String name;
+	private final List<String> parameters;
+	private final List<List<Integer>> connections;
+
+	public RawBreezePartReference(String name, 
+			List<String> parameters,
+			List<List<Integer>> connections) {
+				this.name = name;
+				this.parameters = parameters;
+				this.connections = connections;
+	}
+
+	public Object name() {
+		return name;
+	}
+
+	public List<String> parameters() {
+		return parameters;
+	}
+
+	public List<List<Integer>> connections() {
+		return connections;
+	}
 }

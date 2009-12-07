@@ -19,21 +19,21 @@
 *
 */
 
-package org.workcraft.plugins.interop;
+package org.workcraft.plugins.balsa.io;
 
 import java.util.UUID;
 
 import org.workcraft.interop.Exporter;
-import org.workcraft.plugins.balsa.protocols.FourPhaseProtocol_NoDataPath;
+import org.workcraft.plugins.balsa.protocols.TwoPhaseProtocol;
 import org.workcraft.serialisation.Format;
 
-public class BalsaToStgExporter_FourPhase extends BalsaToStgExporter implements Exporter {
-	public BalsaToStgExporter_FourPhase()
+public class BalsaToStgExporter_TwoPhase extends BalsaToStgExporter implements Exporter {
+	public BalsaToStgExporter_TwoPhase()
 	{
-		super(new FourPhaseProtocol_NoDataPath(), "four-phase (no data path)");
+		super(new TwoPhaseProtocol(), "two-phase");
 	}
 
-	public UUID getFormatUUID() {
+	public UUID getTargetFormat() {
 		return Format.STG;
 	}
 }

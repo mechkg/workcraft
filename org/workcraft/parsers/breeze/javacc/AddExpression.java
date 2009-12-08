@@ -20,26 +20,25 @@
 */
 package org.workcraft.parsers.breeze.javacc;
 
+import java.util.List;
+
 import org.workcraft.parsers.breeze.Expression;
 import org.workcraft.parsers.breeze.ParameterScope;
 
-public class StringAppendExpression implements Expression<String> {
+public class AddExpression implements Expression<Integer> {
 
-	private final Expression<String> str1;
-	private final Expression<String> str2;
+	private final List<Expression<Integer>> args;
 
-	public StringAppendExpression(Expression<String> str1,
-			Expression<String> str2) {
-				this.str1 = str1;
-				this.str2 = str2;
+	public AddExpression(List<Expression<Integer>> args) {
+		this.args = args;
 	}
 
 	@Override
-	public String evaluate(ParameterScope parameters) {
-		return str1.evaluate(parameters) + str2.evaluate(parameters);
+	public Integer evaluate(ParameterScope parameters) {
+		int result = 0;
+		for(Expression<Integer> expr : args)
+			result += expr.evaluate(parameters);
+		return result;
 	}
-	
-	@Override public String toString() {
-		return str1.toString() + " + " + str2.toString();
-	}
+
 }

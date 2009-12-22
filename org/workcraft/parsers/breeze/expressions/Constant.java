@@ -18,25 +18,31 @@
 * along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
-package org.workcraft.parsers.breeze;
 
-import java.util.List;
+package org.workcraft.parsers.breeze.expressions;
 
+import org.workcraft.parsers.breeze.ParameterScope;
+import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
-public class AddExpression implements Expression<Integer> {
-
-	private final List<Expression<Integer>> args;
-
-	public AddExpression(List<Expression<Integer>> args) {
-		this.args = args;
+public class Constant<T> implements Expression<T> {
+	private final T value;
+	
+	public Constant (T value) {
+		this.value = value;
 	}
 
 	@Override
-	public Integer evaluate(ParameterScope parameters) {
-		int result = 0;
-		for(Expression<Integer> expr : args)
-			result += expr.evaluate(parameters);
-		return result;
+	public T evaluate(ParameterScope parameters) {
+		return value;
+	}
+	
+	public String toString() {
+		return value.toString();
+	}
+	
+	@Override
+	public <R> R accept(Visitor<R> visitor) {
+		return visitor.visit(this);
 	}
 
 }

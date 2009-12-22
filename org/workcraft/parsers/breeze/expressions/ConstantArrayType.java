@@ -19,9 +19,12 @@
 *
 */
 
-package org.workcraft.parsers.breeze;
+package org.workcraft.parsers.breeze.expressions;
 
 import java.util.Arrays;
+
+import org.workcraft.parsers.breeze.ParameterScope;
+import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
 public class ConstantArrayType implements Expression<Integer[]> {
 	private final Expression<Integer> width;
@@ -45,5 +48,11 @@ public class ConstantArrayType implements Expression<Integer[]> {
 	
 	public String toString() {
 		return "(constant-array-type width " + width + " count " + count +")";
+	}
+
+	
+	@Override
+	public <R> R accept(Visitor<R> visitor) {
+		return visitor.visit(this);
 	}
 }

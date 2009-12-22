@@ -18,7 +18,10 @@
 * along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
-package org.workcraft.parsers.breeze;
+package org.workcraft.parsers.breeze.expressions;
+
+import org.workcraft.parsers.breeze.ParameterScope;
+import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
 
 public class ToStringExpression<T> implements Expression<String> {
@@ -34,4 +37,9 @@ public class ToStringExpression<T> implements Expression<String> {
 		return expression.evaluate(parameters).toString();
 	}
 
+	
+	@Override
+	public <R> R accept(Visitor<R> visitor) {
+		return visitor.visit(this);
+	}
 }

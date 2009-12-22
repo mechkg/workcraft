@@ -19,25 +19,14 @@
  *
  */
 
-package org.workcraft.parsers.breeze;
+package org.workcraft.parsers.breeze.expressions;
 
-public class ParameterReference<T> implements Expression<T> {
-	String parameterName = null;
+import org.workcraft.parsers.breeze.ParameterScope;
+import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
-	public ParameterReference(String parameterName)
-	{
-		if(parameterName == null)
-			throw new NullPointerException();
-		this.parameterName = parameterName;
-	}
-
-	@SuppressWarnings("unchecked")
-	public T evaluate(ParameterScope parameters)
-	{
-		return (T)parameters.get(parameterName);
-	}
+public interface Expression<T> {
 	
-	public String toString() {
-		return "<" + parameterName +">";
-	}
+	public T evaluate(ParameterScope parameters);
+	
+	public abstract <R> R accept(Visitor<R> visitor);
 }

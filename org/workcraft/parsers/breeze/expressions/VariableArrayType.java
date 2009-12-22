@@ -19,7 +19,10 @@
 *
 */
 
-package org.workcraft.parsers.breeze;
+package org.workcraft.parsers.breeze.expressions;
+
+import org.workcraft.parsers.breeze.ParameterScope;
+import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
 public class VariableArrayType implements Expression<Integer[]> {
 	private final Expression<Integer> width;
@@ -49,5 +52,10 @@ public class VariableArrayType implements Expression<Integer[]> {
 	
 	public String toString() {
 		return String.format("(width %s readPortCount %s specification %s)", width, readPortCount, specification);
+	}
+	
+	@Override
+	public <R> R accept(Visitor<R> visitor) {
+		return visitor.visit(this);
 	}
 }

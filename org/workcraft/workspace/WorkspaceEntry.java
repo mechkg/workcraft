@@ -38,6 +38,12 @@ public class WorkspaceEntry {
 		entryID = workspace.getNextEntryID();
 		this.workspace = workspace;
 	}
+	
+	public WorkspaceEntry(Workspace workspace, File f) {
+		this(workspace);
+		
+		file = f;
+	}
 
 	public File getFile() {
 		return file;

@@ -21,34 +21,33 @@
 
 package org.workcraft.gui.actions;
 
+import java.util.LinkedList;
+
 import org.workcraft.Framework;
 
-public abstract class ScriptedAction extends Action {
-	public static final String tryOperation (String operation) {
-		return "try\n" +
-		"{\n" +
-		operation + "\n" +
-		"}\n" +
-		"catch (err)\n" +
-		"{\n" +
-		"  if (!(err.javaException instanceof Packages.org.workcraft.exceptions.OperationCancelledException)) {\n" +
-		"    throw err.javaException;\n" +
-		"  }\n" +
-		"}";
-	}
-	
-	protected abstract String getScript();
-	
-	@Override public void run(Framework framework) {
-		if (getScript() != null)
-			framework.execJavaScript(getScript());
+public abstract class Action {
+	private LinkedList<Actor> actors = new LinkedList<Actor>();
+	private boolean enabled = true;
+
+	public abstract String getText();
+	public abstract void run(Framework framework);
+
+	void addActor(Actor actor) {
+		actors.add(actor);
 	}
 
-	public String getUndoScript() {
-		return null;
+	void removeActor(Actor actor) {
+		actors.remove(actor);
 	}
 
-	public String getRedoScript() {
-		return null;
+	public void setEnabled(boolean enabled) {
+		if (this.enabled != enabled) {
+			this.enabled = enabled;
+			for (Actor actor : actors)
+				actor.actionEnableStateChanged(enabled);
+		}
+	}
+	public boolean isEnabled() {
+		return enabled;
 	}
 }

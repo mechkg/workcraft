@@ -1,23 +1,23 @@
 /*
-*
-* Copyright 2008,2009 Newcastle University
-*
-* This file is part of Workcraft.
-* 
-* Workcraft is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-* 
-* Workcraft is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-* 
-* You should have received a copy of the GNU General Public License
-* along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
+ *
+ * Copyright 2008,2009 Newcastle University
+ *
+ * This file is part of Workcraft.
+ * 
+ * Workcraft is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Workcraft is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 package org.workcraft.gui.graph;
 
@@ -37,32 +37,43 @@ import java.util.Collection;
 import javax.swing.JPanel;
 
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.MainWindow;
+import org.workcraft.gui.PropertyEditorWindow;
 import org.workcraft.gui.ToolboxWindow;
 import org.workcraft.gui.graph.tools.GraphEditor;
-import org.workcraft.gui.propertyeditor.PropertyEditable;
+import org.workcraft.gui.propertyeditor.Properties;
+import org.workcraft.gui.propertyeditor.Properties.Mix;
 import org.workcraft.observation.HierarchyEvent;
+import org.workcraft.observation.PropertyChangedEvent;
+import org.workcraft.observation.SelectionChangedEvent;
 import org.workcraft.observation.StateEvent;
 import org.workcraft.observation.StateObserver;
 import org.workcraft.observation.StateSupervisor;
+import org.workcraft.observation.TransformChangedEvent;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class GraphEditorPanel extends JPanel implements StateObserver, GraphEditor {
-	
+
 	class Repainter extends StateSupervisor {
 		@Override
 		public void handleHierarchyEvent(HierarchyEvent e) {
 			repaint();
 		}
-		
+
 		@Override
 		public void handleEvent(StateEvent e) {
-			repaint();						
+			if (e instanceof PropertyChangedEvent || e instanceof TransformChangedEvent) {
+				repaint();
+				mainWindow.getPropertyView().repaint();
+				
+				workspaceEntry.setChanged(true);
+			}
 		}
 	}
-	
+
 	class Resizer implements ComponentListener {
 
 		@Override
@@ -72,7 +83,7 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 		@Override
 		public void componentMoved(ComponentEvent e) {
 		}
-		
+
 		@Override
 		public void componentResized(ComponentEvent e) {
 			reshape();
@@ -83,7 +94,7 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 		public void componentShown(ComponentEvent e) {
 		}
 	}
-	
+
 	public class GraphEditorFocusListener implements FocusListener {
 		@Override
 		public void focusGained(FocusEvent e) {
@@ -95,7 +106,7 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 			repaint();
 		}
 	}
-	
+
 	private static final long serialVersionUID = 1L;
 
 	protected VisualModel visualModel;
@@ -109,7 +120,7 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 	protected Ruler ruler;
 
 	protected Stroke borderStroke = new BasicStroke(2);
-	
+
 	private boolean firstPaint = true;
 
 	public GraphEditorPanel(MainWindow mainWindow, WorkspaceEntry workspaceEntry) {
@@ -118,7 +129,7 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 		visualModel = (VisualModel) workspaceEntry.getObject();
 		toolboxWindow = mainWindow.getToolboxWindow();
 
-		new Repainter().attach(visualModel.getRoot());
+		new Repainter().attach(visualModel.getRoot()); //FIXME detach
 		visualModel.addObserver(this);
 
 		view = new Viewport(0, 0, getWidth(), getHeight());
@@ -130,7 +141,7 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 
 		GraphEditorPanelMouseListener mouseListener = new GraphEditorPanelMouseListener(this, toolboxWindow);
 		GraphEditorPanelKeyListener keyListener = new GraphEditorPanelKeyListener(this, toolboxWindow);
-		
+
 		addMouseMotionListener(mouseListener);
 		addMouseListener(mouseListener);
 		addMouseWheelListener(mouseListener);
@@ -139,7 +150,7 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 
 		addKeyListener(keyListener);
 	}
-	
+
 	private void reshape() {
 		view.setShape(15, 15, getWidth()-15, getHeight()-15);
 		ruler.setShape(0, 0, getWidth(), getHeight());
@@ -148,9 +159,9 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 	@Override
 	public void paint(Graphics g) {
 		Graphics2D g2d = (Graphics2D)g;
-		
+
 		AffineTransform screenTransform = (AffineTransform)g2d.getTransform().clone();
-		
+
 		g2d.setBackground(CommonVisualSettings.getBackgroundColor());
 		g2d.clearRect(0, 0, getWidth(), getHeight());
 
@@ -161,18 +172,18 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 			reshape();
 			firstPaint = false;
 		}
-		
+
 		g2d.transform(view.getTransform());
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
 		g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 		visualModel.draw(g2d);
-		
+
 		if (hasFocus())
 			toolboxWindow.getTool().drawInUserSpace(this, g2d);
-		
+
 		g2d.setTransform(screenTransform);
-		
+
 		ruler.draw(g2d);
 
 		if (hasFocus()) {
@@ -201,10 +212,6 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 		return workspaceEntry;
 	}
 
-	public void onSelectionChanged(Collection<Node> selection) {
-		repaint();
-	}
-
 	public MainWindow getMainWindow() {
 		return mainWindow;
 	}
@@ -213,16 +220,43 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 		repaint();
 		workspaceEntry.setChanged(true);
 	}
+	
+	private void updatePropertyView() {
+		final PropertyEditorWindow propertyWindow = mainWindow.getPropertyView();
+		
+		Collection<Node> selection = visualModel.getSelection();
+
+		if (selection.size() == 1) {
+			Node selected = selection.iterator().next();
+
+			Mix mix = new Mix();
+
+			Properties visualModelProperties = visualModel.getProperties(selected);
+
+			mix.add(visualModelProperties);
+
+			if (selected instanceof Properties)
+				mix.add((Properties)selected);
+
+			if (selected instanceof DependentNode) {
+				for (Node n : ((DependentNode)selected).getMathReferences()) {
+					mix.add(visualModel.getMathModel().getProperties(n));
+					if (n instanceof Properties)
+						mix.add((Properties)n);
+				}
+			}
+			
+			if(mix.isEmpty())
+				propertyWindow.clearObject();
+			else
+				propertyWindow.setObject(mix);
+		}
+	}
 
 	public void notify(StateEvent e) {
-		Collection<Node> selection = visualModel.getSelection();
-		if (selection.size() == 1 && selection.iterator().next() instanceof PropertyEditable) {
-			mainWindow.getPropertyView().setObject((PropertyEditable)selection.iterator().next());			
-		} else {
-			mainWindow.getPropertyView().clearObject();
+		if (e instanceof SelectionChangedEvent) {
+			updatePropertyView();
+			repaint();
 		}
-		
-		repaint();
-		workspaceEntry.setChanged(true);
 	}
 }

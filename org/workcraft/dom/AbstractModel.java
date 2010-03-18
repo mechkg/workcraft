@@ -27,9 +27,11 @@ import java.util.Set;
 
 import org.workcraft.Plugin;
 import org.workcraft.annotations.DisplayName;
+import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.ModelValidationException;
+import org.workcraft.gui.propertyeditor.Properties;
 
 /**
  * A base class for all interpreted graph models. 
@@ -38,19 +40,23 @@ import org.workcraft.exceptions.ModelValidationException;
  */
 public abstract class AbstractModel implements Plugin, Model, NodeContext {
 	private NodeContextTracker nodeContextTracker = new NodeContextTracker();
-	private NodeIDManager nodeIDManager = new NodeIDManager();
+	private ReferenceManager referenceManager = new DefaultReferenceManager();
 
 	private String title = "";
 
 	private Container root;
 
-	public AbstractModel(Container root) {
-		nodeContextTracker.attach(root);
-		nodeIDManager.attach(root);
-
-		this.root = root;
+	public AbstractModel (Container root) {
+		this (root, null);
 	}
-
+	
+	public AbstractModel(Container root, ReferenceManager referenceManager) {
+		this.root = root;
+		this.referenceManager = (referenceManager == null) ? new DefaultReferenceManager() : referenceManager;
+		nodeContextTracker.attach(root);
+		this.referenceManager.attach(root);
+	}
+	
 	public Model getMathModel() {
 		return this;
 	}
@@ -115,12 +121,23 @@ public abstract class AbstractModel implements Plugin, Model, NodeContext {
 	public Set<Node> getPreset(Node component) {
 		return nodeContextTracker.getPreset(component);
 	}
-
-	public Node getNodeByID(int ID) {
-		return nodeIDManager.getNodeByID(ID);
+	
+	@Override
+	public Node getNodeByReference(String reference) {
+		return referenceManager.getNodeByReference(reference);
 	}
 
-	public int getNodeID(Node node) {
-		return nodeIDManager.getNodeID(node);
+	@Override
+	public String getNodeReference(Node node) {
+		return referenceManager.getNodeReference(node);
+	}
+	
+	@Override
+	public Properties getProperties(Node node) {
+		return null;
+	}
+
+	protected ReferenceManager getReferenceManager() {
+		return referenceManager;
 	}
 }

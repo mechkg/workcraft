@@ -39,14 +39,11 @@ public class VisualSDFS extends AbstractVisualModel {
 			throw new VisualModelInstantiationException(e);
 		}
 	}
-
-	@Override
-	public void validate() throws ModelValidationException {
-	}
-
+	
 	@Override
 	public void validateConnection(Node first, Node second)
 			throws InvalidConnectionException {
+		throw new org.workcraft.exceptions.NotImplementedException();
 	}
 
 	@Override
@@ -56,6 +53,11 @@ public class VisualSDFS extends AbstractVisualModel {
 
 	@Override
 	public String getNodeReference(Node node) {
+		throw new org.workcraft.exceptions.NotImplementedException();
+	}
+	@Override
+	public void connect(Node first, Node second)
+			throws InvalidConnectionException {
 		throw new org.workcraft.exceptions.NotImplementedException();
 	}
 }

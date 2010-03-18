@@ -536,16 +536,15 @@ public class Framework {
 		ZipInputStream zis = new ZipInputStream(zippedData);
 
 		ZipEntry ze;
-
-		do {
-			ze = zis.getNextEntry();
-
+		
+		while ((ze = zis.getNextEntry()) != null) 
+		{
 			if (ze.getName().equals(name))
 				return zis;
 
 			zis.closeEntry();
-		} while (ze != null);
-
+		}
+		
 		zis.close();
 
 		return null;

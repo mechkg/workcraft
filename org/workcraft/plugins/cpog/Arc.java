@@ -21,47 +21,31 @@
 
 package org.workcraft.plugins.cpog;
 
-public enum VariableState
+import org.workcraft.dom.math.MathConnection;
+import org.workcraft.observation.PropertyChangedEvent;
+
+public class Arc extends MathConnection
 {
-	TRUE('1'),
-	FALSE('0'),
-	UNDEFINED('?'); 
-	
-	public final char value;
+	private BooleanFunction condition;
 
-	private VariableState(char value)
-	{
-		this.value = value;
+	public Arc()
+	{	
 	}
 	
-	@Override
-	public String toString()
+	public Arc(Vertex first, Vertex second)
 	{
-		return Character.toString(value);
-	}
-	
-	public static VariableState fromChar(char c)
-	{
-		if (c == TRUE.value) return TRUE;
-		if (c == FALSE.value) return FALSE;
-		
-		return UNDEFINED;
+		super(first, second);
+		condition = BooleanFunction.TRUE;
 	}
 
-	public boolean matches(VariableState state)
+	public void setCondition(BooleanFunction condition)
 	{
-		if (value == state.value) return true;
-		if (value == '?' || state.value == '?') return true;
-		return false;
-	}
+		this.condition = condition;
+		sendNotification(new PropertyChangedEvent(this, "condition"));
+	}	
 	
-	public VariableState toggle()
+	public BooleanFunction getCondition()
 	{
-		switch(this)
-		{
-			case TRUE: return VariableState.FALSE;
-			case FALSE: return VariableState.UNDEFINED;
-			default: return VariableState.TRUE;
-		}		
+		return condition;
 	}
 }

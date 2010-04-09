@@ -22,30 +22,15 @@
 package org.workcraft.plugins.cpog;
 
 import org.workcraft.dom.math.MathConnection;
-import org.workcraft.observation.PropertyChangedEvent;
 
-public class CPOGConnection extends MathConnection
+public class DynamicVariableConnection extends MathConnection
 {
-	private BooleanFunction condition;
-
-	public CPOGConnection()
+	public DynamicVariableConnection()
 	{	
 	}
 	
-	public CPOGConnection(Vertex first, Vertex second)
+	public DynamicVariableConnection(Vertex first, Variable second)
 	{
 		super(first, second);
-		condition = BooleanFunction.TRUE;
-	}
-
-	public void setCondition(BooleanFunction condition)
-	{
-		this.condition = condition;
-		sendNotification(new PropertyChangedEvent(this, "condition"));
-	}	
-	
-	public BooleanFunction getCondition()
-	{
-		return condition;
 	}
 }

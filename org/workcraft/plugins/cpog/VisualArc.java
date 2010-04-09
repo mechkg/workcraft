@@ -21,47 +21,39 @@
 
 package org.workcraft.plugins.cpog;
 
-public enum VariableState
-{
-	TRUE('1'),
-	FALSE('0'),
-	UNDEFINED('?'); 
-	
-	public final char value;
+import org.workcraft.dom.visual.connections.VisualConnection;
+import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 
-	private VariableState(char value)
+public class VisualArc extends VisualConnection
+{
+	Arc mathConnection;
+	
+	public VisualArc(Arc mathConnection)
 	{
-		this.value = value;
+		super();
+		this.mathConnection = mathConnection;
 	}
 	
 	@Override
-	public String toString()
+	protected void initialise()
 	{
-		return Character.toString(value);
+		super.initialise();
+		addPropertyDeclaration(new PropertyDeclaration(this, "Condition", "getCondition", "setCondition", String.class));
 	}
 	
-	public static VariableState fromChar(char c)
+	public VisualArc(Arc mathConnection, VisualVertex first, VisualVertex second)
 	{
-		if (c == TRUE.value) return TRUE;
-		if (c == FALSE.value) return FALSE;
-		
-		return UNDEFINED;
+		super(mathConnection, first, second);
+		this.mathConnection = mathConnection;
 	}
 
-	public boolean matches(VariableState state)
+	public String getCondition()
 	{
-		if (value == state.value) return true;
-		if (value == '?' || state.value == '?') return true;
-		return false;
-	}
-	
-	public VariableState toggle()
+		return mathConnection.getCondition().value;
+	}	
+
+	public void setCondition(String condition)
 	{
-		switch(this)
-		{
-			case TRUE: return VariableState.FALSE;
-			case FALSE: return VariableState.UNDEFINED;
-			default: return VariableState.TRUE;
-		}		
+		mathConnection.setCondition(new BooleanFunction(condition));
 	}
 }

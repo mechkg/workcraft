@@ -22,38 +22,26 @@
 package org.workcraft.plugins.cpog;
 
 import org.workcraft.dom.visual.connections.VisualConnection;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 
-public class VisualCPOGConnection extends VisualConnection
+public class VisualDynamicVariableConnection extends VisualConnection
 {
-	CPOGConnection mathConnection;
+	DynamicVariableConnection mathConnection;
 	
-	public VisualCPOGConnection(CPOGConnection mathConnection)
+	public VisualDynamicVariableConnection(DynamicVariableConnection mathConnection)
 	{
 		super();
 		this.mathConnection = mathConnection;
 	}
 	
-	@Override
-	protected void initialise()
-	{
-		super.initialise();
-		addPropertyDeclaration(new PropertyDeclaration(this, "Condition", "getCondition", "setCondition", String.class));
-	}
-	
-	public VisualCPOGConnection(CPOGConnection mathConnection, VisualVertex first, VisualVertex second)
+	public VisualDynamicVariableConnection(DynamicVariableConnection mathConnection, VisualVertex first, VisualVariable second)
 	{
 		super(mathConnection, first, second);
 		this.mathConnection = mathConnection;
 	}
-
-	public String getCondition()
+	
+	@Override
+	public boolean hasArrow()
 	{
-		return mathConnection.getCondition().value;
-	}	
-
-	public void setCondition(String condition)
-	{
-		mathConnection.setCondition(new BooleanFunction(condition));
+		return false;
 	}
 }

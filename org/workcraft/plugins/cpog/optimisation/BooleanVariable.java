@@ -18,19 +18,9 @@
 * along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
-package org.workcraft.plugins.cpog.optimisation.expressions;
+package org.workcraft.plugins.cpog.optimisation;
 
-import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 
-public interface BooleanVisitor<T> {
-	public T visit(And node);
-	public T visit(Iff node);
-	public T visit(Xor node);
-	public T visit(Zero node);
-	public T visit(One node);
-	public T visit(Not node);
-	public T visit(Imply node);
-	
-	public T visit(BooleanVariable variable);
-	public T visit(Or node);
+public interface BooleanVariable extends BooleanFormula {
+	public String getLabel();
 }

@@ -22,22 +22,31 @@
 package org.workcraft.plugins.cpog.serialisation;
 
 import org.w3c.dom.Element;
-import org.workcraft.exceptions.SerialisationException;
-import org.workcraft.plugins.cpog.BooleanFunction;
-import org.workcraft.serialisation.xml.BasicXMLSerialiser;
+import org.workcraft.plugins.cpog.Arc;
+import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
+import org.workcraft.serialisation.ReferenceResolver;
 
-public class ConditionSerialiser implements BasicXMLSerialiser
+public class ArcDeserialiser extends BooleanFunctionDeserialiser
 {
 	@Override
 	public String getClassName()
 	{
-		return BooleanFunction.class.getName();
+		return Arc.class.getName();
 	}
 
 	@Override
-	public void serialise(Element element, Object object) throws SerialisationException
+	protected void setFormula(Object deserialisee, BooleanFormula formula)
 	{
-		BooleanFunction condition = (BooleanFunction) object;
-		element.setAttribute("value", condition.value);
+		((Arc)deserialisee).setCondition(formula);		
 	}
+
+	@Override
+	public Object createInstance(Element element,
+			ReferenceResolver externalReferenceResolver,
+			Object... constructorParameters)
+	{
+		return new Arc();
+	}
+
+	
 }

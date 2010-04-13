@@ -21,22 +21,20 @@
 
 package org.workcraft.plugins.cpog.serialisation;
 
-import org.w3c.dom.Element;
-import org.workcraft.exceptions.DeserialisationException;
-import org.workcraft.plugins.cpog.BooleanFunction;
-import org.workcraft.serialisation.xml.BasicXMLDeserialiser;
+import org.workcraft.plugins.cpog.Vertex;
+import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 
-public class ConditionDeserialiser implements BasicXMLDeserialiser
+public class VertexSerialiser extends BooleanFormulaSerialiser
 {
 	@Override
 	public String getClassName()
 	{
-		return BooleanFunction.class.getName();
+		return Vertex.class.getName();
 	}
-
-	@Override
-	public Object deserialise(Element element) throws DeserialisationException
+	
+	@Override	
+	protected BooleanFormula getFormula(Object serialisee)
 	{
-		return new BooleanFunction(element.getAttribute("value"));
+		return ((Vertex) serialisee).getCondition();
 	}
 }

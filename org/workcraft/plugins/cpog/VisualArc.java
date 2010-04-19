@@ -36,6 +36,8 @@ import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.observation.PropertyChangedEvent;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
+import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
+import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 import org.workcraft.util.Geometry;
@@ -74,12 +76,10 @@ public class VisualArc extends VisualConnection
 	{
 		if (getCondition() == One.instance()) return;
 		
-		String text = FormulaToString.toString(getCondition(), true);
-			
-		final GlyphVector glyphs = labelFont.createGlyphVector(g.getFontRenderContext(), text);
+		FormulaRenderingResult result = FormulaToGraphics.render(getCondition(), g.getFontRenderContext(), labelFont);
 		
-		Rectangle2D labelBB = glyphs.getLogicalBounds();
-
+		Rectangle2D labelBB = result.boundingBox;
+		
 		ConnectionGraphic graphic = getGraphic();
 		
 		Point2D p = graphic.getPointOnCurve(0.5);
@@ -100,7 +100,17 @@ public class VisualArc extends VisualConnection
 		g.transform(AffineTransform.getRotateInstance(d.getX(), d.getY(), labelPosition.getX(), labelPosition.getY()));		
 		
 		g.setColor(Coloriser.colorise(Color.BLACK, getColorisation()));
-		g.drawGlyphVector(glyphs, 0, 0);
+		
+		int k = 0;
+		for(GlyphVector glyph : result.glyphs)
+		{
+			Point2D pos = result.glyphCoordinates.get(k++);
+			g.drawGlyphVector(glyph, (float) pos.getX(), (float) pos.getY());
+		}
+		
+		g.setStroke(new BasicStroke(0.025f));
+		for(Line2D line : result.inversionLines) g.draw(line);
+				
 		g.setTransform(transform);
 		
 			

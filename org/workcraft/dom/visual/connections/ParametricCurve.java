@@ -28,5 +28,8 @@ public interface ParametricCurve {
 	public Point2D getPointOnCurve (double t);
 	public Point2D getNearestPointOnCurve(Point2D pt);
 	public double getDistanceToCurve(Point2D pt);
-	public Rectangle2D getBoundingBox();	
+	public Rectangle2D getBoundingBox();
+
+	public Point2D getDerivativeAt(double t);
+	public Point2D getSecondDerivativeAt(double t);	
 }

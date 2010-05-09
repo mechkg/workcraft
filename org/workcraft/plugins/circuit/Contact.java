@@ -37,12 +37,15 @@ public class Contact extends MathNode {
 	public Contact() {
 	}
 	
+	
 	public Contact(IOType iot) {
 		super();
 		
+//		setName(label);
 		setIOType(iot);
 	}
 	
+
 	public void setIOType(IOType t) {
 		this.iotype = t;
 	}

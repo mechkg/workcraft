@@ -77,7 +77,7 @@ import org.xml.sax.SAXException;
 public class Framework {
 	public static final String FRAMEWORK_VERSION_MAJOR = "2";
 	public static final String FRAMEWORK_VERSION_MINOR = "dev";
-
+	
 	class ExecuteScriptAction implements ContextAction {
 		private String script;
 		private Scriptable scope;
@@ -168,14 +168,13 @@ public class Framework {
 
 	private ContextFactory contextFactory = new ContextFactory();
 
-
 	private boolean silent = false;
 
 	private MainWindow mainWindow;
 
 	public Framework() {
 		pluginManager = new PluginManager(this);
-		taskManager = new DefaultTaskManager(this);
+		taskManager = new DefaultTaskManager();
 		modelManager = new ModelManager();
 		config = new Config();
 		workspace = new Workspace(this);

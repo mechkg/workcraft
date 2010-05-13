@@ -183,7 +183,7 @@ public class SelectionTool extends AbstractTool {
 
 			} else {
 				// hit something
-
+				
 				if(e.getKeyModifiers()==0 && hitNode instanceof Movable) {
 					// mouse down without modifiers, begin move-drag
 					drag = DRAG_MOVE;

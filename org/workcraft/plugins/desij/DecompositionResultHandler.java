@@ -24,7 +24,7 @@ public class DecompositionResultHandler extends DummyProgressMonitor<DesiJResult
 
 	@Override
 	public void finished(Result<? extends DesiJResult> result, String description) {
-				
+		
 		if (result.getOutcome() == Outcome.FINISHED) {
 			final Workspace workspace = framework.getWorkspace();
 			
@@ -72,25 +72,8 @@ public class DecompositionResultHandler extends DummyProgressMonitor<DesiJResult
 				}
 			});
 		}
-		
-		
 	}
 
-	private boolean deleteDirectory(File directory) {
-		
-		if (directory.exists()) {
-			File[] files = directory.listFiles();
-			for (File file: files) {
-				if (file.isDirectory()) 
-					deleteDirectory(file);
-				else
-					file.delete();
-			}
-		}
-		
-		return directory.delete();		
-	}
-	
 	private String getComponentSuffix(File componentFile) {
 		
 		String fileName = componentFile.getName(); // stg.g__final_suffix.g

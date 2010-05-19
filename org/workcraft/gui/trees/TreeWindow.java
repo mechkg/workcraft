@@ -117,7 +117,7 @@ public class TreeWindow<Node> extends JPanel
 							if(tree.isExpanded(i))
 								expanded.add(treePath);
 						}
-
+						
 						super.restructured(path);
 
 						for(TreePath p : expanded)

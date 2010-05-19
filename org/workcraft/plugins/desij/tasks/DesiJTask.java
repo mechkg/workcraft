@@ -119,16 +119,16 @@ public class DesiJTask implements Task<DesiJResult> {
 			public boolean accept(File dir, String name) { 
 				return name.startsWith(specFileName + "__final_"); // current DesiJ naming convention
 			} 
-		}; 
+		};
 		String[] children = workingDirectory.list(filter); // based on File names
 		
 		// format the result 
-		File[] result = new File[children.length];
 		if (children == null) { 
 			// Either workingDirectory does not exist or is not a directory 
 			return null;
 		} 
 		else { 
+			File[] result = new File[children.length];
 			for (int i=0; i<children.length; i++) {
 				result[i] = new File(workingDirectory, children[i]);  
 			} 

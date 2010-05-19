@@ -24,7 +24,7 @@ public class DecompositionResultHandler extends DummyProgressMonitor<DesiJResult
 
 	@Override
 	public void finished(Result<? extends DesiJResult> result, String description) {
-				
+		
 		if (result.getOutcome() == Outcome.FINISHED) {
 			final Workspace workspace = framework.getWorkspace();
 			
@@ -72,14 +72,12 @@ public class DecompositionResultHandler extends DummyProgressMonitor<DesiJResult
 				}
 			});
 		}
-		
-		
 	}
-	
+
 	private String getComponentSuffix(File componentFile) {
-		
+
 		String fileName = componentFile.getName(); // stg.g__final_suffix.g
-		
+
 		// determine the suffix
 		String suffix = fileName.substring(
 				fileName.lastIndexOf("__final_") + 8,

@@ -19,7 +19,7 @@
 *
 */
 
-package org.workcraft.plugins.verification;
+package org.workcraft.plugins.shared;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,20 +30,20 @@ import org.workcraft.gui.propertyeditor.PersistentPropertyEditable;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 import org.workcraft.gui.propertyeditor.PropertyDescriptor;
 
-@DisplayName("MPSat")
-public class MpsatUtilitySettings implements PersistentPropertyEditable, Plugin {
+@DisplayName("punf")
+public class PunfUtilitySettings implements PersistentPropertyEditable, Plugin {
 	private static LinkedList<PropertyDescriptor> properties;
 	
-	private static String mpsatCommand = "mpsat";
-	private static String mpsatArgs = "";
+	private static String punfCommand = "punf";
+	private static String punfArgs = "";
 	
-	private static final String mpsatCommandKey = "Verification.mpsat.command";
-	private static final String mpsatArgsKey = "Verification.mpsat.args";
+	private static final String punfCommandKey = "Tools.punf.command";
+	private static final String punfArgsKey = "Tools.punf.args";
 
-	public MpsatUtilitySettings() {
+	public PunfUtilitySettings() {
 		properties = new LinkedList<PropertyDescriptor>();
-		properties.add(new PropertyDeclaration(this, "MPSat command", "getMpsatCommand", "setMpsatCommand", String.class));
-		properties.add(new PropertyDeclaration(this, "MPSat additional arguments", "getMpsatArgs", "setMpsatArgs", String.class));
+		properties.add(new PropertyDeclaration(this, "Punf command", "getPunfCommand", "setPunfCommand", String.class));
+		properties.add(new PropertyDeclaration(this, "Additional command line arguments", "getPunfArgs", "setPunfArgs", String.class));
 	}
 	
 	public List<PropertyDescriptor> getDescriptors() {
@@ -51,33 +51,32 @@ public class MpsatUtilitySettings implements PersistentPropertyEditable, Plugin 
 	}
 
 	public void loadPersistentProperties(Config config) {
-		mpsatCommand = config.getString(mpsatCommandKey, "mpsat");
-		mpsatArgs = config.getString(mpsatArgsKey, "");
+		punfCommand = config.getString(punfCommandKey, "punf");
+		punfArgs = config.getString(punfArgsKey, "");
 	}
 
 	public void storePersistentProperties(Config config) {
-		config.set(mpsatCommandKey, mpsatCommand);
-		config.set(mpsatArgsKey, mpsatArgs);
+		config.set(punfCommandKey, punfCommand);
+		config.set(punfArgsKey, punfArgs);
 	}
 	
 	public String getSection() {
-		return "Verification";
+		return "External tools";
 	}
 
-	public static String getMpsatCommand() {
-		return mpsatCommand;
+	public static String getPunfCommand() {
+		return punfCommand;
 	}
 
-	public static void setMpsatCommand(String mpsatCommand) {
-		MpsatUtilitySettings.mpsatCommand = mpsatCommand;
+	public static void setPunfCommand(String punfCommand) {
+		PunfUtilitySettings.punfCommand = punfCommand;
 	}
 
-	public static String getMpsatArgs() {
-		return mpsatArgs;
+	public static String getPunfArgs() {
+		return punfArgs;
 	}
 
-	public static void setMpsatArgs(String mpsatArgs) {
-		MpsatUtilitySettings.mpsatArgs = mpsatArgs;
+	public static void setPunfArgs(String punfArgs) {
+		PunfUtilitySettings.punfArgs = punfArgs;
 	}
-
 }

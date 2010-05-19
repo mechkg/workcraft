@@ -18,13 +18,11 @@
 * along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
-package org.workcraft.gui.workspace;
+package org.workcraft.gui.trees;
 
 import javax.swing.Icon;
-import javax.swing.JPopupMenu;
 
 public interface TreeDecorator<Node> {
 	public String getName(Node node);
 	public Icon getIcon(Node node);
-	public JPopupMenu getPopupMenu(Node node);
 }

@@ -135,7 +135,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		if (first instanceof Transition && second instanceof Transition)
 			throw new InvalidConnectionException ("Connections between transitions are not valid");
 		
-				
+		
 		MathConnection con = new MathConnection((MathNode)first, (MathNode)second);
 		
 		Hierarchy.getNearestContainer(first, second).add(con);

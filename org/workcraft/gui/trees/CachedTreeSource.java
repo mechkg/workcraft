@@ -13,7 +13,7 @@ public class CachedTreeSource<Node> implements TreeSource<Node> {
 
 	public CachedTreeSource(final TreeSource<Node> source) {
 		this.source = source;
-		
+	 
 		cache.update(source.getRoot(), source);
 
 		source.addListener(new TreeListener<Node>() {

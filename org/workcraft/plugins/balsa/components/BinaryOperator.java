@@ -21,6 +21,7 @@
 
 package org.workcraft.plugins.balsa.components;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,14 +39,13 @@ public enum BinaryOperator
 	AND ("And"), 
 	OR ("Or");
 	
-	private static Map<String, BinaryOperator> textToValue = fillMap(); 
+	private static Map<String, BinaryOperator> textToValue = fillMap();
+	public static Map<String, BinaryOperator> textToValue() { return Collections.unmodifiableMap(textToValue); }
 	private static Map<String, BinaryOperator> fillMap() {
 		Map<String, BinaryOperator> result = new HashMap<String, BinaryOperator>();
 
 		for(BinaryOperator op : BinaryOperator.values())
-		{
 			result.put(op.text, op);
-		}
 		
 		return result;
 	}

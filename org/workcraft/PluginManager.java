@@ -313,6 +313,12 @@ public class PluginManager implements PluginProvider {
 		return ret;
 
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> T getSingleton(Class<? extends T> type) throws PluginInstantiationException
+	{
+		return (T)getSingletonByName(type.getCanonicalName());
+	}
 
 	/* (non-Javadoc)
 	 * @see org.workcraft.framework.plugins.PluginProvider#getSingletonByName(java.lang.String)

@@ -38,6 +38,7 @@ import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 import org.workcraft.observation.StateEvent;
 import org.workcraft.observation.StateObserver;
+import org.workcraft.observation.TransformChangedEvent;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.petri.VisualTransition;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
@@ -193,7 +194,10 @@ public class VisualSignalTransition extends VisualTransition implements StateObs
 		}
 
 		glyphVector = null;
-		textBB = null;		
+		textBB = null;
+		
+		transformChanging();
+		transformChanged();
 	}
 	
 	@NoAutoSerialisation

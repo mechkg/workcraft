@@ -5,6 +5,7 @@ import org.workcraft.Initialiser;
 import org.workcraft.Module;
 import org.workcraft.PluginManager;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.Importer;
 import org.workcraft.plugins.interop.DotExporter;
 import org.workcraft.plugins.interop.DotGExporter;
 import org.workcraft.plugins.interop.DotGImporter;
@@ -16,10 +17,6 @@ public class Exporters implements Module {
 	@Override
 	public Class<?>[] getPluginClasses() {
 		return new Class<?>[]{
-				DotExporter.class,
-				DotGExporter.class,
-				SVGExporter.class,
-				DotGImporter.class
 		};
 	}
 
@@ -33,6 +30,11 @@ public class Exporters implements Module {
 			}
 		});
 		
+		p.registerClass(Exporter.class, DotExporter.class);
+		p.registerClass(Exporter.class, DotGExporter.class);
+		p.registerClass(Exporter.class, SVGExporter.class);
+		p.registerClass(Importer.class, DotGImporter.class);
+
 	}
 
 }

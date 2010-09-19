@@ -98,7 +98,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 			if (n!=null)
 				return n;
 		}
-		
+
 		return defaultNameManager.get(reference);
 	}
 
@@ -122,7 +122,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 		} else
 			return defaultNameManager.getName(node);
 	}
-	
+
 	public Pair<String, Integer> getNamePair(Node node) {
 		if (node instanceof Transition)
 			return instancedNameManager.getInstance(node);
@@ -144,7 +144,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 	public int getInstanceNumber (Node st) {
 		return instancedNameManager.getInstance(st).getSecond();
 	}
-	
+
 	public void setInstanceNumber (Node st, int number) {
 		instancedNameManager.assign(st, number);
 	}
@@ -170,7 +170,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 			} catch (ArgumentException e) {
 				if (Identifier.isValid(s)) {
 					instancedNameManager.assign(st, s+st.getDirection());
-					
+
 					transitions.remove(s, st);
 					transitions.put(s, st);
 
@@ -215,7 +215,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 			}
 	}
 
-	private void setDefaultNameIfUnnamed(Node node) {
+	public void setDefaultNameIfUnnamed(Node node) {
 		if (node instanceof SignalTransition) {
 			final SignalTransition st = (SignalTransition)node;
 
@@ -236,12 +236,12 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 			dt.setName(name);
 
 			instancedNameManager.assign(dt);
-		  } else if (node instanceof STGPlace) {
-			   //if (!((STGPlace) node).isImplicit()) // Fix for 628207: I don't know why it had to be like that, maybe I broke something? mech
-			    defaultNameManager.setDefaultNameIfUnnamed(node);
-			  }
-		  else
-			  defaultNameManager.setDefaultNameIfUnnamed(node);
+		} else if (node instanceof STGPlace) {
+			if (!((STGPlace) node).isImplicit())
+				defaultNameManager.setDefaultNameIfUnnamed(node);
+		}
+		else
+			defaultNameManager.setDefaultNameIfUnnamed(node);
 	}
 
 	private void nodeRemoved(Node node) {

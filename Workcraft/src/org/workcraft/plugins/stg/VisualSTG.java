@@ -140,8 +140,9 @@ public class VisualSTG extends AbstractVisualModel {
 		Container group = Hierarchy.getNearestAncestor(con, Container.class);
 
 		STGPlace implicitPlace = con.getImplicitPlace();
-		implicitPlace.setImplicit(false);
-
+		
+		stg.makeExplicit(implicitPlace);
+		
 		VisualPlace place = new VisualPlace(implicitPlace);
 		Point2D p = con.getPointOnConnection(0.5);
 		place.setX(p.getX()); place.setY(p.getY());

@@ -8,6 +8,7 @@
 	</target>
 	
 	<target name="source">
+		<delete dir="${outPath}"/>
 		<mkdir dir="${outPath}"/>
 		<java fork="false" logerror="true" failonerror="true" classname="org.workcraft.plugins.balsa.stg.codegenerator.GenerateMainClasses">
 			<arg value="${src}"/>

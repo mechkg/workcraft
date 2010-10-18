@@ -18,32 +18,32 @@
 * along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
-package org.workcraft.plugins.cpog.optimisation;
+package org.workcraft.plugins.cpog.optimisation.dnf;
 
 import java.util.List;
 
+import org.workcraft.plugins.cpog.optimisation.Nf;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor;
 
-public class CnfClause extends Clause {
 
-	public CnfClause()
+public class Dnf extends Nf<DnfClause> {
+
+	public Dnf()
 	{
 	}
 	
-	public CnfClause(Literal... literals)
+	public Dnf(DnfClause... clauses)
 	{
-		super(literals);
+		super(clauses);
 	}
 
-	public CnfClause(List<Literal> literals) {
-		super(literals);
+	public Dnf(List<DnfClause> clauses) {
+		super(clauses);
 	}
 
-	
 	@Override
 	public <T> T accept(BooleanVisitor<T> visitor) {
-		return BooleanOperations.or(getLiterals()).accept(visitor);
+		return BooleanOperations.or(getClauses()).accept(visitor);
 	}
-	
 }

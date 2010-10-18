@@ -20,49 +20,27 @@
 */
 package org.workcraft.plugins.cpog.optimisation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor;
 
 
-public class Cnf implements BooleanFormula {
+public class Cnf extends Nf<CnfClause> {
 
-	private List<CnfClause> clauses = new ArrayList<CnfClause>();
-	
 	public Cnf()
 	{
 	}
 	
 	public Cnf(CnfClause... clauses)
 	{
-		this(Arrays.asList(clauses));
+		super(clauses);
 	}
 
 	public Cnf(List<CnfClause> clauses) {
-		this.clauses = clauses;
+		super(clauses);
 	}
 
-	public void setClauses(List<CnfClause> clauses) {
-		this.clauses = clauses;
-	}
-
-	public List<CnfClause> getClauses() {
-		return clauses;
-	}
-	
-	public void add(List<CnfClause> list)
-	{
-		clauses.addAll(list);
-	}
-	
-	public void add(CnfClause... arr)
-	{
-		clauses.addAll(Arrays.asList(arr));
-	}
-	
 	@Override
 	public String toString() 
 	{
@@ -75,10 +53,6 @@ public class Cnf implements BooleanFormula {
 
 	@Override
 	public <T> T accept(BooleanVisitor<T> visitor) {
-		return BooleanOperations.and(clauses).accept(visitor);
-	}
-
-	public void add(Cnf cnf) {
-		add(cnf.getClauses());
+		return BooleanOperations.and(getClauses()).accept(visitor);
 	}
 }

@@ -34,6 +34,7 @@ import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
+import org.workcraft.plugins.petri.Place;
 
 @DisplayName("Joint")
 @Hotkey(KeyEvent.VK_J)
@@ -41,6 +42,24 @@ import org.workcraft.gui.Coloriser;
 
 public class VisualJoint extends VisualComponent {
 	static double jointSize = 0.25;
+	private Place referencedOnePlace;
+	public Place getReferencedOnePlace() {
+		return referencedOnePlace;
+	}
+
+	public void setReferencedOnePlace(Place referencedOnePlace) {
+		this.referencedOnePlace = referencedOnePlace;
+	}
+
+	public Place getReferencedZeroPlace() {
+		return referencedZeroPlace;
+	}
+
+	public void setReferencedZeroPlace(Place referencedZeroPlace) {
+		this.referencedZeroPlace = referencedZeroPlace;
+	}
+
+	private Place referencedZeroPlace;
 	
 	public VisualJoint(Joint joint) {
 		super(joint);
@@ -61,18 +80,15 @@ public class VisualJoint extends VisualComponent {
 		g.setColor(Coloriser.colorise(getForegroundColor(), r.getDecoration().getColorisation()));
 		g.fill(shape);
 	}
-
-	
 	
 	@Override
 	public Rectangle2D getBoundingBoxInLocalSpace() {
 		return new Rectangle2D.Double(-jointSize/2, -jointSize/2, jointSize, jointSize);
 	}
-
 	
 	@Override
 	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
 		return pointInLocalSpace.distanceSq(0, 0) < jointSize*jointSize/4;
 	}
-
+	
 }

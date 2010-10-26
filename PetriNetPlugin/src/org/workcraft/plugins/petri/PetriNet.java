@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.workcraft.Plugin;
 import org.workcraft.annotations.VisualClass;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Container;
@@ -170,7 +169,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 			if (t==c.getFirst()) {
 				Place to = (Place)c.getSecond();
 				to.setTokens(((Place)to).getTokens()-1);
-			} 
+			}
 			if (t==c.getSecond()) {
 				Place from = (Place)c.getFirst();
 				from.setTokens(((Place)from).getTokens()+1);

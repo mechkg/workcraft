@@ -21,7 +21,7 @@ public class DnfClause extends Clause {
 	public DnfClause(List<Literal> literals) {
 		super(literals);
 	}
-
+	
 	@Override
 	public <T> T accept(BooleanVisitor<T> visitor) {
 		return BooleanOperations.and(getLiterals()).accept(visitor);

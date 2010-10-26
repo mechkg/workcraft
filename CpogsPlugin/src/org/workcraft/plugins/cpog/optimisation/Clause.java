@@ -34,7 +34,7 @@ public abstract class Clause implements BooleanFormula {
 	public Clause()
 	{
 	}
-
+	
 	public Clause(Literal... literals)
 	{
 		this(Arrays.asList(literals));

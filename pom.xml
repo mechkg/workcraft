@@ -10,7 +10,7 @@
     <module>Workcraft</module>
     <module>STGPlugin</module>
     <module>PetriNetPlugin</module>
-    <module>BalsaPlugin</module>
+<!--    <module>BalsaPlugin</module> -->
     <module>BalsaWrapperGenerator</module>
     <module>BalsaPluginBase</module>
     <module>CpogsPlugin</module>

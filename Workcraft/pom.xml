@@ -200,7 +200,7 @@
     <dependency>
     	<groupId>net.java.dev.substance</groupId>
     	<artifactId>substance</artifactId>
-    	<version>5.1_01final Panama</version>
+    	<version>5.1_01final_Panama</version>
     	<optional>false</optional>
     </dependency>
     

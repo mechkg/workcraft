@@ -2,6 +2,7 @@ package org.workcraft.plugins.balsa.stg.codegenerator;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.workcraft.plugins.balsa.io.BalsaSystem;
 
@@ -9,8 +10,11 @@ public class GenerateMainClasses
 {
 	public static void main(String[] args) throws IOException
 	{
-	    boolean doThrow = new java.util.HashSet<String>(java.util.Arrays.asList(args)).contains("--throw");
-	    int result = _main(args);
+	    ArrayList<String> argsList = new ArrayList<String>(java.util.Arrays.asList(args));
+	    boolean doThrow = argsList.contains("--throw");
+	    if(doThrow)
+	        argsList.remove("--throw");
+	    int result = _main(argsList.toArray(new String[0]));
 	    if(doThrow)
 	        if(result!=0)
 	            throw new RuntimeException("Return value is: " + result);
@@ -38,11 +42,14 @@ public class GenerateMainClasses
 		for(String s : packagePath)
 			packageFile = new File(packageFile, s);
 		System.out.println("Package directory will be: '" + packageFile.getAbsolutePath() + "'.");
+
 		if(!packageFile.exists())
 		{
 		    if(!packageFile.mkdirs())
+		    {
     			System.out.println("Error: the package directory does not exist and can not be created.");
-			return 2;
+			    return 2;
+			}
 		}
 		
 		if(!packageFile.isDirectory())
@@ -51,7 +58,16 @@ public class GenerateMainClasses
 			return 2;
 		}
 		
+		try
+		{
 		CodeGenerator.generateBaseClasses(outPath, packagePath, balsa);
+		}
+		catch(RuntimeException e)
+		{
+		    System.out.println("Error generating classes: " + e);
+		    e.printStackTrace();
+		    return 2;
+		}
 		
 		System.out.println("Classes generated successfully.");
 		return 0;

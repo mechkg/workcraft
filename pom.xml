@@ -1,0 +1,26 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.workcraft</groupId>
+  <artifactId>everything</artifactId>
+  <version>2</version>
+  <packaging>pom</packaging>
+
+  <name>Entire Workcraft Solution</name>
+  <modules>
+    <module>Workcraft</module>
+    <module>STGPlugin</module>
+    <module>PetriNetPlugin</module>
+    <module>BalsaPlugin</module>
+    <module>BalsaWrapperGenerator</module>
+    <module>BalsaPluginBase</module>
+    <module>CpogsPlugin</module>
+    <module>GatesPlugin</module>
+    <module>PetrifyPlugin</module>
+    <module>Workflow</module>
+    <module>CircuitPlugin</module>
+    <module>DesiJPlugin</module>
+    <module>Graph</module>
+    <module>MpsatPlugin</module>
+    <module>Tests</module>
+  </modules>
+</project>

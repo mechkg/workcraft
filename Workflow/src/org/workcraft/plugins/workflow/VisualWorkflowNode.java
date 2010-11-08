@@ -31,9 +31,9 @@ public class VisualWorkflowNode extends VisualComponent {
 
 	@Override
 	public void draw(DrawRequest r) {
-		r.setColor(Color.BLACK);
-		r.setStroke(new BasicStroke(0.01f));
-		r.draw(shape);
+		r.getGraphics().setColor(Color.BLACK);
+		r.getGraphics().setStroke(new BasicStroke(0.01f));
+		r.getGraphics().draw(shape);
 	}
 
 }

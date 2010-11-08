@@ -11,3 +11,7 @@ generated
 /.metadata
 *.jar
 
+target
+.project
+.classpath
+.settings

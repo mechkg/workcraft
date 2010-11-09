@@ -5,6 +5,11 @@
   <version>2</version>
   <packaging>pom</packaging>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+
   <name>Entire Workcraft Solution</name>
   <modules>
     <module>Workcraft</module>

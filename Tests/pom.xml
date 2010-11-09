@@ -35,7 +35,7 @@
         </configuration>
       </plugin>
     </plugins>
-     <resources> <!-- bad to eclipse :( -->
+ <!--     <resources> 
       <resource>
         <directory>src/test/java</directory>
         <excludes>
@@ -44,7 +44,7 @@
           </exclude>
         </excludes>
       </resource>
-    </resources>
+    </resources> -->
   </build>
     
   <dependencies>

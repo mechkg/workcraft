@@ -48,8 +48,8 @@
         </repository>
         <repository>
             <id>workcraft_repo</id>
-            <name>Workcraft Repo</name>
-            <url>http://www.honey-net.eu/maven2/</url>
+            <name>Workcraft Maven2 Repository</name>
+            <url>http://workcraft.org/maven2/</url>
         </repository>
     </repositories>
              

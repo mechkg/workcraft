@@ -120,11 +120,11 @@ public class MainMenu extends JMenuBar {
 	private String[] lafClasses = new String[] {
 			"javax.swing.plaf.metal.MetalLookAndFeel",
 			"com.sun.java.swing.plaf.windows.WindowsLookAndFeel",
-			"org.jvnet.substance.skin.SubstanceModerateLookAndFeel",
-			"org.jvnet.substance.skin.SubstanceMistSilverLookAndFeel",
-			"org.jvnet.substance.skin.SubstanceRavenLookAndFeel",
-			"org.jvnet.substance.skin.SubstanceBusinessLookAndFeel",
-			"org.jvnet.substance.skin.SubstanceCremeCoffeeLookAndFeel"
+			"org.pushingpixels.substance.api.skin.SubstanceModerateLookAndFeel",
+			"org.pushingpixels.substance.api.skin.SubstanceMistSilverLookAndFeel",
+			"org.pushingpixels.substance.api.skin.SubstanceRavenLookAndFeel",
+			"org.pushingpixels.substance.api.skin.SubstanceBusinessLookAndFeel",
+			"org.pushingpixels.substance.api.skin.SubstanceCremeCoffeeLookAndFeel"
 	};
 	private JMenu mnTools;
 

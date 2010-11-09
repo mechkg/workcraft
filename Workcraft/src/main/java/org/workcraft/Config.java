@@ -23,6 +23,7 @@ package org.workcraft;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -41,6 +42,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.workcraft.util.XmlUtil;
 import org.xml.sax.SAXException;
 
 public class Config {
@@ -158,23 +160,20 @@ public class Config {
 	}
 
 	public void load(String fileName) {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		
 		Document xmldoc;
-		DocumentBuilder db;
-
 		try {
-			db = dbf.newDocumentBuilder();
-			xmldoc = db.parse(new File(fileName));
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
+			xmldoc = XmlUtil.loadDocument(new File(fileName));
+		} catch (ParserConfigurationException e1) {
+			throw new RuntimeException(e1);
+		} catch (SAXException e1) {
+			throw new RuntimeException(e1);
+		} catch (FileNotFoundException e1) {
 			return;
-		} catch (IOException e) {
-			return;
-		} catch (SAXException e) {
-			e.printStackTrace();
-			return;
-		}
-
+		} catch (IOException e1) {
+			throw new RuntimeException(e1);
+		} 
+		
 		Element xmlroot = xmldoc.getDocumentElement();
 
 		NodeList nl =  xmlroot.getChildNodes(), nl2;
@@ -239,35 +238,20 @@ public class Config {
 			}
 			xmlroot.appendChild(group);
 		}
-
+		
+		
 		try
 		{
-			TransformerFactory tFactory = TransformerFactory.newInstance();
-			tFactory.setAttribute("indent-number", new Integer(2));
-			Transformer transformer = tFactory.newTransformer();
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-
-
 			File file = new File(fileName);
-
-			/*File parentDir = file.getParentFile();
+			
+			File parentDir = file.getParentFile();
 			if (parentDir != null)
 				if (!parentDir.exists())
-					parentDir.mkdirs(); */
-
+					parentDir.mkdirs();
+			
 			file.createNewFile();
 
-			FileOutputStream fos = new FileOutputStream(file);
-
-			DOMSource source = new DOMSource(xmldoc);
-			StreamResult result = new StreamResult(new OutputStreamWriter(fos, "utf-8"));
-
-
-			transformer.transform(source, result);
-			fos.close();
-		} catch (TransformerException e) {
-			e.printStackTrace();
+			XmlUtil.saveDocument (xmldoc, file);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -172,7 +172,7 @@ public class BasicTypesSerialisation {
 			doc.appendChild(root);
 
 			Element e1 = doc.createElement("property");
-			s.serialise(e1, "череззаборногузадерищенко");
+			s.serialise(e1, "Hello");
 			
 			Element e2 = doc.createElement("property");
 			s.serialise(e2, "");
@@ -184,7 +184,7 @@ public class BasicTypesSerialisation {
 			
 			// XmlUtil.writeDocument(doc, System.out);
 
-			Assert.assertEquals("череззаборногузадерищенко", ds.deserialise(e1));
+			Assert.assertEquals("Hello", ds.deserialise(e1));
 			Assert.assertEquals("", ds.deserialise(e2));
 			Assert.assertEquals("\" <xml", ds.deserialise(e3));
 

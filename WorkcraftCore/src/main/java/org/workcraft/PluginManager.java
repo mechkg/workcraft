@@ -59,7 +59,7 @@ public class PluginManager implements PluginProvider {
 			this.initialiser = initialiser;
 		}
 		
-		T instance;
+		T instance = null;
 		
 		@Override
 		public T newInstance() {
@@ -143,13 +143,22 @@ public class PluginManager implements PluginProvider {
 	private void initModules() {
 		for(PluginInfo<? extends Module> info : getPlugins(Module.class))
 		{
-			final Module module = info.newInstance();
-			try {
+			Module module;
+			try
+			{
+				module = info.newInstance();
+			} catch (RuntimeException e)
+			{
+				System.err.println("! WARNING: One of the modules listed in manifest could not be instantiated. Please reconfigure plugins.");
+				continue;
+			}
+			
+			try{
 				System.out.println("Loading module: " + module.getDescription());
 				module.init(framework);
 			}
-			catch(Throwable th) {
-				System.err.println("Error during initialisation of module " + module.toString());
+			catch(RuntimeException e) {
+				System.err.println("Error during initialisation of module " + info.toString());
 			}
 		}
 	}

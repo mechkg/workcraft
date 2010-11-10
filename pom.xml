@@ -36,10 +36,10 @@
     <module>Workflow</module>
     <module>CircuitPlugin</module>
     <module>DesiJPlugin</module>
-    <module>Graph</module>
+    <module>GraphPlugin</module>
     <module>MpsatPlugin</module>
     <module>Tests</module>
-    <module>Assembly</module>
-    <module>WorkcraftDistr</module>
+    <module>WorkcraftDistrWindowsBasic</module>
+    <module>WorkcraftDistrWindowsFull</module>
   </modules>
 </project>

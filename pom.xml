@@ -24,7 +24,7 @@
 
   <name>Entire Workcraft Solution</name>
   <modules>
-    <module>Workcraft</module>
+    <module>WorkcraftCore</module>
     <module>STGPlugin</module>
     <module>PetriNetPlugin</module>
 <!--    <module>BalsaPlugin</module> -->
@@ -40,5 +40,6 @@
     <module>MpsatPlugin</module>
     <module>Tests</module>
     <module>Assembly</module>
+    <module>WorkcraftDistr</module>
   </modules>
 </project>

@@ -85,7 +85,7 @@ public class DotGImporterTests {
 	@Test
 	public void Test2() throws Throwable
 	{
-		final InputStream test = ClassLoader.getSystemClassLoader().getResourceAsStream("org/workcraft/testing/plugins/interop/test2.g");
+		final InputStream test = ClassLoader.getSystemClassLoader().getResourceAsStream("test2.g");
 		STGModel imported = new DotGImporter().importSTG(test);//DotGImporterTests.class.getClassLoader().getResourceAsStream("test2.g"));
 		Assert.assertEquals(17, imported.getTransitions().size());
 		Assert.assertEquals(0, imported.getDummies().size());

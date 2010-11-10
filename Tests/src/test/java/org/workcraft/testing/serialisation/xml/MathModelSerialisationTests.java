@@ -38,7 +38,7 @@ import org.workcraft.plugins.stg.STG;
 import org.workcraft.testing.serialisation.SerialisationTestingUtils;
 import org.workcraft.util.DataAccumulator;
 
-public class MathModelSerialisation {
+public class MathModelSerialisationTests {
 
 	public static void compareMathModels(Model model1, Model model2) {
 		Assert.assertTrue(model1.getTitle().equals(model2.getTitle()));

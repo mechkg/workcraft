@@ -32,7 +32,7 @@ import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.SignalTransition;
 import org.workcraft.plugins.stg.VisualSTG;
 
-public class ConnectionRemoverTest {
+public class ConnectionRemoverTests {
 	@Test
 	public void removeMany() throws InvalidConnectionException {
 		//PropertyConfigurator.configure("config/logging.properties");

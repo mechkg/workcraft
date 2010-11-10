@@ -101,7 +101,7 @@ public class Config {
 		catch (NumberFormatException e) {
 			e.printStackTrace();
 			return defaultValue;
-		}			
+		}		
 	}
 	
 	public void setDouble (String key, double value) {

@@ -70,7 +70,7 @@ public class STGSimulationTool extends SimulationTool {
 							case INPUT:    label.setForeground(inputsColor); break;
 							case OUTPUT:   label.setForeground(outputsColor); break;
 							case INTERNAL: label.setForeground(internalsColor); break;
-						}	
+						}
 					}
 
 					if (isActive(row, column)) {

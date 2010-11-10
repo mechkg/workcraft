@@ -15,11 +15,6 @@
           <name>Workcraft Maven Repository</name>
           <url>http://workcraft.org/maven2/</url>
       </repository>
-      <repository>
-          <id>workcraft_repo</id>
-          <name>Rabbit Maven Repository</name>
-          <url>http://www.honey-net.eu/nexus/content/groups/public</url>
-      </repository>
   </repositories>
 
   <name>Entire Workcraft Solution</name>

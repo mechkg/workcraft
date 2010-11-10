@@ -55,7 +55,24 @@
 
   </dependencies>
   <build>
+
     <plugins>
+  
+  <plugin>
+   <groupId>com.keyboardsamurais.maven</groupId>
+   <artifactId>maven-timestamp-plugin</artifactId>
+   <configuration>
+    <propertyName>timestamp</propertyName>
+    <timestampPattern>dd-MM-yyyy-HH-mm</timestampPattern>
+   </configuration>
+   <executions>
+    <execution>
+     <goals>
+      <goal>create</goal>
+     </goals>
+    </execution>
+   </executions>
+  </plugin>
 
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -68,7 +85,7 @@
               <goal>single</goal>
             </goals>
             <configuration>
-	      <finalName>Workcraft-${project.version}</finalName>
+	      <finalName>Workcraft-${project.version}-${timestamp}</finalName>
               <descriptors>
                 <descriptor>../distr-assembly-windows.xml</descriptor>
               </descriptors>            	
@@ -78,4 +95,14 @@
       </plugin>
     </plugins>
   </build>
+
+    	<pluginRepositories>
+  		<pluginRepository>
+        <id>maven-timestamp</id>
+          <url>
+                http://maven-timestamp-plugin.googlecode.com/svn/trunk/repository
+          </url>
+		  </pluginRepository>
+   	</pluginRepositories>
+
 </project>

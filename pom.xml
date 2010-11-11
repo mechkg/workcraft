@@ -36,5 +36,7 @@
     <module>Tests</module>
     <module>WorkcraftDistrWindowsBasic</module>
     <module>WorkcraftDistrWindowsFull</module>
+    <module>WorkcraftDistrLinuxBasic</module>
+    <module>WorkcraftDistrLinuxFull</module>
   </modules>
 </project>

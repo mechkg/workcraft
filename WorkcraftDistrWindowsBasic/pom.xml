@@ -19,7 +19,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>LATEST</version>
         <executions>
           <execution>
             <id>bundle-everything</id>

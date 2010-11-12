@@ -1,12 +1,12 @@
 package org.workcraft.dependencymanager.collections;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
-public class WeakOneToMany<T1, T2> {
-	private Map<T1, Set<T2>> data = new WeakHashMap<T1, Set<T2>>();
+public class OneToMany<T1, T2> {
+	private Map<T1, Set<T2>> data = new HashMap<T1, Set<T2>>();
 
 	public Set<T2> get(T1 t) {
 		Set<T2> result = data.get(t);
@@ -37,5 +37,12 @@ public class WeakOneToMany<T1, T2> {
 			data.put(t1, set);
 		}
 		set.add(t2);
+	}
+
+	public int size() {
+		int result = 0;
+		for(Set<T2> s : data.values())
+			result += s.size();
+		return result;
 	}
 }

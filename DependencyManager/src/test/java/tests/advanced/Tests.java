@@ -25,19 +25,6 @@ public class Tests {
 		}
 	}
 	
-	private final class Identity implements Expression<Integer> {
-		private final Expression<Integer> dependency;
-
-		public Identity(final Expression<Integer> dependency) {
-			this.dependency = dependency;
-		}
-
-		@Override
-		public Integer evaluate(final EvaluationContext resolver) {
-			return resolver.resolve(dependency);
-		}
-	}
-
 	@Test
 	public void test0()
 	{

@@ -1,6 +1,6 @@
-package traditional.user;
+package org.workcraft.dependencymanager.traditional.user;
 
-import util.listeners.ListenerCollection;
+import org.workcraft.dependencymanager.util.listeners.ListenerCollection;
 
 public class SimpleVariable<T> {
 	ListenerCollection listeners = new ListenerCollection();

@@ -25,6 +25,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
@@ -32,6 +33,7 @@ import org.workcraft.dom.math.MathModel;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.observation.ObservableState;
+
 
 public interface VisualModel extends Model, ObservableState {
 	public void draw (Graphics2D g, Decorator decorator);
@@ -59,4 +61,6 @@ public interface VisualModel extends Model, ObservableState {
 	public void setCurrentLevel (Container group);	
 	
 	public Collection<Node> boxHitTest(Point2D p1, Point2D p2);
+
+	public Expression<GraphicalContent> getGraphicalContent();
 }

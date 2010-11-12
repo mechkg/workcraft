@@ -1,4 +1,4 @@
-package advanced.core;
+package org.workcraft.dependencymanager.advanced.core;
 
 
 public class GlobalCache {

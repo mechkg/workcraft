@@ -1,9 +1,10 @@
-package advanced.core;
+package org.workcraft.dependencymanager.advanced.core;
 
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import collections.WeakDirectedGraph;
+import org.workcraft.dependencymanager.collections.WeakDirectedGraph;
+
 
 public class CacheManager {
 	
@@ -27,7 +28,7 @@ public class CacheManager {
 	{
 		T result = (T) cache.get(expression);
 		if(result == null) {
-			result = expression.evaluate(new DependencyResolver()
+			result = expression.evaluate(new EvaluationContext()
 			{
 
 				@Override

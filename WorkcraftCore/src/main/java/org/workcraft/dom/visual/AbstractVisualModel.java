@@ -40,6 +40,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.workcraft.NodeFactory;
 import org.workcraft.annotations.MouseListeners;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultHangingConnectionRemover;
@@ -122,6 +123,18 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 					createdNodes.get(mc.getSecond()), new Polyline(vc), mc);
 			getRoot().add(vc);
 		}
+	}
+
+	Expression<GraphicalContent> gc; 
+
+	public Expression<GraphicalContent> getGraphicalContent() {
+		if(gc == null)
+			gc = makeGraphicalContent();
+		return gc;
+	}
+	
+	private Expression<GraphicalContent> makeGraphicalContent() {
+		return DrawMan.createGraphicalContent(getRoot());
 	}
 
 	public void draw (Graphics2D g, Decorator decorator) {

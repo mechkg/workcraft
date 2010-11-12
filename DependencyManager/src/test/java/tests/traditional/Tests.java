@@ -3,9 +3,9 @@ package tests.traditional;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.workcraft.dependencymanager.traditional.user.SimpleVariable;
+import org.workcraft.dependencymanager.traditional.user.SumExpression;
 
-import traditional.user.SimpleVariable;
-import traditional.user.SumExpression;
 
 public class Tests {
 	@Test

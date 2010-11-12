@@ -1,6 +1,6 @@
-package traditional.user;
+package org.workcraft.dependencymanager.traditional.user;
 
-import util.listeners.Listener;
+import org.workcraft.dependencymanager.util.listeners.Listener;
 
 public class SumExpression {
 	private final SimpleVariable<Integer> a;

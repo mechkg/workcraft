@@ -1,15 +1,15 @@
 package tests.advanced;
 
-import static advanced.core.GlobalCache.*;
 import static org.junit.Assert.*;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 import org.junit.Test;
+import org.workcraft.dependencymanager.advanced.core.CacheManager;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.SumExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 
-import advanced.core.CacheManager;
-import advanced.core.DependencyResolver;
-import advanced.core.Expression;
-import advanced.user.SumExpression;
-import advanced.user.Variable;
 
 public class Tests {
 	private final class StupidVar implements Expression<Integer> {
@@ -20,7 +20,7 @@ public class Tests {
 		}
 
 		@Override
-		public Integer evaluate(DependencyResolver resolver) {
+		public Integer evaluate(EvaluationContext resolver) {
 			return val;
 		}
 	}
@@ -33,7 +33,7 @@ public class Tests {
 		}
 
 		@Override
-		public Integer evaluate(final DependencyResolver resolver) {
+		public Integer evaluate(final EvaluationContext resolver) {
 			return resolver.resolve(dependency);
 		}
 	}

@@ -1,7 +1,7 @@
-package advanced.user;
+package org.workcraft.dependencymanager.advanced.user;
 
-import advanced.core.DependencyResolver;
-import advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 
 public class SumExpression implements Expression<Integer> {
 	private final Expression<Integer> a;
@@ -13,7 +13,7 @@ public class SumExpression implements Expression<Integer> {
 		this.b = b;
 	}
 	
-	public Integer evaluate(DependencyResolver resolver)
+	public Integer evaluate(EvaluationContext resolver)
 	{
 		return resolver.resolve(a)+resolver.resolve(b);
 	}

@@ -1,13 +1,13 @@
 package tests.advanced;
 
-import static advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.workcraft.dependencymanager.advanced.core.DummyEvaluationContext;
+import org.workcraft.dependencymanager.advanced.user.SumExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 
-import advanced.core.DummyDependencyResolver;
-import advanced.user.SumExpression;
-import advanced.user.Variable;
 
 public class MemoryExhaustionTest {
 	@Test
@@ -26,7 +26,7 @@ public class MemoryExhaustionTest {
 			for(int j=0;j<M;j++)
 			{
 				SumExpression sum = new SumExpression(new Variable<Integer>(8), new Variable<Integer>(9));
-				totalSum+=sum.evaluate(new DummyDependencyResolver());
+				totalSum+=sum.evaluate(new DummyEvaluationContext());
 				totalSum+=eval(sum);
 			}
 			Runtime.getRuntime().gc();

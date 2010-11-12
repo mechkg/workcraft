@@ -1,4 +1,4 @@
-package util.listeners;
+package org.workcraft.dependencymanager.util.listeners;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;

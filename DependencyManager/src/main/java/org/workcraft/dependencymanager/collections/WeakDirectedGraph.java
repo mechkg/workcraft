@@ -1,4 +1,4 @@
-package collections;
+package org.workcraft.dependencymanager.collections;
 
 import java.util.Set;
 

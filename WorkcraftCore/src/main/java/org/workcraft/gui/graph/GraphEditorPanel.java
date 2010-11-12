@@ -21,12 +21,16 @@
 
 package org.workcraft.gui.graph;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
@@ -36,9 +40,13 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DependentNode;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.Overlay;
@@ -48,18 +56,33 @@ import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.gui.propertyeditor.Properties.Mix;
 import org.workcraft.observation.HierarchyEvent;
-import org.workcraft.observation.PropertyChangedEvent;
 import org.workcraft.observation.SelectionChangedEvent;
 import org.workcraft.observation.StateEvent;
 import org.workcraft.observation.StateObserver;
-import org.workcraft.observation.StateSupervisor;
-import org.workcraft.observation.TransformChangedEvent;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 import org.workcraft.workspace.WorkspaceEntry;
 
+
 public class GraphEditorPanel extends JPanel implements StateObserver, GraphEditor {
 
-	class Repainter extends StateSupervisor {
+	class ImageModel {
+	}
+	
+	class Repainter implements Expression<ImageModel> {
+		
+		private final Expression<GraphicalContent> content;
+
+		public Repainter(Expression<GraphicalContent> content) {
+			this.content = content;
+			new Timer(20, new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					eval(Repainter.this);
+				}
+			}).start();
+		}
+	/*	 Should not be needed once the models provide Expression<>'s.
+	 * 
 		@Override
 		public void handleHierarchyEvent(HierarchyEvent e) {
 			repaint();
@@ -69,9 +92,19 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 		public void handleEvent(StateEvent e) {
 			if (e instanceof PropertyChangedEvent || e instanceof TransformChangedEvent) {
 				repaint();
+			}
+		}
+*/
+		@Override
+		public ImageModel evaluate(EvaluationContext resolver) {
+			resolver.resolve(content); // not the best way to do it, but it should be OK for now
+			repaint();
+			{
+				// WTF this code is here?
 				mainWindow.getPropertyView().repaint();
 				workspaceEntry.setChanged(true);
 			}
+			return new ImageModel();
 		}
 	}
 
@@ -133,7 +166,7 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 		
 		visualModel = workspaceEntry.getModelEntry().getVisualModel();
 		
-		new Repainter().attach(visualModel.getRoot()); //FIXME detach
+		new Repainter(visualModel.getGraphicalContent());
 		visualModel.addObserver(this);
 
 		view = new Viewport(0, 0, getWidth(), getHeight());
@@ -191,7 +224,7 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 	
 		g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-		visualModel.draw(g2d, toolboxPanel.getTool().getDecorator());
+		eval(visualModel.getGraphicalContent()).draw(g2d, toolboxPanel.getTool().getDecorator());
 
 		if (hasFocus())
 			toolboxPanel.getTool().drawInUserSpace(this, g2d);

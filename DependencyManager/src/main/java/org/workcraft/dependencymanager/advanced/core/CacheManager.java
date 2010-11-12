@@ -36,7 +36,7 @@ public class CacheManager {
 		cache.remove(weak);
 		
 		dependencies.removeOutgoingArcs(weak);
-		for(Weak weakDependant : dependencies.getIncoming(weak)) {
+		for(Weak weakDependant : new ArrayList<Weak>(dependencies.getIncoming(weak))) {
 			changed(weakDependant);
 		}
 	}

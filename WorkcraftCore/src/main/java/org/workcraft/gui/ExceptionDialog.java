@@ -9,10 +9,14 @@ import javax.swing.JOptionPane;
 public class ExceptionDialog {
 
 	public static void show(Component owner, Throwable cause) {
+		show(owner, "Exception thrown", cause);
+	}
+
+	public static void show(Component owner, String title, Throwable cause) {
 		final StringWriter writer = new StringWriter();
 		cause.printStackTrace(new PrintWriter(writer));
 		
-		JOptionPane.showMessageDialog(owner, "Exception of type " + cause.getClass().getCanonicalName() + ": \n" + cause.getMessage() + "\n\n" + writer.toString());
+		JOptionPane.showMessageDialog(owner, "Exception of type " + cause.getClass().getCanonicalName() + ": \n" + cause.getMessage() + "\n\n" + writer.toString(), title, JOptionPane.ERROR_MESSAGE);
 	}
 
 }

@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 
 import javax.swing.Icon;
 
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
@@ -124,7 +125,12 @@ public class SelectionTool extends AbstractTool {
 		VisualModel model = e.getEditor().getModel();
 		
 		if(drag==DRAG_MOVE) {
-			Point2D p1 = e.getEditor().snap(new Point2D.Double(e.getPrevPosition().getX()+snapOffset.getX(), e.getPrevPosition().getY()+snapOffset.getY()));
+			Point2D prevPosition = e.getPrevPosition();
+			Point2D p1 = e.getEditor().snap(
+					new Point2D.Double(prevPosition.getX()+
+							snapOffset.getX(), 
+							prevPosition.getY()+
+							snapOffset.getY()));
 			Point2D p2 = e.getEditor().snap(new Point2D.Double(e.getX()+snapOffset.getX(), e.getY()+snapOffset.getY()));
 			offsetSelection(e, p2.getX()-p1.getX(), p2.getY()-p1.getY());
 		}
@@ -170,7 +176,7 @@ public class SelectionTool extends AbstractTool {
 					if(selectionMode==SELECTION_REPLACE)
 						model.selectNone();
 					else
-						selected.addAll(model.getSelection());
+						selected.addAll(GlobalCache.eval(model.selection()));
 				}
 
 			} else {
@@ -356,7 +362,7 @@ public class SelectionTool extends AbstractTool {
 		VisualModel model = e.getEditor().getModel();
 		//System.out.println (model.getSelection().size());
 		
-		for(Node node : model.getSelection()){
+		for(Node node : GlobalCache.eval(model.selection())) {
 			if(node instanceof Movable) {
 				Movable mv = (Movable) node;
 				MovableHelper.translate(mv, dx, dy);

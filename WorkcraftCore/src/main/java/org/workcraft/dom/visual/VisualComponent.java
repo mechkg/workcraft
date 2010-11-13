@@ -33,10 +33,6 @@ import java.util.Collection;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.observation.ObservableState;
-import org.workcraft.observation.PropertyChangedEvent;
-import org.workcraft.observation.StateEvent;
-import org.workcraft.observation.StateObserver;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
 public abstract class VisualComponent extends VisualTransformableNode implements
@@ -73,13 +69,6 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 		super();
 		this.refNode = refNode;
 
-		if (refNode instanceof ObservableState)
-			((ObservableState) refNode).addObserver(new StateObserver() {
-				public void notify(StateEvent e) {
-					observableStateImpl.sendNotification(e);
-				}
-			});
-
 		addPropertyDeclarations();
 
 		setFillColor(CommonVisualSettings.getFillColor());
@@ -99,7 +88,6 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 		this.label = label;
 		labelGlyphs = null;
 		glyphsForLabel = null;
-		sendNotification(new PropertyChangedEvent(this, "label"));
 	}
 
 	public GlyphVector getLabelGlyphs(Graphics2D g) {

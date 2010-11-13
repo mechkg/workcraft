@@ -33,7 +33,7 @@ public class VisualModelTransformer {
 			} else if (node instanceof VisualTransformableNode) {
 				VisualTransformableNode vn = (VisualTransformableNode) node;
 				
-				Point2D np=vn.getPosition();
+				Point2D np=vn.position();
 				t.transform(np, np);
 				vn.setPosition(np);
 			}
@@ -98,7 +98,7 @@ public class VisualModelTransformer {
 		for (Node vn: nodes) {
 			if (vn instanceof VisualGroup) {
 				Rectangle2D r = getNodesCoordinateBox(((VisualGroup)vn).getChildren());
-				Point2D p = ((VisualGroup)vn).getPosition();
+				Point2D p = ((VisualGroup)vn).position();
 				r.setRect(r.getX()+p.getX(), r.getY()+p.getY(), r.getWidth(), r.getHeight());
 				
 //				System.out.printf("%f %f %f %f\n", r.getX(), r.getY(), r.getWidth(), r.getHeight());
@@ -108,7 +108,7 @@ public class VisualModelTransformer {
 				else if (r!=null)
 					Rectangle2D.union(selectionBB, r, selectionBB);
 			} else if(vn instanceof VisualTransformableNode)
-				selectionBB = bbUnion(selectionBB, ((VisualTransformableNode)vn).getPosition());
+				selectionBB = bbUnion(selectionBB, ((VisualTransformableNode)vn).position());
 		}
 		return selectionBB;
 	}

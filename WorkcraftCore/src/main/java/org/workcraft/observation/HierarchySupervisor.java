@@ -21,57 +21,73 @@
 
 package org.workcraft.observation;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
+import org.workcraft.util.Null;
 
-public abstract class HierarchySupervisor implements HierarchyObserver {
-	private Node root = null;
+public abstract class HierarchySupervisor {
 	
-	private void attachInternal (Node root) {
-		if (root instanceof ObservableHierarchy)
-			((ObservableHierarchy)root).addObserver(this);
-		
-		for (Node node : root.getChildren())
-			attachInternal (node);
+	public HierarchySupervisor(Node root) {
+		this(root, false);
 	}
 	
-	public void attach (Node root, boolean sendRootAddedEvent) {
-		this.root = root;
+	public HierarchySupervisor(Node root, boolean delayStart) {
+		rootSupervisor = new SupervisingNode(root);
+		if(!delayStart)
+			start();
+	}
+	
+	public void start() {
+		GlobalCache.autoRefresh(rootSupervisor);// TODO: Find a more elegant way to refresh
+	}
+	
+	private SupervisingNode rootSupervisor;
+	
+	class SupervisingNode implements Expression<Null> {
+		Map<Node, SupervisingNode> latest = new HashMap<Node, SupervisingNode>();
+		private final Node node;
 
-		if (sendRootAddedEvent)
-			handleEvent (new NodesAddedEvent(root.getParent(), root));
-	
-		attachInternal (root);
-	}
-	
-	public void attach (Node root) {
-		attach(root, true);
-	}
-	
-	private void detachInternal (Node root) {
-		if (root instanceof ObservableHierarchy)
-			((ObservableHierarchy)root).removeObserver(this);
-		
-		for (Node node : root.getChildren())
-			detachInternal (node);
-	}
-	
-	public void detach () {
-		detachInternal (root);
-		this.root = null;
-	}
-	
-	@Override
-	public void notify(HierarchyEvent e) {
-		if (e instanceof NodesDeletedEvent) {
-			for (Node n : e.getAffectedNodes())
-				detachInternal(n);
-		} else if (e instanceof NodesAddedEvent) {
-			for (Node n : e.getAffectedNodes())
-				attachInternal(n);
+		public SupervisingNode(Node node) {
+			if(node == null)
+				throw new NullPointerException("node");
+			this.node = node;
 		}
-
-		handleEvent (e);
+		
+		@Override
+		public Null evaluate(EvaluationContext resolver) {
+			Expression<? extends Collection<? extends Node>> ch = node.children();
+			Collection<? extends Node> newChildren = resolver.resolve(ch);
+			final List<Node> added = new ArrayList<Node>(newChildren);
+			added.removeAll(latest.keySet());
+			final List<Node> removed = new ArrayList<Node>(latest.keySet());
+			removed.removeAll(newChildren);
+			
+			Map<Node, SupervisingNode> newMap = new HashMap<Node, SupervisingNode>();
+			for(Node n : newChildren) {
+				SupervisingNode supervisor = latest.get(n);
+				if(supervisor==null)
+					supervisor = new SupervisingNode(n);
+				newMap.put(n, supervisor);
+				resolver.resolve(supervisor);
+			}
+			
+			registerChange(added, removed);
+			
+			return Null.Null;
+		}
 	}
 	
-	public abstract void handleEvent (HierarchyEvent e);
+	private void registerChange(List<Node> added, List<Node> removed) {
+		handleEvent(added, removed);
+	}
+	
+	public abstract void handleEvent (List<Node> added, List<Node> removed);
 }

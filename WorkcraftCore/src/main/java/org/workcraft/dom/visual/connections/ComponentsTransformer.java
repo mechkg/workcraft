@@ -19,32 +19,21 @@
 *
 */
 
-package org.workcraft.observation;
+package org.workcraft.dom.visual.connections;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.awt.geom.AffineTransform;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.Touchable;
+import org.workcraft.dom.visual.TransformHelper;
 
-public class NodesDeletingEvent implements HierarchyEvent {
-	private Node parentNode;
-	private Collection<Node> affectedNodes;
+public class ComponentsTransformer {
 	
-	public NodesDeletingEvent(Node parentNode, Collection<Node> affectedNodes) {
-		this.parentNode = parentNode;
-		this.affectedNodes = affectedNodes;
-	}
-	
-	public NodesDeletingEvent(Node parentNode, Node affectedNode) {
-		this.parentNode = parentNode;
-		this.affectedNodes = new ArrayList<Node>();
-		affectedNodes.add(affectedNode);
-	}
-	public Collection<Node> getAffectedNodes() {
-		return affectedNodes;
-	}
+	public static Expression<Touchable> transform (Touchable transformant, Node transformTo) {
+		Expression<AffineTransform> expr = TransformHelper.getTransformExpression(Expressions.constant((Node)transformant), Expressions.constant(transformTo));
+		return TransformHelper.transform(Expressions.constant(transformant), expr);
 
-	public Object getSender() {
-		return parentNode;
 	}
 }

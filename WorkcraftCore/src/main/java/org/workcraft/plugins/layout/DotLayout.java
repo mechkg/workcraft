@@ -60,6 +60,8 @@ import org.workcraft.util.FileUtils;
 import org.workcraft.util.WorkspaceUtils;
 import org.workcraft.workspace.WorkspaceEntry;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class DotLayout implements Tool {
 	
 	private final Framework framework;
@@ -185,8 +187,8 @@ public class DotLayout implements Tool {
 								{
 									Point2D p = points.get(i);
 									ControlPoint cp = new ControlPoint();
-									cp.setPosition(p);
-									cp.setHidden(true);
+									setValue(cp.position(),p);
+									setValue(cp.hidden(),true);
 									poly.add(cp);
 								}
 								

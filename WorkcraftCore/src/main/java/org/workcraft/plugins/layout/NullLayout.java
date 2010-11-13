@@ -28,6 +28,8 @@ import org.workcraft.dom.visual.VisualTransformableNode;
 import org.workcraft.util.WorkspaceUtils;
 import org.workcraft.workspace.WorkspaceEntry;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class NullLayout implements Tool {
 
 	@Override
@@ -42,10 +44,10 @@ public class NullLayout implements Tool {
 
 	@Override
 	public void run(WorkspaceEntry we) {
-		for (Node n : WorkspaceUtils.getAs(we, VisualModel.class).getRoot().getChildren()) {
+		for (Node n : eval(WorkspaceUtils.getAs(we, VisualModel.class).getRoot().children())) {
 			if (n instanceof VisualTransformableNode) {
-				((VisualTransformableNode)n).setX(0);
-				((VisualTransformableNode)n).setY(0);
+				setValue(((VisualTransformableNode)n).x(),(Double)0.0);
+				setValue(((VisualTransformableNode)n).y(),(Double)0.0);
 			}
 		}
 	}

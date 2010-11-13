@@ -25,32 +25,41 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.workcraft.observation.ObservableHierarchy;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.dom.visual.connections.VisualConnection;
 
-public class ArbitraryInsertionGroupImpl extends AbstractGroup implements ObservableHierarchy, Container {
-	LinkedList<Node> children = new LinkedList<Node> ();
+public class ArbitraryInsertionGroupImpl extends AbstractGroup implements Container {
+	Variable<LinkedList<Node>> children = new Variable<LinkedList<Node>> (new LinkedList<Node>());
 	
-	public ArbitraryInsertionGroupImpl (Container groupRef) {
+	public ArbitraryInsertionGroupImpl (Container groupRef, VisualConnection parent) {
 		super(groupRef);
+		this.parent.setValue(parent);
 	}
 
 	public List<Node> getChildren() {
-		return Collections.unmodifiableList(children);
+		return Collections.unmodifiableList(children.getValue());
 	}
 	
 	public void add(int index, Node node) {
-		preAdd(node, true);
-		children.add(index, node);
-		postAdd(node, true);
+		children.getValue().add(index, node);
+		children.setValue(children.getValue());
 	}
 
 	@Override
 	protected void addInternal(Node node) {
-		children.add(node);
+		children.getValue().add(node);
+		children.setValue(children.getValue());
 	}
 
 	@Override
 	protected void removeInternal(Node node) {
-		children.remove(node);
+		children.getValue().remove(node);
+		children.setValue(children.getValue());
+	}
+
+	@Override
+	public Expression<? extends LinkedList<Node>> children() {
+		return children;
 	}
 }

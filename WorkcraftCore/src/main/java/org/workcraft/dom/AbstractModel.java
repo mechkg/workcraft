@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import org.workcraft.annotations.DisplayName;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.propertyeditor.Properties;
@@ -36,9 +37,9 @@ import org.workcraft.gui.propertyeditor.Properties;
  *
  */
 public abstract class AbstractModel implements Model {
-	private NodeContextTracker nodeContextTracker = new NodeContextTracker();
-	private ReferenceManager referenceManager = new DefaultReferenceManager();
-
+	private NodeContextTracker nodeContextTracker;
+	private ReferenceManager referenceManager;
+	
 	private String title = "";
 
 	private Container root;
@@ -49,9 +50,8 @@ public abstract class AbstractModel implements Model {
 	
 	public AbstractModel(Container root, ReferenceManager referenceManager) {
 		this.root = root;
-		this.referenceManager = (referenceManager == null) ? new DefaultReferenceManager() : referenceManager;
-		nodeContextTracker.attach(root);
-		this.referenceManager.attach(root);
+		this.referenceManager = (referenceManager == null) ? new DefaultReferenceManager(root) : referenceManager;
+		nodeContextTracker = new NodeContextTracker(root);
 	}
 	
 	public Model getMathModel() {
@@ -67,8 +67,8 @@ public abstract class AbstractModel implements Model {
 	}
 
 	public void remove (Node node) {
-		if (node.getParent() instanceof Container)
-			((Container)node.getParent()).remove(node);
+		if (GlobalCache.eval(node.parent()) instanceof Container)
+			((Container)GlobalCache.eval(node.parent())).remove(node);
 		else
 			throw new RuntimeException ("Cannot remove a child node from a node that is not a Container (or null).");
 	}
@@ -78,7 +78,7 @@ public abstract class AbstractModel implements Model {
 		for (Node node : toRemove) {
 			// some nodes may be removed as a result of removing other nodes in the list,
 			// e.g. hanging connections so need to check
-			if (node.getParent() != null)
+			if (GlobalCache.eval(node.parent()) != null)
 				remove (node);
 		}
 	}

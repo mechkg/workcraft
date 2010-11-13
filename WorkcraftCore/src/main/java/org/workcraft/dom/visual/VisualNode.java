@@ -28,21 +28,19 @@ import java.util.Collections;
 
 import javax.swing.JPopupMenu;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.PopupMenuBuilder.PopupMenuSegment;
 import org.workcraft.gui.actions.ScriptedActionListener;
 import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.gui.propertyeditor.PropertyDescriptor;
 import org.workcraft.gui.propertyeditor.PropertySupport;
-import org.workcraft.observation.ObservableState;
-import org.workcraft.observation.ObservableStateImpl;
-import org.workcraft.observation.PropertyChangedEvent;
-import org.workcraft.observation.StateEvent;
-import org.workcraft.observation.StateObserver;
 
 
-public abstract class VisualNode implements Properties, Node, Touchable, ObservableState, Hidable {
-	protected ObservableStateImpl observableStateImpl = new ObservableStateImpl();
+public abstract class VisualNode implements Properties, Node, Touchable, Hidable {
 
 	public Rectangle2D getBoundingBox() {
 		return null;
@@ -53,23 +51,19 @@ public abstract class VisualNode implements Properties, Node, Touchable, Observa
 	{
 		return new Point2D.Double(getBoundingBox().getCenterX(), getBoundingBox().getCenterY());
 	}
-
-	public Collection<Node> getChildren() {
-		return Collections.emptyList();
+	
+	public Expression<? extends Collection<Node>> children() {
+		return Expressions.constant(Collections.<Node>emptyList());
 	}
 	
-	private Node parent = null;
-	private boolean hidden = false;
+	private final Variable<Node> parent = new Variable<Node>(null);
+	private final Variable<Boolean> hidden = new Variable<Boolean>(false);
 	
 	private PopupMenuBuilder popupMenuBuilder = new PopupMenuBuilder();
 	private PropertySupport propertySupport = new PropertySupport();
 
-	public Node getParent() {
+	public ModifiableExpression<Node> parent() {
 		return parent;
-	}
-	
-	public void setParent(Node parent) {
-		this.parent = parent;		
 	}
 	
 	protected final void addPopupMenuSegment (PopupMenuSegment segment) {
@@ -88,25 +82,7 @@ public abstract class VisualNode implements Properties, Node, Touchable, Observa
 		return propertySupport.getPropertyDeclarations();
 	}
 
-	public boolean isHidden() {
+	public ModifiableExpression<Boolean> hidden() {
 		return hidden;
-	}
-	
-	public void setHidden(boolean hidden) {
-		this.hidden = hidden;
-		
-		sendNotification(new PropertyChangedEvent(this, "hidden"));
-	}
-
-	public void addObserver(StateObserver obs) {
-		observableStateImpl.addObserver(obs);
-	}
-
-	public void sendNotification(StateEvent e) {
-		observableStateImpl.sendNotification(e);
-	}
-
-	public void removeObserver(StateObserver obs) {
-		observableStateImpl.removeObserver(obs);
 	}
 }

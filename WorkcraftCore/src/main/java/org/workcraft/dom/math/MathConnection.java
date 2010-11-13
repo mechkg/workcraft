@@ -53,4 +53,5 @@ public class MathConnection extends MathNode implements Connection {
 	public String toString() {
 		return "MathConnection " + this.hashCode() + " (" + first +", " + second +")";		
 	}
+
 }

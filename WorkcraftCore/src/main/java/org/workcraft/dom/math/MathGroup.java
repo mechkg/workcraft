@@ -23,41 +23,28 @@ package org.workcraft.dom.math;
 
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
-import org.workcraft.observation.HierarchyObserver;
-import org.workcraft.observation.ObservableHierarchy;
 
-public class MathGroup extends MathNode implements ObservableHierarchy, Container {
+public class MathGroup extends MathNode implements Container {
 	DefaultGroupImpl groupImpl = new DefaultGroupImpl(this);
 
 	public void add(Node node) {
 		groupImpl.add(node);
 	}
 
-	public void addObserver(HierarchyObserver obs) {
-		groupImpl.addObserver(obs);
-	}
-
 	public Collection<Node> getChildren() {
 		return groupImpl.getChildren();
 	}
 
-	public Node getParent() {
-		return groupImpl.getParent();
+	public ModifiableExpression<Node> parent() {
+		return groupImpl.parent();
 	}
 
 	public void remove(Node node) {
 		groupImpl.remove(node);
-	}
-
-	public void removeObserver(HierarchyObserver obs) {
-		groupImpl.removeObserver(obs);
-	}
-
-	public void setParent(Node parent) {
-		groupImpl.setParent(parent);
 	}
 
 	public void add(Collection<Node> nodes) {

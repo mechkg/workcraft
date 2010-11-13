@@ -23,10 +23,12 @@ package org.workcraft.plugins.stg;
 
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.exceptions.ArgumentException;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.observation.PropertyChangedEvent;
 import org.workcraft.plugins.petri.Transition;
+import org.workcraft.plugins.stg.SignalTransition.Type;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
 @DisplayName("Signal transition")
@@ -121,5 +123,11 @@ public class SignalTransition extends Transition implements StgTransition
 	@Override
 	public Transition getTransition() {
 		return this;
+	}
+
+	public Expression<String> signalName() {
+	}
+
+	public Expression<Type> signalType() {
 	}
 }

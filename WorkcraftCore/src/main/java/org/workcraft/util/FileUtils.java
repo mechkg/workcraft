@@ -191,7 +191,8 @@ public class FileUtils{
 		}
 		finally
 		{
-			stream.close();
+			if(stream != null)
+				stream.close();
 		}
 	}
 }

@@ -24,43 +24,71 @@
  */
 package org.workcraft.plugins.stg;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
-import org.workcraft.observation.PropertyChangedEvent;
-import org.workcraft.observation.StateEvent;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.Node;
 import org.workcraft.observation.StateSupervisor;
+import org.workcraft.util.Func;
+import org.workcraft.util.Null;
 
 class SignalTypeConsistencySupervisor extends StateSupervisor {
-	private final STG stg;
+	static class SupervisionNode implements Expression<Null> {
 
-	SignalTypeConsistencySupervisor(STG stg) {
-		this.stg = stg;
-	}
+		private final SignalTransition transition;
+		private String oldName = null;
+		private final STG stg;
 
-	@Override
-	public void handleEvent(StateEvent e) {
-		if (e instanceof PropertyChangedEvent) {
-			PropertyChangedEvent pce = (PropertyChangedEvent)e;
-			if (pce.getPropertyName().equals("signalType")) {
-				SignalTransition t = (SignalTransition)e.getSender();
+		public SupervisionNode(STG stg, SignalTransition transition) {
+			this.stg = stg;
+			this.transition = transition;
+		}
+		
+		@Override
+		public Null evaluate(EvaluationContext resolver) {
 
-				String signalName = t.getSignalName();
-				SignalTransition.Type signalType = t.getSignalType();
-
-
-				for (SignalTransition tt : stg.getSignalTransitions(signalName))
+			String signalName = resolver.resolve(transition.signalName());
+			
+			Collection<SignalTransition> sameName = new ArrayList<SignalTransition>(stg.getSignalTransitions(signalName));
+			sameName.remove(transition);
+			
+			SignalTransition.Type signalType = resolver.resolve(transition.signalType());
+			
+			if(oldName == null || !oldName.equals(signalName)) {
+				if (!sameName.isEmpty())
+					transition.setSignalType(sameName.iterator().next().getSignalType());
+			} else {
+				for (SignalTransition tt : sameName)
 					if (!signalType.equals(tt.getSignalType()))
 						tt.setSignalType(signalType);
-				
-			} else if (pce.getPropertyName().equals("signalName")) {
-				SignalTransition t = (SignalTransition)e.getSender();
-
-				String signalName = t.getSignalName();
-				
-				final Collection<SignalTransition> signalTransitions = stg.getSignalTransitions(signalName);
-				if (!signalTransitions.isEmpty())
-					t.setSignalType(signalTransitions.iterator().next().getSignalType());
 			}
+			
+			oldName = signalName;
+
+			return null;
 		}
+		
+	}
+	
+	static class SupervisionFunc implements Func<Node, SupervisionNode> {
+		private final STG stg;
+
+		public SupervisionFunc(STG stg) {
+			this.stg = stg;
+		}
+
+		@Override
+		public SupervisionNode eval(Node node) {
+			if(node instanceof SignalTransition)
+				return new SupervisionNode(stg, (SignalTransition)node);
+			else
+				return null;
+		}
+	}
+	
+	SignalTypeConsistencySupervisor(STG stg) {
+		super(stg.getRoot(), new SupervisionFunc(stg));
 	}
 }

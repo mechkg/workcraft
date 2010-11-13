@@ -29,6 +29,9 @@ import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawHelper;
 import org.workcraft.dom.visual.DrawRequest;
@@ -40,7 +43,6 @@ import org.workcraft.util.Geometry;
 import org.workcraft.util.Geometry.CurveSplitResult;
 
 public class Bezier implements ConnectionGraphic, ParametricCurve, StateObserver, SelectionObserver {
-	private CubicCurve2D curve = new CubicCurve2D.Double();
 	private CubicCurve2D visibleCurve = new CubicCurve2D.Double();
 	
 	private PartialCurveInfo curveInfo;
@@ -61,8 +63,8 @@ public class Bezier implements ConnectionGraphic, ParametricCurve, StateObserver
 	public void setDefaultControlPoints() {
 		initControlPoints (new BezierControlPoint(), new BezierControlPoint()); 
 
-		cp1.setPosition(Geometry.lerp(connectionInfo.getFirstCenter(), connectionInfo.getSecondCenter(), 0.3));
-		cp2.setPosition(Geometry.lerp(connectionInfo.getFirstCenter(), connectionInfo.getSecondCenter(), 0.6));
+		cp1.setPosition(Geometry.lerp(connectionInfo.firstShape().getCenter(), connectionInfo.getSecondCenter(), 0.3));
+		cp2.setPosition(Geometry.lerp(connectionInfo.firstCenter(), connectionInfo.getSecondCenter(), 0.6));
 		
 		finaliseControlPoints();
 	}
@@ -113,7 +115,7 @@ public class Bezier implements ConnectionGraphic, ParametricCurve, StateObserver
 	private CubicCurve2D getPartialCurve(double tStart, double tEnd)
 	{
 		CubicCurve2D fullCurve = new CubicCurve2D.Double();
-		fullCurve.setCurve(connectionInfo.getFirstCenter(), cp1.getPosition(), cp2.getPosition(), connectionInfo.getSecondCenter());
+		fullCurve.setCurve(connectionInfo.getFirstCenter(), cp1.position(), cp2.position(), connectionInfo.getSecondCenter());
 		
 		CurveSplitResult firstSplit = Geometry.splitCubicCurve(fullCurve, tStart);
 		CurveSplitResult secondSplit = Geometry.splitCubicCurve(firstSplit.curve2, (tEnd-tStart)/(1-tStart) );
@@ -128,6 +130,11 @@ public class Bezier implements ConnectionGraphic, ParametricCurve, StateObserver
 	@Override
 	public Collection<Node> getChildren() {
 		return Arrays.asList( new Node[] { cp1, cp2 });
+	}
+	
+	@Override
+	public Expression<? extends Collection<Node>> children() {
+		return Expressions.constant(getChildren());
 	}
 
 	@Override
@@ -145,9 +152,18 @@ public class Bezier implements ConnectionGraphic, ParametricCurve, StateObserver
 		return getDistanceToCurve(point) < VisualConnection.HIT_THRESHOLD;
 	}
 
-	
+	Expression<CubicCurve2D> curve;
 	public void update() {
-		curve.setCurve(connectionInfo.getFirstCenter(), cp1.getPosition(), cp2.getPosition(), connectionInfo.getSecondCenter());
+		curve = new Expression<CubicCurve2D>(){
+			@Override
+			public CubicCurve2D evaluate(org.workcraft.dependencymanager.advanced.core.EvaluationContext resolver) {
+				CubicCurve2D result = new CubicCurve2D.Double();
+				result.setCurve(resolver.resolve(connectionInfo.firstShape()), resolver.resolve(cp1.position()), resolve(cp2.position()), resolve(connectionInfo.secondCenter()));
+				return result;
+			};
+			
+		};
+		
 		
 		boundingBox = curve.getBounds2D();
 		boundingBox.add(boundingBox.getMinX()-VisualConnection.HIT_THRESHOLD, boundingBox.getMinY()-VisualConnection.HIT_THRESHOLD);

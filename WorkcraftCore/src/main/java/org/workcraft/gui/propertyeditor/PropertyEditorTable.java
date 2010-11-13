@@ -22,6 +22,8 @@
 package org.workcraft.gui.propertyeditor;
 
 import java.awt.Color;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.HashMap;
 
 import javax.swing.JOptionPane;
@@ -32,6 +34,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import org.workcraft.Framework;
+import org.workcraft.gui.ExceptionDialog;
 import org.workcraft.plugins.PluginInfo;
 
 @SuppressWarnings("serial")
@@ -148,7 +151,12 @@ public class PropertyEditorTable extends JTable implements PropertyEditor {
             }
             catch(Throwable t)
             {
-            	JOptionPane.showMessageDialog(null, t.getMessage(), "Cannot change property", JOptionPane.WARNING_MESSAGE);
+            	ExceptionDialog.show(null, "Cannot change property", t);
+            	PrintStream p = null;
+            	PrintWriter w = null;
+            	t.printStackTrace(p);
+            	t.printStackTrace(w);
+            	JOptionPane.showMessageDialog(null, t.getMessage() + "\n", "Cannot change property", JOptionPane.WARNING_MESSAGE);
             }
         }
     }  

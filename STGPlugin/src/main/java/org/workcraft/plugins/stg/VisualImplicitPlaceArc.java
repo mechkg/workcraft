@@ -26,6 +26,7 @@ import java.awt.geom.Point2D;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
@@ -114,14 +115,8 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 		VisualPlace.drawTokens(tokens, singleTokenSize, multipleTokenSeparation, tokenSpaceSize, 0, Coloriser.colorise(tokenColor, r.getDecoration().getColorisation()), r.getGraphics());
 	}
 
-	@NoAutoSerialisation
-	public int getTokens() {
-		return implicitPlace.getTokens();
-	}
-
-	@NoAutoSerialisation
-	public void setTokens(int tokens) {
-		implicitPlace.setTokens(tokens);
+	public ModifiableExpression<Integer> tokens() {
+		return implicitPlace.tokens();
 	}
 
 	@NoAutoSerialisation

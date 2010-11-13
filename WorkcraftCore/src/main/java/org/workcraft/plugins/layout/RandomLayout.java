@@ -24,6 +24,7 @@ package org.workcraft.plugins.layout;
 import java.util.Random;
 
 import org.workcraft.Tool;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualTransformableNode;
@@ -45,10 +46,10 @@ public class RandomLayout implements Tool {
 
 	@Override
 	public void run(WorkspaceEntry we) {
-		for (Node n : WorkspaceUtils.getAs(we, VisualModel.class).getRoot().getChildren()) {
+		for (Node n : GlobalCache.eval(WorkspaceUtils.getAs(we, VisualModel.class).getRoot().children())) {
 			if (n instanceof VisualTransformableNode) {
-				((VisualTransformableNode)n).setX(RandomLayoutSettings.startX + r.nextDouble()*RandomLayoutSettings.rangeX);
-				((VisualTransformableNode)n).setY(RandomLayoutSettings.startY + r.nextDouble()*RandomLayoutSettings.rangeY);
+				GlobalCache.setValue(((VisualTransformableNode)n).x(),(RandomLayoutSettings.startX + r.nextDouble()*RandomLayoutSettings.rangeX));
+				GlobalCache.setValue(((VisualTransformableNode)n).y(),(RandomLayoutSettings.startY + r.nextDouble()*RandomLayoutSettings.rangeY));
 			}
 		}	
 	}

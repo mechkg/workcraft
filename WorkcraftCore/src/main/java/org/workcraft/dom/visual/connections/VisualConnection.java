@@ -31,6 +31,10 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
@@ -42,19 +46,64 @@ import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.observation.HierarchyObserver;
-import org.workcraft.observation.NodesAddedEvent;
-import org.workcraft.observation.NodesDeletedEvent;
-import org.workcraft.observation.NodesDeletingEvent;
-import org.workcraft.observation.ObservableHierarchy;
-import org.workcraft.observation.ObservableHierarchyImpl;
-import org.workcraft.observation.PropertyChangedEvent;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
 public class VisualConnection extends VisualNode implements
 		Node, Drawable, Connection,
-		DependentNode, VisualConnectionProperties, ObservableHierarchy {
+		DependentNode {
 	
+	private final class Properties implements
+			Expression<VisualConnectionProperties> {
+		@Override
+		public VisualConnectionProperties evaluate(EvaluationContext resolver) {
+			final Touchable firstShape = resolver.resolve(transformedShape1);
+			final Touchable secondShape = resolver.resolve(transformedShape2);
+			return new VisualConnectionProperties() {
+
+				@Override
+				public Color getDrawColor() {
+					return color;
+				}
+
+				@Override
+				public double getArrowWidth() {
+					return VisualConnection.this.getArrowWidth();
+				}
+
+				@Override
+				public boolean hasArrow() {
+					return true;
+				}
+
+				@Override
+				public Touchable getFirstShape() {
+					return firstShape;
+				}
+
+				@Override
+				public Touchable getSecondShape() {
+					return secondShape;
+				}
+
+				@Override
+				public Stroke getStroke()
+				{
+					return new BasicStroke((float)getLineWidth());
+				}
+
+				@Override
+				public double getArrowLength() {
+					return VisualConnection.this.getArrowLength();
+				}
+
+				@Override
+				public ScaleMode getScaleMode() {
+					return VisualConnection.this.getScaleMode();
+				}
+			};
+		}
+	}
+
 	public enum ConnectionType 
 	{
 		POLYLINE,
@@ -69,8 +118,6 @@ public class VisualConnection extends VisualNode implements
 		STRETCH,
 		ADAPTIVE
 	}
-	
-	private ObservableHierarchyImpl observableHierarchyImpl = new ObservableHierarchyImpl();
 	
 	private MathConnection refConnection;
 	private VisualComponent first;
@@ -92,8 +139,10 @@ public class VisualConnection extends VisualNode implements
 	private double arrowWidth = defaultArrowWidth;
 	private double arrowLength = defaultArrowLength;
 	
-	private HashSet<Node> children = new HashSet<Node>();
-	private ComponentsTransformObserver componentsTransformObserver = null;
+	private CachedHashSet<Node> children = new CachedHashSet<Node>();
+	private ComponentsTransformer componentsTransformObserver = null;
+	private Expression<Touchable> transformedShape1;
+	private Expression<Touchable> transformedShape2;
 	
 	protected void initialise() {
 		addPropertyDeclaration(new PropertyDeclaration(this, "Line width", "getLineWidth", "setLineWidth", double.class));
@@ -123,9 +172,9 @@ public class VisualConnection extends VisualNode implements
 
 		addPropertyDeclaration(new PropertyDeclaration(this, "Scale mode", "getScaleMode", "setScaleMode", ScaleMode.class, hm2));
 		
-		componentsTransformObserver = new ComponentsTransformObserver(this);
+		transformedShape1 = ComponentsTransformer.transform(first, this);
+		transformedShape2 = ComponentsTransformer.transform(second, this);
 		
-		children.add(componentsTransformObserver);
 		children.add(graphic);
 	}
 
@@ -171,9 +220,7 @@ public class VisualConnection extends VisualNode implements
 	@NoAutoSerialisation
 	public void setConnectionType(ConnectionType t) {
 		if (connectionType!=t) {
-			observableHierarchyImpl.sendNotification(new NodesDeletingEvent(this, graphic));
 			children.remove(graphic);
-			observableHierarchyImpl.sendNotification(new NodesDeletedEvent(this, graphic));
 			
 			if (t==ConnectionType.POLYLINE) { 
 				graphic = new Polyline(this);
@@ -185,11 +232,8 @@ public class VisualConnection extends VisualNode implements
 			}
 			
 			children.add(graphic);
-			observableHierarchyImpl.sendNotification(new NodesAddedEvent(this, graphic));
 			
-			graphic.invalidate();
 			connectionType = t;
-			observableStateImpl.sendNotification(new PropertyChangedEvent(this, "connectionType"));
 		}
 	}
 
@@ -217,8 +261,6 @@ public class VisualConnection extends VisualNode implements
 		if (lineWidth > 0.5)
 			lineWidth = 0.5;
 		this.lineWidth = lineWidth;
-		
-		invalidate();
 	}
 
 	/* (non-Javadoc)
@@ -234,16 +276,11 @@ public class VisualConnection extends VisualNode implements
 		if (arrowWidth < 0.1)
 			arrowWidth = 0.1;
 		this.arrowWidth = arrowWidth;
-		
-		invalidate();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.workcraft.dom.visual.connections.VisualConnectionInfo#getArrowLength()
-	 */
 	public double getArrowLength()
 	{
-		if (!hasArrow()) return 0.0;
+		//if (!hasArrow()) return 0.0;
 		return arrowLength;
 	}
 
@@ -253,30 +290,16 @@ public class VisualConnection extends VisualNode implements
 		if (arrowLength < 0.1)
 			arrowLength = 0.1;
 		this.arrowLength = arrowLength;
-		
-		invalidate();
-	}
-
-	private void invalidate() {
-		if (graphic != null)
-			graphic.invalidate();
 	}
 
 	public Point2D getPointOnConnection(double t) {
-		return graphic.getPointOnCurve(t);
+		return GlobalCache.eval(graphic.curve()).getPointOnCurve(t);
 	}
 
 	public Point2D getNearestPointOnConnection(Point2D pt) {
-		return graphic.getNearestPointOnCurve(pt);
+		return GlobalCache.eval(graphic.curve()).getNearestPointOnCurve(pt);
 	}
 	
-	@Override
-	public void setParent(Node parent) {
-		super.setParent(parent);
-		
-		invalidate();
-	};
-
 	@Override
 	public void draw(DrawRequest r) {
 		
@@ -314,46 +337,8 @@ public class VisualConnection extends VisualNode implements
 	}
 	
 	@Override
-	public Collection<Node> getChildren() {
+	public Expression<? extends Collection<Node>> children() {
 		return children;
-	}
-
-	@Override
-	public Color getDrawColor() {
-		return color;
-	}
-
-	public void addObserver(HierarchyObserver obs) {
-		observableHierarchyImpl.addObserver(obs);
-	}
-
-	public void removeObserver(HierarchyObserver obs) {
-		observableHierarchyImpl.removeObserver(obs);
-	}
-
-	@Override
-	public boolean hasArrow() {
-		return true;
-	}
-
-	@Override
-	public Point2D getFirstCenter() {
-		return componentsTransformObserver.getFirstCenter();
-	}
-
-	@Override
-	public Touchable getFirstShape() {
-		return componentsTransformObserver.getFirstShape();
-	}
-
-	@Override
-	public Point2D getSecondCenter() {
-		return componentsTransformObserver.getSecondCenter();
-	}
-
-	@Override
-	public Touchable getSecondShape() {
-		return componentsTransformObserver.getSecondShape();
 	}
 
 	public ScaleMode getScaleMode() {
@@ -369,10 +354,8 @@ public class VisualConnection extends VisualNode implements
 	{
 		return graphic.getCenter();
 	}
-
-	@Override
-	public Stroke getStroke()
-	{
-		return new BasicStroke((float)getLineWidth());
+	
+	public Expression<VisualConnectionProperties> properties() {
+		return new Properties();
 	}
 }

@@ -22,17 +22,12 @@
 package org.workcraft.dom.visual.connections;
 
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.Drawable;
+import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.Touchable;
 
-public interface ConnectionGraphic extends Node, Drawable, Touchable, ParametricCurve {
-	public void draw (DrawRequest r);
+public interface ConnectionGraphic extends Node, DrawableNew, Touchable {
 	
-	public void componentsTransformChanging ();
-	public void componentsTransformChanged ();
-
-	public void controlPointsChanged();
-	public void invalidate();
+	public Expression<? extends ParametricCurve> curve();
 }

@@ -23,42 +23,42 @@ package org.workcraft.dom;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
-import org.workcraft.observation.HierarchyEvent;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.observation.HierarchySupervisor;
-import org.workcraft.observation.NodesDeletingEvent;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
 
 public class DefaultHangingConnectionRemover extends HierarchySupervisor {
 	private NodeContext nct;
 
-	public DefaultHangingConnectionRemover (NodeContext nct, String id) {
+	public DefaultHangingConnectionRemover (NodeContext nct, Node root) {
+		super(root);
 		this.nct = nct;
 	}
 
 	@Override
-	public void handleEvent(final HierarchyEvent e) {
-		if (e instanceof NodesDeletingEvent) {
-			HashSet<Connection> hangingConnections = new HashSet<Connection>();
+	public void handleEvent(List<Node> added, final List<Node> removed) {
+		if(removed.size() > 0) {
+	     	HashSet<Connection> hangingConnections = new HashSet<Connection>();
 			
 			Func<Connection, Boolean> hanging = new Func<Connection, Boolean>() {
 				@Override
 				public Boolean eval(Connection arg0) {
-					return !isConnectionInside (e.getAffectedNodes(), arg0); 
+					return !isConnectionInside (removed, arg0); 
 				}
 			};
 		
-			for (Node node : e.getAffectedNodes())
+			for (Node node : removed)
 				findHangingConnections(node, hangingConnections, hanging);
 		
 			for (Connection con : hangingConnections)
-				if (con.getParent() instanceof Container)
-					((Container)con.getParent()).remove(con);
+				if (GlobalCache.eval(con.parent()) instanceof Container)
+					((Container)GlobalCache.eval(con.parent())).remove(con);
 				else
 					throw new RuntimeException ("Cannot remove a hanging connection because its parent is not a Container.");
-			
-		}			
+		}
 	}
 	
 	private static boolean isConnectionInside (Collection<Node> nodes, Connection con) {
@@ -74,8 +74,7 @@ public class DefaultHangingConnectionRemover extends HierarchySupervisor {
 		for (Connection con : nct.getConnections(node))
 			if (hanging.eval(con))
 				hangingConnections.add(con);
-		for (Node nn : node.getChildren())
+		for (Node nn : GlobalCache.eval(node.children()))
 			findHangingConnections (nn, hangingConnections, hanging);
 	}
-
 }

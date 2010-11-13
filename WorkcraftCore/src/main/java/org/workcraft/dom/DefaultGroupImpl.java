@@ -25,26 +25,37 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 
-import org.workcraft.observation.ObservableHierarchy;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 
-public class DefaultGroupImpl extends AbstractGroup implements ObservableHierarchy, Container {
-	Collection<Node> children = new LinkedHashSet<Node> ();
+public class DefaultGroupImpl extends AbstractGroup implements Container {
+	Variable<LinkedHashSet<Node>> children = new Variable<LinkedHashSet<Node>>(new LinkedHashSet<Node>());
 	
 	public DefaultGroupImpl (Container groupRef) {
 		super(groupRef);
 	}
 
 	public Collection<Node> getChildren() {
-		return Collections.unmodifiableCollection(children);
+		return Collections.unmodifiableCollection(children.getValue());
 	}
 
 	@Override
 	protected void addInternal(Node node) {
-		children.add(node);
+		
+		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(getChildren());
+		newValue.add(node);
+		children.setValue(newValue);
 	}
 
 	@Override
 	protected void removeInternal(Node node) {
-		children.remove(node);
+		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(getChildren());
+		if(newValue.remove(node))
+			children.setValue(newValue);
+	}
+
+	@Override
+	public Expression<? extends Collection<Node>> children() {
+		return children;
 	}
 }

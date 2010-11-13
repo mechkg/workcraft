@@ -21,18 +21,13 @@
 
 package org.workcraft.dom.visual;
 
-import java.awt.Graphics2D;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -41,6 +36,8 @@ import org.w3c.dom.Element;
 import org.workcraft.NodeFactory;
 import org.workcraft.annotations.MouseListeners;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultHangingConnectionRemover;
@@ -53,13 +50,9 @@ import org.workcraft.dom.visual.connections.DefaultAnchorGenerator;
 import org.workcraft.dom.visual.connections.Polyline;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.exceptions.NodeCreationException;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.exceptions.PasteException;
-import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.propertyeditor.Properties;
-import org.workcraft.observation.ObservableStateImpl;
-import org.workcraft.observation.SelectionChangedEvent;
-import org.workcraft.observation.StateEvent;
-import org.workcraft.observation.StateObserver;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.util.XmlUtil;
 
@@ -67,8 +60,7 @@ import org.workcraft.util.XmlUtil;
 public abstract class AbstractVisualModel extends AbstractModel implements VisualModel {
 	private MathModel mathModel;
 	private Container currentLevel;
-	private Set<Node> selection = new HashSet<Node>();
-	private ObservableStateImpl observableState = new ObservableStateImpl();
+	private CachedHashSet<Node> selection = new CachedHashSet<Node>();
 
 	public AbstractVisualModel(VisualGroup root) {
 		this (null, root);
@@ -87,18 +79,18 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		this.mathModel = mathModel;
 		
 		currentLevel =  (VisualGroup)getRoot();
-		new TransformEventPropagator().attach(getRoot());
-		new SelectionEventPropagator(this).attach(getRoot());
-		new RemovedNodeDeselector(this).attach(getRoot());
-		new DefaultHangingConnectionRemover(this, "Visual").attach(getRoot());
-		new DefaultMathNodeRemover().attach(getRoot());
+		//new TransformEventPropagator(getRoot());
+		new SelectionEventPropagator(this);
+		new RemovedNodeDeselector(this);
+		new DefaultHangingConnectionRemover(this, getRoot());
+		new DefaultMathNodeRemover(getRoot());
 	}
 
 	protected final void createDefaultFlatStructure() throws NodeCreationException {
 		HashMap <MathNode, VisualComponent> createdNodes = new HashMap <MathNode, VisualComponent>();
 		HashMap <VisualConnection, MathConnection> createdConnections = new	HashMap <VisualConnection, MathConnection>();
 
-		for (Node n : mathModel.getRoot().getChildren()) {
+		for (Node n : GlobalCache.eval(mathModel.getRoot().children())) {
 			if (n instanceof MathConnection) {
 				MathConnection connection = (MathConnection)n;
 
@@ -125,71 +117,44 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		}
 	}
 
-	Expression<GraphicalContent> gc; 
+	Expression<HierarchicalGraphicalContent> gc; 
 
-	public Expression<GraphicalContent> getGraphicalContent() {
+	public Expression<HierarchicalGraphicalContent> getGraphicalContent() {
 		if(gc == null)
 			gc = makeGraphicalContent();
 		return gc;
 	}
 	
-	private Expression<GraphicalContent> makeGraphicalContent() {
-		return DrawMan.createGraphicalContent(getRoot());
+	private Expression<HierarchicalGraphicalContent> makeGraphicalContent() {
+		return DrawMan.graphicalContent(getRoot());
 	}
 
-	public void draw (Graphics2D g, Decorator decorator) {
-		DrawMan.draw(g, decorator, getRoot());
-	}
-
-	/**
-	 * Get the list of selected objects. Returned list is modifiable!
-	 * @return the selection.
-	 */
-	public Set<Node> selection() {
+	public Expression<? extends Collection<? extends Node>> selection() {
 		return selection;
-	}
-
-	private Collection<Node> saveSelection() {
-		Set<Node> prevSelection = new HashSet<Node>();
-		prevSelection.addAll(selection);
-		return prevSelection;
-	}
-	
-	private void notifySelectionChanged(Collection<Node> prevSelection) {
-		sendNotification(new SelectionChangedEvent(this, prevSelection));	
 	}
 
 	/**
 	 * Select all components, connections and groups from the <code>root</code> group.
 	 */
 	public void selectAll() {
-		if(selection.size()==getRoot().getChildren().size())
+		Collection<? extends Node> children = GlobalCache.eval(getRoot().children());
+		if(GlobalCache.eval(selection).size()==children.size())
 			return;
 		
-		Collection<Node> s = saveSelection();
-		
 		selection.clear();
-		selection.addAll(getRoot().getChildren());
-
-		notifySelectionChanged(s);
+		selection.addAll(children);
 	}
 
 	/**
 	 * Clear selection.
 	 */
 	public void selectNone() {
-		if (!selection.isEmpty()) {
-			Collection<Node> s = saveSelection();
-			
-			selection.clear();
-
-			notifySelectionChanged(s);
-		}
+		selection.clear();
 	}
 
 	private void validateSelection (Node node) {
 		if (!Hierarchy.isDescendant(node, getCurrentLevel()))
-			throw new RuntimeException ("Cannot select a node that is not in the current editing level (" + node + "), parent (" + node.getParent() +")");
+			throw new RuntimeException ("Cannot select a node that is not in the current editing level (" + node + "), parent (" + GlobalCache.eval(node.parent()) +")");
 	}
 
 	private void validateSelection (Collection<Node> nodes) {
@@ -198,7 +163,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	}
 
 	public boolean isSelected(Node node) {
-		return selection.contains(node);
+		return GlobalCache.eval(selection).contains(node);
 	}
 
 	public void select(Collection<Node> nodes) {
@@ -207,67 +172,45 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 			return;
 		}
 		
-		Collection<Node> s = saveSelection();
 		validateSelection(nodes);
 
 		selection.clear();
 		selection.addAll(nodes);
-
-		notifySelectionChanged(s);
 	}
 
 	public void select(Node node) {
-		if (selection.size() == 1 && selection.contains(node))
+		if (selection.getValue().size() == 1 && selection.getValue().contains(node))
 			return;
 
-		Collection<Node> s = saveSelection();
 		validateSelection(node);
 
 		selection.clear();
 		selection.add(node);
-
-		notifySelectionChanged(s);
 	}
 
 	public void addToSelection(Node node) {
-		if (selection.contains(node))
+		if (selection.getValue().contains(node))
 			return;
 
-		Collection<Node> s = saveSelection();
 		validateSelection(node);
 		
 		selection.add(node);
-
-		notifySelectionChanged(s);
 	}
 
 	public void addToSelection(Collection<Node> nodes) {
-		Collection<Node> s = saveSelection();
 		validateSelection(nodes);
 
 		selection.addAll(nodes);
-
-		if (s.size() != selection.size())
-			notifySelectionChanged(s);
 	}
 
 	public void removeFromSelection(Node node) {
-		if (selection.contains(node)) {
-			Collection<Node> s = saveSelection();
-			
+		if (selection.getValue().contains(node)) {
 			selection.remove(node);
-
-			notifySelectionChanged(s);
 		}
 	}
 
 	public void removeFromSelection(Collection<Node> nodes) {
-		Collection<Node> s = saveSelection();
-		
 		selection.removeAll(nodes);
-
-		if (s.size() != selection.size())
-			notifySelectionChanged(s);
 	}
 
 	public MathModel getMathModel() {
@@ -282,17 +225,18 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	 * @return Returns selection ordered the same way as the objects are ordered in the currently active group.
 	 */
 	public Collection<Node> getSelection() {
-		return Collections.unmodifiableSet(selection);
+		return GlobalCache.eval(selection);
 	}
 	
 	public Collection<Node> getOrderedCurrentLevelSelection() {
-		List<Node> result = new ArrayList<Node>();
-		for(Node node : currentLevel.getChildren())
+		throw new NotImplementedException();
+		/*List<Node> result = new ArrayList<Node>();
+		for(Node node : currentLevel.children())
 		{
 			if(selection.contains(node) && node instanceof VisualNode)
 				result.add((VisualNode)node);
 		}
-		return result;		
+		return result;	*/	
 	}
 
 	public Container getCurrentLevel() {
@@ -366,27 +310,15 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		select(toSelect);
 	}
 
-	/*protected void removeGroup(VisualGroup group) {
-		removeNodes(group.getChildren());
-
-		((Container)group.getParent()).remove(group);
-		selection.remove(group);
-	}*/
-
-
-	/**
-	 * Deletes the selection.
-	 * @author Ivan Poliakov
-	 */
 	public void deleteSelection() {
-		//System.out.println ("Deleting selection (" + selection.size()+" nodes)");
 		HashMap<Container, LinkedList<Node>> batches = new HashMap<Container, LinkedList<Node>>();
 		LinkedList<Node> remainingSelection = new LinkedList<Node>();
 		
 		
-		for (Node n : selection) {
-			if (n.getParent() instanceof Container) {
-				Container c = (Container)n.getParent();
+		for (Node n : getSelection()) {
+			Node parent = GlobalCache.eval(n.parent());
+			if (parent instanceof Container) {
+				Container c = (Container)parent;
 				LinkedList<Node> batch = batches.get(c);
 				if (batch == null) {
 					batch = new LinkedList<Node>();
@@ -463,18 +395,6 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		p1 = transformToCurrentSpace(p1);
 		p2 = transformToCurrentSpace(p2);
 		return HitMan.boxHitTest(currentLevel, p1, p2);
-	}
-
-	public void addObserver(StateObserver obs) {
-		observableState.addObserver(obs);
-	}
-
-	public void removeObserver(StateObserver obs) {
-		observableState.removeObserver(obs);
-	}
-
-	public void sendNotification(StateEvent e) {
-		observableState.sendNotification(e);
 	}
 
 	@Override public Properties getProperties(Node node) {

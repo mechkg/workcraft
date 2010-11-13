@@ -24,14 +24,17 @@ package org.workcraft.dom;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
-import org.workcraft.observation.HierarchyEvent;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.observation.HierarchySupervisor;
-import org.workcraft.observation.NodesAddedEvent;
-import org.workcraft.observation.NodesDeletedEvent;
 
 public class NodeContextTracker extends HierarchySupervisor implements NodeContext {
+	public NodeContextTracker(Node root) {
+		super(root);
+	}
+
 	HashMap<Node, LinkedHashSet<Node>> presets = new HashMap<Node, LinkedHashSet<Node>>();
 	HashMap<Node, LinkedHashSet<Node>> postsets = new HashMap<Node, LinkedHashSet<Node>>();
 	HashMap<Node, LinkedHashSet<Connection>> connections = new HashMap<Node, LinkedHashSet<Connection>>();
@@ -74,7 +77,7 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 			connections.get(c2).add(con);
 		}
 		
-		for (Node nn : n.getChildren())
+		for (Node nn : GlobalCache.eval(n.children()))
 			nodeAdded(nn);
 	}
 
@@ -110,7 +113,7 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 				connections.get(c2).remove(con);
 		}
 		
-		for (Node nn : n.getChildren())
+		for (Node nn : GlobalCache.eval(n.children()))
 			nodeRemoved(nn);
 	}
 
@@ -127,13 +130,10 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 	}
 
 	@Override
-	public void handleEvent(HierarchyEvent e) {
-		if (e instanceof NodesAddedEvent) {
-			for (Node n : e.getAffectedNodes())
-				nodeAdded(n);
-		} else if (e instanceof NodesDeletedEvent) {
-			for (Node n : e.getAffectedNodes())
-				nodeRemoved(n);
-		}		
+	public void handleEvent(List<Node> added, List<Node> removed) {
+		for (Node n : added)
+			nodeAdded(n);
+		for (Node n : removed)
+			nodeRemoved(n);
 	}
 }

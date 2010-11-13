@@ -23,11 +23,17 @@ package org.workcraft.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.NodeHelper;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class Hierarchy {
 	public static <T> Func<Node, Boolean> getTypeFilter(
@@ -69,7 +75,7 @@ public class Hierarchy {
 			while(n!=null)
 			{
 				i++;
-				n = n.getParent();
+				n = eval(n.parent());
 			}
 			Node [] result = new Node[i];
 			
@@ -77,7 +83,7 @@ public class Hierarchy {
 			while(n!=null)
 			{
 				result[--i] = n;
-				n = n.getParent();
+				n = eval(n.parent());
 			}
 			
 			return result;
@@ -117,13 +123,80 @@ public class Hierarchy {
 		return result;
 	}
 
+	// TODO: eliminate quadratic complexity (using pcollections?)
+	static Expression<List<Node>> getPath(final Expression<? extends Node> node) {
+		return new Expression<List<Node>>() {
+
+			@Override
+			public List<Node> evaluate(EvaluationContext resolver) {
+				Node n = resolver.resolve(node);
+				if(n == null)
+					return Collections.<Node>emptyList();
+				List<Node> path = new ArrayList<Node>(resolver.resolve(getPath(n.parent())));
+				path.add(n);
+				return path;
+			}
+		};
+	}
+	
+	
+	
+	public static Expression<Node> getCommonParent(Expression<? extends Node>... nodes) {
+		
+		final ArrayList<Expression<List<Node>>> paths = new ArrayList<Expression<List<Node>>>(nodes.length);
+		
+		//int minPathLength = Integer.MAX_VALUE;
+		
+		for (Expression<? extends Node> node : nodes) {
+			final Expression<List<Node>> path = getPath(node);
+			//if (minPathLength > path.length)
+			//	minPathLength = path.length;
+			paths.add(path);
+		}
+		
+		return new Expression<Node>() {
+			
+			@Override
+			public Node evaluate(EvaluationContext resolver) {
+				Node result = null;
+				
+				ArrayList<List<Node>> ps = new ArrayList<List<Node>>(); 
+				for(int i=0;i<paths.size();i++)
+					ps.add(resolver.resolve(paths.get(i)));
+				
+				for(int i=0;;i++) {
+					List<Node> first = ps.get(0);
+					if(first.size()<=i)
+						break;
+					
+					Node node = first.get(i);
+					
+					boolean good = true;
+					
+					for (List<Node> path : ps)
+						if(path.size() <= i || path.get(i) != node) {
+							good = false;
+							break;
+						}
+							
+					if (good)
+						result = node;
+					else
+						break;
+				}
+				
+				return result;
+			}				
+		};
+	}
+
 	public static boolean isDescendant(Node descendant, Node parent) {
 		Node node = descendant;
 		while(node != parent)
 		{
 			if(node == null)
 				return false;
-			node = node.getParent();
+			node = eval(node.parent());
 		}
 		return true;
 	}
@@ -151,21 +224,21 @@ public class Hierarchy {
 		{
 			if(filter.eval(parent))
 				return parent;
-			parent = parent.getParent();
+			parent = eval(parent.parent());
 		}
 		return null;
 	}
 
 	public static <T> Collection<T> getChildrenOfType(Node node, Class<T> type)
 	{
-		return NodeHelper.filterByType(node.getChildren(), type);
+		return NodeHelper.filterByType(eval(node.children()), type);
 	}
 	
 	public static <T> Collection<T> getDescendantsOfType(Node node, Class<T> type)
 	{
 		ArrayList<T> result = new ArrayList<T>();
 		result.addAll(getChildrenOfType(node, type));
-		for(Node n : node.getChildren())
+		for(Node n : eval(node.children()))
 			result.addAll(getDescendantsOfType(n, type));
 		return result;
 	}
@@ -178,7 +251,7 @@ public class Hierarchy {
 			if (filter.eval(t))
 				result.add(t);
 		
-		for(Node n : node.getChildren())
+		for(Node n : eval(node.children()))
 			result.addAll(getDescendantsOfType(n, type, filter));
 		
 		return result;
@@ -187,8 +260,8 @@ public class Hierarchy {
 	public static Collection<Node> getDescendants (Node node) 
 	{
 		ArrayList<Node> result = new ArrayList<Node>();
-		result.addAll(node.getChildren());
-		for(Node n : node.getChildren())
+		result.addAll(eval(node.children()));
+		for(Node n : eval(node.children()))
 			result.addAll(getDescendants(n));
 		return result;
 	}
@@ -196,7 +269,7 @@ public class Hierarchy {
 	public static Collection<Node> getDescendants (Node node, Func<Node, Boolean> filter) 
 	{
 		ArrayList<Node> result = new ArrayList<Node>();
-		for(Node n : node.getChildren()) {
+		for(Node n : eval(node.children())) {
 			if (filter.eval(n))
 				result.add(n);
 			result.addAll(getDescendants(n));

@@ -21,48 +21,73 @@
 
 package org.workcraft.observation;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.workcraft.dependencymanager.advanced.core.DependencyResolver;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.MutableExpression;
 import org.workcraft.dom.Node;
+import org.workcraft.util.Func;
+import org.workcraft.util.Null;
 
 
-public abstract class StateSupervisor extends HierarchySupervisor implements StateObserver {
+public abstract class StateSupervisor extends HierarchySupervisor {
+	
+	private final class UpdateExpression extends MutableExpression<Null> {
+		@Override
+		public Null simpleEvaluate(DependencyResolver resolver) {
+			for(Expression<?> expr : supervisors.values())
+				resolver.resolve(expr);
+			return null;
+		}
+
+		@Override
+		public void changed() {
+			super.changed();
+		}
+	}
+
+	private final Func<? super Node, ? extends Expression<?>> supervisionFunc;
+
+	UpdateExpression updateExpression = new UpdateExpression();
+	
+	public StateSupervisor(Node root, Func<? super Node, ? extends Expression<?>> supervisionFunc) {
+		super(root);
+		this.supervisionFunc = supervisionFunc;
+		GlobalCache.autoRefresh(updateExpression);
+	}
+
+	Map<Node, Expression<?>> supervisors = new HashMap<Node, Expression<?>>();
+	
+	@Override
+	public void handleEvent(List<Node> added, List<Node> removed) {
+		for(Node n : removed)
+			nodeRemoved(n);
+		for(Node n : added)
+			nodeAdded(n);
+		handleHierarchyEvent(added, removed);
+		updateExpression.changed();
+	}
 	
 	private void nodeAdded (Node node) {
-		if (node instanceof ObservableState)
-			((ObservableState)node).addObserver(this);
+		Expression<?> supervisor = supervisionFunc.eval(node);
+		if(supervisor != null)
+			supervisors.put(node, supervisor);
 		
-		for (Node n : node.getChildren())
+		for (Node n : GlobalCache.eval(node.children()))
 			nodeAdded(n);
 	}
 	
 	private void nodeRemoved (Node node) {
-		if (node instanceof ObservableState)
-			((ObservableState)node).removeObserver(this);
+		supervisors.remove(node);
 		
-		for (Node n : node.getChildren())
+		for (Node n : GlobalCache.eval(node.children()))
 			nodeRemoved(n);
 	}
 	
-	final public void handleEvent (HierarchyEvent e)	{
-		if (e instanceof NodesAddedEvent) {
-			for (Node n : e.getAffectedNodes())
-				nodeAdded(n);
-			
-		} else if (e instanceof NodesDeletedEvent) {
-			for (Node n : e.getAffectedNodes())
-				nodeRemoved(n);
-		}
-		
-		handleHierarchyEvent (e);
+	protected void handleHierarchyEvent (List<Node> added, List<Node> removed) {
 	}
-
-	@Override
-	final public void notify(StateEvent e) {
-		handleEvent(e);		
-	}
-	
-	public void handleHierarchyEvent (HierarchyEvent e) {
-		
-	}
-	
-	public abstract void handleEvent (StateEvent e);
 }

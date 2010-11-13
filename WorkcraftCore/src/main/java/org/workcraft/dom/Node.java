@@ -22,9 +22,10 @@
 package org.workcraft.dom;
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+
 public interface Node {
-	public Node getParent();
-	public void setParent(Node parent);
-	
-	public Collection<Node> getChildren();
+	public ModifiableExpression<Node> parent();
+	public Expression<? extends Collection<? extends Node>> children();
 }

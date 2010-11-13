@@ -34,6 +34,8 @@ import java.awt.geom.Rectangle2D;
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
@@ -97,14 +99,8 @@ public class VisualPlace extends VisualComponent {
 		return (Place)getReferencedComponent();
 	}
 	
-	@NoAutoSerialisation
-	public int getTokens() {
-		return getPlace().getTokens();
-	}
-
-	@NoAutoSerialisation
-	public void setTokens(int tokens) {
-		getPlace().setTokens(tokens);
+	public ModifiableExpression<Integer> tokens() {
+		return getPlace().tokens();
 	}
 
 	public VisualPlace(Place place) {

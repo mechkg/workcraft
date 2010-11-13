@@ -21,7 +21,8 @@
 
 package org.workcraft.dom.visual;
 
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+
 public interface Hidable {
-	public void setHidden (boolean hidden);
-	public boolean isHidden();
+	public ModifiableExpression<Boolean> hidden ();
 }

@@ -44,9 +44,10 @@ import javax.swing.Timer;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DependentNode;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.HierarchicalGraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.Overlay;
@@ -56,23 +57,20 @@ import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.gui.propertyeditor.Properties.Mix;
 import org.workcraft.observation.HierarchyEvent;
-import org.workcraft.observation.SelectionChangedEvent;
-import org.workcraft.observation.StateEvent;
-import org.workcraft.observation.StateObserver;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 import org.workcraft.workspace.WorkspaceEntry;
 
 
-public class GraphEditorPanel extends JPanel implements StateObserver, GraphEditor {
+public class GraphEditorPanel extends JPanel implements GraphEditor {
 
 	class ImageModel {
 	}
 	
 	class Repainter implements Expression<ImageModel> {
 		
-		private final Expression<GraphicalContent> content;
+		private final Expression<HierarchicalGraphicalContent> content;
 
-		public Repainter(Expression<GraphicalContent> content) {
+		public Repainter(Expression<HierarchicalGraphicalContent> content) {
 			this.content = content;
 			new Timer(20, new ActionListener(){
 				@Override
@@ -167,8 +165,7 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 		visualModel = workspaceEntry.getModelEntry().getVisualModel();
 		
 		new Repainter(visualModel.getGraphicalContent());
-		visualModel.addObserver(this);
-
+		
 		view = new Viewport(0, 0, getWidth(), getHeight());
 		grid = new Grid();
 
@@ -270,10 +267,11 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 		workspaceEntry.setChanged(true);
 	}
 	
+	// TODO: call from somewhere
 	private void updatePropertyView() {
 		final PropertyEditorWindow propertyWindow = mainWindow.getPropertyView();
 		
-		Collection<Node> selection = visualModel.getSelection();
+		Collection<? extends Node> selection = GlobalCache.eval(visualModel.selection());
 
 		if (selection.size() == 1) {
 			Node selected = selection.iterator().next();
@@ -301,13 +299,6 @@ public class GraphEditorPanel extends JPanel implements StateObserver, GraphEdit
 				propertyWindow.setObject(mix);
 		} 
 		else propertyWindow.clearObject();
-	}
-
-	public void notify(StateEvent e) {
-		if (e instanceof SelectionChangedEvent) {
-			updatePropertyView();
-			repaint();
-		}
 	}
 
 	@Override

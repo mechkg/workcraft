@@ -24,11 +24,11 @@ package org.workcraft.dom.math;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
-import org.workcraft.observation.ObservableState;
-import org.workcraft.observation.ObservableStateImpl;
-import org.workcraft.observation.StateEvent;
-import org.workcraft.observation.StateObserver;
 
 /**
  * Base type for mathematical objects -- components (graph nodes)
@@ -36,34 +36,21 @@ import org.workcraft.observation.StateObserver;
  * @author Ivan Poliakov
  *
  */
-public abstract class MathNode implements Node, ObservableState {
-	private ObservableStateImpl observableStateImpl = new ObservableStateImpl();
+public abstract class MathNode implements Node {
 
-	private Node parent = null;
+	private Variable<Node> parent = new Variable<Node>(null);
 	
 	public Collection<Node> getChildren() {
 		return new HashSet<Node>();
 	}
+	
+	@Override
+	public Expression<? extends Collection<Node>> children() {
+		return Expressions.constant(new HashSet<Node>());
+	}
 
-	public Node getParent() {
+	@Override
+	public ModifiableExpression<Node> parent() {
 		return parent;
-	}
-	
-	public void setParent(Node parent) {
-		this.parent = parent;
-	}
-	
-	final protected void sendNotification(StateEvent e) {
-		observableStateImpl.sendNotification(e);
-	}
-
-	@Override
-	public void addObserver(StateObserver obs) {
-		observableStateImpl.addObserver(obs);
-	}
-
-	@Override
-	public void removeObserver(StateObserver obs) {
-		observableStateImpl.removeObserver(obs);
 	}
 }

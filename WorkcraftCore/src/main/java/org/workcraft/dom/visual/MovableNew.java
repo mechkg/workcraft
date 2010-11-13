@@ -19,9 +19,14 @@
 *
 */
 
-package org.workcraft.observation;
+package org.workcraft.dom.visual;
 
-public interface ObservableHierarchy {
-	public void addObserver (HierarchyObserver obs);
-	public void removeObserver (HierarchyObserver obs);
+import java.awt.geom.AffineTransform;
+
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.Node;
+
+public interface MovableNew extends Node {
+	public Expression<AffineTransform> transform();
+//	public void applyTransform(AffineTransform transform);
 }

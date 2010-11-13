@@ -24,96 +24,43 @@ package org.workcraft.dom;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.workcraft.observation.HierarchyObserver;
-import org.workcraft.observation.NodesAddedEvent;
-import org.workcraft.observation.NodesAddingEvent;
-import org.workcraft.observation.NodesDeletedEvent;
-import org.workcraft.observation.NodesDeletingEvent;
-import org.workcraft.observation.NodesReparentedEvent;
-import org.workcraft.observation.NodesReparentingEvent;
-import org.workcraft.observation.ObservableHierarchy;
-import org.workcraft.observation.ObservableHierarchyImpl;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 
-public abstract class AbstractGroup implements ObservableHierarchy, Container {
-	private Node parent = null;
-	private ObservableHierarchyImpl observableHierarchyImpl = new ObservableHierarchyImpl();
+public abstract class AbstractGroup implements Container {
 	private Container groupRef;
 	
 	AbstractGroup (Container groupRef) {
 		this.groupRef = groupRef;
 	}
-
-	public Node getParent() {
+	Variable<Node> parent = new Variable<Node>(null);
+	
+	public Variable<Node> parent() {
 		return parent;
 	}
 
-	public void setParent(Node parent) {
-		if (parent != null && this.parent != null)
-			throw new RuntimeException ("Cannot assign new parent to a node that already has a parent.");
-
-		this.parent = parent;
-	}
-
-	protected void addInternal(Node node, boolean notify) {
-		preAdd(node, notify);
-		addInternal(node);
-		postAdd(node, notify);
-	}
-
-	protected void postAdd(Node node, boolean notify) {
-		node.setParent(groupRef);
-		
-		if (notify)
-			observableHierarchyImpl.sendNotification (new NodesAddedEvent(groupRef, node));
-	}
-
-	protected void preAdd(Node node, boolean notify) {
-		if (node.getParent() == this)
-			return;
-
-		if (node.getParent() != null)
-			throw new RuntimeException("Cannot attach someone else's node. Please detach from the old parent first.");
-
-		if (notify)
-			observableHierarchyImpl.sendNotification (new NodesAddingEvent(groupRef, node));
-	}
-
 	protected void removeInternal(Node node, boolean notify) {
-		if (notify)
-			observableHierarchyImpl.sendNotification(new NodesDeletingEvent(groupRef, node));
-
-		if (node.getParent() != groupRef)
+		if (GlobalCache.eval(node.parent()) != groupRef)
 			throw new RuntimeException 
-			("Failed to remove a node frome a group because it is not a child of that group ("+node+", parent is " + node.getParent() +", expected " + groupRef + ")");
+			("Failed to remove a node frome a group because it is not a child of that group ("+node+", parent is " + node.parent() +", expected " + groupRef + ")");
 
 		removeInternal(node);
-		node.setParent(null);
-
-		if (notify)
-			observableHierarchyImpl.sendNotification (new NodesDeletedEvent(groupRef, node));
+		GlobalCache.setValue(node.parent(), null);
 	}
-
-	public void addObserver(HierarchyObserver obs) {
-		observableHierarchyImpl.addObserver(obs);
-	}
-
-	public void removeObserver(HierarchyObserver obs) {
-		observableHierarchyImpl.removeObserver(obs);
-	}
-
+	
 	@Override
 	public void add(Node node) {
-		addInternal (node, true);
+		if (GlobalCache.eval(node.parent()) != null)
+			throw new RuntimeException("Cannot attach someone else's node. Please detach from the old parent first.");
+		addInternal(node);
+		GlobalCache.setValue(node.parent(), groupRef);
 	}
 
 	@Override
 	public void add(Collection<Node> nodes) {
-		observableHierarchyImpl.sendNotification (new NodesAddingEvent(groupRef, nodes));
-
 		for (Node node : nodes)
-			addInternal(node, false);
-
-		observableHierarchyImpl.sendNotification (new NodesAddedEvent(groupRef, nodes));
+			add(node);
 	}
 
 	@Override
@@ -125,34 +72,25 @@ public abstract class AbstractGroup implements ObservableHierarchy, Container {
 	public void remove(Collection<Node> nodes) {
 		LinkedList<Node> nodesToRemove = new LinkedList<Node>(nodes);
 
-		observableHierarchyImpl.sendNotification(new NodesDeletingEvent(groupRef, nodesToRemove));
-
 		for (Node node : nodesToRemove)
 			removeInternal(node, false);
-
-		observableHierarchyImpl.sendNotification (new NodesDeletedEvent(groupRef, nodesToRemove));
 	}
 
 	@Override
 	public void reparent(Collection<Node> nodes, Container newParent) {
-		observableHierarchyImpl.sendNotification(new NodesReparentingEvent(groupRef, newParent, nodes));
-
 		for (Node node : nodes)
 			removeInternal(node, false);
-
 		newParent.reparent(nodes);
-
-		observableHierarchyImpl.sendNotification(new NodesReparentedEvent(groupRef, newParent, nodes));
 	}
 	
 	@Override
 	public void reparent (Collection<Node> nodes) {
 		for (Node node : nodes)
-			addInternal(node, false);
+			add(node);
 	}
 
 	@Override
-	public abstract Collection<Node> getChildren();
+	public abstract Expression<? extends Collection<? extends Node>> children();
 
 	protected abstract void addInternal(Node node);
 	protected abstract void removeInternal (Node node);

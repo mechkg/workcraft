@@ -21,6 +21,8 @@
 
 package org.workcraft.serialisation.xml;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.HashMap;
 
 import org.w3c.dom.Element;
@@ -67,7 +69,7 @@ public class XMLSerialisationManager implements SerialiserFactory, NodeSerialise
 		nodeSerialiser.serialise(element, object, state.internalReferences, state.externalReferences);
 		
 		if (object instanceof Container)
-			for (Node child : ((Container)object).getChildren()) {
+			for (Node child : eval(((Container)object).children())) {
 				Element childElement = XmlUtil.createChildElement("node", element);
 				serialise(childElement, child);
 			}

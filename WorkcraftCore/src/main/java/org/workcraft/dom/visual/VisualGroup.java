@@ -31,6 +31,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
@@ -38,27 +42,41 @@ import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.observation.HierarchyObserver;
-import org.workcraft.observation.ObservableHierarchy;
 import org.workcraft.util.Hierarchy;
 
 
-public class VisualGroup extends VisualTransformableNode implements Drawable, Container, ObservableHierarchy {
+public class VisualGroup extends VisualTransformableNode implements DrawableNew, Container {
 	public static final int HIT_COMPONENT = 1;
 	public static final int HIT_CONNECTION = 2;
 	public static final int HIT_GROUP = 3;
 
 	DefaultGroupImpl groupImpl = new DefaultGroupImpl(this);
 
-	public void draw(DrawRequest r) {
-		Rectangle2D bb = getBoundingBoxInLocalSpace();
+	@Override
+	public Expression<GraphicalContent> graphicalContent() {
+		return new Expression<GraphicalContent>() {
 
-		if (bb != null && getParent() != null) {
-			bb.setRect(bb.getX() - 0.1, bb.getY() - 0.1, bb.getWidth() + 0.2, bb.getHeight() + 0.2);
-			r.getGraphics().setColor(Coloriser.colorise(Color.GRAY, r.getDecoration().getColorisation()));
-			r.getGraphics().setStroke(new BasicStroke(0.02f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[]{0.2f, 0.2f}, 0.0f));
-			r.getGraphics().draw(bb);
-		}
+			@Override
+			public GraphicalContent evaluate(EvaluationContext resolver) {
+				final Rectangle2D bb = getBoundingBoxInLocalSpace();
+				final Node parent = resolver.resolve(parent());
+				
+				return new GraphicalContent() {
+					
+					@Override
+					public void draw(DrawRequest r) {
+						if (bb != null && parent != null) {
+							bb.setRect(bb.getX() - 0.1, bb.getY() - 0.1, bb.getWidth() + 0.2, bb.getHeight() + 0.2);
+							r.getGraphics().setColor(Coloriser.colorise(Color.GRAY, r.getDecoration().getColorisation()));
+							r.getGraphics().setStroke(new BasicStroke(0.02f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[]{0.2f, 0.2f}, 0.0f));
+							r.getGraphics().draw(bb);
+						}
+					}
+				};
+			}
+		};
 	}
+
 	
 	public Rectangle2D getBoundingBoxInLocalSpace() {
 		return BoundingBoxHelper.mergeBoundingBoxes(Hierarchy.getChildrenOfType(this, Touchable.class));
@@ -75,12 +93,12 @@ public class VisualGroup extends VisualTransformableNode implements Drawable, Co
 	public List<Node> unGroup() {
 		ArrayList<Node> nodesToReparent = new ArrayList<Node>(groupImpl.getChildren());
 		
-		Container newParent = Hierarchy.getNearestAncestor(getParent(), Container.class);
+		Container newParent = Hierarchy.getNearestAncestor(GlobalCache.eval(parent()), Container.class);
 
 		groupImpl.reparent(nodesToReparent, newParent);
 
 		for (Node node : nodesToReparent)
-			TransformHelper.applyTransform(node, localToParentTransform);
+			TransformHelper.applyTransform(node, localToParentTransform.getValue());
 		
 		return nodesToReparent;
 	}
@@ -97,36 +115,17 @@ public class VisualGroup extends VisualTransformableNode implements Drawable, Co
 		groupImpl.add(node);
 	}
 
-
-	public void addObserver(HierarchyObserver obs) {
-		groupImpl.addObserver(obs);
-	}
-
-
 	public Collection<Node> getChildren() {
 		return groupImpl.getChildren();
 	}
 
-
-	public Node getParent() {
-		return groupImpl.getParent();
+	public ModifiableExpression<Node> parent() {
+		return groupImpl.parent();
 	}
-
 
 	public void remove(Node node) {
 		groupImpl.remove(node);
 	}
-
-
-	public void removeObserver(HierarchyObserver obs) {
-		groupImpl.removeObserver(obs);
-	}
-
-
-	public void setParent(Node parent) {
-		groupImpl.setParent(parent);
-	}
-
 
 	public void add(Collection<Node> nodes) {
 		groupImpl.add(nodes);
@@ -151,5 +150,10 @@ public class VisualGroup extends VisualTransformableNode implements Drawable, Co
 	public Point2D getCenterInLocalSpace()
 	{
 		return new Point2D.Double(0, 0);
+	}
+
+	@Override
+	public Expression<? extends Collection<Node>> children() {
+		return groupImpl.children();
 	}
 }

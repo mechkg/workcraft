@@ -23,64 +23,135 @@ package org.workcraft.dom.visual;
 
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.graph.tools.Decoration;
 import org.workcraft.gui.graph.tools.Decorator;
 
 
+interface GraphicalContentWithPreDecoration {
+	void draw(Graphics2D graphics, Decorator decorator, Decoration currentDecoration);
+}
+
 class DrawMan
 {
-	private final Graphics2D graphics;
-	private final Decorator decorator;
 
-	private DrawMan(Graphics2D graphics, Decorator decorator) {
-		this.graphics = graphics;
-		this.decorator = decorator;
-	}
-	
-	private void transformAndDraw(Decoration decoration, Movable node)
+	private static Expression<GraphicalContentWithPreDecoration> transformedAndDecorated(final MovableNew node)
 	{
-		graphics.transform(node.getTransform());
-		simpleDraw(decoration, node);
+		return new Expression<GraphicalContentWithPreDecoration>() {
+			@Override
+			public GraphicalContentWithPreDecoration evaluate(EvaluationContext resolver) {
+				final AffineTransform transform = resolver.resolve(node.transform());
+				final GraphicalContentWithPreDecoration decorated = resolver.resolve(decorated(node));
+				
+				return new GraphicalContentWithPreDecoration() {
+					@Override
+					public void draw(Graphics2D graphics, Decorator decorator, Decoration decoration) {
+						graphics.transform(transform);
+						decorated.draw(graphics, decorator, decoration);
+					}
+				};
+			}
+		};
 	}
 	
-	public static void draw(Graphics2D graphics, Decorator decorator, Node node) {
-		new DrawMan(graphics, decorator).draw(Decoration.Empty.INSTANCE, node);
+	public static Expression<HierarchicalGraphicalContent> graphicalContent(final Node node) {
+		return new Expression<HierarchicalGraphicalContent>() {
+
+			@Override
+			public HierarchicalGraphicalContent evaluate(EvaluationContext resolver) {
+				final GraphicalContentWithPreDecoration content = resolver.resolve(graphicalContextWithDefaultDecoration(node));
+				return new HierarchicalGraphicalContent() {
+
+					@Override
+					public void draw(Graphics2D graphics, Decorator decorator) {
+						content.draw(graphics, decorator, Decoration.Empty.INSTANCE);
+					}
+					
+				};
+			}
+			
+		};
 	}
 	
-	public void draw(Decoration currentDecoration, Node node) {
-		Decoration decoration = decorator.getDecoration(node);
-		if (decoration == null) decoration = currentDecoration;
-		
-		if (node instanceof Hidable && ((Hidable)node).isHidden())
-			return;
-		
-		AffineTransform oldTransform = graphics.getTransform();
-		if (node instanceof Movable)
-			transformAndDraw(decoration, (Movable)node);
-		else
-			simpleDraw(decoration, node);
-		graphics.setTransform(oldTransform);
+	public static Expression<GraphicalContentWithPreDecoration> graphicalContextWithDefaultDecoration(final Node node) {
+		return new Expression<GraphicalContentWithPreDecoration>() {
+			@Override
+			public GraphicalContentWithPreDecoration evaluate(EvaluationContext resolver) {
+				
+				//if (node instanceof Hidable && resolve(((Hidable)node).hidden()))
+				//	return IdleGraphicalContent.INSTANCE;
+				
+				final GraphicalContentWithPreDecoration toDraw;
+				if (node instanceof MovableNew)
+					toDraw = resolver.resolve(transformedAndDecorated((MovableNew)node));
+				else
+					toDraw = resolver.resolve(decorated(node));
+				
+				return new GraphicalContentWithPreDecoration() {
+					@Override
+					public void draw(Graphics2D graphics, Decorator decorator, Decoration currentDecoration) {
+						Decoration decoration = decorator.getDecoration(node);
+						if (decoration == null) decoration = currentDecoration;
+						AffineTransform oldTransform = graphics.getTransform();
+						toDraw.draw(graphics, decorator, decoration);
+						graphics.setTransform(oldTransform);
+					}
+				};
+			}
+		};
 	}
 	
-	private void simpleDraw(final Decoration decoration, Node node)
+	private static Expression<GraphicalContentWithPreDecoration> decorated(final Node node)
 	{
-		AffineTransform oldTransform = graphics.getTransform();
-		if (node instanceof Drawable)
-			((Drawable)node).draw(new DrawRequest(){
+		return new Expression<GraphicalContentWithPreDecoration>() {
+
 				@Override
-				public Decoration getDecoration() {
-					return decoration;
+				public GraphicalContentWithPreDecoration evaluate(final EvaluationContext resolver) {
+					
+					Collection<? extends Node> children = resolver.resolve(node.children());
+					final List<GraphicalContentWithPreDecoration> childrenGraphics = new ArrayList<GraphicalContentWithPreDecoration>();
+					for(Node n : children)
+						childrenGraphics.add(resolver.resolve(graphicalContextWithDefaultDecoration(n)));
+					
+					return new GraphicalContentWithPreDecoration() {
+						@Override
+						public void draw(final Graphics2D graphics, Decorator decorator, final Decoration decoration) {
+							AffineTransform oldTransform = graphics.getTransform();
+							if (node instanceof DrawableNew)
+								resolver.resolve(((DrawableNew)node).graphicalContent()).draw(new DrawRequest(){
+									@Override
+									public Decoration getDecoration() {
+										return decoration;
+									}
+									@Override
+									public Graphics2D getGraphics() {
+										return graphics;
+									}
+								});
+							if (node instanceof Drawable)
+								(((Drawable)node)).draw(new DrawRequest(){
+									@Override
+									public Decoration getDecoration() {
+										return decoration;
+									}
+									@Override
+									public Graphics2D getGraphics() {
+										return graphics;
+									}
+								});
+							graphics.setTransform(oldTransform);
+							
+							for (GraphicalContentWithPreDecoration child : childrenGraphics)
+								child.draw(graphics, decorator, decoration);
+						}
+					};
 				}
-				@Override
-				public Graphics2D getGraphics() {
-					return graphics;
-				}
-			});
-		graphics.setTransform(oldTransform);
-		
-		for (Node n : node.getChildren())
-			draw(decoration, n);
+		};
 	}
 }

@@ -25,13 +25,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.workcraft.Plugin;
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.AbstractMathModel;
 import org.workcraft.dom.math.MathConnection;
+import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.references.UniqueNameReferenceManager;
 import org.workcraft.exceptions.InvalidConnectionException;
@@ -40,6 +41,7 @@ import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.serialisation.References;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
+import org.workcraft.util.Null;
 
 @VisualClass ("org.workcraft.plugins.petri.VisualPetriNet")
 public class PetriNet extends AbstractMathModel implements PetriNetModel {
@@ -54,7 +56,11 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 	}
 
 	public PetriNet(Container root, References refs) {
-		super(root, new UniqueNameReferenceManager(refs, new Func<Node, String>() {
+		this((root == null) ? new MathGroup() : root, refs, Null.Null);
+	}
+	
+	protected PetriNet(Container root, References refs, Null n) {
+		super(root, new UniqueNameReferenceManager(root, refs, new Func<Node, String>() {
 			@Override
 			public String eval(Node arg) {
 				if (arg instanceof Place)
@@ -123,7 +129,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		}
 		
 		for (Node n : net.getPreset(t))
-			if (((Place)n).getTokens() < map.get((Place)n))
+			if (GlobalCache.eval(((Place)n).tokens()) < map.get((Place)n))
 				return false;
 		return true;
 	}
@@ -144,7 +150,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		for (Connection c : net.getConnections(t)) {
 			if (t==c.getFirst()) {
 				Place to = (Place)c.getSecond();
-				to.setTokens(((Place)to).getTokens()-1);
+				GlobalCache.setValue(to.tokens(), (((Place)to).getTokens()-1));
 			} 
 			if (t==c.getSecond()) {
 				Place from = (Place)c.getFirst();

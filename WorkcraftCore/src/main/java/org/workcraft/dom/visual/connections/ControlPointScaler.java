@@ -56,7 +56,7 @@ public class ControlPointScaler {
 					else
 						delta = multiply(add(dC1, dC2), 0.5);
 
-				cp.setPosition(add(cp.getPosition(), delta));
+				cp.setPosition(add(cp.position(), delta));
 
 				i++;	
 			}
@@ -78,7 +78,7 @@ public class ControlPointScaler {
 		Point2D up = getUpVector(mode, v);
 
 		for (ControlPoint cp : controlPoints) {
-			Point2D p = subtract(cp.getPosition(), oldC1);
+			Point2D p = subtract(cp.position(), oldC1);
 
 			Point2D dp = changeBasis (p, v0, up0);
 

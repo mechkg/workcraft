@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.connections.VisualConnection;
@@ -66,9 +67,9 @@ public class HitMan
 		return result;
 	}
 
-	private static Iterable<Node> getFilteredChildren(Point2D point, Node node)
+	private static Iterable<? extends Node> getFilteredChildren(Point2D point, Node node)
 	{
-		return reverse(filterByBB(node.getChildren(), point));
+		return reverse(filterByBB(GlobalCache.eval(node.children()), point));
 	}
 
 	public static Node hitDeepest(Point2D point, Node node, Func<Node, Boolean> filter) {
@@ -89,7 +90,7 @@ public class HitMan
 
 		if (node instanceof Touchable && ((Touchable)node).hitTest(point))	{
 			if (node instanceof Hidable)
-				return !((Hidable)node).isHidden();
+				return !GlobalCache.eval(((Hidable)node).hidden());
 			else
 				return true;
 		}
@@ -204,7 +205,7 @@ public class HitMan
 					return false;
 
 				if (n instanceof Hidable)
-					return !((Hidable)n).isHidden();
+					return !GlobalCache.eval(((Hidable)n).hidden());
 				else
 					return true;
 			}
@@ -215,7 +216,7 @@ public class HitMan
 				public Boolean eval(Node n) {
 					if (n instanceof VisualConnection) {
 						if (n instanceof Hidable) 
-							return !((Hidable)n).isHidden();
+							return !GlobalCache.eval(((Hidable)n).hidden());
 						else
 							return true;
 					}
@@ -232,7 +233,7 @@ public class HitMan
 			public Boolean eval(Node n) {
 				if (n instanceof Movable && ! (n instanceof Container)) {
 					if (n instanceof Hidable) 
-						return !((Hidable)n).isHidden();
+						return !GlobalCache.eval(((Hidable)n).hidden());
 					else
 						return true;					
 				}
@@ -246,7 +247,7 @@ public class HitMan
 				public Boolean eval(Node n) {
 					if (n instanceof VisualConnection) {
 						if (n instanceof Hidable) 
-							return !((Hidable)n).isHidden();
+							return !GlobalCache.eval(((Hidable)n).hidden());
 						else
 							return true;
 					}
@@ -298,7 +299,7 @@ public class HitMan
 				Math.abs(p1.getY()-p2.getY()));
 
 		for (Touchable n : Hierarchy.getChildrenOfType(container, Touchable.class)) {
-			if (n instanceof Hidable && ((Hidable)n).isHidden() )
+			if (n instanceof Hidable && GlobalCache.eval(((Hidable)n).hidden()) )
 				continue;
 
 			if (p1.getX()<=p2.getX()) {

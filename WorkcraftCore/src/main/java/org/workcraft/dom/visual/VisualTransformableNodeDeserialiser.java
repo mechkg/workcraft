@@ -32,5 +32,4 @@ public class VisualTransformableNodeDeserialiser {
 		node.setX (XmlUtil.readDoubleAttr(vnodeElement, "X", 0));
 		node.setY (XmlUtil.readDoubleAttr(vnodeElement, "Y", 0));
 	}
-
 }

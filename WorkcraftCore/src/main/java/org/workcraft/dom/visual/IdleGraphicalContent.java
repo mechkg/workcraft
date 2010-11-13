@@ -4,12 +4,11 @@ import java.awt.Graphics2D;
 
 import org.workcraft.gui.graph.tools.Decorator;
 
-public class IdleGraphicalContent implements GraphicalContent {
+public class IdleGraphicalContent implements GraphicalContentWithPreDecoration {
 	
 	public final static IdleGraphicalContent INSTANCE = new IdleGraphicalContent();
 	
 	@Override
-	public void draw(Graphics2D graphics, Decorator decorator) {
-		
+	public void draw(Graphics2D graphics, Decorator decorator, org.workcraft.gui.graph.tools.Decoration decoration) {
 	}
 }

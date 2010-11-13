@@ -21,37 +21,35 @@
 
 package org.workcraft.dom;
 
+import java.util.List;
+
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.references.IDGenerator;
 import org.workcraft.dom.references.ReferenceManager;
-import org.workcraft.observation.HierarchyEvent;
 import org.workcraft.observation.HierarchySupervisor;
-import org.workcraft.observation.NodesAddedEvent;
-import org.workcraft.observation.NodesDeletedEvent;
 import org.workcraft.util.TwoWayMap;
 
 public class DefaultReferenceManager extends HierarchySupervisor implements ReferenceManager {
+	public DefaultReferenceManager(Node root) {
+		super(root);
+	}
+
 	private IDGenerator idGenerator = new IDGenerator();
 
 	private TwoWayMap<String, Node> nodes = new TwoWayMap<String, Node>();
 
 	@Override
-	public void handleEvent(HierarchyEvent e) {
-		if (e instanceof NodesAddedEvent)
-		{
-			for (Node n : e.getAffectedNodes()) {
-				nodeAdded(n);
-			}
-		} else if (e instanceof NodesDeletedEvent) {
-			for (Node n: e.getAffectedNodes()) {
-				nodeRemoved(n);
-			}
-		}
+	public void handleEvent(List<Node> added, List<Node> removed) {
+		for (Node n : added)
+			nodeAdded(n);
+		for (Node n: removed)
+			nodeRemoved(n);
 	}
 
 	private void nodeRemoved(Node n) {
 		nodes.removeValue(n);
 		
-		for (Node nn: n.getChildren())
+		for (Node nn: GlobalCache.eval(n.children()))
 			nodeRemoved(nn);
 	}
 
@@ -59,7 +57,7 @@ public class DefaultReferenceManager extends HierarchySupervisor implements Refe
 		String id = Integer.toString(idGenerator.getNextID());
 		nodes.put(id, n);
 		
-		for (Node nn : n.getChildren())
+		for (Node nn : GlobalCache.eval(n.children()))
 			nodeAdded(nn);
 	}
 

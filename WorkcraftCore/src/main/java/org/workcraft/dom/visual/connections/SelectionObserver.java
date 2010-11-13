@@ -21,8 +21,11 @@
 
 package org.workcraft.dom.visual.connections;
 
-import org.workcraft.observation.SelectionChangedEvent;
+import java.util.Collection;
+
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.Node;
 
 public interface SelectionObserver {
-	public void notify (SelectionChangedEvent event);
+	public void setSelection(Expression<? extends Collection<? extends Node>> selection);
 }

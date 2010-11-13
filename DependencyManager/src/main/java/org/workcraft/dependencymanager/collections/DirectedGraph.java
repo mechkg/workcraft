@@ -4,8 +4,8 @@ import java.util.Set;
 
 public class DirectedGraph<T> {
 	
-	OneToMany<T, T> forward = new OneToMany<T, T>();
-	OneToMany<T, T> backward = new OneToMany<T, T>();
+	public OneToMany<T, T> forward = new OneToMany<T, T>();
+	public OneToMany<T, T> backward = new OneToMany<T, T>();
 	
 	public Set<T> getOutgoing(T t) {
 		return forward.get(t);

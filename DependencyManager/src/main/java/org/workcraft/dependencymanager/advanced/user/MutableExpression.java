@@ -1,14 +1,15 @@
 package org.workcraft.dependencymanager.advanced.user;
 
+import org.workcraft.dependencymanager.advanced.core.DependencyResolver;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.util.listeners.FireOnceListenerCollection;
 
-public abstract class ModifiableExpression<T> implements Expression<T> {
+public abstract class MutableExpression<T> implements Expression<T> {
 
 	private FireOnceListenerCollection listeners = new FireOnceListenerCollection();
 	
-	public ModifiableExpression() {
+	public MutableExpression() {
 	}
 	
 	protected void changed() {
@@ -18,9 +19,9 @@ public abstract class ModifiableExpression<T> implements Expression<T> {
 	@Override
 	public final T evaluate(final EvaluationContext resolver) {
 		listeners.addListener(resolver);
-		return simpleEvaluate();
+		return simpleEvaluate(resolver);
 	}
 	
-	public abstract T simpleEvaluate();
+	public abstract T simpleEvaluate(final DependencyResolver resolver);
 
 }

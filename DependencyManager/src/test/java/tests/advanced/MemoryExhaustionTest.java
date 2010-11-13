@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.workcraft.dependencymanager.advanced.core.DummyEvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.SumExpression;
@@ -51,7 +52,25 @@ public class MemoryExhaustionTest {
 		} catch (InterruptedException e) {
 		} System.gc();
 	}
-
+	
+	@Test
+	public void testTT() {
+	    final int M = 1000;
+		test(500, new Listener(){
+			public void changed(){
+				for(int i=0;i<M;i++) {
+					final Expression<Object> expr = new Expression<Object>() {
+						@Override
+						public Object evaluate(EvaluationContext resolver) {
+							return this;
+						}
+					};
+					GlobalCache.eval(expr);
+				}
+			}
+		});		
+	}
+	
 	@Test
 	public void test1() {
 	    final int M = 1000;
@@ -85,7 +104,7 @@ public class MemoryExhaustionTest {
 			}
 		});
 	}
-	
+
 	private long usedMemory() {
 		return Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
 	}

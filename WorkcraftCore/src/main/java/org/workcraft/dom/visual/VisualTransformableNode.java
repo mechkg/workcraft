@@ -26,20 +26,19 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import org.w3c.dom.Element;
-import org.workcraft.dependencymanager.advanced.core.DependencyResolver;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 import org.workcraft.util.Geometry;
 
 
-public abstract class VisualTransformableNode extends VisualNode implements Movable, MovableNew {
+public abstract class VisualTransformableNode extends VisualNode implements MovableNew {
 	private final static class AffineTransform_X extends ModifiableExpressionImpl<Double> {
 		private final ModifiableExpression<AffineTransform> transform;
 
@@ -48,15 +47,15 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		}
 		
 		@Override
-		public Double simpleEvaluate(DependencyResolver resolver) {
-			return resolver.resolve(transform).getTranslateX(); 
+		public Double evaluate(EvaluationContext context) {
+			return context.resolve(transform).getTranslateX(); 
 			
 		}
 
 		@Override
-		public void simpleSetValue(DependencyResolver resolver, Double newValue) {
-			AffineTransform old = resolver.resolve(transform);
-			transform.setValue(resolver, translate(old, newValue-old.getTranslateX(), 0));
+		public void simpleSetValue(Double newValue) {
+			AffineTransform old = GlobalCache.eval(transform);
+			transform.setValue(translate(old, newValue-old.getTranslateX(), 0));
 		}
 	}
 
@@ -68,15 +67,15 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		}
 		
 		@Override
-		public Double simpleEvaluate(DependencyResolver resolver) {
-			return resolver.resolve(transform).getTranslateY(); 
+		public Double evaluate(EvaluationContext context) {
+			return context.resolve(transform).getTranslateY(); 
 			
 		}
 
 		@Override
-		public void simpleSetValue(DependencyResolver resolver, Double newValue) {
-			AffineTransform old = resolver.resolve(transform);
-			transform.setValue(resolver, translate(old, 0, newValue-old.getTranslateY()));
+		public void simpleSetValue(Double newValue) {
+			AffineTransform old = GlobalCache.eval(transform);
+			transform.setValue(translate(old, 0, newValue-old.getTranslateY()));
 		}
 	}
 
@@ -90,15 +89,14 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		}
 		
 		@Override
-		public Point2D simpleEvaluate(DependencyResolver resolver) {
+		public Point2D evaluate(EvaluationContext resolver) {
 			return new Point2D.Double(resolver.resolve(x), resolver.resolve(y)); 
-			
 		}
 
 		@Override
-		public void simpleSetValue(DependencyResolver resolver, Point2D newValue) {
-			x.setValue(resolver, newValue.getX());
-			y.setValue(resolver, newValue.getY());
+		public void simpleSetValue(Point2D newValue) {
+			x.setValue(newValue.getX());
+			y.setValue(newValue.getY());
 		}
 	}
 
@@ -148,25 +146,6 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		return new AffineTransform_Position(localToParentTransform);
 	}
 
-	public abstract boolean hitTestInLocalSpace(Point2D pointInLocalSpace);
-	
-	public boolean hitTest(Point2D point) {
-		return hitTestInLocalSpace(GlobalCache.eval(parentToLocalTransform).transform(point, null));
-	}
-	
-	public abstract Rectangle2D getBoundingBoxInLocalSpace();
-
-    public final Rectangle2D getBoundingBox() {
-    	return transformToParentSpace(getBoundingBoxInLocalSpace());
-    }
-    
-	public abstract Point2D getCenterInLocalSpace();
-	
-    public final Point2D getCenter()
-    {
-    	return getLocalToParentTransform().transform(getCenterInLocalSpace(), null);
-    }
-
 	protected Rectangle2D transformToParentSpace(Rectangle2D rect)
 	{
 		if(rect == null)
@@ -215,10 +194,6 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		return 0;
 	}
 
-	public AffineTransform getTransform() {
-		return getLocalToParentTransform();
-	}
-
 	@NoAutoSerialisation
 	public void setRotation(double rotation) {
 		throw new RuntimeException("not supported");
@@ -234,11 +209,15 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		throw new RuntimeException("not supported");
 	}
 
-	public void setTransform(AffineTransform transform) {
-		localToParentTransform.setValue(transform);
+	@Override
+	public ModifiableExpression<AffineTransform> transform() {
+		return localToParentTransform;
 	}
 	
-	public Expression<AffineTransform> transform() {
-		return localToParentTransform;
+	public abstract IExpression<? extends Touchable> localSpaceTouchable();
+	
+	@Override
+	public final IExpression<? extends Touchable> shape() {
+		return TransformHelper.transform(localSpaceTouchable(), transform());
 	}
 }

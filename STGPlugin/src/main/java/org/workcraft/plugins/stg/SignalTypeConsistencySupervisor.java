@@ -35,7 +35,7 @@ import org.workcraft.util.Func;
 import org.workcraft.util.Null;
 
 class SignalTypeConsistencySupervisor extends StateSupervisor {
-	static class SupervisionNode implements Expression<Null> {
+	static class SupervisionNode extends Expression<Null> {
 
 		private final SignalTransition transition;
 		private String oldName = null;

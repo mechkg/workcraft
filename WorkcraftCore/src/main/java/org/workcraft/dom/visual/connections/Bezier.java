@@ -42,7 +42,7 @@ import org.workcraft.observation.StateObserver;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Geometry.CurveSplitResult;
 
-public class Bezier implements ConnectionGraphic, ParametricCurve, StateObserver, SelectionObserver {
+public class Bezier implements ConnectionGraphic, ParametricCurve, SelectionObserver {
 	private CubicCurve2D visibleCurve = new CubicCurve2D.Double();
 	
 	private PartialCurveInfo curveInfo;

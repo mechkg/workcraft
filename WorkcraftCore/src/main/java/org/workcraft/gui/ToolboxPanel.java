@@ -36,7 +36,9 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
 import org.workcraft.annotations.Annotations;
+import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.visual.VisualModel;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.graph.GraphEditorPanel;
 import org.workcraft.gui.graph.tools.ConnectionTool;
@@ -183,8 +185,18 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 		addTool(connectionTool, false);
 	}
 
-	private void setToolsForModel (VisualModel model) {
+	private void setToolsForModel (VisualModelDescriptor modelDescriptor, VisualModel model) {
 		setLayout(new SimpleFlowLayout (5, 5));
+		
+		try{
+			Iterable<GraphEditorTool> tools = modelDescriptor.createTools();
+			for(GraphEditorTool tool : tools)
+				addTool(tool, false);
+			selectTool(tools.iterator().next());
+			return;
+		}
+		catch(NotImplementedException e) {
+		}
 		
 		Class<? extends CustomToolsProvider> customTools = Annotations.getCustomToolsProvider(model.getClass());
 		if(customTools != null)
@@ -226,7 +238,7 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 		this.repaint();
 	}
 
-	public ToolboxPanel(GraphEditorPanel editor) {
+	public ToolboxPanel(GraphEditorPanel editor, VisualModelDescriptor descriptor) {
 		this.editor = editor;
 		this.setFocusable(false);
 
@@ -234,7 +246,7 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 		connectionTool = new ConnectionTool();
 		selectedTool = null;
 
-		setToolsForModel(editor.getModel());
+		setToolsForModel(descriptor, editor.getModel());
 	}
 
 	public GraphEditorTool getTool() {

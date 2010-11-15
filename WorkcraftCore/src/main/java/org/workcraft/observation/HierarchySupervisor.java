@@ -30,6 +30,7 @@ import java.util.Map;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.util.Null;
 
@@ -51,7 +52,7 @@ public abstract class HierarchySupervisor {
 	
 	private SupervisingNode rootSupervisor;
 	
-	class SupervisingNode implements Expression<Null> {
+	class SupervisingNode extends Expression<Null> {
 		Map<Node, SupervisingNode> latest = new HashMap<Node, SupervisingNode>();
 		private final Node node;
 
@@ -63,8 +64,7 @@ public abstract class HierarchySupervisor {
 		
 		@Override
 		public Null evaluate(EvaluationContext resolver) {
-			Expression<? extends Collection<? extends Node>> ch = node.children();
-			Collection<? extends Node> newChildren = resolver.resolve(ch);
+			Collection<? extends Node> newChildren = resolver.resolve(node.children());
 			final List<Node> added = new ArrayList<Node>(newChildren);
 			added.removeAll(latest.keySet());
 			final List<Node> removed = new ArrayList<Node>(latest.keySet());
@@ -78,8 +78,9 @@ public abstract class HierarchySupervisor {
 				newMap.put(n, supervisor);
 				resolver.resolve(supervisor);
 			}
-			
 			registerChange(added, removed);
+			
+			latest = newMap;
 			
 			return Null.Null;
 		}

@@ -20,6 +20,8 @@ import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.interop.Exporter;
 import org.workcraft.serialisation.Format;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class DotExporter implements Exporter {
 
 	public static void export(DotExportable model, OutputStream outStream) throws IOException
@@ -49,13 +51,13 @@ public class DotExporter implements Exporter {
 			ModelValidationException, SerialisationException {
 
 		final List<DotExportNode> export = new ArrayList<DotExportNode>();
-		for (Node n : model.getRoot().getChildren()) {
+		for (Node n : eval(model.getRoot().children())) {
 			if (n instanceof VisualComponent) {
 				VisualComponent comp = (VisualComponent) n;
 				final String id = model.getNodeReference(comp);
 				
 				if(id!=null) {
-					final Rectangle2D bb = comp.getBoundingBoxInLocalSpace();
+					final Rectangle2D bb = eval(comp.localSpaceTouchable()).getBoundingBox();
 
 					if(bb!=null)
 					{

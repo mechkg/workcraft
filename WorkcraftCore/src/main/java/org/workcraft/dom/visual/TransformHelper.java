@@ -27,7 +27,8 @@ import java.awt.geom.AffineTransform;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.exceptions.NotAnAncestorException;
 import org.workcraft.util.Geometry;
@@ -36,8 +37,8 @@ import org.workcraft.util.Hierarchy;
 public class TransformHelper {
 
 	public static void applyTransform(Node node, AffineTransform transform) {
-		if(node instanceof Movable)
-			((Movable) node).applyTransform(transform);
+		if(node instanceof MovableNew)
+			MovableHelper.applyTransform(((MovableNew) node), transform);
 		else
 			applyTransformToChildNodes(node, transform);
 	}
@@ -54,8 +55,8 @@ public class TransformHelper {
 			Node next = eval(node.parent()); 
 			if (next == null)
 				throw new NotAnAncestorException();
-			if(next instanceof Movable)
-				t.preConcatenate(((Movable)next).getTransform());
+			if(next instanceof MovableNew)
+				t.preConcatenate(GlobalCache.eval(((MovableNew)next).transform()));
 			node = next;
 		}
 		
@@ -77,7 +78,7 @@ public class TransformHelper {
 		return new TouchableTransformer(touchable, transform);
 	}
 
-	public static Expression<AffineTransform> getTransformToAncestor(final Expression<Node> node, final Expression<Node> ancestor) {
+	public static IExpression<AffineTransform> getTransformToAncestor(final IExpression<? extends Node> node, final IExpression<? extends Node> ancestor) {
 		return new Expression<AffineTransform>() {
 			
 			@Override
@@ -89,7 +90,7 @@ public class TransformHelper {
 					Node next = resolver.resolve(tmp.parent()); 
 					if (next == null)
 						throw new NotAnAncestorException();
-					if(next instanceof Movable)
+					if(next instanceof MovableNew)
 						t.preConcatenate(resolver.resolve(((MovableNew)next).transform()));
 					tmp = next;
 				}
@@ -99,10 +100,10 @@ public class TransformHelper {
 		};
 	}	
 	
-	public static Expression<AffineTransform> getTransformExpression(Expression<Node> node1, Expression<Node> node2) {
-		final Expression<Node> parent = Hierarchy.getCommonParent(node1, node2);
-		final Expression<AffineTransform> node1ToParent = getTransformToAncestor(node1, parent);
-		final Expression<AffineTransform> node2ToParent = getTransformToAncestor(node2, parent);
+	public static IExpression<AffineTransform> getTransformExpression(IExpression<? extends Node> node1, IExpression<? extends Node> node2) {
+		final IExpression<? extends Node> parent = Hierarchy.getCommonParent(node1, node2);
+		final IExpression<? extends AffineTransform> node1ToParent = getTransformToAncestor(node1, parent);
+		final IExpression<? extends AffineTransform> node2ToParent = getTransformToAncestor(node2, parent);
 		return new Expression<AffineTransform>() {
 			@Override
 			public AffineTransform evaluate(EvaluationContext resolver) {
@@ -113,7 +114,7 @@ public class TransformHelper {
 		};
 	}
 
-	public static Expression<Touchable> transform(final Expression<Touchable> node, final Expression<AffineTransform> transform) {
+	public static Expression<Touchable> transform(final IExpression<? extends Touchable> node, final IExpression<? extends AffineTransform> transform) {
 		return new Expression<Touchable>() {
 			@Override
 			public Touchable evaluate(EvaluationContext resolver) {

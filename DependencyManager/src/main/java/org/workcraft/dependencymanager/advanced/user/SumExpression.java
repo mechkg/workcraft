@@ -3,7 +3,7 @@ package org.workcraft.dependencymanager.advanced.user;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 
-public class SumExpression implements Expression<Integer> {
+public class SumExpression extends Expression<Integer> {
 	private final Expression<Integer> a;
 	private final Expression<Integer> b;
 
@@ -13,8 +13,9 @@ public class SumExpression implements Expression<Integer> {
 		this.b = b;
 	}
 	
-	public Integer evaluate(EvaluationContext resolver)
+	@Override
+	public Integer evaluate(EvaluationContext context)
 	{
-		return resolver.resolve(a)+resolver.resolve(b);
+		return context.resolve(a)+context.resolve(b);
 	}
 }

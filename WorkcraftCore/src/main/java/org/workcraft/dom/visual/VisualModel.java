@@ -55,7 +55,7 @@ public interface VisualModel extends Model {
 	
 	public Collection<Node> boxHitTest(Point2D p1, Point2D p2);
 
-	public Expression<HierarchicalGraphicalContent> getGraphicalContent();
+	public Expression<HierarchicalGraphicalContent> graphicalContent();
 
 	public Expression<? extends Collection<? extends Node>> selection();
 

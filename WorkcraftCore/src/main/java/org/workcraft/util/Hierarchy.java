@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.NodeHelper;
@@ -124,7 +125,7 @@ public class Hierarchy {
 	}
 
 	// TODO: eliminate quadratic complexity (using pcollections?)
-	static Expression<List<Node>> getPath(final Expression<? extends Node> node) {
+	static Expression<List<Node>> getPath(final IExpression<? extends Node> node) {
 		return new Expression<List<Node>>() {
 
 			@Override
@@ -141,13 +142,13 @@ public class Hierarchy {
 	
 	
 	
-	public static Expression<Node> getCommonParent(Expression<? extends Node>... nodes) {
+	public static Expression<Node> getCommonParent(IExpression<? extends Node>... nodes) {
 		
 		final ArrayList<Expression<List<Node>>> paths = new ArrayList<Expression<List<Node>>>(nodes.length);
 		
 		//int minPathLength = Integer.MAX_VALUE;
 		
-		for (Expression<? extends Node> node : nodes) {
+		for (IExpression<? extends Node> node : nodes) {
 			final Expression<List<Node>> path = getPath(node);
 			//if (minPathLength > path.length)
 			//	minPathLength = path.length;

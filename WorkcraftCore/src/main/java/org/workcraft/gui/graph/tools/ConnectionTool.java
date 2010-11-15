@@ -34,6 +34,7 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.Icon;
 
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.VisualGroup;
@@ -90,7 +91,7 @@ public class ConnectionTool extends AbstractTool {
 	private void drawConnectingLine(Graphics2D g, VisualGroup root, Color color) {
 		g.setColor(color);
 		
-		Point2D center = first.getCenter();
+		Point2D center = GlobalCache.eval(first.shape()).getCenter();
 		
 		Line2D line = new Line2D.Double(center.getX(), center.getY(), lastMouseCoords.getX(), lastMouseCoords.getY());
 		g.draw(line);

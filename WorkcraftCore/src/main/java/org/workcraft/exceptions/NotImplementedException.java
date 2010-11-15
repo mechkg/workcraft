@@ -21,14 +21,18 @@
 
 package org.workcraft.exceptions;
 
-@Deprecated // To warn users that they should implement the feature
+
 public class NotImplementedException extends RuntimeException {
 
+	// To warn users that they should implement the feature or use NotSupportedException instead
+	@Deprecated
 	public NotImplementedException() 
 	{
 		super("The feature is not implemented yet");
 	}
 	
+	// To warn users that they should implement the feature or use NotSupportedException instead
+	@Deprecated
 	public NotImplementedException(String message) 
 	{
 		super(message);

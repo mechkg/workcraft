@@ -2,5 +2,5 @@ package org.workcraft.dependencymanager.advanced.core;
 
 
 public interface DependencyResolver {
-	<T> T resolve(Expression<T> dependency);
+	<T> T resolve(IExpression<T> dependency);
 }

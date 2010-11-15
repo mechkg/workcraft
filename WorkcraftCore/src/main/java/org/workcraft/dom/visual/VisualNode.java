@@ -28,8 +28,10 @@ import java.util.Collections;
 
 import javax.swing.JPopupMenu;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
@@ -40,19 +42,35 @@ import org.workcraft.gui.propertyeditor.PropertyDescriptor;
 import org.workcraft.gui.propertyeditor.PropertySupport;
 
 
-public abstract class VisualNode implements Properties, Node, Touchable, Hidable {
+public abstract class VisualNode implements Properties, Node, Hidable {
 
-	public Rectangle2D getBoundingBox() {
-		return null;
-	}
-	
 	@Override
-	public Point2D getCenter()
-	{
-		return new Point2D.Double(getBoundingBox().getCenterX(), getBoundingBox().getCenterY());
+	public IExpression<? extends Touchable> shape() {
+		return new Expression<Touchable>() {
+			@Override
+			protected Touchable evaluate(EvaluationContext context) {
+				return new Touchable() {
+
+					@Override
+					public boolean hitTest(Point2D point) {
+						return false;
+					}
+
+					@Override
+					public Rectangle2D getBoundingBox() {
+						return null;
+					}
+
+					@Override
+					public Point2D getCenter() {
+						return null;
+					}
+				};
+			}
+		};
 	}
 	
-	public Expression<? extends Collection<Node>> children() {
+	public IExpression<? extends Collection<Node>> children() {
 		return Expressions.constant(Collections.<Node>emptyList());
 	}
 	

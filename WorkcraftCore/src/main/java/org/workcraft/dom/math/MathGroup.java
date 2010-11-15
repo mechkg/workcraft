@@ -23,6 +23,7 @@ package org.workcraft.dom.math;
 
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
@@ -31,35 +32,43 @@ import org.workcraft.dom.Node;
 public class MathGroup extends MathNode implements Container {
 	DefaultGroupImpl groupImpl = new DefaultGroupImpl(this);
 
+	@Override
 	public void add(Node node) {
 		groupImpl.add(node);
 	}
 
-	public Collection<Node> getChildren() {
-		return groupImpl.getChildren();
-	}
-
+	@Override
 	public ModifiableExpression<Node> parent() {
 		return groupImpl.parent();
 	}
 
+	@Override
 	public void remove(Node node) {
 		groupImpl.remove(node);
 	}
 
+	@Override
 	public void add(Collection<Node> nodes) {
 		groupImpl.add(nodes);
 	}
 
+	@Override
 	public void remove(Collection<Node> nodes) {
 		groupImpl.remove(nodes);
 	}
 
+	@Override
 	public void reparent(Collection<Node> nodes, Container newParent) {
 		groupImpl.reparent(nodes, newParent);
 	}
 
+	@Override
 	public void reparent(Collection<Node> nodes) {
 		groupImpl.reparent(nodes);
+	}
+	
+	@Override
+	public IExpression<? extends Collection<Node>> children() {
+		return groupImpl.children();
 	}
 }

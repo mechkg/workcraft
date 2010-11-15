@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.layout;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,10 +37,9 @@ import org.workcraft.Framework;
 import org.workcraft.Tool;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.Movable;
 import org.workcraft.dom.visual.MovableHelper;
+import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.dom.visual.VisualModel;
-import org.workcraft.dom.visual.connections.ControlPoint;
 import org.workcraft.dom.visual.connections.Polyline;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.dom.visual.connections.VisualConnection.ConnectionType;
@@ -59,8 +60,6 @@ import org.workcraft.util.Export;
 import org.workcraft.util.FileUtils;
 import org.workcraft.util.WorkspaceUtils;
 import org.workcraft.workspace.WorkspaceEntry;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class DotLayout implements Tool {
 	
@@ -135,9 +134,9 @@ public class DotLayout implements Tool {
 				public void node(String id, Map<String, String> properties) {
 					Node comp = model.getNodeByReference(id);
 					
-					if(comp!=null && comp instanceof Movable)
+					if(comp!=null && comp instanceof MovableNew)
 					{
-						Movable m = (Movable)comp;
+						MovableNew m = (MovableNew)comp;
 						String posStr = properties.get("pos");
 						if(posStr!=null)
 						{
@@ -178,7 +177,7 @@ public class DotLayout implements Tool {
 							vc.setScaleMode(ScaleMode.ADAPTIVE);
 							
 							Polyline poly = (Polyline)vc.getGraphic();
-							poly.remove(poly.getChildren());
+							poly.remove(eval(poly.children()));
 							List<Point2D> points;
 							try {
 								points = parseConnectionSpline(properties.get("pos"));
@@ -186,10 +185,7 @@ public class DotLayout implements Tool {
 								for(int i=points.size()-1;i>=0;i--)
 								{
 									Point2D p = points.get(i);
-									ControlPoint cp = new ControlPoint();
-									setValue(cp.position(),p);
-									setValue(cp.hidden(),true);
-									poly.add(cp);
+									poly.createControlPoint(i, p);
 								}
 								
 							} catch (ParseException e) {

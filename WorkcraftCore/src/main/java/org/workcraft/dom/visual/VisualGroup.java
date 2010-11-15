@@ -27,21 +27,17 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.math.MathNode;
-import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.observation.HierarchyObserver;
 import org.workcraft.util.Hierarchy;
 
 
@@ -58,7 +54,7 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 
 			@Override
 			public GraphicalContent evaluate(EvaluationContext resolver) {
-				final Rectangle2D bb = getBoundingBoxInLocalSpace();
+				final Rectangle2D bb = resolver.resolve(localSpaceTouchable()).getBoundingBox();
 				final Node parent = resolver.resolve(parent());
 				
 				return new GraphicalContent() {
@@ -77,17 +73,37 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 		};
 	}
 
-	
-	public Rectangle2D getBoundingBoxInLocalSpace() {
-		return BoundingBoxHelper.mergeBoundingBoxes(Hierarchy.getChildrenOfType(this, Touchable.class));
-	}
-
-	public final Collection<VisualComponent> getComponents() {
-		return Hierarchy.getChildrenOfType(this, VisualComponent.class); 
-	}
-
-	public final Collection<VisualConnection> getConnections() {
-		return Hierarchy.getChildrenOfType(this, VisualConnection.class); 
+	@Override
+	public final IExpression<Touchable> localSpaceTouchable() {
+		return new Expression<Touchable>() {
+			@Override
+			protected Touchable evaluate(final EvaluationContext context) {
+				return new Touchable() {
+					
+					@Override
+					public boolean hitTest(Point2D point) {
+						return false;
+					}
+					
+					@Override
+					public Point2D getCenter() {
+						return new Point2D.Double(0, 0);
+					}
+					
+					@Override
+					public Rectangle2D getBoundingBox() {
+						Rectangle2D result = null;
+						for(Node n : context.resolve(children())) {
+							Touchable shape = context.resolve(n.shape());
+							if(shape!=null) {
+								BoundingBoxHelper.union(result, shape.getBoundingBox());
+							}
+						}
+						return result;
+					}
+				};
+			}
+		};
 	}
 
 	public List<Node> unGroup() {
@@ -103,53 +119,40 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 		return nodesToReparent;
 	}
 	
-	public Set<MathNode> getMathReferences() {
-		return Collections.emptySet();
-	}
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
-		return false;
-	}
-
-
+	@Override
 	public void add(Node node) {
 		groupImpl.add(node);
 	}
 
-	public Collection<Node> getChildren() {
-		return groupImpl.getChildren();
-	}
-
+	@Override
 	public ModifiableExpression<Node> parent() {
 		return groupImpl.parent();
 	}
 
+	@Override
 	public void remove(Node node) {
 		groupImpl.remove(node);
 	}
-
+	
+	@Override
 	public void add(Collection<Node> nodes) {
 		groupImpl.add(nodes);
 	}
 
-
+	@Override
 	public void remove(Collection<Node> nodes) {
 		groupImpl.remove(nodes);
 	}
 
-
+	@Override
 	public void reparent(Collection<Node> nodes, Container newParent) {
 		groupImpl.reparent(nodes, newParent);
 	}
 
 
+	@Override
 	public void reparent(Collection<Node> nodes) {
 		groupImpl.reparent(nodes);
-	}
-
-	@Override
-	public Point2D getCenterInLocalSpace()
-	{
-		return new Point2D.Double(0, 0);
 	}
 
 	@Override

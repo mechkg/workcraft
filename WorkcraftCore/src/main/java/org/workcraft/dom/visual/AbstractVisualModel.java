@@ -61,6 +61,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	private MathModel mathModel;
 	private Container currentLevel;
 	private CachedHashSet<Node> selection = new CachedHashSet<Node>();
+	private final Expression<HierarchicalGraphicalContent> graphicalContent; 
 
 	public AbstractVisualModel(VisualGroup root) {
 		this (null, root);
@@ -84,6 +85,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		new RemovedNodeDeselector(this);
 		new DefaultHangingConnectionRemover(this, getRoot());
 		new DefaultMathNodeRemover(getRoot());
+		graphicalContent = makeGraphicalContent();
 	}
 
 	protected final void createDefaultFlatStructure() throws NodeCreationException {
@@ -117,12 +119,8 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		}
 	}
 
-	Expression<HierarchicalGraphicalContent> gc; 
-
-	public Expression<HierarchicalGraphicalContent> getGraphicalContent() {
-		if(gc == null)
-			gc = makeGraphicalContent();
-		return gc;
+	public Expression<HierarchicalGraphicalContent> graphicalContent() {
+		return graphicalContent;
 	}
 	
 	private Expression<HierarchicalGraphicalContent> makeGraphicalContent() {

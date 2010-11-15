@@ -44,10 +44,8 @@ import javax.swing.Timer;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DependentNode;
-import org.workcraft.dom.visual.HierarchicalGraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.Overlay;
@@ -66,36 +64,24 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	class ImageModel {
 	}
 	
-	class Repainter implements Expression<ImageModel> {
+	class Repainter extends Expression<ImageModel> {
 		
-		private final Expression<HierarchicalGraphicalContent> content;
+		private final VisualModel model;
 
-		public Repainter(Expression<HierarchicalGraphicalContent> content) {
-			this.content = content;
-			new Timer(20, new ActionListener(){
+		public Repainter(VisualModel model) {
+			this.model = model;
+			new Timer(1000, new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					eval(Repainter.this);
 				}
 			}).start();
 		}
-	/*	 Should not be needed once the models provide Expression<>'s.
-	 * 
-		@Override
-		public void handleHierarchyEvent(HierarchyEvent e) {
-			repaint();
-		}
 
 		@Override
-		public void handleEvent(StateEvent e) {
-			if (e instanceof PropertyChangedEvent || e instanceof TransformChangedEvent) {
-				repaint();
-			}
-		}
-*/
-		@Override
 		public ImageModel evaluate(EvaluationContext resolver) {
-			resolver.resolve(content); // not the best way to do it, but it should be OK for now
+			resolver.resolve(model.graphicalContent());
+			resolver.resolve(model.selection());
 			repaint();
 			{
 				// WTF this code is here?
@@ -164,7 +150,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		
 		visualModel = workspaceEntry.getModelEntry().getVisualModel();
 		
-		new Repainter(visualModel.getGraphicalContent());
+		new Repainter(visualModel);
 		
 		view = new Viewport(0, 0, getWidth(), getHeight());
 		grid = new Grid();
@@ -173,7 +159,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		view.addListener(grid);
 		grid.addListener(ruler);
 
-		toolboxPanel = new ToolboxPanel(this);
+		toolboxPanel = new ToolboxPanel(this, workspaceEntry.getModelEntry().getDescriptor().getVisualModelDescriptor());
 		
 		GraphEditorPanelMouseListener mouseListener = new GraphEditorPanelMouseListener(this, toolboxPanel);
 		GraphEditorPanelKeyListener keyListener = new GraphEditorPanelKeyListener(this, toolboxPanel);
@@ -187,6 +173,8 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		addKeyListener(keyListener);
 		
 		add(overlay, BorderLayout.CENTER);
+		
+		updatePropertyView();
 	}
 
 	private void reshape() {
@@ -221,7 +209,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	
 		g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-		eval(visualModel.getGraphicalContent()).draw(g2d, toolboxPanel.getTool().getDecorator());
+		eval(visualModel.graphicalContent()).draw(g2d, toolboxPanel.getTool().getDecorator());
 
 		if (hasFocus())
 			toolboxPanel.getTool().drawInUserSpace(this, g2d);
@@ -267,38 +255,45 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		workspaceEntry.setChanged(true);
 	}
 	
-	// TODO: call from somewhere
 	private void updatePropertyView() {
 		final PropertyEditorWindow propertyWindow = mainWindow.getPropertyView();
 		
-		Collection<? extends Node> selection = GlobalCache.eval(visualModel.selection());
+		propertyWindow.propertyObject.setValue(new Expression<Properties>() {
 
-		if (selection.size() == 1) {
-			Node selected = selection.iterator().next();
+			@Override
+			protected Properties evaluate(EvaluationContext context) {
+				Collection<? extends Node> selection = context.resolve(visualModel.selection());
+				
+				if (selection.size() == 1) {
+					Node selected = selection.iterator().next();
 
-			Mix mix = new Mix();
+					Mix mix = new Mix();
 
-			Properties visualModelProperties = visualModel.getProperties(selected);
+					Properties visualModelProperties = visualModel.getProperties(selected);
 
-			mix.add(visualModelProperties);
+					mix.add(visualModelProperties);
 
-			if (selected instanceof Properties)
-				mix.add((Properties)selected);
+					if (selected instanceof Properties)
+						mix.add((Properties)selected);
 
-			if (selected instanceof DependentNode) {
-				for (Node n : ((DependentNode)selected).getMathReferences()) {
-					mix.add(visualModel.getMathModel().getProperties(n));
-					if (n instanceof Properties)
-						mix.add((Properties)n);
-				}
+					if (selected instanceof DependentNode) {
+						for (Node n : ((DependentNode)selected).getMathReferences()) {
+							mix.add(visualModel.getMathModel().getProperties(n));
+							if (n instanceof Properties)
+								mix.add((Properties)n);
+						}
+					}
+					
+					if(mix.isEmpty())
+						return null;
+					else
+						return mix;
+				} 
+				return null;
 			}
 			
-			if(mix.isEmpty())
-				propertyWindow.clearObject();
-			else
-				propertyWindow.setObject(mix);
-		} 
-		else propertyWindow.clearObject();
+		});
+		
 	}
 
 	@Override

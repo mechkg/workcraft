@@ -25,9 +25,8 @@ package org.workcraft.dom.visual.connections;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.Touchable;
 
-public interface ConnectionGraphic extends Node, DrawableNew, Touchable {
+public interface ConnectionGraphic extends Node, DrawableNew {
 	
 	public Expression<? extends ParametricCurve> curve();
 }

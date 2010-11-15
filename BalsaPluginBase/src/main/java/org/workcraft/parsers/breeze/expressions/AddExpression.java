@@ -26,7 +26,7 @@ import org.workcraft.parsers.breeze.ParameterScope;
 import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
 
-public class AddExpression implements Expression<Integer> {
+public class AddExpression extends Expression<Integer> {
 
 	private final List<Expression<Integer>> args;
 

@@ -29,7 +29,7 @@ public class VisualTransformableNodeDeserialiser {
 	public static void initTransformableNode(Element element, VisualTransformableNode node)
 	{
 		Element vnodeElement = XmlUtil.getChildElement(VisualTransformableNode.class.getSimpleName(), element);
-		node.setX (XmlUtil.readDoubleAttr(vnodeElement, "X", 0));
-		node.setY (XmlUtil.readDoubleAttr(vnodeElement, "Y", 0));
+		node.x().setValue(XmlUtil.readDoubleAttr(vnodeElement, "X", 0));
+		node.y().setValue(XmlUtil.readDoubleAttr(vnodeElement, "Y", 0));
 	}
 }

@@ -34,6 +34,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.ArbitraryInsertionGroupImpl;
@@ -43,12 +44,41 @@ import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.util.Geometry;
 
 public class Polyline implements ConnectionGraphic, Container,SelectionObserver {
 	
-	private final class CurveExpression implements Expression<Curve> {
+	@Override
+	public IExpression<? extends Touchable> shape() {
+		return new Expression<Touchable>(){
+
+			@Override
+			protected Touchable evaluate(final EvaluationContext context) {
+				return new Touchable() {
+
+					@Override
+					public boolean hitTest(Point2D point) {
+						return context.resolve(curve).getDistanceToCurve(point) < VisualConnection.HIT_THRESHOLD;
+					}
+					@Override
+					public Point2D getCenter()
+					{
+						return context.resolve(curve).getPointOnCurve(0.5);
+					}
+					
+					@Override
+					public Rectangle2D getBoundingBox() {
+						return context.resolve(curve).getBoundingBox();
+					}
+				};
+			}
+			
+		};
+	}
+	
+	private final class CurveExpression extends Expression<Curve> {
 		@Override
 		public Curve evaluate(final EvaluationContext resolver) {
 			return new Curve(resolver);
@@ -57,8 +87,7 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 
 	private final class Curve implements
 			ParametricCurve {
-		private final class AnchorPointExpression implements
-				Expression<Point2D> {
+		private final class AnchorPointExpression extends Expression<Point2D> {
 			private final int index;
 
 			private AnchorPointExpression(int index) {
@@ -244,10 +273,10 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 		}
 	}
 
-	private final class CurveInfo implements Expression<PartialCurveInfo> {
+	private final class CurveInfo extends Expression<PartialCurveInfo> {
 		@Override
 		public PartialCurveInfo evaluate(EvaluationContext resolver) {
-			return Geometry.buildConnectionCurveInfo(resolver.resolve(connectionInfo), resolver.resolve(curve()), 0);
+			return Geometry.buildConnectionCurveInfo(resolver.resolve(connectionInfo), resolver.resolve(curve), 0);
 		}
 	}
 
@@ -316,19 +345,28 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 		Point2D pointOnConnection = new Point2D.Double();
 		int segment = GlobalCache.eval(curve()).getNearestSegment(userLocation, pointOnConnection);
 
-		ControlPoint ap = new ControlPoint();
-		GlobalCache.setValue(ap.position(), pointOnConnection);
+		createControlPoint(segment, pointOnConnection);
+	}
+	public void createControlPoint(int index, Point2D userLocation) {
+		
+		Expression<Point2D> p1 = new Expression<Point2D>() {
+			@Override
+			protected Point2D evaluate(EvaluationContext context) {
+				return context.resolve(connectionInfo).getFirstShape().getCenter();
+			}
+		};
+		
+		Expression<Point2D> p2 = new Expression<Point2D>() {
+			@Override
+			protected Point2D evaluate(EvaluationContext context) {
+				return context.resolve(connectionInfo).getSecondShape().getCenter();
+			}
+		};
+		
+		ControlPoint ap = new ControlPoint(p1, p2);
+		GlobalCache.setValue(ap.position(), userLocation);
 	
-		groupImpl.add(segment, ap);
-	}
-
-	@Override
-	public boolean hitTest(Point2D point) {
-		return GlobalCache.eval(curve).getDistanceToCurve(point) < VisualConnection.HIT_THRESHOLD;
-	}
-
-	public Collection<Node> getChildren() {
-		return groupImpl.getChildren();
+		groupImpl.add(index, ap);
 	}
 	
 	@Override
@@ -368,24 +406,13 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 		groupImpl.reparent(nodes);
 	}
 
-	@Override
-	public Point2D getCenter()
-	{
-		return GlobalCache.eval(curve).getPointOnCurve(0.5);
-	}
-	
 	public Expression<Curve> curve() {
 		return curve;
 	}
 
 	Expression<Curve> curve = new CurveExpression();
 
-	@Override
-	public Rectangle2D getBoundingBox() {
-		return GlobalCache.eval(curve).getBoundingBox();
-	}
-	
-	Variable<Expression<? extends Collection<? extends Node>>> selection = new Variable<Expression<? extends Collection<? extends Node>>>(Expressions.constant(Collections.<Node>emptyList()));
+	Variable<IExpression<? extends Collection<? extends Node>>> selection = new Variable<IExpression<? extends Collection<? extends Node>>>(Expressions.constant(Collections.<Node>emptyList()));
 
 	@Override
 	public void setSelection(Expression<? extends Collection<? extends Node>> selection) {

@@ -21,7 +21,7 @@
 
 package org.workcraft.testing.dom.visual;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -31,9 +31,13 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.Touchable;
+import org.workcraft.exceptions.NotSupportedException;
 
 public class HitmanTests {
 	class DummyNode implements Node
@@ -51,34 +55,41 @@ public class HitmanTests {
 		{
 			this.children = children;
 		}
-		
-		public Collection<Node> getChildren() {
-			return children;
+		@Override
+		public IExpression<? extends Touchable> shape() {
+			throw new NotSupportedException();
 		}
-
-		public Node getParent() {
-			throw new RuntimeException("Not Implemented");
+		@Override
+		public ModifiableExpression<Node> parent() {
+			throw new NotSupportedException();
 		}
-
-		public void setParent(Node parent) {
-			throw new RuntimeException("Not Implemented");
+		@Override
+		public IExpression<? extends Collection<? extends Node>> children() {
+			return Expressions.constant(children);
 		}
 	}
 	
-	class HitableNode extends DummyNode implements Touchable
+	class HitableNode extends DummyNode
 	{
-		public Rectangle2D getBoundingBox() {
-			return new Rectangle2D.Double(0, 0, 1, 1);
-		}
-
-		public boolean hitTest(Point2D point) {
-			return true;
-		}
-
 		@Override
-		public Point2D getCenter()
-		{
-			return new Point2D.Double(0, 0);
+		public IExpression<? extends Touchable> shape() {
+			return Expressions.constant(new Touchable() {
+				@Override
+				public boolean hitTest(Point2D point) {
+					return true;
+				}
+
+				@Override
+				public Rectangle2D getBoundingBox() {
+					return new Rectangle2D.Double(0, 0, 1, 1);
+				}
+
+				@Override
+				public Point2D getCenter() {
+					return new Point2D.Double(0, 0);
+				}
+				
+			});
 		}
 	}
 	

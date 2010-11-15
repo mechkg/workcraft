@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.interop;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.Dimension;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -58,12 +60,12 @@ public class SVGExporter implements Exporter {
 				
 				g2d.scale(50, 50);
 				
-				Rectangle2D bounds = ((VisualGroup)model.getRoot()).getBoundingBoxInLocalSpace();
+				Rectangle2D bounds = eval(((VisualGroup)model.getRoot()).localSpaceTouchable()).getBoundingBox();
 				
 				g2d.translate(-bounds.getMinX(), -bounds.getMinY());
 				g2d.setSVGCanvasSize(new Dimension((int)(bounds.getWidth()*50), (int)(bounds.getHeight()*50)));
 				
-				((VisualModel)model).draw(g2d, Decorator.Empty.INSTANCE);
+				eval(((VisualModel)model).graphicalContent()).draw(g2d, Decorator.Empty.INSTANCE);
 				
 				g2d.stream(new OutputStreamWriter(out));
 				

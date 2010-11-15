@@ -23,10 +23,9 @@ package org.workcraft.dom.visual;
 
 import java.awt.geom.AffineTransform;
 
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
 
 public interface MovableNew extends Node {
-	public Expression<AffineTransform> transform();
-//	public void applyTransform(AffineTransform transform);
+	public ModifiableExpression<AffineTransform> transform();
 }

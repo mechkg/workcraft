@@ -26,7 +26,6 @@ import java.awt.Graphics2D;
 
 import javax.swing.Icon;
 
-import org.workcraft.dom.Node;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.util.GUI;

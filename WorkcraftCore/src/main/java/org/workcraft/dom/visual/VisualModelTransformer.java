@@ -8,6 +8,8 @@ import java.util.Collection;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.graph.tools.GraphEditor;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class VisualModelTransformer {
 	/**
 	 * Only transforms node position (not orientation)
@@ -25,17 +27,17 @@ public class VisualModelTransformer {
 				
 				AffineTransform t2 = new AffineTransform();
 				
-				t2.translate(-vg.getX(), -vg.getY());
+				t2.translate(-eval(vg.x()), -eval(vg.y()));
 				t2.concatenate(t);
-				t2.translate(vg.getX(), vg.getY());
+				t2.translate(eval(vg.x()), eval(vg.y()));
 				
-				transformNodePosition(vg.getChildren(), t2);
+				transformNodePosition(eval(vg.children()), t2);
 			} else if (node instanceof VisualTransformableNode) {
 				VisualTransformableNode vn = (VisualTransformableNode) node;
 				
-				Point2D np=vn.position();
+				Point2D np=eval(vn.position());
 				t.transform(np, np);
-				vn.setPosition(np);
+				vn.position().setValue(np);
 			}
 		}
 //			TransformHelper.applyTransform(node, t);
@@ -97,8 +99,8 @@ public class VisualModelTransformer {
 
 		for (Node vn: nodes) {
 			if (vn instanceof VisualGroup) {
-				Rectangle2D r = getNodesCoordinateBox(((VisualGroup)vn).getChildren());
-				Point2D p = ((VisualGroup)vn).position();
+				Rectangle2D r = getNodesCoordinateBox(eval(((VisualGroup)vn).children()));
+				Point2D p = eval(((VisualGroup)vn).position());
 				r.setRect(r.getX()+p.getX(), r.getY()+p.getY(), r.getWidth(), r.getHeight());
 				
 //				System.out.printf("%f %f %f %f\n", r.getX(), r.getY(), r.getWidth(), r.getHeight());
@@ -108,7 +110,7 @@ public class VisualModelTransformer {
 				else if (r!=null)
 					Rectangle2D.union(selectionBB, r, selectionBB);
 			} else if(vn instanceof VisualTransformableNode)
-				selectionBB = bbUnion(selectionBB, ((VisualTransformableNode)vn).position());
+				selectionBB = bbUnion(selectionBB, eval(((VisualTransformableNode)vn).position()));
 		}
 		return selectionBB;
 	}

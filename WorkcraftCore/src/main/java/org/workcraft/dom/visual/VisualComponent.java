@@ -30,13 +30,13 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
-public abstract class VisualComponent extends VisualTransformableNode implements
-		Drawable, DependentNode {
+public abstract class VisualComponent extends VisualTransformableNode implements DependentNode, DrawableNew {
 	private MathNode refNode = null;
 
 	private static Font labelFont = new Font("Sans-serif", Font.PLAIN, 1)
@@ -116,7 +116,7 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 					g.getFontRenderContext(), getLabel());
 			glyphsForLabel = getLabel();
 			Rectangle2D textBB = glyphs.getLogicalBounds();
-			Rectangle2D bb = getBoundingBoxInLocalSpace();
+			Rectangle2D bb = GlobalCache.eval(localSpaceTouchable()).getBoundingBox();
 			labelPosition = new Point2D.Double(bb.getMinX()
 					+ (bb.getWidth() - textBB.getWidth()) * 0.5, bb.getMaxY()
 					+ textBB.getHeight() + 0.1);
@@ -157,10 +157,5 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 		ArrayList<MathNode> result = new ArrayList<MathNode>();
 		result.add(getReferencedComponent());
 		return result;
-	}
-
-	@Override
-	public Point2D getCenterInLocalSpace() {
-		return new Point2D.Double(0, 0);
 	}
 }

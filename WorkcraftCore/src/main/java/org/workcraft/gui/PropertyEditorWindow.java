@@ -27,11 +27,19 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import org.workcraft.Framework;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.gui.propertyeditor.PropertyEditorTable;
+import org.workcraft.util.Null;
 
 @SuppressWarnings("serial")
 public class PropertyEditorWindow extends JPanel {
+
 	private PropertyEditorTable propertyTable;
 	private JScrollPane scrollProperties;
 
@@ -44,8 +52,23 @@ public class PropertyEditorWindow extends JPanel {
 		setLayout(new BorderLayout(0,0));
 		add(new DisabledPanel(), BorderLayout.CENTER);
 		validate();
-
+		
+		GlobalCache.autoRefresh(new Expression<Null>() {
+			@Override
+			protected Null evaluate(EvaluationContext context) {
+				Properties obj = context.resolve(prop);
+				if(obj == null)
+					clearObject();
+				else
+					setObject(obj);
+				return null;
+			}
+			
+		});
 	}
+	
+	public final Variable<IExpression<? extends Properties>> propertyObject = new Variable<IExpression<? extends Properties>>(null);
+	final IExpression<Properties> prop = Expressions.unfold(propertyObject);
 	
 	public Properties getObject () {
 		return propertyTable.getObject();
@@ -67,6 +90,5 @@ public class PropertyEditorWindow extends JPanel {
 			validate();
 			repaint();
 		}
-			
 	}
 }

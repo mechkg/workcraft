@@ -26,7 +26,7 @@ import org.workcraft.parsers.breeze.ParameterScope;
 import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
 
-public class CaseExpression<T1, T2> implements Expression<T2> {
+public class CaseExpression<T1, T2> extends Expression<T2> {
 
 	private final Expression<T1> toCheck;
 	private final List<Expression<T1>> conditions;

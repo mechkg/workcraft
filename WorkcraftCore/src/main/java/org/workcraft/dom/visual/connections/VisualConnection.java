@@ -34,6 +34,7 @@ import java.util.Set;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
@@ -52,8 +53,7 @@ public class VisualConnection extends VisualNode implements
 		Node, Drawable, Connection,
 		DependentNode {
 	
-	private final class Properties implements
-			Expression<VisualConnectionProperties> {
+	private final class Properties extends Expression<VisualConnectionProperties> {
 		@Override
 		public VisualConnectionProperties evaluate(EvaluationContext resolver) {
 			final Touchable firstShape = resolver.resolve(transformedShape1);
@@ -140,7 +140,6 @@ public class VisualConnection extends VisualNode implements
 	private double arrowLength = defaultArrowLength;
 	
 	private CachedHashSet<Node> children = new CachedHashSet<Node>();
-	private ComponentsTransformer componentsTransformObserver = null;
 	private Expression<Touchable> transformedShape1;
 	private Expression<Touchable> transformedShape2;
 	
@@ -309,23 +308,22 @@ public class VisualConnection extends VisualNode implements
 		return refConnection;
 	}
 	
-	public boolean hitTest(Point2D pointInParentSpace) {
-		return graphic.hitTest(pointInParentSpace);
+	@Override
+	public IExpression<? extends Touchable> shape() {
+		return graphic.shape();
 	}
 	
 	@Override
-	public Rectangle2D getBoundingBox() {
-		return graphic.getBoundingBox();
-	}
-
 	public VisualComponent getFirst() {
 		return first;
 	}
 
+	@Override
 	public VisualComponent getSecond() {
 		return second;
 	}
 
+	@Override
 	public Set<MathNode> getMathReferences() {
 		Set<MathNode> ret = new HashSet<MathNode>();
 		ret.add(getReferencedConnection());
@@ -347,12 +345,6 @@ public class VisualConnection extends VisualNode implements
 
 	public void setScaleMode(ScaleMode scaleMode) {
 		this.scaleMode = scaleMode;
-	}
-
-	@Override
-	public Point2D getCenter()
-	{
-		return graphic.getCenter();
 	}
 	
 	public Expression<VisualConnectionProperties> properties() {

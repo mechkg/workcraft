@@ -25,10 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.workcraft.dependencymanager.advanced.core.DependencyResolver;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dependencymanager.advanced.user.MutableExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.util.Func;
 import org.workcraft.util.Null;
@@ -36,17 +35,16 @@ import org.workcraft.util.Null;
 
 public abstract class StateSupervisor extends HierarchySupervisor {
 	
-	private final class UpdateExpression extends MutableExpression<Null> {
+	private final class UpdateExpression extends Expression<Null> {
 		@Override
-		public Null simpleEvaluate(DependencyResolver resolver) {
+		public Null evaluate(EvaluationContext resolver) {
 			for(Expression<?> expr : supervisors.values())
 				resolver.resolve(expr);
 			return null;
 		}
 
-		@Override
 		public void changed() {
-			super.changed();
+			super.refresh();
 		}
 	}
 

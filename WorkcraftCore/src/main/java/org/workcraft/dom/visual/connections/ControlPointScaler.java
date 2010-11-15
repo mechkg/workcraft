@@ -21,20 +21,40 @@
 
 package org.workcraft.dom.visual.connections;
 
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.Collection;
+import java.util.List;
+
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.util.listeners.Listener;
+import org.workcraft.dom.visual.connections.VisualConnection.ScaleMode;
+import org.workcraft.exceptions.NotImplementedException;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 import static org.workcraft.util.Geometry.*;
 
-public class ControlPointScaler {
+public class ControlPointScaler extends Expression<List<ModifiableExpression<AffineTransform>>> {
 	private static double THRESHOLD = 0.00001;
 	private Point2D oldC1, oldC2;
+	private final IExpression<AffineTransform> originalTransform;
+	private final Expression<Point2D> p1;
+	private final Expression<Point2D> p2;
+	private final IExpression<? extends Collection<? extends ControlPoint>> controlPoints;
+	private final Expression<ScaleMode> scaleMode;
 
-	public ControlPointScaler (Point2D oldC1, Point2D oldC2) {
-		this.oldC1 = oldC1;
-		this.oldC2 = oldC2;
+	public ControlPointScaler(IExpression<AffineTransform> transform, Expression<Point2D> p1, Expression<Point2D> p2, Expression<ScaleMode> scaleMode) {
+		this.p1 = p1;
+		this.p2 = p2;
+		this.scaleMode = scaleMode;
 	}
 
-	public void scale (Point2D newC1, Point2D newC2, Collection<ControlPoint> controlPoints, VisualConnection.ScaleMode mode) {
+	public Expression<List<ModifiableExpression<AffineTransform>>> scale (Point2D oldC1, Point2D oldC2, Point2D newC1, Point2D newC2, Collection<? extends ControlPoint> controlPoints, VisualConnection.ScaleMode mode) {
 		if (mode == VisualConnection.ScaleMode.NONE)
 			return;
 		
@@ -56,7 +76,7 @@ public class ControlPointScaler {
 					else
 						delta = multiply(add(dC1, dC2), 0.5);
 
-				cp.setPosition(add(cp.position(), delta));
+				cp.position().setValue(add(eval(cp.position()), delta));
 
 				i++;	
 			}
@@ -78,7 +98,7 @@ public class ControlPointScaler {
 		Point2D up = getUpVector(mode, v);
 
 		for (ControlPoint cp : controlPoints) {
-			Point2D p = subtract(cp.position(), oldC1);
+			Point2D p = subtract(eval(cp.position()), oldC1);
 
 			Point2D dp = changeBasis (p, v0, up0);
 
@@ -103,5 +123,34 @@ public class ControlPointScaler {
 		default:
 			throw new RuntimeException ("Unexpected value of scale mode");
 		}
+	}
+
+	@Override
+	protected void simpleSetValue(AffineTransform newValue) {
+		
+	}
+
+	private static boolean almostEqual(Point2D p1, Point2D p2) {
+		Point2D diff = subtract(p1, p2);
+		double sq = dotProduct(diff, diff);
+		return sq<0.001;
+	}
+	
+	@Override
+	protected AffineTransform evaluate(EvaluationContext context) {
+		
+		Point2D point1 = context.resolve(p1);
+		Point2D point2 = context.resolve(p2);
+		
+		if (oldC1==null || oldC2 == null) {
+			oldC1 = point1;
+			oldC2 = point2;
+		}
+		
+		if(!almostEqual(point1, oldC1) || !almostEqual(point2, oldC2)) {
+			scale(oldC1, oldC2, point1, point2, context.resolve(controlPoints), context.resolve(scaleMode));
+		}
+		
+		return null;
 	}
 }

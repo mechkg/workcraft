@@ -4,7 +4,7 @@ import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.parsers.breeze.ParameterScope;
 import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
-public class ShiftLeft implements Expression<Integer> {
+public class ShiftLeft extends Expression<Integer> {
 
 	private final Expression<Integer> arg;
 	private final Expression<Integer> shift;

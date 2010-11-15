@@ -1,10 +1,11 @@
 package org.workcraft.dependencymanager.advanced.user;
 
-import org.workcraft.dependencymanager.advanced.core.DependencyResolver;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 
 
 
-public class Variable<T> extends MutableExpression<T> implements ModifiableExpression<T> {
+public class Variable<T> extends Expression<T> implements ModifiableExpression<T> {
 
 	private T value;
 	
@@ -14,7 +15,7 @@ public class Variable<T> extends MutableExpression<T> implements ModifiableExpre
 	
 	public void setValue(T value) {
 		this.value = value;
-		changed();
+		refresh();
 	}
 	
 	public T getValue() {
@@ -22,12 +23,12 @@ public class Variable<T> extends MutableExpression<T> implements ModifiableExpre
 	}
 	
 	@Override
-	public T simpleEvaluate(DependencyResolver resolver) {
+	protected T evaluate(EvaluationContext context) {
 		return value;
 	}
-
+	
 	@Override
-	public void setValue(DependencyResolver resolver, T newValue) {
-		setValue(newValue);
-	} 
+	public String toString() {
+		return value == null ? "var equal to  null" : "var of type " + value.getClass() + " = " + value.toString();
+	}
 }

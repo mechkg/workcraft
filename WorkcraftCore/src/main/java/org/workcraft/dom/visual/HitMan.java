@@ -46,10 +46,10 @@ public class HitMan
 
 			@Override
 			public Boolean eval(T arg) {
-				if(!(arg instanceof Touchable))
+				if(arg.shape() == null)
 					return true;
 
-				Rectangle2D boundingBox = ((Touchable)arg).getBoundingBox();
+				Rectangle2D boundingBox = GlobalCache.eval(arg.shape()).getBoundingBox();
 
 				return 
 				boundingBox != null &&
@@ -88,7 +88,7 @@ public class HitMan
 
 	public static boolean isBranchHit (Point2D point, Node node) {
 
-		if (node instanceof Touchable && ((Touchable)node).hitTest(point))	{
+		if (node.shape() != null && GlobalCache.eval(node.shape()).hitTest(point))	{
 			if (node instanceof Hidable)
 				return !GlobalCache.eval(((Hidable)node).hidden());
 			else
@@ -156,9 +156,9 @@ public class HitMan
 			Node node) {
 		Point2D transformedPoint; 
 
-		if (node instanceof Movable) {
+		if (node instanceof MovableNew) {
 			transformedPoint = new Point2D.Double();
-			AffineTransform t = Geometry.optimisticInverse(((Movable)node).getTransform());
+			AffineTransform t = Geometry.optimisticInverse(GlobalCache.eval(((MovableNew)node).transform()));
 			t.transform(point, transformedPoint);
 		} else
 			transformedPoint = point;
@@ -201,7 +201,7 @@ public class HitMan
 	public static Node hitTestForSelection(Point2D point, Node node) {
 		Node nd = HitMan.hitFirstChild(point, node, new Func<Node, Boolean>() {
 			public Boolean eval(Node n) {
-				if (!(n instanceof Movable))
+				if (!(n instanceof MovableNew))
 					return false;
 
 				if (n instanceof Hidable)
@@ -231,7 +231,7 @@ public class HitMan
 	public static Node hitTestForConnection(Point2D point, Node node) {
 		Node nd = HitMan.hitDeepest(point, node, new Func<Node, Boolean>() {
 			public Boolean eval(Node n) {
-				if (n instanceof Movable && ! (n instanceof Container)) {
+				if (n instanceof MovableNew && ! (n instanceof Container)) {
 					if (n instanceof Hidable) 
 						return !GlobalCache.eval(((Hidable)n).hidden());
 					else
@@ -283,9 +283,9 @@ public class HitMan
 	 */
 	public static Collection<Node> boxHitTest (Container container, Point2D p1, Point2D p2) {
 		
-		if(container instanceof Movable)
+		if(container instanceof MovableNew)
 		{
-			AffineTransform toLocal = Geometry.optimisticInverse(((Movable) container).getTransform());
+			AffineTransform toLocal = Geometry.optimisticInverse(GlobalCache.eval(((MovableNew) container).transform()));
 			toLocal.transform(p1, p1);
 			toLocal.transform(p2, p2);
 		}
@@ -298,16 +298,18 @@ public class HitMan
 				Math.abs(p1.getX()-p2.getX()), 
 				Math.abs(p1.getY()-p2.getY()));
 
-		for (Touchable n : Hierarchy.getChildrenOfType(container, Touchable.class)) {
-			if (n instanceof Hidable && GlobalCache.eval(((Hidable)n).hidden()) )
-				continue;
-
-			if (p1.getX()<=p2.getX()) {
-				if (TouchableHelper.insideRectangle(n, rect))
-					hit.add((Node)n);
-			} else {
-				if (TouchableHelper.touchesRectangle(n, rect))
-					hit.add((Node)n);
+		for (Node n : GlobalCache.eval(container.children())) {
+			if(n.shape() != null) {
+				if (n instanceof Hidable && GlobalCache.eval(((Hidable)n).hidden()) )
+					continue;
+	
+				if (p1.getX()<=p2.getX()) {
+					if (TouchableHelper.insideRectangle(GlobalCache.eval(n.shape()), rect))
+						hit.add((Node)n);
+				} else {
+					if (TouchableHelper.touchesRectangle(GlobalCache.eval(n.shape()), rect))
+						hit.add((Node)n);
+				}
 			}
 		}
 		return hit;

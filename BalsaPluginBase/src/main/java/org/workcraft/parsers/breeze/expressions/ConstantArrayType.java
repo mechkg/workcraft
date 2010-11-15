@@ -26,7 +26,7 @@ import java.util.Arrays;
 import org.workcraft.parsers.breeze.ParameterScope;
 import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
-public class ConstantArrayType implements Expression<Integer[]> {
+public class ConstantArrayType extends Expression<Integer[]> {
 	private final Expression<Integer> width;
 	private final Expression<Integer> count;
 	

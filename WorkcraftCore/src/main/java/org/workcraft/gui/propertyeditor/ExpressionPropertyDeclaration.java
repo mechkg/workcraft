@@ -24,15 +24,15 @@ package org.workcraft.gui.propertyeditor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
-import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 
 public class ExpressionPropertyDeclaration<T extends Object> implements PropertyDescriptor {
 	public String name;
 	
 	public ModifiableExpression<? super T> setter; 
-	public Expression<? extends T> getter; 
+	public IExpression<? extends T> getter; 
  
 	public Class<T> cls;
 	public Map<String, Object> predefinedValues;
@@ -44,7 +44,7 @@ public class ExpressionPropertyDeclaration<T extends Object> implements Property
 		return choice;
 	}
 
-	public ExpressionPropertyDeclaration (String name, Expression<? extends T> getter, ModifiableExpression<? super T> setter, Class<T> cls) {
+	public ExpressionPropertyDeclaration (String name, IExpression<? extends T> getter, ModifiableExpression<? super T> setter, Class<T> cls) {
 		if(cls.isPrimitive())
 			throw new RuntimeException("Primitive types are not supported");
 		this.name = name;

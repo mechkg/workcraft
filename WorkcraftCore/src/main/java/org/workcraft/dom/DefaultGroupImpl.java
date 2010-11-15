@@ -41,7 +41,6 @@ public class DefaultGroupImpl extends AbstractGroup implements Container {
 
 	@Override
 	protected void addInternal(Node node) {
-		
 		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(getChildren());
 		newValue.add(node);
 		children.setValue(newValue);
@@ -58,4 +57,5 @@ public class DefaultGroupImpl extends AbstractGroup implements Container {
 	public Expression<? extends Collection<Node>> children() {
 		return children;
 	}
+
 }

@@ -56,7 +56,6 @@ public class SelectionTool extends AbstractTool {
 	private static final int SELECTION_REMOVE = 2;
 	private static final int SELECTION_REPLACE = 3;
 
-
 	protected Color selectionBorderColor = new Color(200, 200, 200);
 	protected Color selectionFillColor = new Color(99, 130, 191, 32);
 	protected Color grayOutColor = Color.LIGHT_GRAY; 
@@ -349,7 +348,7 @@ public class SelectionTool extends AbstractTool {
 
 	protected void currentLevelUp(VisualModel model) {
 		Container level = model.getCurrentLevel();
-		Container parent = Hierarchy.getNearestAncestor(level.getParent(), Container.class);
+		Container parent = Hierarchy.getNearestAncestor(GlobalCache.eval(level.parent()), Container.class);
 		if(parent!=null)
 		{
 			model.setCurrentLevel(parent);

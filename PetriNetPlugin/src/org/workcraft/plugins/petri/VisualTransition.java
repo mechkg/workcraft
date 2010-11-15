@@ -31,7 +31,12 @@ import java.awt.geom.Rectangle2D;
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.shared.CommonVisualSettings;
@@ -50,31 +55,62 @@ public class VisualTransition extends VisualComponent {
 	}
 	
 	@Override
-	public void draw(DrawRequest r) {
-		drawLabelInLocalSpace(r);
-		
-		Graphics2D g = r.getGraphics();
-		
-		double size = CommonVisualSettings.getSize();
-		double strokeWidth = CommonVisualSettings.getStrokeWidth();
-		
-		Shape shape = new Rectangle2D.Double(
-				-size / 2 + strokeWidth / 2,
-				-size / 2 + strokeWidth / 2,
-				size - strokeWidth,
-				size - strokeWidth);
-		g.setColor(Coloriser.colorise(Coloriser.colorise(getFillColor(), r.getDecoration().getBackground()), r.getDecoration().getColorisation()));
-		g.fill(shape);
-		g.setColor(Coloriser.colorise(Coloriser.colorise(getForegroundColor(), r.getDecoration().getBackground()), r.getDecoration().getColorisation()));
-		g.setStroke(new BasicStroke((float)CommonVisualSettings.getStrokeWidth()));
-		g.draw(shape);
+	public IExpression<? extends GraphicalContent> graphicalContent() {
+		return new Expression<GraphicalContent>() {
+			@Override
+			protected GraphicalContent evaluate(EvaluationContext context) {
+				return new GraphicalContent() {
+					@Override
+					public void draw(DrawRequest r) {
+						drawLabelInLocalSpace(r);
+						
+						Graphics2D g = r.getGraphics();
+						
+						double size = CommonVisualSettings.getSize();
+						double strokeWidth = CommonVisualSettings.getStrokeWidth();
+						
+						Shape shape = new Rectangle2D.Double(
+								-size / 2 + strokeWidth / 2,
+								-size / 2 + strokeWidth / 2,
+								size - strokeWidth,
+								size - strokeWidth);
+						g.setColor(Coloriser.colorise(Coloriser.colorise(getFillColor(), r.getDecoration().getBackground()), r.getDecoration().getColorisation()));
+						g.fill(shape);
+						g.setColor(Coloriser.colorise(Coloriser.colorise(getForegroundColor(), r.getDecoration().getBackground()), r.getDecoration().getColorisation()));
+						g.setStroke(new BasicStroke((float)CommonVisualSettings.getStrokeWidth()));
+						g.draw(shape);
+
+					}
+				};
+			}
+		};
 	}
+	
+	@Override
+	public IExpression<Touchable> localSpaceTouchable() {
+		return new Expression<Touchable>() {
 
-	public Rectangle2D getBoundingBoxInLocalSpace() {
-		double size = CommonVisualSettings.getSize(); 
-		return new Rectangle2D.Double(-size/2, -size/2, size, size);	}
+			@Override
+			protected Touchable evaluate(EvaluationContext context) {
+				return new Touchable() {
 
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
-		return getBoundingBoxInLocalSpace().contains(pointInLocalSpace);
+					@Override
+					public boolean hitTest(Point2D point) {
+						return getBoundingBox().contains(point);
+					}
+
+					@Override
+					public Rectangle2D getBoundingBox() {
+						double size = CommonVisualSettings.getSize(); 
+						return new Rectangle2D.Double(-size/2, -size/2, size, size);
+					}
+
+					@Override
+					public Point2D getCenter() {
+						return new Point2D.Double(getBoundingBox().getCenterX(), getBoundingBox().getCenterY());
+					}
+				};
+			}
+		};
 	}
 }

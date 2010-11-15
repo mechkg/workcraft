@@ -24,7 +24,7 @@ package org.workcraft.parsers.breeze.expressions;
 import org.workcraft.parsers.breeze.ParameterScope;
 import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
-public class ParameterReference<T> implements Expression<T> {
+public class ParameterReference<T> extends Expression<T> {
 	private final String parameterName;
 
 	public ParameterReference(String parameterName)

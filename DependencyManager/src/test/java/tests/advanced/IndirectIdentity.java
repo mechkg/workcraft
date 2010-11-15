@@ -4,7 +4,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 
-public final class IndirectIdentity implements Expression<Integer> {
+public final class IndirectIdentity extends Expression<Integer> {
 	private final Variable<Integer> var;
 
 	IndirectIdentity(Variable<Integer> var) {

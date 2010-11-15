@@ -23,10 +23,15 @@ package org.workcraft.dom.visual.connections;
 
 import java.awt.Color;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.Drawable;
 import org.workcraft.dom.visual.Touchable;
@@ -34,7 +39,7 @@ import org.workcraft.dom.visual.VisualTransformableNode;
 import org.workcraft.gui.Coloriser;
 
 
-public class ControlPoint extends VisualTransformableNode implements Drawable, Touchable {
+public class ControlPoint extends VisualTransformableNode implements Drawable {
 	private double size = 0.15;
 	private Color fillColor = Color.BLUE;
 
@@ -43,6 +48,10 @@ public class ControlPoint extends VisualTransformableNode implements Drawable, T
 			-size / 2,
 			size,
 			size);
+	
+	public ControlPoint (Expression<Point2D> p1, Expression<Point2D> p2) {
+		transform = new ControlPointScaler(super.transform(), p1, p2);
+	}
 	
 	public Rectangle2D getBoundingBoxInLocalSpace() {
 		return new Rectangle2D.Double(-size, -size, size*2, size*2);
@@ -54,13 +63,36 @@ public class ControlPoint extends VisualTransformableNode implements Drawable, T
 		r.getGraphics().fill(shape);
 	}
 
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) { 
-		return getBoundingBoxInLocalSpace().contains(pointInLocalSpace);
-	}
+	public IExpression<Touchable> localSpaceTouchable() {
+		return new Expression<Touchable>() {
 
+			@Override
+			protected Touchable evaluate(EvaluationContext context) {
+				return new Touchable() {
+
+					@Override
+					public boolean hitTest(Point2D point) {
+						return getBoundingBox().contains(point);
+					}
+
+					@Override
+					public Rectangle2D getBoundingBox() {
+						return new Rectangle2D.Double(-size, -size, size*2, size*2);
+					}
+
+					@Override
+					public Point2D getCenter() {
+						return new Point2D.Double(0, 0);
+					}
+				};
+			}
+		};
+	}
+	
+	ModifiableExpression<AffineTransform> transform; 
+	
 	@Override
-	public Point2D getCenterInLocalSpace()
-	{
-		return new Point2D.Double(0, 0);
+	public ModifiableExpression<AffineTransform> transform() {
+		return transform;
 	}
 }

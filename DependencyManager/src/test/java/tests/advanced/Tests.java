@@ -1,10 +1,9 @@
 package tests.advanced;
 
-import static org.junit.Assert.*;
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import static org.junit.Assert.assertEquals;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import org.junit.Test;
-import org.workcraft.dependencymanager.advanced.core.CacheManager;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.SumExpression;
@@ -12,7 +11,7 @@ import org.workcraft.dependencymanager.advanced.user.Variable;
 
 
 public class Tests {
-	private final class StupidVar implements Expression<Integer> {
+	private final class StupidVar extends Expression<Integer> {
 		private Integer val;
 
 		private StupidVar(Integer val) {
@@ -28,28 +27,28 @@ public class Tests {
 	@Test
 	public void test0()
 	{
-		CacheManager resolver = new CacheManager();
 		StupidVar var = new StupidVar(5);
-		assertEquals(5, resolver.eval(var).intValue());
+		assertEquals(5, eval(var).intValue());
 		var.val = 8;
-		assertEquals(5, resolver.eval(var).intValue());
-		resolver.changed(var);
-		assertEquals(8, resolver.eval(var).intValue());
+		assertEquals(5, eval(var).intValue());
+		//resolver.changed(var);
+		var.refresh();
+		assertEquals(8, eval(var).intValue());
 	}
 
 	@Test
 	public void test1()
 	{
-		CacheManager resolver = new CacheManager();
 		StupidVar var = new StupidVar(5);
 		Identity id = new Identity(var);
-		assertEquals(5, resolver.eval(id).intValue());
+		assertEquals(5, eval(id).intValue());
 		var.val = 8;
-		assertEquals(5, resolver.eval(var).intValue());
-		assertEquals(5, resolver.eval(id).intValue());
-		resolver.changed(var);
-		assertEquals(8, resolver.eval(var).intValue());
-		assertEquals(8, resolver.eval(id).intValue());
+		assertEquals(5, eval(var).intValue());
+		assertEquals(5, eval(id).intValue());
+		//resolver.changed(var);
+		var.refresh();
+		assertEquals(8, eval(var).intValue());
+		assertEquals(8, eval(id).intValue());
 	}
 
 

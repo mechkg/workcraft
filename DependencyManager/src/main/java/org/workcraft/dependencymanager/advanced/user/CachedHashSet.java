@@ -7,7 +7,7 @@ import java.util.Set;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 
-public class CachedHashSet<Node> implements Expression<Set<Node>> {
+public class CachedHashSet<Node> extends Expression<Set<Node>> {
 
 	Variable<LinkedHashSet<Node>> data = new Variable<LinkedHashSet<Node>>(new LinkedHashSet<Node>());
 	

@@ -23,15 +23,23 @@ package org.workcraft.dom.visual;
 
 import java.awt.geom.AffineTransform;
 
-import org.workcraft.util.Geometry;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 
 public class MovableHelper {
-	public static void translate(Movable m, double dx, double dy)
+	public static void translate(MovableNew m, double dx, double dy)
 	{
-		m.applyTransform(AffineTransform.getTranslateInstance(dx, dy));
+		applyTransform(m, AffineTransform.getTranslateInstance(dx, dy));
 	}
 
-	public static void resetTransform(Movable m) {
-		m.applyTransform(Geometry.optimisticInverse(m.getTransform()));
+	public static void applyTransform(MovableNew m, AffineTransform transform)
+	{
+		AffineTransform old = GlobalCache.eval(m.transform());
+		AffineTransform nw = new AffineTransform(old);
+		nw.preConcatenate(transform);
+		m.transform().setValue(nw);
+	}
+
+	public static void resetTransform(MovableNew m) {
+		m.transform().setValue(new AffineTransform());
 	}
 }

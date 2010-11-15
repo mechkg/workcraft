@@ -14,10 +14,10 @@ public class Tests {
 		SimpleVariable<Integer> var1 = new SimpleVariable<Integer>(8);
 		SimpleVariable<Integer> var2 = new SimpleVariable<Integer>(15);
 		SumExpression sum = new SumExpression(var1, var2);
-		assertEquals(23, sum.getValue());
+		assertEquals((Integer)23, sum.getValue());
 		var1.setValue(10);
-		assertEquals(25, sum.getValue());
+		assertEquals((Integer)25, sum.getValue());
 		var2.setValue(10);
-		assertEquals(20, sum.getValue());
+		assertEquals((Integer)20, sum.getValue());
 	}
 }

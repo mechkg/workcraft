@@ -18,7 +18,7 @@ import org.workcraft.dependencymanager.util.listeners.Listener;
 
 public class MemoryExhaustionTest {
 	public void test(int N, Listener job) {
-		
+
 		goodGC();
 	    long startMem = usedMemory();
 	    

@@ -21,6 +21,7 @@
 
 package org.workcraft.testing.dom.visual;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 import static org.workcraft.testing.dom.visual.Tools.createComponent;
 import static org.workcraft.testing.dom.visual.Tools.createConnection;
 import static org.workcraft.testing.dom.visual.Tools.createGroup;
@@ -64,8 +65,6 @@ public class VisualModelTests {
 		@Override
 		public void validateConnection(Node first, Node second)
 				throws InvalidConnectionException {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
@@ -81,10 +80,10 @@ public class VisualModelTests {
 
 		model.getCurrentLevel().add(new VisualGroup());
 
-		VisualNode[] old = model.getCurrentLevel().getChildren().toArray(new VisualNode[0]);
+		VisualNode[] old = eval(model.getCurrentLevel().children()).toArray(new VisualNode[0]);
 		Assert.assertEquals(1, old.length);
 		model.groupSelection();
-		VisualNode[] _new = model.getCurrentLevel().getChildren().toArray(new VisualNode[0]);
+		VisualNode[] _new = eval(model.getCurrentLevel().children()).toArray(new VisualNode[0]);
 		Assert.assertEquals(1, _new.length);
 		Assert.assertEquals(old[0], _new[0]);
 	}
@@ -112,11 +111,11 @@ public class VisualModelTests {
 			model.addToSelection(node);
 		}
 
-		VisualNode[] old = model.getCurrentLevel().getChildren().toArray(new VisualNode[0]);
+		VisualNode[] old = eval(model.getCurrentLevel().children()).toArray(new VisualNode[0]);
 
 		model.groupSelection();
 
-		VisualNode[] _new = model.getCurrentLevel().getChildren().toArray(new VisualNode[0]);
+		VisualNode[] _new = eval(model.getCurrentLevel().children()).toArray(new VisualNode[0]);
 
 		VisualNode[] diff = findMissing(old, _new);
 
@@ -138,7 +137,7 @@ public class VisualModelTests {
 		Assert.assertTrue(newGroup instanceof VisualGroup);
 
 		ArrayList<Node> newNodeList = new ArrayList<Node>();
-		for (Node node : newGroup.getChildren())
+		for (Node node : eval(newGroup.children()))
 			newNodeList.add(node);
 
 		Assert.assertEquals(toGroup.length, newNodeList.size());
@@ -166,9 +165,9 @@ public class VisualModelTests {
 
 		model.addToSelection(node1);
 		model.groupSelection();
-		Assert.assertEquals(1, root.getChildren().toArray(new VisualNode[0]).length);
-		Assert.assertEquals(node1, root.getChildren().toArray(new VisualNode[0])[0]);
-		Assert.assertEquals(0, node1.getChildren().toArray(new VisualNode[0]).length);
+		Assert.assertEquals(1, eval(root.children()).toArray(new VisualNode[0]).length);
+		Assert.assertEquals(node1, eval(root.children()).toArray(new VisualNode[0])[0]);
+		Assert.assertEquals(0, eval(node1.children()).toArray(new VisualNode[0]).length);
 	}
 
 	@Test
@@ -225,14 +224,14 @@ public class VisualModelTests {
 		model.addToSelection(node1);
 		model.ungroupSelection();
 
-		VisualNode[] newList = root.getChildren().toArray(new VisualNode[0]);
+		VisualNode[] newList = eval(root.children()).toArray(new VisualNode[0]);
 
 		Assert.assertEquals(3, newList.length);
 		Assert.assertSame(node5, newList[0]);
 		Assert.assertSame(node2, newList[1]);
 		Assert.assertSame(node4, newList[2]);
 
-		VisualNode[] n2Children = node2.getChildren().toArray(new VisualNode[0]);
+		VisualNode[] n2Children = eval(node2.children()).toArray(new VisualNode[0]);
 		Assert.assertEquals(1, n2Children.length);
 		Assert.assertSame(node3, n2Children[0]);
 	}
@@ -260,13 +259,13 @@ public class VisualModelTests {
 		model.addToSelection(node2);
 		model.ungroupSelection();
 
-		VisualNode[] newList = root.getChildren().toArray(new VisualNode[0]);
+		VisualNode[] newList = eval(root.children()).toArray(new VisualNode[0]);
 
 		Assert.assertEquals(2, newList.length);
 		Assert.assertSame(node1, newList[0]);
 		Assert.assertSame(node5, newList[1]);
 
-		VisualNode[] n1Children = node1.getChildren().toArray(new VisualNode[0]);
+		VisualNode[] n1Children = eval(node1.children()).toArray(new VisualNode[0]);
 		Assert.assertEquals(2, n1Children.length);
 		Assert.assertSame(node4, n1Children[0]);
 		Assert.assertSame(node3, n1Children[1]);
@@ -287,12 +286,12 @@ public class VisualModelTests {
 		model.addToSelection(node2);
 		model.ungroupSelection();
 
-		VisualNode[] newList = root.getChildren().toArray(new VisualNode[0]);
+		VisualNode[] newList = eval(root.children()).toArray(new VisualNode[0]);
 
 		Assert.assertEquals(1, newList.length);
 		Assert.assertSame(node1, newList[0]);
 
-		Assert.assertEquals(0, node1.getChildren().toArray(new VisualNode[0]).length);
+		Assert.assertEquals(0, eval(node1.children()).toArray(new VisualNode[0]).length);
 	}
 
 	@Test
@@ -327,7 +326,7 @@ public class VisualModelTests {
 		model.addToSelection(node2);
 		model.ungroupSelection();
 
-		VisualNode[] newList = root.getChildren().toArray(new VisualNode[0]);
+		VisualNode[] newList = eval(root.children()).toArray(new VisualNode[0]);
 
 		Assert.assertEquals(4, newList.length);
 		Assert.assertSame(node1c, newList[0]);
@@ -335,10 +334,10 @@ public class VisualModelTests {
 		Assert.assertSame(node3c, newList[2]);
 		Assert.assertSame(node4c, newList[3]);
 
-		Assert.assertEquals(0, node1.getChildren().toArray(new VisualNode[0]).length);
-		Assert.assertEquals(0, node2.getChildren().toArray(new VisualNode[0]).length);
-		Assert.assertEquals(0, node3.getChildren().toArray(new VisualNode[0]).length);
-		Assert.assertEquals(0, node4.getChildren().toArray(new VisualNode[0]).length);
+		Assert.assertEquals(0, eval(node1.children()).toArray(new VisualNode[0]).length);
+		Assert.assertEquals(0, eval(node2.children()).toArray(new VisualNode[0]).length);
+		Assert.assertEquals(0, eval(node3.children()).toArray(new VisualNode[0]).length);
+		Assert.assertEquals(0, eval(node4.children()).toArray(new VisualNode[0]).length);
 	}
 
 	@Test
@@ -356,7 +355,7 @@ public class VisualModelTests {
 		
 		Assert.assertArrayEquals(
 				new Object[] { new GroupNodeEqualityTest(new VisualNode[] {c1, c2, con}) }, 
-				root.getChildren().toArray(new VisualNode[0]));
+				eval(root.children()).toArray(new VisualNode[0]));
 	}
 
 	@Test
@@ -374,7 +373,7 @@ public class VisualModelTests {
 		model.groupSelection();
 		Assert.assertArrayEquals(
 				new Object[] { new GroupNodeEqualityTest(new VisualNode[] {c1, c2, con}) }, 
-				root.getChildren().toArray(new VisualNode[0]));
+				eval(root.children()).toArray(new VisualNode[0]));
 	}
 	@Test
 	public void testGrouping_AutoGroupTwoConnections() {
@@ -393,7 +392,7 @@ public class VisualModelTests {
 		model.groupSelection();
 		Assert.assertArrayEquals(
 				new Object[] { new GroupNodeEqualityTest(new VisualNode[] {c1, c2, con1, con2}) }, 
-				root.getChildren().toArray(new VisualNode[0]));
+				eval(root.children()).toArray(new VisualNode[0]));
 	}
 
 	@Test
@@ -411,7 +410,7 @@ public class VisualModelTests {
 		model.groupSelection();
 		Assert.assertArrayEquals(
 				new Object[] { new GroupNodeEqualityTest(new VisualNode[] {node1, c2, con}) }, 
-				root.getChildren().toArray(new VisualNode[0]));
+				eval(root.children()).toArray(new VisualNode[0]));
 	}
 
 	@Test
@@ -430,7 +429,7 @@ public class VisualModelTests {
 		model.groupSelection();
 
 		Assert.assertArrayEquals(new VisualNode[] { c1, c2, c3, con1, con2 },
-				root.getChildren().toArray(new VisualNode[0]));
+				eval(root.children()).toArray(new VisualNode[0]));
 	}
 
 	class GroupNodeEqualityTest {
@@ -443,7 +442,7 @@ public class VisualModelTests {
 		public void assertEquals(Node node) {
 			Assert.assertTrue("Should be a visual group", node instanceof VisualGroup);
 			VisualGroup group = (VisualGroup) node;
-			VisualNode[] their = group.getChildren().toArray(new VisualNode[0]);;
+			VisualNode[] their = eval(group.children()).toArray(new VisualNode[0]);;
 			Assert.assertArrayEquals(expected, their);
 		}
 		
@@ -472,7 +471,7 @@ public class VisualModelTests {
 
 		Assert.assertArrayEquals(new Object[] { c1, con1, 
 				new GroupNodeEqualityTest(new VisualNode[] { c2, c3 }) }, 
-				root.getChildren().toArray(new VisualNode[0]));
+				eval(root.children()).toArray(new VisualNode[0]));
 	}
 
 	@Test
@@ -487,8 +486,8 @@ public class VisualModelTests {
 		model.addToSelection(c1);
 		model.addToSelection(con);
 		model.groupSelection();
-		Assert.assertArrayEquals(new VisualNode[] { c1, c2, con }, root
-				.getChildren().toArray(new VisualNode[0]));
+		Assert.assertArrayEquals(new VisualNode[] { c1, c2, con }, eval(root
+				.children()).toArray(new VisualNode[0]));
 	}
 
 	private VisualModel createModel() {
@@ -502,7 +501,7 @@ public class VisualModelTests {
 		
 		VisualGroup root = (VisualGroup)model.getRoot();
 		VisualGroup group1 = createGroup(root);
-		group1.setX(101);
+		group1.x().setValue(101.0);
 		SquareNode sq = new SquareNode(group1, new Rectangle2D.Double(0, 0, 1, 1));
 		group1.add(sq);
 		
@@ -520,7 +519,7 @@ public class VisualModelTests {
 		
 		VisualGroup root = (VisualGroup)model.getRoot();
 		VisualGroup group1 = createGroup(root);
-		group1.setX(101);
+		group1.x().setValue(101.0);
 		SquareNode sq = new SquareNode(group1, new Rectangle2D.Double(0, 0, 1, 1));
 		group1.add(sq);
 		

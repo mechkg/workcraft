@@ -35,9 +35,9 @@ import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
@@ -129,8 +129,8 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 	}
 
 	@Override
-	public Expression<GraphicalContent> graphicalContent() {
-		return new Expression<GraphicalContent>(){
+	public ExpressionBase<GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>(){
 			@Override
 			protected GraphicalContent evaluate(final EvaluationContext context) {
 				return new GraphicalContent() {
@@ -175,7 +175,7 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 	}
 
 	@Override
-	public IExpression<? extends Touchable> localSpaceTouchable() {
+	public Expression<? extends Touchable> localSpaceTouchable() {
 		return Expressions.constant(new Touchable(){
 
 			@Override

@@ -43,7 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.dom.visual.VisualModel;
@@ -64,7 +64,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	class ImageModel {
 	}
 	
-	class Repainter extends Expression<ImageModel> {
+	class Repainter extends ExpressionBase<ImageModel> {
 		
 		private final VisualModel model;
 
@@ -258,7 +258,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	private void updatePropertyView() {
 		final PropertyEditorWindow propertyWindow = mainWindow.getPropertyView();
 		
-		propertyWindow.propertyObject.setValue(new Expression<Properties>() {
+		propertyWindow.propertyObject.setValue(new ExpressionBase<Properties>() {
 
 			@Override
 			protected Properties evaluate(EvaluationContext context) {

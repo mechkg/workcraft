@@ -37,7 +37,7 @@ public abstract class AbstractMathModel extends AbstractModel implements MathMod
 	}
 	
 	public AbstractMathModel(Container root, ReferenceManager referenceManager) {
-		super((root == null) ? new MathGroup() : root, referenceManager);
+		super(root, referenceManager);
 		
 		new DefaultHangingConnectionRemover(this, root);
 	}

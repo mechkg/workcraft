@@ -21,51 +21,55 @@
 
 package org.workcraft.dom.visual.connections;
 
+import static org.workcraft.util.Geometry.add;
+import static org.workcraft.util.Geometry.changeBasis;
+import static org.workcraft.util.Geometry.multiply;
+import static org.workcraft.util.Geometry.normalize;
+import static org.workcraft.util.Geometry.reduce;
+import static org.workcraft.util.Geometry.rotate90CCW;
+import static org.workcraft.util.Geometry.subtract;
+
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
-import org.workcraft.dependencymanager.util.listeners.Listener;
-import org.workcraft.dom.visual.connections.VisualConnection.ScaleMode;
-import org.workcraft.exceptions.NotImplementedException;
+import org.workcraft.exceptions.ArgumentException;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-
-import static org.workcraft.util.Geometry.*;
-
-public class ControlPointScaler extends Expression<List<ModifiableExpression<AffineTransform>>> {
+public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, ModifiableExpression<AffineTransform>>> {
 	private static double THRESHOLD = 0.00001;
 	private Point2D oldC1, oldC2;
-	private final IExpression<AffineTransform> originalTransform;
-	private final Expression<Point2D> p1;
-	private final Expression<Point2D> p2;
-	private final IExpression<? extends Collection<? extends ControlPoint>> controlPoints;
-	private final Expression<ScaleMode> scaleMode;
+	private final Expression<? extends VisualConnectionProperties> connectionInfo;
+	private final Expression<? extends Collection<? extends ControlPoint>> controlPoints;
 
-	public ControlPointScaler(IExpression<AffineTransform> transform, Expression<Point2D> p1, Expression<Point2D> p2, Expression<ScaleMode> scaleMode) {
-		this.p1 = p1;
-		this.p2 = p2;
-		this.scaleMode = scaleMode;
+	public ControlPointScaler(Expression<? extends VisualConnectionProperties> connectionInfo, Expression<? extends Collection<? extends ControlPoint>> controlPoints) {
+		this.connectionInfo = connectionInfo;
+		this.controlPoints = controlPoints;
 	}
 
-	public Expression<List<ModifiableExpression<AffineTransform>>> scale (Point2D oldC1, Point2D oldC2, Point2D newC1, Point2D newC2, Collection<? extends ControlPoint> controlPoints, VisualConnection.ScaleMode mode) {
+	private static List<? extends Point2D> scale (Point2D oldC1, Point2D oldC2, Point2D newC1, Point2D newC2, List<? extends Point2D> points, VisualConnection.ScaleMode mode) {
+		
 		if (mode == VisualConnection.ScaleMode.NONE)
-			return;
+			return points;
+		
+		List<Point2D> result = new ArrayList<Point2D>();
 		
 		if (mode == VisualConnection.ScaleMode.LOCK_RELATIVELY)
 		{
 			Point2D dC1 = subtract(newC1, oldC1);
 			Point2D dC2 = subtract(newC2, oldC2);
 			
-			int n = controlPoints.size();
+			int n = points.size();
 			int i=0;
-			for (ControlPoint cp : controlPoints)
+			for (Point2D cp : points)
 			{
 				Point2D delta;
 				if(i<n/2)
@@ -76,11 +80,11 @@ public class ControlPointScaler extends Expression<List<ModifiableExpression<Aff
 					else
 						delta = multiply(add(dC1, dC2), 0.5);
 
-				cp.position().setValue(add(eval(cp.position()), delta));
+				result.add(add(cp, delta));
 
 				i++;	
 			}
-			return;
+			return result;
 		}
 
 		Point2D v0 = subtract(oldC2, oldC1);
@@ -97,12 +101,12 @@ public class ControlPointScaler extends Expression<List<ModifiableExpression<Aff
 
 		Point2D up = getUpVector(mode, v);
 
-		for (ControlPoint cp : controlPoints) {
-			Point2D p = subtract(eval(cp.position()), oldC1);
+		for (Point2D cp : points) {
+			Point2D p = subtract(cp, oldC1);
 
 			Point2D dp = changeBasis (p, v0, up0);
 
-			cp.setPosition(
+			result.add(
 					add(
 							add(
 									multiply (v, dp.getX()),
@@ -110,9 +114,10 @@ public class ControlPointScaler extends Expression<List<ModifiableExpression<Aff
 									newC1
 					));
 		}
+		return result;
 	}
 
-	private Point2D getUpVector(VisualConnection.ScaleMode mode, Point2D v0) {
+	private static Point2D getUpVector(VisualConnection.ScaleMode mode, Point2D v0) {
 		switch (mode) {
 		case SCALE:
 			return rotate90CCW(v0);
@@ -125,32 +130,62 @@ public class ControlPointScaler extends Expression<List<ModifiableExpression<Aff
 		}
 	}
 
-	@Override
-	protected void simpleSetValue(AffineTransform newValue) {
-		
-	}
-
-	private static boolean almostEqual(Point2D p1, Point2D p2) {
-		Point2D diff = subtract(p1, p2);
-		double sq = dotProduct(diff, diff);
-		return sq<0.001;
+	private void applyScale(List<? extends ControlPoint> cpoints, List<? extends Point2D> scaled) {
+		if(cpoints.size() != scaled.size())
+			throw new ArgumentException("bad arg sizes");
+		for(int i=0;i<cpoints.size();i++) {
+			Point2D p = scaled.get(i);
+			cpoints.get(i).simpleTransform().setValue(AffineTransform.getTranslateInstance(p.getX(), p.getY()));
+		}
 	}
 	
 	@Override
-	protected AffineTransform evaluate(EvaluationContext context) {
+	protected Map<ControlPoint, ModifiableExpression<AffineTransform>> evaluate(EvaluationContext context) {
 		
-		Point2D point1 = context.resolve(p1);
-		Point2D point2 = context.resolve(p2);
+		VisualConnectionProperties connInfo = context.resolve(connectionInfo);
 		
+		final List<? extends ControlPoint> cpoints = new ArrayList<ControlPoint>(context.resolve(controlPoints));
+		ArrayList<Point2D> points = new ArrayList<Point2D>();
+		for(ControlPoint p : cpoints) {
+			AffineTransform tr = context.resolve(p.simpleTransform());
+			points.add(new Point2D.Double(tr.getTranslateX(), tr.getTranslateY()));
+		}
+		
+		final Point2D newC1 = connInfo.getFirstShape().getCenter();
+		final Point2D newC2 = connInfo.getSecondShape().getCenter();
+
 		if (oldC1==null || oldC2 == null) {
-			oldC1 = point1;
-			oldC2 = point2;
+			oldC1 = newC1;
+			oldC2 = newC2;
 		}
 		
-		if(!almostEqual(point1, oldC1) || !almostEqual(point2, oldC2)) {
-			scale(oldC1, oldC2, point1, point2, context.resolve(controlPoints), context.resolve(scaleMode));
-		}
+		final List<? extends Point2D> scaled = scale(oldC1, oldC2, newC1, newC2, points, connInfo.getScaleMode());
 		
+		applyScale(cpoints, scaled);
+		
+		oldC1 = newC1;
+		oldC2 = newC2;
+				
+		Map<ControlPoint, ModifiableExpression<AffineTransform>> result = new HashMap<ControlPoint, ModifiableExpression<AffineTransform>>();
+		
+		for(int i=0;i<cpoints.size();i++) {
+			final ControlPoint cpoint = cpoints.get(i);
+			final int index = i;
+			result.put(cpoint, new ModifiableExpressionImpl<AffineTransform>() {
+
+				@Override
+				protected void simpleSetValue(AffineTransform newValue) {
+					cpoint.simpleTransform().setValue(newValue);
+				}
+
+				@Override
+				protected AffineTransform evaluate(EvaluationContext context) {
+					Point2D p = scaled.get(index);
+					return AffineTransform.getTranslateInstance(p.getX(), p.getY());
+				}
+			});
+		}
+			
 		return null;
 	}
 }

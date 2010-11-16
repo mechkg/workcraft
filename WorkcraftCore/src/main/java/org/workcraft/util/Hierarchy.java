@@ -28,8 +28,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.NodeHelper;
@@ -125,8 +125,8 @@ public class Hierarchy {
 	}
 
 	// TODO: eliminate quadratic complexity (using pcollections?)
-	static Expression<List<Node>> getPath(final IExpression<? extends Node> node) {
-		return new Expression<List<Node>>() {
+	static ExpressionBase<List<Node>> getPath(final Expression<? extends Node> node) {
+		return new ExpressionBase<List<Node>>() {
 
 			@Override
 			public List<Node> evaluate(EvaluationContext resolver) {
@@ -142,20 +142,20 @@ public class Hierarchy {
 	
 	
 	
-	public static Expression<Node> getCommonParent(IExpression<? extends Node>... nodes) {
+	public static ExpressionBase<Node> getCommonParent(Expression<? extends Node>... nodes) {
 		
-		final ArrayList<Expression<List<Node>>> paths = new ArrayList<Expression<List<Node>>>(nodes.length);
+		final ArrayList<ExpressionBase<List<Node>>> paths = new ArrayList<ExpressionBase<List<Node>>>(nodes.length);
 		
 		//int minPathLength = Integer.MAX_VALUE;
 		
-		for (IExpression<? extends Node> node : nodes) {
-			final Expression<List<Node>> path = getPath(node);
+		for (Expression<? extends Node> node : nodes) {
+			final ExpressionBase<List<Node>> path = getPath(node);
 			//if (minPathLength > path.length)
 			//	minPathLength = path.length;
 			paths.add(path);
 		}
 		
-		return new Expression<Node>() {
+		return new ExpressionBase<Node>() {
 			
 			@Override
 			public Node evaluate(EvaluationContext resolver) {

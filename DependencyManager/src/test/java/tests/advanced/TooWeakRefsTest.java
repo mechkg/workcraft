@@ -7,7 +7,7 @@ import java.util.Random;
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 
@@ -18,11 +18,11 @@ public class TooWeakRefsTest {
 		int N = 10000;
 		//int M = 10;
 		List<Variable<Integer>> vars = new ArrayList<Variable<Integer>>(); 
-		List<Expression<Integer>> expressions = new ArrayList<Expression<Integer>>();
+		List<ExpressionBase<Integer>> expressions = new ArrayList<ExpressionBase<Integer>>();
 		for(int i=0;i<N;i++) {
 			final Variable<Integer> var = new Variable<Integer>(8);
 			vars.add(var);
-			final Expression<Integer> expr =  new IndirectIdentity(var);
+			final ExpressionBase<Integer> expr =  new IndirectIdentity(var);
 			GlobalCache.eval(expr);
 			expressions.add(expr);
 		}

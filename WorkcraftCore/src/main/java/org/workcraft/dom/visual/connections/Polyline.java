@@ -26,15 +26,16 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.ArbitraryInsertionGroupImpl;
@@ -51,8 +52,8 @@ import org.workcraft.util.Geometry;
 public class Polyline implements ConnectionGraphic, Container,SelectionObserver {
 	
 	@Override
-	public IExpression<? extends Touchable> shape() {
-		return new Expression<Touchable>(){
+	public Expression<? extends Touchable> shape() {
+		return new ExpressionBase<Touchable>(){
 
 			@Override
 			protected Touchable evaluate(final EvaluationContext context) {
@@ -78,16 +79,15 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 		};
 	}
 	
-	private final class CurveExpression extends Expression<Curve> {
+	private final class CurveExpression extends ExpressionBase<Curve> {
 		@Override
 		public Curve evaluate(final EvaluationContext resolver) {
 			return new Curve(resolver);
 		}
 	}
 
-	private final class Curve implements
-			ParametricCurve {
-		private final class AnchorPointExpression extends Expression<Point2D> {
+	private final class Curve implements ParametricCurve {
+		private final class AnchorPointExpression extends ExpressionBase<Point2D> {
 			private final int index;
 
 			private AnchorPointExpression(int index) {
@@ -114,7 +114,7 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 			return controlPoints().size() + 1;
 		}
 
-		private Expression<Point2D> getAnchorPointLocation(final int index) {
+		private ExpressionBase<Point2D> getAnchorPointLocation(final int index) {
 			return new AnchorPointExpression(index);
 		}
 
@@ -273,7 +273,7 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 		}
 	}
 
-	private final class CurveInfo extends Expression<PartialCurveInfo> {
+	private final class CurveInfo extends ExpressionBase<PartialCurveInfo> {
 		@Override
 		public PartialCurveInfo evaluate(EvaluationContext resolver) {
 			return Geometry.buildConnectionCurveInfo(resolver.resolve(connectionInfo), resolver.resolve(curve), 0);
@@ -281,20 +281,37 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 	}
 
 	private ArbitraryInsertionGroupImpl groupImpl;
-	private Expression<VisualConnectionProperties> connectionInfo;
-	private Expression<PartialCurveInfo> curveInfo = new CurveInfo();
+	private ExpressionBase<VisualConnectionProperties> connectionInfo;
+	private ExpressionBase<PartialCurveInfo> curveInfo = new CurveInfo();
 	
-	//TODO: implement scaling and control point hiding
-	private ControlPointScaler scaler = null;
-
+	//TODO: implement control point hiding
+	ControlPointScaler scaler; 
+	
+	
 	public Polyline(VisualConnection parent) {
 		groupImpl = new ArbitraryInsertionGroupImpl(this, parent);
 		connectionInfo = parent.properties();
+		scaler = new ControlPointScaler(connectionInfo, controlPoints());
+	}
+
+	private Expression<? extends Collection<? extends ControlPoint>> controlPoints() {
+		return new ExpressionBase<Collection<? extends ControlPoint>>() {
+
+			@Override
+			protected Collection<? extends ControlPoint> evaluate(EvaluationContext context) {
+				ArrayList<ControlPoint> points = new ArrayList<ControlPoint>();
+				for(Node n : context.resolve(children())) {
+					points.add((ControlPoint)n);
+				}
+				return points;
+			}
+			
+		};
 	}
 
 	@Override
-	public Expression<GraphicalContent> graphicalContent() {
-		return new Expression<GraphicalContent>() {
+	public ExpressionBase<GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>() {
 			@Override
 			public GraphicalContent evaluate(EvaluationContext resolver) {
 				
@@ -348,29 +365,13 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 		createControlPoint(segment, pointOnConnection);
 	}
 	public void createControlPoint(int index, Point2D userLocation) {
-		
-		Expression<Point2D> p1 = new Expression<Point2D>() {
-			@Override
-			protected Point2D evaluate(EvaluationContext context) {
-				return context.resolve(connectionInfo).getFirstShape().getCenter();
-			}
-		};
-		
-		Expression<Point2D> p2 = new Expression<Point2D>() {
-			@Override
-			protected Point2D evaluate(EvaluationContext context) {
-				return context.resolve(connectionInfo).getSecondShape().getCenter();
-			}
-		};
-		
-		ControlPoint ap = new ControlPoint(p1, p2);
+		ControlPoint ap = new ControlPoint();
 		GlobalCache.setValue(ap.position(), userLocation);
-	
 		groupImpl.add(index, ap);
 	}
 	
 	@Override
-	public Expression<? extends Collection<Node>> children() {
+	public ExpressionBase<? extends Collection<Node>> children() {
 		return groupImpl.children();
 	}
 
@@ -406,16 +407,21 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 		groupImpl.reparent(nodes);
 	}
 
-	public Expression<Curve> curve() {
+	public ExpressionBase<Curve> curve() {
 		return curve;
 	}
 
-	Expression<Curve> curve = new CurveExpression();
+	ExpressionBase<Curve> curve = new CurveExpression();
 
-	Variable<IExpression<? extends Collection<? extends Node>>> selection = new Variable<IExpression<? extends Collection<? extends Node>>>(Expressions.constant(Collections.<Node>emptyList()));
+	Variable<Expression<? extends Collection<? extends Node>>> selection = new Variable<Expression<? extends Collection<? extends Node>>>(Expressions.constant(Collections.<Node>emptyList()));
 
 	@Override
 	public void setSelection(Expression<? extends Collection<? extends Node>> selection) {
 		this.selection.setValue(selection);
+	}
+
+	@Override
+	public ControlPointScaler scaler() {
+		return scaler;
 	}
 }

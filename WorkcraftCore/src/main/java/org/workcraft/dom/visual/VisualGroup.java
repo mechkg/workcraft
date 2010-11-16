@@ -30,9 +30,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
@@ -49,8 +49,8 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 	DefaultGroupImpl groupImpl = new DefaultGroupImpl(this);
 
 	@Override
-	public Expression<GraphicalContent> graphicalContent() {
-		return new Expression<GraphicalContent>() {
+	public ExpressionBase<GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>() {
 
 			@Override
 			public GraphicalContent evaluate(EvaluationContext resolver) {
@@ -74,8 +74,8 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 	}
 
 	@Override
-	public final IExpression<Touchable> localSpaceTouchable() {
-		return new Expression<Touchable>() {
+	public final Expression<Touchable> localSpaceTouchable() {
+		return new ExpressionBase<Touchable>() {
 			@Override
 			protected Touchable evaluate(final EvaluationContext context) {
 				return new Touchable() {
@@ -156,7 +156,7 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 	}
 
 	@Override
-	public Expression<? extends Collection<Node>> children() {
+	public ExpressionBase<? extends Collection<Node>> children() {
 		return groupImpl.children();
 	}
 }

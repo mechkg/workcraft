@@ -32,8 +32,8 @@ import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
@@ -55,8 +55,8 @@ public class VisualTransition extends VisualComponent {
 	}
 	
 	@Override
-	public IExpression<? extends GraphicalContent> graphicalContent() {
-		return new Expression<GraphicalContent>() {
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>() {
 			@Override
 			protected GraphicalContent evaluate(EvaluationContext context) {
 				return new GraphicalContent() {
@@ -87,8 +87,8 @@ public class VisualTransition extends VisualComponent {
 	}
 	
 	@Override
-	public IExpression<Touchable> localSpaceTouchable() {
-		return new Expression<Touchable>() {
+	public Expression<Touchable> localSpaceTouchable() {
+		return new ExpressionBase<Touchable>() {
 
 			@Override
 			protected Touchable evaluate(EvaluationContext context) {

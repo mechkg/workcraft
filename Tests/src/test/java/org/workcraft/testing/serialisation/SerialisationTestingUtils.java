@@ -23,6 +23,8 @@ package org.workcraft.testing.serialisation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -49,8 +51,8 @@ public class SerialisationTestingUtils {
 	}
 	
 	public static void compareTransitions (SignalTransition t1, SignalTransition t2) {
-		assertEquals(t1.getSignalName(), t2.getSignalName());
-		assertEquals(t1.getDirection(), t2.getDirection());
+		assertEquals(eval(t1.signalName()), eval(t2.signalName()));
+		assertEquals(eval(t1.direction()), eval(t2.direction()));
 	}
 	
 	public static void compareConnections (MathConnection con1, MathConnection con2) {
@@ -110,14 +112,14 @@ public class SerialisationTestingUtils {
 	
 	public static void compareVisualPlaces (VisualPlace p1, VisualPlace p2) {
 		//assertEquals(p1.getID(), p2.getID());
-		assertEquals(p1.getTransform(), p2.getTransform());
+		assertEquals(eval(p1.transform()), eval(p2.transform()));
 		
 		comparePlaces (p1.getReferencedPlace(), p2.getReferencedPlace());
 	}
 	
 	public static void compareVisualSignalTransitions (VisualSignalTransition t1, VisualSignalTransition t2) {
 		//assertEquals(t1.getID(), t2.getID());
-		assertEquals(t1.getTransform(), t2.getTransform());
+		assertEquals(eval(t1.transform()), eval(t2.transform()));
 		
 		compareTransitions (t1.getReferencedTransition(), t2.getReferencedTransition());
 	}
@@ -138,18 +140,18 @@ public class SerialisationTestingUtils {
 	}
 	
 	public static void comparePolylines(Polyline p1, Polyline p2) {
-		assertEquals(p1.getChildren().size(), p2.getChildren().size());
+		assertEquals(eval(size(p1.children())), eval(size(p2.children())));
 		
-		Iterator<Node> i1 = p1.getChildren().iterator();
-		Iterator<Node> i2 = p2.getChildren().iterator();
+		Iterator<Node> i1 = eval(p1.children()).iterator();
+		Iterator<Node> i2 = eval(p2.children()).iterator();
 		
-		for (int i=0; i<p1.getChildren().size(); i++)
+		for (int i=0; i<eval(p1.children()).size(); i++)
 		{
 			ControlPoint cp1 = (ControlPoint)i1.next();
 			ControlPoint cp2 = (ControlPoint)i2.next();
 			
-			assertEquals (cp1.getX(), cp2.getX(), 0.0001);
-			assertEquals (cp1.getY(), cp2.getY(), 0.0001);
+			assertEquals (eval(cp1.x()), eval(cp2.x()), 0.0001);
+			assertEquals (eval(cp1.y()), eval(cp2.y()), 0.0001);
 		}
 	}
 	
@@ -182,13 +184,13 @@ public class SerialisationTestingUtils {
 		else 
 			fail("Unexpected class " + node1.getClass().getName());
 				
-		Collection<Node> ch1 = node1.getChildren();
-		Collection<Node> ch2 = node2.getChildren();
+		Collection<? extends Node> ch1 = eval(node1.children());
+		Collection<? extends Node> ch2 = eval(node2.children());
 		
 		assertEquals(ch1.size(), ch2.size());
 		
-		Iterator<Node> i1 = ch1.iterator();
-		Iterator<Node> i2 = ch2.iterator();
+		Iterator<? extends Node> i1 = ch1.iterator();
+		Iterator<? extends Node> i2 = ch2.iterator();
 		
 		while ( i1.hasNext() ) {
 			Node n1 = i1.next();

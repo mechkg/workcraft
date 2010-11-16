@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.visual.connections.VisualConnection;
 
@@ -59,7 +59,7 @@ public class ArbitraryInsertionGroupImpl extends AbstractGroup implements Contai
 	}
 
 	@Override
-	public Expression<? extends LinkedList<Node>> children() {
+	public ExpressionBase<? extends LinkedList<Node>> children() {
 		return children;
 	}
 }

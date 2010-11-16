@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.workcraft.dependencymanager.advanced.core.DummyEvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.SumExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
@@ -59,7 +59,7 @@ public class MemoryExhaustionTest {
 		test(500, new Listener(){
 			public void changed(){
 				for(int i=0;i<M;i++) {
-					final Expression<Object> expr = new Expression<Object>() {
+					final ExpressionBase<Object> expr = new ExpressionBase<Object>() {
 						@Override
 						public Object evaluate(EvaluationContext resolver) {
 							return this;
@@ -93,11 +93,11 @@ public class MemoryExhaustionTest {
 		test(500, new Listener(){
 			public void changed(){
 				List<Variable<Integer>> vars = new ArrayList<Variable<Integer>>(); 
-				List<Expression<Integer>> expressions = new ArrayList<Expression<Integer>>();
+				List<ExpressionBase<Integer>> expressions = new ArrayList<ExpressionBase<Integer>>();
 				for(int i=0;i<M;i++) {
 					final Variable<Integer> var = new Variable<Integer>(8);
 					vars.add(var);
-					final Expression<Integer> expr =  new IndirectIdentity(var);
+					final ExpressionBase<Integer> expr =  new IndirectIdentity(var);
 					GlobalCache.eval(expr);
 					expressions.add(expr);
 				}

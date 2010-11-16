@@ -36,6 +36,7 @@ public class DefaultHangingConnectionRemover extends HierarchySupervisor {
 	public DefaultHangingConnectionRemover (NodeContext nct, Node root) {
 		super(root);
 		this.nct = nct;
+		start();
 	}
 
 	@Override

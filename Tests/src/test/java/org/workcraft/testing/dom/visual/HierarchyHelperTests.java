@@ -25,7 +25,13 @@ import java.util.Collection;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.Touchable;
+import org.workcraft.exceptions.NotSupportedException;
+import org.workcraft.util.ExpressionUtil;
 import org.workcraft.util.Hierarchy;
 
 public class HierarchyHelperTests {
@@ -36,17 +42,19 @@ public class HierarchyHelperTests {
 		public MockHierarchyNode(Node parent) {
 			this.parent = parent;
 		}
+		
 		@Override
-		public Collection<Node> getChildren() {
-			throw new RuntimeException("not implemented");
+		public ModifiableExpression<Node> parent() {
+			return ExpressionUtil.modificationNotSupported(Expressions.constant(parent));
 		}
 		@Override
-		public Node getParent() {
-			return parent;
+		public Expression<? extends Collection<? extends Node>> children() {
+			throw new NotSupportedException("not implemented");
 		}
+
 		@Override
-		public void setParent(Node parent) {
-			throw new RuntimeException("not implemented");
+		public Expression<? extends Touchable> shape() {
+			return null;
 		}
 	}
 

@@ -21,6 +21,8 @@
 
 package org.workcraft.dom.visual.connections;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.CubicCurve2D;
@@ -29,42 +31,109 @@ import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawHelper;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
+import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.observation.SelectionChangedEvent;
-import org.workcraft.observation.StateEvent;
-import org.workcraft.observation.StateObserver;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Geometry.CurveSplitResult;
 
-public class Bezier implements ConnectionGraphic, ParametricCurve, SelectionObserver {
-	private CubicCurve2D visibleCurve = new CubicCurve2D.Double();
-	
-	private PartialCurveInfo curveInfo;
-	private VisualConnectionProperties connectionInfo;
+public class Bezier implements ConnectionGraphic, SelectionObserver {
+
+	private final Expression<PartialCurveInfo> curveInfo;
+	private final Expression<VisualConnectionProperties> connectionInfo;
+	private final Expression<CubicCurve2D> fullCurve2D;
+	private final Expression<CubicCurve2D> visibleCurve2D;
+	private final Expression<? extends ParametricCurve> parametricCurve;
 	
 	private Node parent;
 	private BezierControlPoint cp1, cp2;
-	private ControlPointScaler scaler = null;
+	private final ControlPointScaler scaler;
 	
-	private Rectangle2D boundingBox = null;
-	private boolean valid = false;
-	
-	public Bezier(VisualConnection parent) {
-		this.connectionInfo = parent;
-		this.parent = parent;
+	@Override
+	public ControlPointScaler scaler() {
+		return scaler;
 	}
 	
-	public void setDefaultControlPoints() {
-		initControlPoints (new BezierControlPoint(), new BezierControlPoint()); 
+	public Bezier(VisualConnection parent) {
+		this.connectionInfo = parent.properties();
+		this.parent = parent;
+		this.scaler = new ControlPointScaler(connectionInfo, children());
+		
+		parametricCurve = new ExpressionBase<ParametricCurve>() {
 
-		cp1.setPosition(Geometry.lerp(connectionInfo.firstShape().getCenter(), connectionInfo.getSecondCenter(), 0.3));
-		cp2.setPosition(Geometry.lerp(connectionInfo.firstCenter(), connectionInfo.getSecondCenter(), 0.6));
+			@Override
+			protected ParametricCurve evaluate(EvaluationContext context) {
+				return new Curve(context);
+			}
+		};
+		
+		this.curveInfo = new ExpressionBase<PartialCurveInfo>() {
+			@Override
+			protected PartialCurveInfo evaluate(EvaluationContext context) {
+				return Geometry.buildConnectionCurveInfo(context.resolve(connectionInfo), context.resolve(parametricCurve), 0); }
+		};
+
+		this.fullCurve2D = new ExpressionBase<CubicCurve2D>(){
+			@Override
+			public CubicCurve2D evaluate(org.workcraft.dependencymanager.advanced.core.EvaluationContext resolver) {
+				CubicCurve2D result = new CubicCurve2D.Double();
+				result.setCurve(resolver.resolve(connectionInfo).getFirstShape().getCenter(), resolver.resolve(cp1.position()), resolver.resolve(cp2.position()), resolver.resolve(connectionInfo).getSecondShape().getCenter());
+				return result;
+			};
+		};
+		this.visibleCurve2D = getPartialCurve(fullCurve2D, curveInfo);
+	}
+	
+	@Override
+	public Expression<? extends ParametricCurve> curve() {
+		return parametricCurve;
+	}
+	
+	@Override
+	public ModifiableExpression<Node> parent() {
+		return modificationNotSupported(parentConnection());
+	}
+
+	private ExpressionBase<Node> parentConnection() {
+		return new ExpressionBase<Node>() {
+			@Override
+			protected Node evaluate(EvaluationContext context) {
+				return parent;
+			} 
+		};
+	}
+
+	public void setDefaultControlPoints() {
+		Expression<Point2D> p1 = new ExpressionBase<Point2D>() {
+			@Override
+			protected Point2D evaluate(EvaluationContext context) {
+				return context.resolve(connectionInfo).getFirstShape().getCenter();
+			}
+		};
+		Expression<Point2D> p2 = new ExpressionBase<Point2D>() {
+			@Override
+			protected Point2D evaluate(EvaluationContext context) {
+				return context.resolve(connectionInfo).getFirstShape().getCenter();
+			}
+		};
+		
+		initControlPoints (new BezierControlPoint(p1), new BezierControlPoint(p2)); 
+
+		Point2D c1 = eval(p1);
+		Point2D c2 = eval(p2);
+		cp1.position().setValue(Geometry.lerp(c1, c2, 0.3));
+		cp2.position().setValue(Geometry.lerp(c1, c2, 0.6));
 		
 		finaliseControlPoints();
 	}
@@ -75,203 +144,158 @@ public class Bezier implements ConnectionGraphic, ParametricCurve, SelectionObse
 	}
 	
 	public void finaliseControlPoints() {
-		cp1.setParent(this);
-		cp2.setParent(this);
-	
-		cp1.addObserver(this);
-		cp2.addObserver(this);		
+		cp1.parent().setValue(this);
+		cp2.parent().setValue(this);
 	}
 	
 	public BezierControlPoint[] getControlPoints() {
 		return new BezierControlPoint[] { cp1, cp2 };
 	}
 	
-	public void draw(DrawRequest r) {
-		if (!valid)
-			update();
-		
-		Graphics2D g = r.getGraphics();
-		
-		Color color = Coloriser.colorise(connectionInfo.getDrawColor(), r.getDecoration().getColorisation());
-		g.setColor(color);
-//		g.setStroke(new BasicStroke((float)connectionInfo.getLineWidth()));
-		g.setStroke(connectionInfo.getStroke());
-		
-		g.draw(visibleCurve);
-		
-		if(connectionInfo.hasArrow())
-			DrawHelper
-			.drawArrowHead(g, color,
-						curveInfo.arrowHeadPosition,
-						curveInfo.arrowOrientation, connectionInfo
-								.getArrowLength(), connectionInfo
-								.getArrowWidth());
-	}
-
-	public Rectangle2D getBoundingBox() {
-		return boundingBox;
-	}
-
-	private CubicCurve2D getPartialCurve(double tStart, double tEnd)
-	{
-		CubicCurve2D fullCurve = new CubicCurve2D.Double();
-		fullCurve.setCurve(connectionInfo.getFirstCenter(), cp1.position(), cp2.position(), connectionInfo.getSecondCenter());
-		
-		CurveSplitResult firstSplit = Geometry.splitCubicCurve(fullCurve, tStart);
-		CurveSplitResult secondSplit = Geometry.splitCubicCurve(firstSplit.curve2, (tEnd-tStart)/(1-tStart) );
-		
-		return secondSplit.curve1;
-	}
-	
-	private void updateVisibleRange() {
-		visibleCurve = getPartialCurve(curveInfo.tStart, curveInfo.tEnd);
-	}
-	
 	@Override
-	public Collection<Node> getChildren() {
-		return Arrays.asList( new Node[] { cp1, cp2 });
-	}
-	
-	@Override
-	public Expression<? extends Collection<Node>> children() {
-		return Expressions.constant(getChildren());
-	}
-
-	@Override
-	public Node getParent() {
-		return parent;
-	}
-
-	@Override
-	public void setParent(Node parent) {
-		throw new RuntimeException ("Node does not support reparenting");
-	}
-
-	@Override
-	public boolean hitTest(Point2D point) {
-		return getDistanceToCurve(point) < VisualConnection.HIT_THRESHOLD;
-	}
-
-	Expression<CubicCurve2D> curve;
-	public void update() {
-		curve = new Expression<CubicCurve2D>(){
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>() {
 			@Override
-			public CubicCurve2D evaluate(org.workcraft.dependencymanager.advanced.core.EvaluationContext resolver) {
-				CubicCurve2D result = new CubicCurve2D.Double();
-				result.setCurve(resolver.resolve(connectionInfo.firstShape()), resolver.resolve(cp1.position()), resolve(cp2.position()), resolve(connectionInfo.secondCenter()));
-				return result;
-			};
-			
-		};
-		
-		
-		boundingBox = curve.getBounds2D();
-		boundingBox.add(boundingBox.getMinX()-VisualConnection.HIT_THRESHOLD, boundingBox.getMinY()-VisualConnection.HIT_THRESHOLD);
-		boundingBox.add(boundingBox.getMinX()-VisualConnection.HIT_THRESHOLD, boundingBox.getMaxY()+VisualConnection.HIT_THRESHOLD);
-		boundingBox.add(boundingBox.getMaxX()+VisualConnection.HIT_THRESHOLD, boundingBox.getMinY()-VisualConnection.HIT_THRESHOLD);
-		boundingBox.add(boundingBox.getMaxX()+VisualConnection.HIT_THRESHOLD, boundingBox.getMaxY()+VisualConnection.HIT_THRESHOLD);
-		
-		Point2D origin1 = new Point2D.Double();
-		origin1.setLocation(connectionInfo.getFirstCenter());
-		cp1.getParentToLocalTransform().transform(origin1, origin1);
-
-		Point2D origin2 = new Point2D.Double();
-		origin2.setLocation(connectionInfo.getSecondCenter());
-		cp2.getParentToLocalTransform().transform(origin2, origin2);
-
-		cp1.update(origin1);
-		cp2.update(origin2);
-		
-		curveInfo = Geometry.buildConnectionCurveInfo(connectionInfo, this, 0);
-		
-		updateVisibleRange();
-		
-		valid  = true;
-	}
-
-	@Override
-	public double getDistanceToCurve(Point2D pt) {
-		return pt.distance(getNearestPointOnCurve(pt));
-	}
-
-	@Override
-	public Point2D getNearestPointOnCurve(Point2D pt) {
-		// FIXME: should be done using some proper algorithm
-		
-		Point2D nearest = new Point2D.Double(curve.getX1(), curve.getY1());
-		double nearestDist = Double.MAX_VALUE;
-		
-		for (double t=0.01; t<=1.0; t+=0.01) {
-			Point2D samplePoint = Geometry.getPointOnCubicCurve(curve, t);
-			double distance = pt.distance(samplePoint);
-			if (distance < nearestDist)	{
-				nearestDist = distance;
-				nearest = samplePoint;
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent() {
+					@Override
+					public void draw(DrawRequest r) {
+						Graphics2D g = r.getGraphics();
+						
+						VisualConnectionProperties cinfo = context.resolve(connectionInfo);
+						Color color = Coloriser.colorise(cinfo.getDrawColor(), r.getDecoration().getColorisation());
+						g.setColor(color);
+//						g.setStroke(new BasicStroke((float)connectionInfo.getLineWidth()));
+						g.setStroke(cinfo.getStroke());
+						
+						g.draw(context.resolve(visibleCurve2D));
+						PartialCurveInfo cvInfo = context.resolve(curveInfo);
+						if (cinfo.hasArrow())
+							DrawHelper.drawArrowHead(g, color,
+									cvInfo.arrowHeadPosition,
+									cvInfo.arrowOrientation,
+									cinfo.getArrowLength(),
+									cinfo.getArrowWidth());
+					}
+				};
 			}
+		};
+	}
+
+	private static Expression<CubicCurve2D> getPartialCurve(
+			final Expression<? extends CubicCurve2D> fullCurve2D,
+			final Expression<? extends PartialCurveInfo> curveInfo) {
+		
+		return new ExpressionBase<CubicCurve2D>() {
+			@Override
+				protected CubicCurve2D evaluate(EvaluationContext context) {
+					PartialCurveInfo curve = context.resolve(curveInfo);
+					double tEnd = curve.tEnd;
+					double tStart = curve.tStart;
+				
+					CubicCurve2D fullCurve = context.resolve(fullCurve2D);
+					
+					CurveSplitResult firstSplit = Geometry.splitCubicCurve(fullCurve, tStart);
+					CurveSplitResult secondSplit = Geometry.splitCubicCurve(firstSplit.curve2, (tEnd-tStart)/(1-tStart));
+					return secondSplit.curve1;
+				}
+		};
+	}
+	
+	@Override
+	public Expression<? extends Collection<ControlPoint>> children() {
+		return Expressions.constant(Arrays.asList( new ControlPoint[] { cp1, cp2 }));
+	}
+	
+	@Override
+	public Expression<? extends Touchable> shape() {
+		return new ExpressionBase<Touchable>() {
+
+			@Override
+			protected Touchable evaluate(final EvaluationContext context) {
+				return new Touchable() {
+
+					@Override
+					public boolean hitTest(Point2D point) {
+						return context.resolve(parametricCurve).getDistanceToCurve(point) < VisualConnection.HIT_THRESHOLD;
+					}
+
+					@Override
+					public Rectangle2D getBoundingBox() {
+						return context.resolve(parametricCurve).getBoundingBox();
+					}
+
+					@Override
+					public Point2D getCenter() {
+						return context.resolve(parametricCurve).getPointOnCurve(0.5);
+					}
+					
+				};
+			}
+		};
+	}
+	
+	private final class Curve implements ParametricCurve {
+
+		public Curve(EvaluationContext resolver) {
+			this.resolver = resolver;
 		}
 		
-		return nearest;
-	}
+		private final EvaluationContext resolver;
+		
+		@Override
+		public double getDistanceToCurve(Point2D pt) {
+			return pt.distance(getNearestPointOnCurve(pt));
+		}
 
-	@Override
-	public Point2D getPointOnCurve(double t) {
-		return Geometry.getPointOnCubicCurve(curve, t);
-	}
-
-	@Override
-	public void notify(StateEvent e) {
-		valid = false;
-	}
-
-	@Override
-	public void notify(SelectionChangedEvent event) {
-		boolean controlsVisible = false;
-		for (Node n : event.getSelection())
-			if (n==cp1 || n == cp2 || n == parent) {
-				controlsVisible = true;
-				break;
+		@Override
+		public Point2D getNearestPointOnCurve(Point2D pt) {
+			// FIXME: should be done using some proper algorithm
+			
+			Point2D nearest = new Point2D.Double(resolver.resolve(fullCurve2D).getX1(), resolver.resolve(fullCurve2D).getY1());
+			double nearestDist = Double.MAX_VALUE;
+			
+			for (double t=0.01; t<=1.0; t+=0.01) {
+				Point2D samplePoint = Geometry.getPointOnCubicCurve(resolver.resolve(fullCurve2D), t);
+				double distance = pt.distance(samplePoint);
+				if (distance < nearestDist)	{
+					nearestDist = distance;
+					nearest = samplePoint;
+				}
 			}
-			cp1.setHidden(!controlsVisible);
-			cp2.setHidden(!controlsVisible);
+			
+			return nearest;
+		}
+
+		@Override
+		public Point2D getPointOnCurve(double t) {
+			return Geometry.getPointOnCubicCurve(resolver.resolve(fullCurve2D), t);
+		}
+		@Override
+		public Point2D getDerivativeAt(double t) {
+			return Geometry.getDerivativeOfCubicCurve(resolver.resolve(fullCurve2D), t);
+		}
+
+		@Override
+		public Point2D getSecondDerivativeAt(double t) {
+			return Geometry.getSecondDerivativeOfCubicCurve(resolver.resolve(fullCurve2D), t);
+		}
+		
+		@Override
+		public Rectangle2D getBoundingBox() {
+			Rectangle2D boundingBox = resolver.resolve(fullCurve2D).getBounds2D();
+			boundingBox.add(boundingBox.getMinX()-VisualConnection.HIT_THRESHOLD, boundingBox.getMinY()-VisualConnection.HIT_THRESHOLD);
+			boundingBox.add(boundingBox.getMinX()-VisualConnection.HIT_THRESHOLD, boundingBox.getMaxY()+VisualConnection.HIT_THRESHOLD);
+			boundingBox.add(boundingBox.getMaxX()+VisualConnection.HIT_THRESHOLD, boundingBox.getMinY()-VisualConnection.HIT_THRESHOLD);
+			boundingBox.add(boundingBox.getMaxX()+VisualConnection.HIT_THRESHOLD, boundingBox.getMaxY()+VisualConnection.HIT_THRESHOLD);
+			return boundingBox;
+		}
 	}
 
-	@Override
-	public void componentsTransformChanged() {
-		scaler.scale(connectionInfo.getFirstCenter(), connectionInfo
-				.getSecondCenter(), Arrays
-				.asList(new ControlPoint[] { cp1, cp2 }),
-				connectionInfo.getScaleMode());
-		invalidate();
-	}
+	Variable<Expression<? extends Collection<? extends Node>>> selectionTracker = new Variable<Expression<? extends Collection<? extends Node>>>(null); 
 	
 	@Override
-	public void componentsTransformChanging() {
-		scaler = new ControlPointScaler(connectionInfo.getFirstCenter(), connectionInfo.getSecondCenter());
+	public void setSelection(Expression<? extends Collection<? extends Node>> selection) {
+		selectionTracker.setValue(selection);
 	}
-
-	@Override
-	public void controlPointsChanged() {
-		invalidate();
-	}
-
-	@Override
-	public void invalidate() {
-		valid = false;
-	}
-
-	@Override
-	public Point2D getDerivativeAt(double t) {
-		return Geometry.getDerivativeOfCubicCurve(curve, t);
-	}
-
-	@Override
-	public Point2D getSecondDerivativeAt(double t) {
-		return Geometry.getSecondDerivativeOfCubicCurve(curve, t);
-	}
-
-	@Override
-	public Point2D getCenter()
-	{
-		return getPointOnCurve(0.5);
-	}	
 }

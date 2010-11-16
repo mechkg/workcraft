@@ -28,8 +28,8 @@ import javax.swing.Icon;
 
 import org.workcraft.NodeFactory;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.dom.visual.Movable;
 import org.workcraft.dom.visual.MovableHelper;
+import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualNode;
@@ -52,12 +52,12 @@ public abstract class AbstractNodeGenerator implements NodeGenerator {
 		VisualNode vc = NodeFactory.createVisualComponent(mn);
 		model.getCurrentLevel().add(vc);
 		
-		if (vc instanceof Movable)
+		if (vc instanceof MovableNew)
 		{
 			AffineTransform transform = TransformHelper.getTransform(model.getRoot(), vc);
 			Point2D transformed = new Point2D.Double(); 
 			transform.transform(where, transformed);
-			MovableHelper.translate((Movable)vc, transformed.getX(), transformed.getY());
+			MovableHelper.translate((MovableNew)vc, transformed.getX(), transformed.getY());
 		}
 	}
 	

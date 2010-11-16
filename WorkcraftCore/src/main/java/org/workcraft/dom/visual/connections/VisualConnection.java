@@ -25,7 +25,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -33,8 +32,8 @@ import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
@@ -53,7 +52,7 @@ public class VisualConnection extends VisualNode implements
 		Node, Drawable, Connection,
 		DependentNode {
 	
-	private final class Properties extends Expression<VisualConnectionProperties> {
+	private final class Properties extends ExpressionBase<VisualConnectionProperties> {
 		@Override
 		public VisualConnectionProperties evaluate(EvaluationContext resolver) {
 			final Touchable firstShape = resolver.resolve(transformedShape1);
@@ -140,8 +139,8 @@ public class VisualConnection extends VisualNode implements
 	private double arrowLength = defaultArrowLength;
 	
 	private CachedHashSet<Node> children = new CachedHashSet<Node>();
-	private Expression<Touchable> transformedShape1;
-	private Expression<Touchable> transformedShape2;
+	private ExpressionBase<Touchable> transformedShape1;
+	private ExpressionBase<Touchable> transformedShape2;
 	
 	protected void initialise() {
 		addPropertyDeclaration(new PropertyDeclaration(this, "Line width", "getLineWidth", "setLineWidth", double.class));
@@ -309,7 +308,7 @@ public class VisualConnection extends VisualNode implements
 	}
 	
 	@Override
-	public IExpression<? extends Touchable> shape() {
+	public Expression<? extends Touchable> shape() {
 		return graphic.shape();
 	}
 	
@@ -335,7 +334,7 @@ public class VisualConnection extends VisualNode implements
 	}
 	
 	@Override
-	public Expression<? extends Collection<Node>> children() {
+	public ExpressionBase<? extends Collection<Node>> children() {
 		return children;
 	}
 
@@ -347,7 +346,7 @@ public class VisualConnection extends VisualNode implements
 		this.scaleMode = scaleMode;
 	}
 	
-	public Expression<VisualConnectionProperties> properties() {
+	public ExpressionBase<VisualConnectionProperties> properties() {
 		return new Properties();
 	}
 }

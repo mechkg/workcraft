@@ -1,38 +1,71 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.workcraft</groupId>
-  <artifactId>DependencyManager</artifactId>
-  <version>2.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+	<groupId>org.workcraft</groupId>
+	<artifactId>DependencyManager</artifactId>
+	<version>0.1</version>
+	<packaging>jar</packaging>
 
-  <name>Caching Dependency Manager</name>
-  <url>http://workcraft.org</url>
+	<name>Caching Dependency Manager</name>
+	<description>Provides a framework to create modifiable interdependent expressions whose values are always kept up to date.</description>
+	<url>http://workcraft.org</url>
+	<licenses>
+		<license>
+			<name>GNU General Public License 3.0</name>
+			<url>http://www.gnu.org/licenses/</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<url>http://bazaar.launchpad.net/~rotsor/workcraft/dependencymanager_0.1</url>
+		<connection>http://svn.apache.org/viewcvs.cgi/maven</connection>
+	</scm>
+	<developers>
+		<developer>
+			<id>rotsor</id>
+			<name>Arseniy Alekseyev</name>
+			<email>rotsor@gmail.com</email>
+		</developer>
+	</developers>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
-    <build>
-    	<plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-             </plugin>
-        </plugins>
-    </build>
-    
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.2</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>

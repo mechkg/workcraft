@@ -1,5 +1,6 @@
 package org.workcraft.dependencymanager.advanced.core;
 
 
-public interface EvaluationContext extends DependencyResolver {
+public interface EvaluationContext {
+	<T> T resolve(Expression<T> dependency);
 }

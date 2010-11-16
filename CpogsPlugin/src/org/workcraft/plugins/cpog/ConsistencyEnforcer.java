@@ -15,6 +15,7 @@ public class ConsistencyEnforcer extends HierarchySupervisor {
 	{
 		super(visualCPOG.getRoot());
 		this.visualCPOG  = visualCPOG;
+		start();
 	}
 	
 	@Override

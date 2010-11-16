@@ -33,6 +33,7 @@ public class UniqueNameReferenceManager extends HierarchySupervisor implements R
 				setExistingReference(n);
 			existing = null;
 		}
+		start();
 	}
 
 	private void setExistingReference(Node n) {

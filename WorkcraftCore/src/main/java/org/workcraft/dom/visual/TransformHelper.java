@@ -26,9 +26,9 @@ import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 import java.awt.geom.AffineTransform;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
 import org.workcraft.exceptions.NotAnAncestorException;
 import org.workcraft.util.Geometry;
@@ -78,8 +78,8 @@ public class TransformHelper {
 		return new TouchableTransformer(touchable, transform);
 	}
 
-	public static IExpression<AffineTransform> getTransformToAncestor(final IExpression<? extends Node> node, final IExpression<? extends Node> ancestor) {
-		return new Expression<AffineTransform>() {
+	public static Expression<AffineTransform> getTransformToAncestor(final Expression<? extends Node> node, final Expression<? extends Node> ancestor) {
+		return new ExpressionBase<AffineTransform>() {
 			
 			@Override
 			public AffineTransform evaluate(EvaluationContext resolver) {
@@ -100,11 +100,11 @@ public class TransformHelper {
 		};
 	}	
 	
-	public static IExpression<AffineTransform> getTransformExpression(IExpression<? extends Node> node1, IExpression<? extends Node> node2) {
-		final IExpression<? extends Node> parent = Hierarchy.getCommonParent(node1, node2);
-		final IExpression<? extends AffineTransform> node1ToParent = getTransformToAncestor(node1, parent);
-		final IExpression<? extends AffineTransform> node2ToParent = getTransformToAncestor(node2, parent);
-		return new Expression<AffineTransform>() {
+	public static Expression<AffineTransform> getTransformExpression(Expression<? extends Node> node1, Expression<? extends Node> node2) {
+		final Expression<? extends Node> parent = Hierarchy.getCommonParent(node1, node2);
+		final Expression<? extends AffineTransform> node1ToParent = getTransformToAncestor(node1, parent);
+		final Expression<? extends AffineTransform> node2ToParent = getTransformToAncestor(node2, parent);
+		return new ExpressionBase<AffineTransform>() {
 			@Override
 			public AffineTransform evaluate(EvaluationContext resolver) {
 				AffineTransform parentToNode2 = Geometry.optimisticInverse(resolver.resolve(node2ToParent));
@@ -114,8 +114,8 @@ public class TransformHelper {
 		};
 	}
 
-	public static Expression<Touchable> transform(final IExpression<? extends Touchable> node, final IExpression<? extends AffineTransform> transform) {
-		return new Expression<Touchable>() {
+	public static ExpressionBase<Touchable> transform(final Expression<? extends Touchable> node, final Expression<? extends AffineTransform> transform) {
+		return new ExpressionBase<Touchable>() {
 			@Override
 			public Touchable evaluate(EvaluationContext resolver) {
 				return new TouchableTransformer(resolver.resolve(node), resolver.resolve(transform));

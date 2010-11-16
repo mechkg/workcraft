@@ -27,9 +27,9 @@ import java.awt.geom.Rectangle2D;
 
 import org.w3c.dom.Element;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.Variable;
@@ -101,7 +101,7 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 	}
 
 	protected Variable<AffineTransform> localToParentTransform = new Variable<AffineTransform>(new AffineTransform());
-	protected Expression<AffineTransform> parentToLocalTransform = new Expression<AffineTransform>(){
+	protected ExpressionBase<AffineTransform> parentToLocalTransform = new ExpressionBase<AffineTransform>(){
 		@Override
 		public AffineTransform evaluate(org.workcraft.dependencymanager.advanced.core.EvaluationContext resolver) {
 			return Geometry.optimisticInverse(resolver.resolve(localToParentTransform));
@@ -214,10 +214,10 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		return localToParentTransform;
 	}
 	
-	public abstract IExpression<? extends Touchable> localSpaceTouchable();
+	public abstract Expression<? extends Touchable> localSpaceTouchable();
 	
 	@Override
-	public final IExpression<? extends Touchable> shape() {
+	public final Expression<? extends Touchable> shape() {
 		return TransformHelper.transform(localSpaceTouchable(), transform());
 	}
 }

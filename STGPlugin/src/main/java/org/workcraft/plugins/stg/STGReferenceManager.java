@@ -1,7 +1,11 @@
 package org.workcraft.plugins.stg;
 
 import java.util.Collection;
+import java.util.List;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
@@ -9,10 +13,7 @@ import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.references.UniqueNameManager;
 import org.workcraft.exceptions.ArgumentException;
 import org.workcraft.exceptions.DuplicateIDException;
-import org.workcraft.observation.HierarchyEvent;
 import org.workcraft.observation.HierarchySupervisor;
-import org.workcraft.observation.NodesAddedEvent;
-import org.workcraft.observation.NodesDeletedEvent;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.serialisation.References;
@@ -26,16 +27,15 @@ import org.workcraft.util.Triple;
 public class STGReferenceManager extends HierarchySupervisor implements ReferenceManager {
 	private InstanceManager<Node> instancedNameManager;
 	private UniqueNameManager<Node> defaultNameManager;
-	private References existingReferences;
 
 	private ListMap<String, SignalTransition> transitions = new ListMap<String, SignalTransition>();
 
 	private int signalCounter = 0;
 	private int dummyCounter = 0;
 
-	public STGReferenceManager(References existingReferences) {
-		this.existingReferences = existingReferences;
-
+	public STGReferenceManager(Node root, References existingReferences) {
+		super(root);
+		
 		this.defaultNameManager = new UniqueNameManager<Node>(new Func<Node, String>() {
 			@Override
 			public String eval(Node arg) {
@@ -53,31 +53,25 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 			@Override
 			public String eval(Node arg) {
 				if (arg instanceof SignalTransition) {
-					return ((SignalTransition) arg).getSignalName() + ((SignalTransition) arg).getDirection();
+					return GlobalCache.eval(((SignalTransition) arg).signalName()) + GlobalCache.eval(((SignalTransition) arg).direction());
 				} else if (arg instanceof DummyTransition){
 					return ((DummyTransition)arg).getName();
 				} else
 					throw new RuntimeException ("Unexpected class " + arg.getClass().getName());
 			}
 		});
-	}
-
-	@Override
-	public void attach(Node root) {
-		if (root == null)
-			throw new NullPointerException();
-
+		
 		if (existingReferences != null) {
-			setExistingReference(root);
+			setExistingReference(existingReferences, root);
 			for (Node n: Hierarchy.getDescendantsOfType(root, Node.class))
-				setExistingReference(n);
+				setExistingReference(existingReferences, n);
 			existingReferences = null;
 		}
-
-		super.attach(root);
+		
+		super.start();
 	}
 
-	private void setExistingReference(Node n) {
+	private void setExistingReference(References existingReferences, Node n) {
 		final String reference = existingReferences.getReference(n);
 		if (reference != null) {
 			if (n instanceof STGPlace) {
@@ -108,9 +102,9 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 			final SignalTransition st = (SignalTransition)node;
 			final Integer instance = instancedNameManager.getInstance(st).getSecond();
 			if (instance == 0)
-				return st.getSignalName() + st.getDirection();
+				return eval(st.signalName()) + eval(st.direction());
 			else
-				return st.getSignalName() + st.getDirection() + "/" + instance;
+				return eval(st.signalName()) + eval(st.direction()) + "/" + instance;
 		} else if (node instanceof Transition) {
 			final Transition t = (Transition)node;
 			final Pair<String, Integer> name = instancedNameManager.getInstance(t);
@@ -160,21 +154,21 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 
 				instancedNameManager.assign(st, Pair.of(r.getFirst()+r.getSecond(), r.getThird()));
 
-				transitions.remove(st.getSignalName(), st);
+				transitions.remove(eval(st.signalName()), st);
 				transitions.put(r.getFirst(), st);
 
-				st.setSignalName(r.getFirst());
-				st.setDirection(r.getSecond());
+				st.signalName().setValue(r.getFirst());
+				st.direction().setValue(r.getSecond());
 			} catch (DuplicateIDException e) {
 				throw new ArgumentException ("Instance number " + e.getId() + " is already taken.");
 			} catch (ArgumentException e) {
 				if (Identifier.isValid(s)) {
-					instancedNameManager.assign(st, s+st.getDirection());
+					instancedNameManager.assign(st, s+eval(st.direction()));
 
 					transitions.remove(s, st);
 					transitions.put(s, st);
 
-					st.setSignalName(s);
+					st.signalName().setValue(s);
 				} else
 					throw new ArgumentException ("\"" + s + "\" is not a valid signal transition label.");
 			}
@@ -200,19 +194,17 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 
 
 	@Override
-	public void handleEvent(HierarchyEvent e) {
-		if(e instanceof NodesDeletedEvent)
-			for(Node node : e.getAffectedNodes()) {
-				nodeRemoved(node);
-				for (Node n : Hierarchy.getDescendantsOfType(node, Node.class))
-					nodeRemoved(n);
-			}
-		if(e instanceof NodesAddedEvent)
-			for(Node node : e.getAffectedNodes()) {
-				setDefaultNameIfUnnamed(node);
-				for (Node n : Hierarchy.getDescendantsOfType(node, Node.class))
-					setDefaultNameIfUnnamed(n);
-			}
+	public void handleEvent(List<Node> added, List<Node> removed) {
+		for(Node node : removed) {
+			nodeRemoved(node);
+			for (Node n : Hierarchy.getDescendantsOfType(node, Node.class))
+				nodeRemoved(n);
+		}
+		for(Node node : added) {
+			setDefaultNameIfUnnamed(node);
+			for (Node n : Hierarchy.getDescendantsOfType(node, Node.class))
+				setDefaultNameIfUnnamed(n);
+		}
 	}
 
 	public void setDefaultNameIfUnnamed(Node node) {
@@ -223,7 +215,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 				return;
 
 			String name = "signal" + signalCounter++;
-			st.setSignalName(name);
+			st.signalName().setValue(name);
 			transitions.put(name, st);
 			instancedNameManager.assign(st);
 		} else if (node instanceof DummyTransition) {
@@ -247,7 +239,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 	private void nodeRemoved(Node node) {
 		if (node instanceof SignalTransition) {
 			final SignalTransition st = (SignalTransition)node;
-			transitions.remove(st.getSignalName(), st);
+			transitions.remove(eval(st.signalName()), st);
 			instancedNameManager.remove(st);
 		} 
 		if (node instanceof DummyTransition) {
@@ -256,4 +248,5 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 		} else
 			defaultNameManager.remove(node);
 	}
+
 }

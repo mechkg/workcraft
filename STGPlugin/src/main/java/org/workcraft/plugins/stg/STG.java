@@ -31,6 +31,7 @@ import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.AbstractMathModel;
 import org.workcraft.dom.math.MathConnection;
+import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.NotFoundException;
@@ -55,8 +56,20 @@ import org.workcraft.util.Triple;
 public class STG extends AbstractMathModel implements STGModel {
 	private STGReferenceManager referenceManager;
 
+	private static class ConstructionInfo {
+		public ConstructionInfo(Container root, References refs) {
+			if(root == null)
+				this.root = new MathGroup();
+			else
+				this.root = root;
+			this.referenceManager = new STGReferenceManager(this.root, refs);
+		}
+		public final STGReferenceManager referenceManager; 
+		public final Container root; 
+	}
+	
 	public STG() {
-		this(null);
+		this((Container)null);
 	}
 
 	public STG(Container root) {
@@ -64,12 +77,18 @@ public class STG extends AbstractMathModel implements STGModel {
 	}
 
 	public STG(Container root, References refs) {
-		super(root, new STGReferenceManager(refs));
-		referenceManager = (STGReferenceManager) getReferenceManager();
-
-		new SignalTypeConsistencySupervisor(this).attach(getRoot());
+		this(new ConstructionInfo(root, refs));
+	}
+	
+	public STG(ConstructionInfo info) {
+		super(info.root, info.referenceManager);
+		referenceManager = info.referenceManager;
+		signalTypeConsistencySupervisor = new SignalTypeConsistencySupervisor(this);
 	}
 
+	@SuppressWarnings("unused") // to avoid garbage collection
+	private SignalTypeConsistencySupervisor signalTypeConsistencySupervisor;
+	
 	final public Place createPlace() {
 		return createPlace(null);
 	}

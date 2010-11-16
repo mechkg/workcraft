@@ -30,7 +30,7 @@ public class RemovedNodeDeselector extends HierarchySupervisor {
 	private final VisualModel visualModel;
 	
 	public RemovedNodeDeselector(VisualModel visualModel) {
-		super(visualModel.getRoot(), true);
+		super(visualModel.getRoot());
 		this.visualModel = visualModel;	
 		start();
 	}

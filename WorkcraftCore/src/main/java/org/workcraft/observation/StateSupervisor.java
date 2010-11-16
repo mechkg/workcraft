@@ -26,21 +26,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.AutoRefreshExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.util.Func;
-import org.workcraft.util.Null;
 
 
 public abstract class StateSupervisor extends HierarchySupervisor {
 	
-	private final class UpdateExpression extends Expression<Null> {
+	private final class UpdateExpression extends AutoRefreshExpression {
 		@Override
-		public Null evaluate(EvaluationContext resolver) {
-			for(Expression<?> expr : supervisors.values())
+		public void onEvaluate(EvaluationContext resolver) {
+			for(ExpressionBase<?> expr : supervisors.values())
 				resolver.resolve(expr);
-			return null;
 		}
 
 		public void changed() {
@@ -48,17 +47,18 @@ public abstract class StateSupervisor extends HierarchySupervisor {
 		}
 	}
 
-	private final Func<? super Node, ? extends Expression<?>> supervisionFunc;
+	private final Func<? super Node, ? extends ExpressionBase<?>> supervisionFunc;
 
-	UpdateExpression updateExpression = new UpdateExpression();
+	final UpdateExpression updateExpression;
 	
-	public StateSupervisor(Node root, Func<? super Node, ? extends Expression<?>> supervisionFunc) {
+	public StateSupervisor(Node root, Func<? super Node, ? extends ExpressionBase<?>> supervisionFunc) {
 		super(root);
 		this.supervisionFunc = supervisionFunc;
-		GlobalCache.autoRefresh(updateExpression);
+		updateExpression = new UpdateExpression();
+		start();
 	}
 
-	Map<Node, Expression<?>> supervisors = new HashMap<Node, Expression<?>>();
+	Map<Node, ExpressionBase<?>> supervisors = new HashMap<Node, ExpressionBase<?>>();
 	
 	@Override
 	public void handleEvent(List<Node> added, List<Node> removed) {
@@ -71,7 +71,7 @@ public abstract class StateSupervisor extends HierarchySupervisor {
 	}
 	
 	private void nodeAdded (Node node) {
-		Expression<?> supervisor = supervisionFunc.eval(node);
+		ExpressionBase<?> supervisor = supervisionFunc.eval(node);
 		if(supervisor != null)
 			supervisors.put(node, supervisor);
 		

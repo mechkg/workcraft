@@ -32,6 +32,7 @@ import org.workcraft.observation.HierarchySupervisor;
 public class DefaultMathNodeRemover extends HierarchySupervisor {
 	public DefaultMathNodeRemover(Node root) {
 		super(root);
+		start();
 	}
 
 	private HashMap<MathNode, Integer> refCount = new HashMap<MathNode, Integer>();

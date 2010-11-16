@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -35,7 +36,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.workcraft.NodeFactory;
 import org.workcraft.annotations.MouseListeners;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dom.AbstractModel;
@@ -61,7 +62,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	private MathModel mathModel;
 	private Container currentLevel;
 	private CachedHashSet<Node> selection = new CachedHashSet<Node>();
-	private final Expression<HierarchicalGraphicalContent> graphicalContent; 
+	private final ExpressionBase<HierarchicalGraphicalContent> graphicalContent; 
 
 	public AbstractVisualModel(VisualGroup root) {
 		this (null, root);
@@ -119,15 +120,15 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		}
 	}
 
-	public Expression<HierarchicalGraphicalContent> graphicalContent() {
+	public ExpressionBase<HierarchicalGraphicalContent> graphicalContent() {
 		return graphicalContent;
 	}
 	
-	private Expression<HierarchicalGraphicalContent> makeGraphicalContent() {
+	private ExpressionBase<HierarchicalGraphicalContent> makeGraphicalContent() {
 		return DrawMan.graphicalContent(getRoot());
 	}
 
-	public Expression<? extends Collection<? extends Node>> selection() {
+	public ExpressionBase<? extends Collection<? extends Node>> selection() {
 		return selection;
 	}
 
@@ -227,14 +228,13 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	}
 	
 	public Collection<Node> getOrderedCurrentLevelSelection() {
-		throw new NotImplementedException();
-		/*List<Node> result = new ArrayList<Node>();
-		for(Node node : currentLevel.children())
+		List<Node> result = new ArrayList<Node>();
+		for(Node node : GlobalCache.eval(currentLevel.children()))
 		{
-			if(selection.contains(node) && node instanceof VisualNode)
+			if(GlobalCache.eval(selection).contains(node) && node instanceof VisualNode)
 				result.add((VisualNode)node);
 		}
-		return result;	*/	
+		return result;
 	}
 
 	public Container getCurrentLevel() {

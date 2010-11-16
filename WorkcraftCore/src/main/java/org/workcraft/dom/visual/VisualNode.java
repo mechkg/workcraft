@@ -29,9 +29,9 @@ import java.util.Collections;
 import javax.swing.JPopupMenu;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
@@ -45,8 +45,8 @@ import org.workcraft.gui.propertyeditor.PropertySupport;
 public abstract class VisualNode implements Properties, Node, Hidable {
 
 	@Override
-	public IExpression<? extends Touchable> shape() {
-		return new Expression<Touchable>() {
+	public Expression<? extends Touchable> shape() {
+		return new ExpressionBase<Touchable>() {
 			@Override
 			protected Touchable evaluate(EvaluationContext context) {
 				return new Touchable() {
@@ -70,7 +70,7 @@ public abstract class VisualNode implements Properties, Node, Hidable {
 		};
 	}
 	
-	public IExpression<? extends Collection<Node>> children() {
+	public Expression<? extends Collection<Node>> children() {
 		return Expressions.constant(Collections.<Node>emptyList());
 	}
 	

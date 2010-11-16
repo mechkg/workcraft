@@ -1,43 +1,22 @@
 package org.workcraft.dependencymanager.util.listeners;
 
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
-import java.util.HashSet;
+import org.workcraft.dependencymanager.collections.WeakHashSet;
 
 
 public class WeakFireOnceListenersCollection implements Listener {
 
-	ReferenceQueue<Listener> clearedRefs = new ReferenceQueue<Listener>();
-	HashSet<WeakReference<Listener>> listeners = new HashSet<WeakReference<Listener>>();
+	WeakHashSet<Listener> listeners = new WeakHashSet<Listener>();
 
 	@Override
 	public void changed() {
-		clean();
-		HashSet<WeakReference<Listener>> l = listeners;
-		listeners = new HashSet<WeakReference<Listener>>();
-		for(WeakReference<Listener> ref : l)
-		{
-			Listener listener = ref.get();
-			if(listener != null)
-				listener.changed();
-		}
+		WeakHashSet<Listener> l = listeners;
+		listeners = new WeakHashSet<Listener>();
+		for(Listener listener : l)
+			listener.changed();
 	}
 	
 	public void addListener(Listener l) {
-		if(l != null) {
-			clean();
-			listeners.add(new WeakReference<Listener>(l, clearedRefs));
-		}
-	}
-
-	private void clean() {
-		while(true) {
-			Reference<? extends Listener> ref = clearedRefs.poll();
-			if(ref == null)
-				return;
-			else
-				listeners.remove(ref);
-		}
+		if(l!=null)
+			listeners.add(l);
 	}
 }

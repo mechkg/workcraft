@@ -26,9 +26,13 @@ import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 
 class SquareNode extends VisualComponent
@@ -52,22 +56,35 @@ class SquareNode extends VisualComponent
 	}
 
 	@Override
-	public Rectangle2D getBoundingBoxInLocalSpace() {
-		return rectOuter;
+	public Expression<? extends Touchable> localSpaceTouchable() {
+		return Expressions.constant(new Touchable() {
+			@Override
+			public Rectangle2D getBoundingBox() {
+				return rectOuter;
+			};
+			@Override
+			public Point2D getCenter() {
+				return new Point2D.Double(rectOuter.getCenterX(), rectOuter.getCenterY());
+			}
+			@Override
+			public boolean hitTest(Point2D point) {
+				return rectInner.contains(point);
+			}
+		});
 	}
-
-	@Override
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
-		return rectInner.contains(pointInLocalSpace);
-	}
-
 	@Override
 	public Collection<MathNode> getMathReferences() {
 		return Arrays.asList(new MathNode[]{});
 	}
 
 	@Override
-	public void draw(DrawRequest r) {
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return Expressions.constant(new GraphicalContent() {
+			@Override
+			public void draw(DrawRequest request) {
+			}
+		});
 	}
+
 }
 

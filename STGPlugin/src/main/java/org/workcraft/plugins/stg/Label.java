@@ -5,44 +5,72 @@ import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.visual.BoundingBoxHelper;
+import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
 
 public class Label {
-	private GlyphVector glyphVector;
-	private Rectangle2D textBB;
-	private Font font;
-	private float textX;
-	private float textY;
 
-	public Label(Font font, String text) {
-		this.font = font;
-		setText(text);
-	}
+	public final Expression<GraphicalContent> graphics;
+	public final Expression<Rectangle2D> centeredBB;
 	
-	public void setText (String text)
-	{
-		glyphVector = font.createGlyphVector(new FontRenderContext(AffineTransform.getScaleInstance(1000, 1000), true, true), text);
-		textBB = glyphVector.getVisualBounds();
-	
-		double margin = 0.15;
-		textBB = BoundingBoxHelper.expand(textBB, margin, margin);
-	
-		textX = (float)-textBB.getCenterX();
-		textY = (float)-textBB.getCenterY();
-	
-		textBB.setRect(textBB.getX() - textBB.getCenterX(), textBB.getY() - textBB.getCenterY(), textBB.getWidth(), textBB.getHeight());
-	}
-	
-	public void draw (Graphics2D g)
-	{
-		g.setFont(font);
-		g.drawGlyphVector(glyphVector, textX, textY);
-	}
-	
-	public Rectangle2D getBoundingBox()
-	{
-		return textBB;
+	public Label(final Font font, final Expression<String> text) {
+		
+		final Expression<GlyphVector> glyphVector = new ExpressionBase<GlyphVector>() {
+			@Override
+			protected GlyphVector evaluate(EvaluationContext context) {
+				return font.createGlyphVector(new FontRenderContext(AffineTransform.getScaleInstance(1000, 1000), true, true), context.resolve(text));
+			}
+		};
+		
+		final Expression<Rectangle2D> textBB = new ExpressionBase<Rectangle2D>() {
+			@Override
+			protected Rectangle2D evaluate(EvaluationContext context) {
+				return context.resolve(glyphVector).getVisualBounds();
+			}
+		};
+		
+		final Expression<? extends Point2D> textCoords = new ExpressionBase<Point2D>() {
+			@Override
+			protected Point2D evaluate(EvaluationContext context) {
+				Rectangle2D bb = context.resolve(textBB);
+				return new Point2D.Double(-bb.getCenterX(), -bb.getCenterY());
+			}
+		};
+		
+		centeredBB = new ExpressionBase<Rectangle2D>() {
+			@Override
+			protected Rectangle2D evaluate(EvaluationContext context) {
+				double margin = 0.15;
+				Rectangle2D result = BoundingBoxHelper.expand(context.resolve(textBB), margin, margin);
+				result.setRect(result.getX() - result.getCenterX(), result.getY() - result.getCenterY(), result.getWidth(), result.getHeight());
+				return result;
+			}
+		};
+		
+		graphics = new ExpressionBase<GraphicalContent>() {
+			@Override
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+			
+				Point2D textXY = context.resolve(textCoords);
+				final float textX = (float)-textXY.getX();
+				final float textY = (float)-textXY.getY();
+			
+				return new GraphicalContent() {
+					@Override
+					public void draw(DrawRequest request) {
+						Graphics2D g = request.getGraphics();
+						g.setFont(font);
+						g.drawGlyphVector(context.resolve(glyphVector), textX, textY);
+					}
+				};
+			}
+		};
 	}
 }

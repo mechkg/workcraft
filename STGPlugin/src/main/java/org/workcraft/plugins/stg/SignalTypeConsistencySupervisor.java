@@ -28,14 +28,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Node;
 import org.workcraft.observation.StateSupervisor;
 import org.workcraft.util.Func;
 import org.workcraft.util.Null;
 
 class SignalTypeConsistencySupervisor extends StateSupervisor {
-	static class SupervisionNode extends Expression<Null> {
+	static class SupervisionNode extends ExpressionBase<Null> {
 
 		private final SignalTransition transition;
 		private String oldName = null;
@@ -58,11 +58,11 @@ class SignalTypeConsistencySupervisor extends StateSupervisor {
 			
 			if(oldName == null || !oldName.equals(signalName)) {
 				if (!sameName.isEmpty())
-					transition.setSignalType(sameName.iterator().next().getSignalType());
+					transition.signalType().setValue(resolver.resolve(sameName.iterator().next().signalType()));
 			} else {
 				for (SignalTransition tt : sameName)
-					if (!signalType.equals(tt.getSignalType()))
-						tt.setSignalType(signalType);
+					if (!signalType.equals(resolver.resolve(tt.signalType())))
+						tt.signalType().setValue(signalType);
 			}
 			
 			oldName = signalName;

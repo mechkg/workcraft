@@ -32,7 +32,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
@@ -56,7 +56,7 @@ public class HitmanTests {
 			this.children = children;
 		}
 		@Override
-		public IExpression<? extends Touchable> shape() {
+		public Expression<? extends Touchable> shape() {
 			throw new NotSupportedException();
 		}
 		@Override
@@ -64,7 +64,7 @@ public class HitmanTests {
 			throw new NotSupportedException();
 		}
 		@Override
-		public IExpression<? extends Collection<? extends Node>> children() {
+		public Expression<? extends Collection<? extends Node>> children() {
 			return Expressions.constant(children);
 		}
 	}
@@ -72,7 +72,7 @@ public class HitmanTests {
 	class HitableNode extends DummyNode
 	{
 		@Override
-		public IExpression<? extends Touchable> shape() {
+		public Expression<? extends Touchable> shape() {
 			return Expressions.constant(new Touchable() {
 				@Override
 				public boolean hitTest(Point2D point) {

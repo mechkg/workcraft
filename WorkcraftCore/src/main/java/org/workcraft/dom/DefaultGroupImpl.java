@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 
 public class DefaultGroupImpl extends AbstractGroup implements Container {
@@ -54,7 +54,7 @@ public class DefaultGroupImpl extends AbstractGroup implements Container {
 	}
 
 	@Override
-	public Expression<? extends Collection<Node>> children() {
+	public ExpressionBase<? extends Collection<Node>> children() {
 		return children;
 	}
 

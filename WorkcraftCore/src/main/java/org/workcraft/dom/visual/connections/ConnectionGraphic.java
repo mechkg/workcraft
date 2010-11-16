@@ -29,4 +29,5 @@ import org.workcraft.dom.visual.DrawableNew;
 public interface ConnectionGraphic extends Node, DrawableNew {
 	
 	public Expression<? extends ParametricCurve> curve();
+	public ControlPointScaler scaler();
 }

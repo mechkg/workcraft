@@ -25,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -185,14 +186,18 @@ public class FileUtils{
 
 	public static String readAllTextFromSystemResource(String path) throws IOException {
 		InputStream stream = ClassLoader.getSystemResourceAsStream(path);
-		try
-		{
-			return readAllText(stream);
-		}
-		finally
-		{
-			if(stream != null)
-				stream.close();
+		if(stream == null)
+			throw new FileNotFoundException("resouce path: " + path);
+		else {
+			try
+			{
+				return readAllText(stream);
+			}
+			finally
+			{
+				if(stream != null)
+					stream.close();
+			}
 		}
 	}
 }

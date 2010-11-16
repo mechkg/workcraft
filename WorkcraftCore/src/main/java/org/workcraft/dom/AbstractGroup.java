@@ -24,9 +24,9 @@ package org.workcraft.dom;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.visual.Touchable;
 
@@ -34,7 +34,7 @@ public abstract class AbstractGroup implements Container {
 	private Container groupRef;
 	
 	@Override
-	public IExpression<? extends Touchable> shape() {
+	public Expression<? extends Touchable> shape() {
 		return null;
 	}
 	
@@ -97,7 +97,7 @@ public abstract class AbstractGroup implements Container {
 	}
 
 	@Override
-	public abstract Expression<? extends Collection<? extends Node>> children();
+	public abstract ExpressionBase<? extends Collection<? extends Node>> children();
 
 	protected abstract void addInternal(Node node);
 	protected abstract void removeInternal (Node node);

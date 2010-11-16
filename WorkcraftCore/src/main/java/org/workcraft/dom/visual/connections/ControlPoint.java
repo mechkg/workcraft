@@ -30,16 +30,20 @@ import java.awt.geom.Rectangle2D;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.Drawable;
+import org.workcraft.dom.visual.DrawableNew;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualTransformableNode;
 import org.workcraft.gui.Coloriser;
 
 
-public class ControlPoint extends VisualTransformableNode implements Drawable {
+public class ControlPoint extends VisualTransformableNode implements DrawableNew {
 	private double size = 0.15;
 	private Color fillColor = Color.BLUE;
 
@@ -49,22 +53,23 @@ public class ControlPoint extends VisualTransformableNode implements Drawable {
 			size,
 			size);
 	
-	public ControlPoint (Expression<Point2D> p1, Expression<Point2D> p2) {
-		transform = new ControlPointScaler(super.transform(), p1, p2);
-	}
-	
 	public Rectangle2D getBoundingBoxInLocalSpace() {
 		return new Rectangle2D.Double(-size, -size, size*2, size*2);
 	}
 
 	@Override
-	public void draw(DrawRequest r) {
-		r.getGraphics().setColor(Coloriser.colorise(fillColor, r.getDecoration().getColorisation()));
-		r.getGraphics().fill(shape);
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return Expressions.constant(new GraphicalContent() {
+			@Override
+			public void draw(DrawRequest r) {
+				r.getGraphics().setColor(Coloriser.colorise(fillColor, r.getDecoration().getColorisation()));
+				r.getGraphics().fill(shape);
+			}
+		});
 	}
 
-	public IExpression<Touchable> localSpaceTouchable() {
-		return new Expression<Touchable>() {
+	public Expression<Touchable> localSpaceTouchable() {
+		return new ExpressionBase<Touchable>() {
 
 			@Override
 			protected Touchable evaluate(EvaluationContext context) {
@@ -89,10 +94,38 @@ public class ControlPoint extends VisualTransformableNode implements Drawable {
 		};
 	}
 	
-	ModifiableExpression<AffineTransform> transform; 
+	public ModifiableExpression<AffineTransform> simpleTransform() {
+		return super.transform();
+	}
 	
 	@Override
 	public ModifiableExpression<AffineTransform> transform() {
-		return transform;
+		Expression<ModifiableExpression<AffineTransform>> expr = new ExpressionBase<ModifiableExpression<AffineTransform>>() {
+
+			@Override
+			protected ModifiableExpression<AffineTransform> evaluate(EvaluationContext context) {
+				ConnectionGraphic parent = (ConnectionGraphic)context.resolve(parent());
+				if(parent == null)
+					return simpleTransform();
+				return context.resolve(parent.scaler()).get(ControlPoint.this);
+			}
+		};
+		
+		return unfold(expr);
+	}
+
+	private <T> ModifiableExpression<T> unfold(final Expression<? extends ModifiableExpression<T>> expr) {
+		return new ModifiableExpressionImpl<T>() {
+
+			@Override
+			protected void simpleSetValue(T newValue) {
+				GlobalCache.eval(expr).setValue(newValue);
+			}
+
+			@Override
+			protected T evaluate(EvaluationContext context) {
+				return context.resolve(context.resolve(expr));
+			}
+		};
 	}
 }

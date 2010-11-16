@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
@@ -42,7 +42,7 @@ public abstract class MathNode implements Node {
 	private Variable<Node> parent = new Variable<Node>(null);
 	
 	@Override
-	public IExpression<? extends Collection<Node>> children() {
+	public Expression<? extends Collection<Node>> children() {
 		return Expressions.constant(new HashSet<Node>());
 	}
 
@@ -52,7 +52,7 @@ public abstract class MathNode implements Node {
 	}
 	
 	@Override
-	public IExpression<? extends Touchable> shape() {
+	public Expression<? extends Touchable> shape() {
 		return null;
 	}
 }

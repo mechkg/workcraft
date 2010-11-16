@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.graph.tools.Decoration;
 import org.workcraft.gui.graph.tools.Decorator;
@@ -41,9 +41,9 @@ interface GraphicalContentWithPreDecoration {
 class DrawMan
 {
 
-	private static Expression<GraphicalContentWithPreDecoration> transformedAndDecorated(final MovableNew node)
+	private static ExpressionBase<GraphicalContentWithPreDecoration> transformedAndDecorated(final MovableNew node)
 	{
-		return new Expression<GraphicalContentWithPreDecoration>() {
+		return new ExpressionBase<GraphicalContentWithPreDecoration>() {
 			@Override
 			public GraphicalContentWithPreDecoration evaluate(EvaluationContext resolver) {
 				final AffineTransform transform = resolver.resolve(node.transform());
@@ -60,8 +60,8 @@ class DrawMan
 		};
 	}
 	
-	public static Expression<HierarchicalGraphicalContent> graphicalContent(final Node node) {
-		return new Expression<HierarchicalGraphicalContent>() {
+	public static ExpressionBase<HierarchicalGraphicalContent> graphicalContent(final Node node) {
+		return new ExpressionBase<HierarchicalGraphicalContent>() {
 
 			@Override
 			public HierarchicalGraphicalContent evaluate(EvaluationContext resolver) {
@@ -79,8 +79,8 @@ class DrawMan
 		};
 	}
 	
-	public static Expression<GraphicalContentWithPreDecoration> graphicalContextWithDefaultDecoration(final Node node) {
-		return new Expression<GraphicalContentWithPreDecoration>() {
+	public static ExpressionBase<GraphicalContentWithPreDecoration> graphicalContextWithDefaultDecoration(final Node node) {
+		return new ExpressionBase<GraphicalContentWithPreDecoration>() {
 			@Override
 			public GraphicalContentWithPreDecoration evaluate(EvaluationContext resolver) {
 				
@@ -107,9 +107,9 @@ class DrawMan
 		};
 	}
 	
-	private static Expression<GraphicalContentWithPreDecoration> decorated(final Node node)
+	private static ExpressionBase<GraphicalContentWithPreDecoration> decorated(final Node node)
 	{
-		return new Expression<GraphicalContentWithPreDecoration>() {
+		return new ExpressionBase<GraphicalContentWithPreDecoration>() {
 
 				@Override
 				public GraphicalContentWithPreDecoration evaluate(final EvaluationContext resolver) {

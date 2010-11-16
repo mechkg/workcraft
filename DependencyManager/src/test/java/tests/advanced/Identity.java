@@ -1,12 +1,12 @@
 package tests.advanced;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 
-public final class Identity extends Expression<Integer> {
-	private final Expression<Integer> dependency;
+public final class Identity extends ExpressionBase<Integer> {
+	private final ExpressionBase<Integer> dependency;
 
-	public Identity(final Expression<Integer> dependency) {
+	public Identity(final ExpressionBase<Integer> dependency) {
 		this.dependency = dependency;
 	}
 

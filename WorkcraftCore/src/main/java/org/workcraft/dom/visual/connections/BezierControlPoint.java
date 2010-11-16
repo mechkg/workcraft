@@ -30,37 +30,45 @@ import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
-import org.workcraft.dom.Node;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
 
 public class BezierControlPoint extends ControlPoint {
-	private Point2D origin;
-	private Node parent;
+	private Expression<Point2D> origin;
 	
-	@Override
-	public Node getParent() {
-		return parent;
-	}
-	
-	@Override
-	public void setParent(Node parent) {
-		this.parent = parent;
-	}
-	
-	public void update (Point2D origin) {
+	public BezierControlPoint(Expression<Point2D> origin) {
 		this.origin = origin;
 	}
-	
+
 	@Override
-	public void draw(DrawRequest r) {
-		Graphics2D g = r.getGraphics();
-		
-		g.setColor(Color.LIGHT_GRAY);
-		g.setStroke(new BasicStroke(0.02f));
-		
-		Line2D l = new Line2D.Double(0, 0, origin.getX(), origin.getY());
-		g.draw(l);
-		
-		super.draw(r);
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		final Expression<? extends GraphicalContent> superContentExpr = super.graphicalContent();
+		return new ExpressionBase<GraphicalContent>() {
+			@Override
+			protected GraphicalContent evaluate(EvaluationContext context) {
+				
+				final GraphicalContent superContent = context.resolve(superContentExpr);
+				final Point2D orig = context.resolve(origin);
+				return new GraphicalContent() {
+
+					@Override
+					public void draw(DrawRequest r) {
+						Graphics2D g = r.getGraphics();
+						
+						g.setColor(Color.LIGHT_GRAY);
+						g.setStroke(new BasicStroke(0.02f));
+						
+						Line2D l = new Line2D.Double(0, 0, orig.getX(), orig.getY());
+						g.draw(l);
+						
+						superContent.draw(r);
+					}
+					
+				};
+			}
+		};
 	}
 }

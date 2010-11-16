@@ -24,17 +24,18 @@ package org.workcraft.dom.visual;
 import java.util.Collection;
 import java.util.List;
 
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.connections.SelectionObserver;
 import org.workcraft.observation.HierarchySupervisor;
 
 public class SelectionEventPropagator extends HierarchySupervisor {
-	private Expression<? extends Collection<? extends Node>> selection;
+	private ExpressionBase<? extends Collection<? extends Node>> selection;
 	
 	public SelectionEventPropagator (VisualModel model) {
 		super(model.getRoot());
 		selection = model.selection();
+		start();
 	}
 	
 	@Override

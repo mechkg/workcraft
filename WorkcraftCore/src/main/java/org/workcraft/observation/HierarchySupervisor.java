@@ -22,39 +22,39 @@
 package org.workcraft.observation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.user.AutoRefreshExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.util.Null;
 
 public abstract class HierarchySupervisor {
 	
 	public HierarchySupervisor(Node root) {
-		this(root, false);
-	}
-	
-	public HierarchySupervisor(Node root, boolean delayStart) {
+		if(root == null)
+			throw new NullPointerException();
 		rootSupervisor = new SupervisingNode(root);
-		if(!delayStart)
-			start();
 	}
 	
 	public void start() {
-		GlobalCache.autoRefresh(rootSupervisor);// TODO: Find a more elegant way to refresh
+		registerChange(Arrays.asList(new Node[]{rootSupervisor.node}), Arrays.asList(new Node[]{}));
+		autoRefresh = GlobalCache.autoRefresh(rootSupervisor);
 	}
 	
+	@SuppressWarnings("unused") // need so that autoRefresh does not get garbage collected
+	private AutoRefreshExpression autoRefresh;
 	private SupervisingNode rootSupervisor;
 	
-	class SupervisingNode extends Expression<Null> {
+	class SupervisingNode extends ExpressionBase<Null> {
 		Map<Node, SupervisingNode> latest = new HashMap<Node, SupervisingNode>();
-		private final Node node;
+		final Node node;
 
 		public SupervisingNode(Node node) {
 			if(node == null)

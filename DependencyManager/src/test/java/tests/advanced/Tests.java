@@ -5,13 +5,13 @@ import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import org.junit.Test;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.SumExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 
 
 public class Tests {
-	private final class StupidVar extends Expression<Integer> {
+	private final class StupidVar extends ExpressionBase<Integer> {
 		private Integer val;
 
 		private StupidVar(Integer val) {

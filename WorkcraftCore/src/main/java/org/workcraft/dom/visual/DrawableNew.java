@@ -21,9 +21,9 @@
 
 package org.workcraft.dom.visual;
 
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 
 
 public interface DrawableNew {
-	public IExpression<? extends GraphicalContent> graphicalContent();
+	public Expression<? extends GraphicalContent> graphicalContent();
 }

@@ -26,6 +26,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
@@ -37,8 +38,8 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
-import org.workcraft.dom.visual.Movable;
 import org.workcraft.dom.visual.MovableHelper;
+import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualModelTransformer;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
@@ -181,15 +182,16 @@ public class SelectionTool extends AbstractTool {
 			} else {
 				// hit something
 				
-				if(e.getKeyModifiers()==0 && hitNode instanceof Movable) {
+				if(e.getKeyModifiers()==0 && hitNode instanceof MovableNew) {
 					// mouse down without modifiers, begin move-drag
 					drag = DRAG_MOVE;
 					
 					if(hitNode!=null && !model.getSelection().contains(hitNode))
 						e.getModel().select(hitNode);
 
-					Movable node = (Movable) hitNode;
-					Point2D pos = new Point2D.Double(node.getTransform().getTranslateX(), node.getTransform().getTranslateY());
+					MovableNew node = (MovableNew) hitNode;
+					AffineTransform nodeTransform = GlobalCache.eval(node.transform());
+					Point2D pos = new Point2D.Double(nodeTransform.getTranslateX(), nodeTransform.getTranslateY());
 					Point2D pSnap = e.getEditor().snap(pos);
 					offsetSelection(e, pSnap.getX()-pos.getX(), pSnap.getY()-pos.getY());
 					snapOffset = new Point2D.Double(pSnap.getX()-e.getStartPosition().getX(), pSnap.getY()-e.getStartPosition().getY());
@@ -362,9 +364,8 @@ public class SelectionTool extends AbstractTool {
 		//System.out.println (model.getSelection().size());
 		
 		for(Node node : GlobalCache.eval(model.selection())) {
-			if(node instanceof Movable) {
-				Movable mv = (Movable) node;
-				MovableHelper.translate(mv, dx, dy);
+			if(node instanceof MovableNew) {
+				MovableHelper.translate((MovableNew) node, dx, dy);
 			}
 		}
 	}

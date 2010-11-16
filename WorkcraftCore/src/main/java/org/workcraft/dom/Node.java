@@ -22,12 +22,12 @@
 package org.workcraft.dom;
 import java.util.Collection;
 
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.Touchable;
 
 public interface Node {
-	IExpression<? extends Touchable> shape();
+	Expression<? extends Touchable> shape();
 	public ModifiableExpression<Node> parent();
-	public IExpression<? extends Collection<? extends Node>> children();
+	public Expression<? extends Collection<? extends Node>> children();
 }

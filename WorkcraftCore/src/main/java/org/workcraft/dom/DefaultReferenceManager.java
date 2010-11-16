@@ -32,6 +32,7 @@ import org.workcraft.util.TwoWayMap;
 public class DefaultReferenceManager extends HierarchySupervisor implements ReferenceManager {
 	public DefaultReferenceManager(Node root) {
 		super(root);
+		start();
 	}
 
 	private IDGenerator idGenerator = new IDGenerator();

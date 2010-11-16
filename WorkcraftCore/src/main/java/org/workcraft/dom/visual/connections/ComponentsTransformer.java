@@ -23,9 +23,9 @@ package org.workcraft.dom.visual.connections;
 
 import java.awt.geom.AffineTransform;
 
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TransformHelper;
@@ -33,8 +33,8 @@ import org.workcraft.dom.visual.VisualComponent;
 
 public class ComponentsTransformer {
 	
-	public static Expression<Touchable> transform (VisualComponent first, Node transformTo) {
-		IExpression<AffineTransform> expr = TransformHelper.getTransformExpression(Expressions.constant(first), Expressions.constant(transformTo));
+	public static ExpressionBase<Touchable> transform (VisualComponent first, Node transformTo) {
+		Expression<AffineTransform> expr = TransformHelper.getTransformExpression(Expressions.constant(first), Expressions.constant(transformTo));
 		return TransformHelper.transform(first.shape(), expr);
 
 	}

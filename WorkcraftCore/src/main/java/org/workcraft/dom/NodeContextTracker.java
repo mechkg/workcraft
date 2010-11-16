@@ -33,6 +33,7 @@ import org.workcraft.observation.HierarchySupervisor;
 public class NodeContextTracker extends HierarchySupervisor implements NodeContext {
 	public NodeContextTracker(Node root) {
 		super(root);
+		start();
 	}
 
 	HashMap<Node, LinkedHashSet<Node>> presets = new HashMap<Node, LinkedHashSet<Node>>();

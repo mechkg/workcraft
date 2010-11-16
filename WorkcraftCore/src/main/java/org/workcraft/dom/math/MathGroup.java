@@ -23,7 +23,7 @@ package org.workcraft.dom.math;
 
 import java.util.Collection;
 
-import org.workcraft.dependencymanager.advanced.core.IExpression;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
@@ -68,7 +68,7 @@ public class MathGroup extends MathNode implements Container {
 	}
 	
 	@Override
-	public IExpression<? extends Collection<Node>> children() {
+	public Expression<? extends Collection<Node>> children() {
 		return groupImpl.children();
 	}
 }

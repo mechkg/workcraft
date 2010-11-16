@@ -4,7 +4,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 
@@ -12,7 +12,7 @@ public class DoubleDependencyTest {
 	@Test
 	public void test() {
 		final Variable<Integer> var = new Variable<Integer>(8);
-		Expression<Integer> expression = new Expression<Integer>() {
+		ExpressionBase<Integer> expression = new ExpressionBase<Integer>() {
 			
 			@Override
 			public Integer evaluate(EvaluationContext resolver) {

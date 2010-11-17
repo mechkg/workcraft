@@ -57,7 +57,7 @@ public class HitmanTests {
 		}
 		@Override
 		public Expression<? extends Touchable> shape() {
-			throw new NotSupportedException();
+			return null;
 		}
 		@Override
 		public ModifiableExpression<Node> parent() {

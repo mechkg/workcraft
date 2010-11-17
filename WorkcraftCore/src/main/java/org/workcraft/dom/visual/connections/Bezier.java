@@ -36,15 +36,14 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
-import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.Coloriser;
+import org.workcraft.util.ExpressionUtil;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Geometry.CurveSplitResult;
 
@@ -102,7 +101,7 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 	
 	@Override
 	public ModifiableExpression<Node> parent() {
-		return modificationNotSupported(parentConnection());
+		return ExpressionUtil.modificationNotSupported(parentConnection());
 	}
 
 	private ExpressionBase<Node> parentConnection() {

@@ -41,10 +41,11 @@ import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.serialisation.References;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
-import org.workcraft.util.Null;
 
 @VisualClass ("org.workcraft.plugins.petri.VisualPetriNet")
 public class PetriNet extends AbstractMathModel implements PetriNetModel {
+	
+	
 	final UniqueNameReferenceManager names;
 
 	public PetriNet() {
@@ -56,24 +57,34 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 	}
 
 	public PetriNet(Container root, References refs) {
-		this((root == null) ? new MathGroup() : root, refs, Null.Null);
+		this(new ConstructionParameters(root, refs));
 	}
 	
-	protected PetriNet(Container root, References refs, Null n) {
-		super(root, new UniqueNameReferenceManager(root, refs, new Func<Node, String>() {
-			@Override
-			public String eval(Node arg) {
-				if (arg instanceof Place)
-					return "p";
-				if (arg instanceof Transition)
-					return "t";
-				if (arg instanceof Connection)
-					return "con";
-				return "node";
-			}
-		}));
-
-		names = (UniqueNameReferenceManager) getReferenceManager();
+	static class ConstructionParameters {
+		public ConstructionParameters(Container root, References refs) {
+			this.root = (root == null) ? new MathGroup() : root;
+			this.referenceManager = new UniqueNameReferenceManager(this.root, refs, new Func<Node, String>() {
+				@Override
+				public String eval(Node arg) {
+					if (arg instanceof Place)
+						return "p";
+					if (arg instanceof Transition)
+						return "t";
+					if (arg instanceof Connection)
+						return "con";
+					return "node";
+				}
+			});
+		}
+		
+		final Container root;
+		final UniqueNameReferenceManager referenceManager;
+	}
+	
+	
+	protected PetriNet(ConstructionParameters construction) {
+		super(construction.root, construction.referenceManager);
+		names = construction.referenceManager;
 	}
 
 	public void validate() throws ModelValidationException {
@@ -92,6 +103,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		if (name!=null)
 			setName(newPlace, name);
 		getRoot().add(newPlace);
+		refreshStupidObservers();
 		return newPlace;
 	}
 
@@ -100,18 +112,22 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		if (name!=null)
 			setName(newTransition, name);
 		getRoot().add(newTransition);
+		refreshStupidObservers();
 		return newTransition;
 	}
 
 	final public Collection<Place> getPlaces() {
+		refreshStupidObservers();
 		return Hierarchy.getDescendantsOfType(getRoot(), Place.class);
 	}
 
 	final public Collection<Transition> getTransitions() {
+		refreshStupidObservers();
 		return Hierarchy.getDescendantsOfType(getRoot(), Transition.class);
 	}
 
 	final public boolean isEnabled (Transition t) {
+		refreshStupidObservers();
 		return isEnabled (this, t);
 	}
 
@@ -185,20 +201,30 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		MathConnection con = new MathConnection((MathNode)first, (MathNode)second);
 		
 		Hierarchy.getNearestContainer(first, second).add(con);
+		refreshStupidObservers();
 		
 		return con;
 	}
 
 	public String getName(Node n) {
+		refreshStupidObservers();
 		return this.names.getNodeReference(n);
 	}
 
 	public void setName(Node n, String name) {
 		this.names.setName(n, name);
+		refreshStupidObservers();
 	}
 
 	@Override
 	public Properties getProperties(Node node) {
+		refreshStupidObservers();
 		return Properties.Mix.from(new NamePropertyDescriptor(this, node));
+	}
+	
+	@Override
+	public void refreshStupidObservers() {
+		names.refresh();
+		super.refreshStupidObservers();
 	}
 }

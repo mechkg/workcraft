@@ -27,7 +27,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -41,7 +40,6 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
-import org.workcraft.dom.DefaultHangingConnectionRemover;
 import org.workcraft.dom.DefaultMathNodeRemover;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
@@ -51,7 +49,6 @@ import org.workcraft.dom.visual.connections.DefaultAnchorGenerator;
 import org.workcraft.dom.visual.connections.Polyline;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.exceptions.NodeCreationException;
-import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.exceptions.PasteException;
 import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.util.Hierarchy;
@@ -62,7 +59,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	private MathModel mathModel;
 	private Container currentLevel;
 	private CachedHashSet<Node> selection = new CachedHashSet<Node>();
-	private final ExpressionBase<HierarchicalGraphicalContent> graphicalContent; 
+	private final ExpressionBase<HierarchicalGraphicalContent> graphicalContent;
 
 	public AbstractVisualModel(VisualGroup root) {
 		this (null, root);
@@ -84,8 +81,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		//new TransformEventPropagator(getRoot());
 		new SelectionEventPropagator(this);
 		new RemovedNodeDeselector(this);
-		new DefaultHangingConnectionRemover(this, getRoot());
-		new DefaultMathNodeRemover(getRoot());
+		new DefaultMathNodeRemover(this, getRoot());
 		graphicalContent = makeGraphicalContent();
 	}
 
@@ -121,6 +117,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	}
 
 	public ExpressionBase<HierarchicalGraphicalContent> graphicalContent() {
+		refreshStupidObservers();
 		return graphicalContent;
 	}
 	
@@ -129,6 +126,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	}
 
 	public ExpressionBase<? extends Collection<? extends Node>> selection() {
+		refreshStupidObservers();
 		return selection;
 	}
 
@@ -309,27 +307,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	}
 
 	public void deleteSelection() {
-		HashMap<Container, LinkedList<Node>> batches = new HashMap<Container, LinkedList<Node>>();
-		LinkedList<Node> remainingSelection = new LinkedList<Node>();
-		
-		
-		for (Node n : getSelection()) {
-			Node parent = GlobalCache.eval(n.parent());
-			if (parent instanceof Container) {
-				Container c = (Container)parent;
-				LinkedList<Node> batch = batches.get(c);
-				if (batch == null) {
-					batch = new LinkedList<Node>();
-					batches.put(c, batch);
-				}
-				batch.add(n);
-			} else remainingSelection.add(n);
-		}
-		
-		for (Container c : batches.keySet())
-			c.remove(batches.get(c));
-
-		select(remainingSelection);
+		remove(getSelection());
 	}
 
 	/**
@@ -397,5 +375,10 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 
 	@Override public Properties getProperties(Node node) {
 		return null;
+	}
+	
+	@Override
+	public void refreshStupidObservers() {
+		super.refreshStupidObservers();
 	}
 }

@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.AbstractMathModel;
@@ -176,7 +177,7 @@ public class STG extends AbstractMathModel implements STGModel {
 		return Hierarchy.getDescendantsOfType(getRoot(), SignalTransition.class, new Func<SignalTransition, Boolean>(){
 			@Override
 			public Boolean eval(SignalTransition arg) {
-				return arg.getSignalType() == t;
+				return GlobalCache.eval(arg.signalType()) == t;
 			}}
 		);
 	}
@@ -195,7 +196,7 @@ public class STG extends AbstractMathModel implements STGModel {
 	private Set<String> getUniqueNames(Collection<SignalTransition> transitions) {
 		Set<String> result = new HashSet<String>();
 		for (SignalTransition st : transitions)
-			result.add(st.getSignalName());
+			result.add(GlobalCache.eval(st.signalName()));
 		return result;
 	}
 
@@ -220,6 +221,7 @@ public class STG extends AbstractMathModel implements STGModel {
 	}
 
 	public String getName(Node node) {
+		refreshStupidObservers();
 		return referenceManager.getName(node);
 	}
 
@@ -270,6 +272,7 @@ public class STG extends AbstractMathModel implements STGModel {
 
 	@Override
 	public String getNodeReference(Node node) {
+		refreshStupidObservers();
 		if(node instanceof STGPlace)
 		{
 			if(((STGPlace) node).isImplicit()) {
@@ -313,6 +316,12 @@ public class STG extends AbstractMathModel implements STGModel {
 	public void makeExplicit(STGPlace implicitPlace) {
 		implicitPlace.setImplicit(false);
 		referenceManager.setDefaultNameIfUnnamed(implicitPlace);
+	}
+	
+	@Override
+	public void refreshStupidObservers() {
+		super.refreshStupidObservers();
+		referenceManager.refresh();
 	}
 
 }

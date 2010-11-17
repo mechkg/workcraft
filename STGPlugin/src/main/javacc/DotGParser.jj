@@ -99,7 +99,7 @@ public class DotGParser {
 			if (t==null)
 				throw new FormatException ("Undeclared signal encountered: " + name + 
 				" ("+reference+"). Possibly malformed header.");
-			st.setSignalType(t);
+			st.signalType().setValue(t);
 			existing = st;
 		}
 		
@@ -180,7 +180,8 @@ STG parse() : { }
 void header() : { List<String> list; }
 {
   	(<LINEBREAK>)?
-	(	  	<INPUT_HEADER> list = signalList() { setSignalsType (list, Type.INPUT); }
+	(
+	  	<INPUT_HEADER> list = signalList() { setSignalsType (list, Type.INPUT); }
 		|<OUTPUT_HEADER> list = signalList() { setSignalsType (list, Type.OUTPUT); }
 		|<INTERNAL_HEADER> list = signalList() { setSignalsType (list, Type.INTERNAL); }
 		|<DUMMY_HEADER> list = signalList() { setSignalsType (list, Type.DUMMY); }
@@ -213,7 +214,7 @@ void capacityEntry() : { STGPlace p; int value; }
 	        value = assignment()
 	 )
 	 {
-	 	p.setCapacity(value);
+	 	p.capacity().setValue(value);
 	 }
 }
 
@@ -303,15 +304,19 @@ Pair<String, Integer> dummyTransition() :
 }
 
 Node anyTransition() :
-{	Triple<String, Direction, Integer> r;
+{
+	Triple<String, Direction, Integer> r;
 	Pair<String, Integer> r2;
 	Node t;
 }
-{	(
-	  LOOKAHEAD(signalTransition())	  r = signalTransition() { t = getOrCreate(r); }
+{
+	(
+	  LOOKAHEAD(signalTransition())
+	  r = signalTransition() { t = getOrCreate(r); }
 	| r2 = dummyTransition() { t = getOrCreate(r2); }
 )
-	{		return t;
+	{
+		return t;
 	}
 }
 

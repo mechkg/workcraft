@@ -22,16 +22,12 @@
 package org.workcraft.testing.dom.visual;
 
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.exceptions.NotAnAncestorException;
-import org.workcraft.observation.StateEvent;
-import org.workcraft.observation.StateObserver;
-import org.workcraft.observation.TransformChangedEvent;
 import org.workcraft.util.Hierarchy;
 
 public class VisualNodeTests {
@@ -39,25 +35,6 @@ public class VisualNodeTests {
 	static VisualGroup createGroup(VisualGroup parent)
 	{
 		return Tools.createGroup(parent);
-	}
-	
-	@Test
-	public void testTransformChangeNotify()
-	{
-		final SquareNode node = new SquareNode(null, new Rectangle2D.Double(0, 0, 1, 1)); 
-		final Boolean[] hit = new Boolean[]{false};
-		node.addObserver( new StateObserver() {
-					public void notify(StateEvent e) {
-						if (e instanceof TransformChangedEvent) {
-							if (e.getSender() == node)
-								hit[0] = true;
-							
-						}
-					}
-				});
-		Assert.assertFalse("already hit o_O", hit[0]);
-		node.setX(8);
-		Assert.assertTrue("not hit", hit[0]);
 	}
 	
 	@Test
@@ -70,12 +47,12 @@ public class VisualNodeTests {
 		VisualGroup node111 = createGroup(node11); 
 		VisualGroup node1111 = createGroup(node111); 
 		
-		node1.setX(1);
-		node1.setX(1);
-		node11.setX(10);
-		node111.setX(100);
-		node1111.setX(1000);
-		node2.setX(5);
+		node1.x().setValue(1.0);
+		node1.x().setValue(1.0);
+		node11.x().setValue(10.0);
+		node111.x().setValue(100.0);
+		node1111.x().setValue(1000.0);
+		node2.x().setValue(5.0);
 		
 		ensureShiftX(node1111, root, 111);
 		ensureShiftX(node111, root, 11);

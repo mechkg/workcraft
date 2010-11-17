@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.UUID;
 
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
 import org.workcraft.exceptions.ArgumentException;
@@ -196,9 +197,11 @@ public class DotGSerialiser implements ModelSerialiser {
 		StringBuilder capacity = new StringBuilder();
 		
 		for (Place p : places) {
-			if (p instanceof STGPlace)
-				if (((STGPlace)p).getCapacity() != 1)
-				capacity.append(" " + model.getNodeReference(p) + "=" + ((STGPlace)p).getCapacity());
+			if (p instanceof STGPlace) {
+				Integer cpty = GlobalCache.eval(((STGPlace)p).capacity());
+				if (cpty != 1)
+					capacity.append(" " + model.getNodeReference(p) + "=" + cpty);
+			}
 		}
 		
 		if (capacity.length() > 0)

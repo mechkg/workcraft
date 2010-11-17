@@ -26,6 +26,7 @@ import java.awt.geom.Point2D;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.VisualPlace;
 
@@ -35,13 +36,13 @@ public class VisualPlaceTests {
 		Place p = new Place();
 		VisualPlace vp = new VisualPlace(p);
 		
-		Assert.assertTrue(vp.hitTest(new Point2D.Double(0,0)));
-		Assert.assertFalse(vp.hitTest(new Point2D.Double(5,5)));
+		Assert.assertTrue(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(0,0)));
+		Assert.assertFalse(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(5,5)));
 		
-		vp.setX(5);
-		vp.setY(5);
+		vp.x().setValue(5.0);
+		vp.y().setValue(5.0);
 		
-		Assert.assertTrue(vp.hitTest(new Point2D.Double(5,5)));
-		Assert.assertFalse(vp.hitTest(new Point2D.Double(0,0)));
+		Assert.assertTrue(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(5,5)));
+		Assert.assertFalse(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(0,0)));
 	}
 }

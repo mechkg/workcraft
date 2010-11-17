@@ -55,7 +55,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 				if (arg instanceof SignalTransition) {
 					return GlobalCache.eval(((SignalTransition) arg).signalName()) + GlobalCache.eval(((SignalTransition) arg).direction());
 				} else if (arg instanceof DummyTransition){
-					return ((DummyTransition)arg).getName();
+					return GlobalCache.eval(((DummyTransition)arg).name());
 				} else
 					throw new RuntimeException ("Unexpected class " + arg.getClass().getName());
 			}
@@ -183,7 +183,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 					instancedNameManager.assign(dt, r);
 				else
 					instancedNameManager.assign(dt, r.getFirst());
-				dt.setName(r.getFirst());
+				dt.name().setValue(r.getFirst());
 			} catch (DuplicateIDException e) {
 				throw new ArgumentException ("Instance number " + e.getId() + " is already taken.");
 			}
@@ -225,7 +225,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 				return;
 
 			String name = "dummy" + dummyCounter++;
-			dt.setName(name);
+			dt.name().setValue(name);
 
 			instancedNameManager.assign(dt);
 		} else if (node instanceof STGPlace) {

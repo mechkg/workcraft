@@ -3,6 +3,7 @@ package org.workcraft.plugins.stg.propertydescriptors;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.gui.propertyeditor.PropertyDescriptor;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.SignalTransition;
@@ -33,7 +34,7 @@ public class SignalNamePropertyDescriptor implements PropertyDescriptor {
 
 	@Override
 	public Object getValue() throws InvocationTargetException {
-		return node.getSignalName();
+		return GlobalCache.eval(node.signalName());
 	}
 
 	@Override

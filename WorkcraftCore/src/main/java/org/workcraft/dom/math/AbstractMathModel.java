@@ -23,7 +23,6 @@ package org.workcraft.dom.math;
 
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
-import org.workcraft.dom.DefaultHangingConnectionRemover;
 import org.workcraft.dom.references.ReferenceManager;
 
 public abstract class AbstractMathModel extends AbstractModel implements MathModel {
@@ -38,7 +37,5 @@ public abstract class AbstractMathModel extends AbstractModel implements MathMod
 	
 	public AbstractMathModel(Container root, ReferenceManager referenceManager) {
 		super(root, referenceManager);
-		
-		new DefaultHangingConnectionRemover(this, root);
 	}
 }

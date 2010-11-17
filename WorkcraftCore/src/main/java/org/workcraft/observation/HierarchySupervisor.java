@@ -45,7 +45,11 @@ public abstract class HierarchySupervisor {
 	
 	public void start() {
 		registerChange(Arrays.asList(new Node[]{rootSupervisor.node}), Arrays.asList(new Node[]{}));
-		autoRefresh = GlobalCache.autoRefresh(rootSupervisor);
+		//autoRefresh = GlobalCache.autoRefresh(rootSupervisor);
+	}
+	
+	public void refresh() {
+		GlobalCache.eval(rootSupervisor);
 	}
 	
 	@SuppressWarnings("unused") // need so that autoRefresh does not get garbage collected

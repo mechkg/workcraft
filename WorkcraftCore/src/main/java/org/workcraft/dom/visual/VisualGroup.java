@@ -96,7 +96,7 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 						for(Node n : context.resolve(children())) {
 							Touchable shape = context.resolve(n.shape());
 							if(shape!=null) {
-								BoundingBoxHelper.union(result, shape.getBoundingBox());
+								result = BoundingBoxHelper.union(result, shape.getBoundingBox());
 							}
 						}
 						return result;

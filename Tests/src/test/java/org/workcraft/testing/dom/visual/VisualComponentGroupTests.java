@@ -24,65 +24,26 @@ package org.workcraft.testing.dom.visual;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.math.MathNode;
-import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.HitMan;
-import org.workcraft.dom.visual.TransformDispatcher;
-import org.workcraft.dom.visual.TransformEventPropagator;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.dom.visual.connections.VisualConnectionProperties;
-import org.workcraft.observation.TransformEvent;
-import org.workcraft.observation.TransformObserver;
 
 public class VisualComponentGroupTests {
-	class MockTransformObservingNode implements Node, TransformObserver {
-		Node parent = null;
-		
-		public boolean notified = false;
-		
-		@Override
-		public Collection<Node> getChildren() {
-			return Collections.emptyList();
-		}
-
-		@Override
-		public Node getParent() {
-			return parent;
-		}
-
-		@Override
-		public void setParent(Node parent) {
-			this.parent = parent;
-		}
-
-		@Override
-		public void notify(TransformEvent e) {
-			notified = true;			
-		}
-
-		@Override
-		public void subscribe(TransformDispatcher dispatcher) {
-			dispatcher.subscribe(this, parent);			
-		}
-	}
-	
-	
 
 	@Test
 	public void TestHitComponent()
 	{
 		VisualGroup root = createGroup(null);
 		VisualGroup node1 = createGroup(root);
-		node1.setX(5);
+		node1.x().setValue(5.0);
 		
 		SquareNode sq1 = new SquareNode(root, new Rectangle2D.Double(1, 1, 1, 1));
 		SquareNode sq2 = new SquareNode(node1, new Rectangle2D.Double(2, 2, 1, 1));
@@ -98,13 +59,13 @@ public class VisualComponentGroupTests {
 	{
 		VisualGroup root = createGroup(null);
 		VisualGroup group = createGroup(root);
-		group.setX(5);
+		group.x().setValue(5.0);
 		
 		SquareNode sqr1 = new SquareNode(root, new Rectangle2D.Double(1, 1, 1, 1));
 		SquareNode sqr2 = new SquareNode(root, new Rectangle2D.Double(3, 3, 1, 1));
 		root.add(sqr1);
 		root.add(sqr2);
-		VisualConnectionProperties connectionR = Tools.createConnection(sqr1, sqr2, root);
+		VisualConnectionProperties connectionR = GlobalCache.eval(Tools.createConnection(sqr1, sqr2, root).properties());
 		
 		SquareNode sqg1 = new SquareNode(group, new Rectangle2D.Double(1, 1, 1, 1));
 		SquareNode sqg2 = new SquareNode(group, new Rectangle2D.Double(3, 3, 1, 1));
@@ -139,7 +100,7 @@ public class VisualComponentGroupTests {
 		VisualNode node2 = new SquareNode(group, r2, r2_);
 		VisualNode node3 = new SquareNode(group, r3, r3_);
 		
-		Assert.assertNull(group.getBoundingBoxInLocalSpace());
+		Assert.assertNull(GlobalCache.eval(group.localSpaceTouchable()).getBoundingBox());
 		
 		group.add(node1);
 		group.add(node2);
@@ -187,8 +148,8 @@ public class VisualComponentGroupTests {
 		VisualGroup node1 = new VisualGroup();
 		root.add(node1);
 		
-		node1.setX(10);
-		node1.setY(15);
+		node1.x().setValue(10.0);
+		node1.y().setValue(15.0);
 		
 		VisualGroup node2 = new VisualGroup();
 		node1.add(node2);
@@ -232,50 +193,5 @@ public class VisualComponentGroupTests {
 	private VisualGroup createGroup(VisualGroup parent)
 	{
 		return VisualNodeTests.createGroup(parent);
-	}
-	
-	@Test
-	public void TestTransformChangeNotification()
-	{
-		TransformEventPropagator p = new TransformEventPropagator();
-		
-		VisualGroup root = createGroup(null);
-		
-		MockTransformObservingNode node1 = new MockTransformObservingNode();
-		root.add(node1);
-		
-		p.attach(root);
-				
-		Assert.assertFalse("already hit o_O", node1.notified);
-		root.setX(8);
-		Assert.assertTrue("not hit", node1.notified);
-	}
-
-	class DummyNode extends VisualComponent
-	{
-		public DummyNode(VisualGroup parent) {
-			super(null);
-			parent.add(this);
-		}
-
-		@Override
-		public Rectangle2D getBoundingBoxInLocalSpace() {
-			return new Rectangle2D.Double(0, 0, 1, 1);
-		}
-
-		@Override
-		public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
-			return false;
-		}
-
-		@Override
-		public Collection<MathNode> getMathReferences() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void draw(DrawRequest r) {
-		}
 	}
 }

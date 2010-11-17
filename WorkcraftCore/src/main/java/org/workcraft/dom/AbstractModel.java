@@ -21,8 +21,10 @@
 
 package org.workcraft.dom;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.workcraft.annotations.DisplayName;
@@ -67,19 +69,36 @@ public abstract class AbstractModel implements Model {
 	}
 
 	public void remove (Node node) {
-		if (GlobalCache.eval(node.parent()) instanceof Container)
-			((Container)GlobalCache.eval(node.parent())).remove(node);
-		else
-			throw new RuntimeException ("Cannot remove a child node from a node that is not a Container (or null).");
+		remove(Arrays.asList(new Node[]{node}));
+	}
+
+	private void recursiveDelete(LinkedHashSet<Node> deletionList, Node node) {
+		Collection<Node> dependants = getDependants(node);
+		for(Node n : dependants)
+			if(!deletionList.contains(n))
+				recursiveDelete(deletionList, n);
+		
+		deletionList.add(node);
+	}
+	
+	private Collection<Node> getDependants(Node node) {
+		ArrayList<Node> result = new ArrayList<Node>();
+		result.addAll(GlobalCache.eval(node.children()));
+		result.addAll(getConnections(node));
+		return result;
 	}
 
 	public void remove (Collection<Node> nodes) {
-		LinkedList<Node> toRemove = new LinkedList<Node>(nodes);
-		for (Node node : toRemove) {
-			// some nodes may be removed as a result of removing other nodes in the list,
-			// e.g. hanging connections so need to check
-			if (GlobalCache.eval(node.parent()) != null)
-				remove (node);
+		LinkedHashSet<Node> deletionList = new LinkedHashSet<Node>(); 
+		for(Node node : nodes)
+			recursiveDelete(deletionList, node);
+		
+		for(Node n : deletionList) {
+			Node parent = GlobalCache.eval(n.parent());
+			if (parent instanceof Container)
+				((Container)parent).remove(n);
+			else
+				;//throw new RuntimeException ("Cannot remove a child node from a node that is not a Container. The parent is: " + parent);
 		}
 	}
 
@@ -100,28 +119,34 @@ public abstract class AbstractModel implements Model {
 	}
 
 	public final Container getRoot() {
+		refreshStupidObservers();
 		return root;	
 	}
 
 	public Set<Connection> getConnections(Node component) {
+		refreshStupidObservers();
 		return nodeContextTracker.getConnections(component);
 	}
 
 	public Set<Node> getPostset(Node component) {
+		refreshStupidObservers();
 		return nodeContextTracker.getPostset(component);
 	}
 
 	public Set<Node> getPreset(Node component) {
+		refreshStupidObservers();
 		return nodeContextTracker.getPreset(component);
 	}
 	
 	@Override
 	public Node getNodeByReference(String reference) {
+		refreshStupidObservers();
 		return referenceManager.getNodeByReference(reference);
 	}
 
 	@Override
 	public String getNodeReference(Node node) {
+		refreshStupidObservers();
 		return referenceManager.getNodeReference(node);
 	}
 	
@@ -132,5 +157,12 @@ public abstract class AbstractModel implements Model {
 
 	protected ReferenceManager getReferenceManager() {
 		return referenceManager;
+	}
+	
+	/**
+	 * This should be called almost always. Subclasses should call refresh() to their HierarchySupervisors here.
+	 */
+	public void refreshStupidObservers() {
+		//nodeContextTracker.refresh();
 	}
 }

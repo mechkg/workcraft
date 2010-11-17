@@ -137,4 +137,3 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 	}
 }
 
-

@@ -38,7 +38,7 @@ public class DefaultHangingConnectionRemover extends HierarchySupervisor {
 		this.nct = nct;
 		start();
 	}
-
+	
 	@Override
 	public void handleEvent(List<Node> added, final List<Node> removed) {
 		if(removed.size() > 0) {

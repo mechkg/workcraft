@@ -24,6 +24,7 @@ package org.workcraft.testing.dom;
 import java.util.LinkedList;
 
 import org.junit.Test;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.exceptions.InvalidConnectionException;
@@ -57,7 +58,7 @@ public class ConnectionRemoverTests {
 		LinkedList<Node> toDelete = new LinkedList<Node>();
 		LinkedList<Node> toDeleteThen = new LinkedList<Node>();
 		
-		for (Node n : vstg.getRoot().getChildren()) {
+		for (Node n : GlobalCache.eval(vstg.getRoot().children())) {
 			DependentNode dn = (DependentNode)n;
 			if (!dn.getMathReferences().contains(t1))
 				toDelete.add(n);

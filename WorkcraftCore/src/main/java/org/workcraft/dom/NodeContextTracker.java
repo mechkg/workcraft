@@ -41,16 +41,11 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 	HashMap<Node, LinkedHashSet<Connection>> connections = new HashMap<Node, LinkedHashSet<Connection>>();
 
 	private void initHashes (Node n) {
-		LinkedHashSet<Node> set = presets.get(n);
-		if (set == null)
+		if (presets.get(n) == null)
 			presets.put(n, new LinkedHashSet<Node>());
-
-		set = postsets.get(n);
-		if (set == null)
+		if (postsets.get(n) == null)
 			postsets.put(n, new LinkedHashSet<Node>());
-
-		LinkedHashSet<Connection> conSet = connections.get(n);
-		if (conSet == null)
+		if (connections.get(n) == null)
 			connections.put(n, new LinkedHashSet<Connection>());
 	}
 
@@ -61,7 +56,7 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 	}
 
 	private void nodeAdded (Node n) {
-		//System.out.println ("(NCT) node added " + n);
+		System.out.println ("(NCT) node added " + n);
 		initHashes(n);
 		
 		if (n instanceof Connection) {
@@ -83,7 +78,7 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 	}
 
 	private void nodeRemoved(Node n) {
-		//System.out.println ("(NCT) node removed " + n);
+		System.out.println ("(NCT) node removed " + n);
 		
 		for (Node postsetNodes: postsets.get(n))
 			presets.get(postsetNodes).remove(n);
@@ -119,15 +114,21 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 	}
 
 	public Set<Node> getPreset(Node node) {
+		refresh();
 		return Collections.unmodifiableSet(presets.get(node));
 	}
 
 	public Set<Node> getPostset(Node node) {
+		refresh();
 		return Collections.unmodifiableSet(postsets.get(node));
 	}
 
 	public Set<Connection> getConnections (Node node) {
-		return Collections.unmodifiableSet(connections.get(node));		
+		refresh();
+		LinkedHashSet<Connection> result = connections.get(node);
+		if(result == null)
+			throw new RuntimeException("unknown node: " + node);
+		return Collections.unmodifiableSet(result);		
 	}
 
 	@Override

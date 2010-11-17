@@ -30,8 +30,10 @@ import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.observation.HierarchySupervisor;
 
 public class DefaultMathNodeRemover extends HierarchySupervisor {
-	public DefaultMathNodeRemover(Node root) {
+	private final Model model;
+	public DefaultMathNodeRemover(Model model, Node root) {
 		super(root);
+		this.model = model;
 		start();
 	}
 
@@ -49,7 +51,7 @@ public class DefaultMathNodeRemover extends HierarchySupervisor {
 			// System.out.println ( "Math node " + node + " is no longer referenced to, deleting");
 			refCount.remove(node);
 			if (GlobalCache.eval(node.parent()) instanceof Container)
-				((Container)GlobalCache.eval(node.parent())).remove(node);		
+				model.remove(node);		
 		} else
 			refCount.put(node, refs);
 	}

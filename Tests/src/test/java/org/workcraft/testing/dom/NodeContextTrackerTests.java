@@ -60,8 +60,7 @@ public class NodeContextTrackerTests {
 		group.add(n3);
 		group.add(n4);
 
-		NodeContextTracker nct = new NodeContextTracker();
-		nct.attach(group);
+		NodeContextTracker nct = new NodeContextTracker(group);
 
 		Set<Node> n4pre = nct.getPreset(n4);
 		assertEquals (n4pre.size(), 1);
@@ -87,8 +86,7 @@ public class NodeContextTrackerTests {
 	public void TestAddRemove1() {
 		MathGroup group = new MathGroup();
 		
-		NodeContextTracker nct = new NodeContextTracker();
-		nct.attach(group);
+		NodeContextTracker nct = new NodeContextTracker(group);
 		
 
 		MockNode n1 = new MockNode();
@@ -109,26 +107,32 @@ public class NodeContextTrackerTests {
 		group.add(n3);
 		group.add(n4);
 
+		nct.refresh();
 		Set<Node> n4pre = nct.getPreset(n4);
 		assertEquals (n4pre.size(), 1);
 		assertTrue (n4pre.contains(n3));
 		
+		nct.refresh();
 		Set<Node> n3pre = nct.getPreset(n3);
 		assertEquals (n3pre.size(), 2);
 		assertTrue (n3pre.contains(n1));
 		assertTrue (n3pre.contains(n2));
 		
+		nct.refresh();
 		Set<Node> n3post = nct.getPostset(n3);
 		assertEquals (n3post.size(), 1);
 		assertTrue (n3post.contains(n4));
 		
+		nct.refresh();
 		Set<Node> n4post = nct.getPostset(n4);
 		assertTrue (n4post.isEmpty());
 		
+		nct.refresh();
 		Set<Node> n1pre = nct.getPreset(n1);
 		assertTrue (n1pre.isEmpty());
 		
 		group.remove(n3);
+		nct.refresh();
 		assertTrue (nct.getPreset(n1).isEmpty());
 		assertTrue (nct.getPreset(n2).isEmpty());
 		assertTrue (nct.getPreset(n4).isEmpty());
@@ -138,6 +142,7 @@ public class NodeContextTrackerTests {
 		assertTrue (nct.getPostset(n4).isEmpty());
 		
 		group.remove(con1);
+		nct.refresh();
 
 		assertTrue (nct.getPreset(n1).isEmpty());
 		assertTrue (nct.getPreset(n2).isEmpty());
@@ -152,8 +157,7 @@ public class NodeContextTrackerTests {
 	public void TestAddRemove2() {
 		MathGroup group = new MathGroup();
 		
-		NodeContextTracker nct = new NodeContextTracker();
-		nct.attach(group);
+		NodeContextTracker nct = new NodeContextTracker(group);
 		
 
 		MockNode n1 = new MockNode();
@@ -174,31 +178,38 @@ public class NodeContextTrackerTests {
 		group.add(n3);
 		group.add(n4);
 
+		nct.refresh();
 		Set<Node> n4pre = nct.getPreset(n4);
 		assertEquals (n4pre.size(), 1);
 		assertTrue (n4pre.contains(n3));
 		
+		nct.refresh();
 		Set<Node> n3pre = nct.getPreset(n3);
 		assertEquals (n3pre.size(), 2);
 		assertTrue (n3pre.contains(n1));
 		assertTrue (n3pre.contains(n2));
 		
+		nct.refresh();
 		Set<Node> n3post = nct.getPostset(n3);
 		assertEquals (n3post.size(), 1);
 		assertTrue (n3post.contains(n4));
 		
+		nct.refresh();
 		Set<Node> n4post = nct.getPostset(n4);
 		assertTrue (n4post.isEmpty());
 		
+		nct.refresh();
 		Set<Node> n1pre = nct.getPreset(n1);
 		assertTrue (n1pre.isEmpty());
 		
 		group.remove(con1);
 
+		nct.refresh();
 		assertTrue (nct.getPostset(n1).isEmpty());
 		assertEquals (nct.getPreset(n3).size(), 1 );
 		
 		group.remove(con2);
+		nct.refresh();
 		assertTrue (nct.getPostset(n2).isEmpty());
 		assertTrue (nct.getPreset(n3).isEmpty());
 		
@@ -206,6 +217,7 @@ public class NodeContextTrackerTests {
 		
 		group.remove(n4);
 		
+		nct.refresh();
 		assertTrue(nct.getPostset(n3).isEmpty());
 	}
 }

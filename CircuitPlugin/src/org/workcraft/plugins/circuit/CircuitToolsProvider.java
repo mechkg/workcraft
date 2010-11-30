@@ -20,7 +20,7 @@ public class CircuitToolsProvider implements CustomToolsProvider {
 		result.add(new ConnectionTool());
 		result.add(new CircuitSimulationTool());
 		result.add(new ContactGeneratorTool());
-
+		
 		return result;
 	}
 

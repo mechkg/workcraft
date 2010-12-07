@@ -146,7 +146,7 @@ public class VisualSTG extends AbstractVisualModel {
 		
 		VisualPlace place = new VisualPlace(implicitPlace);
 		Point2D p = con.getPointOnConnection(0.5);
-		place.setX(p.getX()); place.setY(p.getY());
+		place.position().setValue(p);
 
 		VisualConnection con1 = new VisualConnection(con.getRefCon1(), con.getFirst(), place);
 		VisualConnection con2 = new VisualConnection(con.getRefCon2(), place, con.getSecond());
@@ -220,8 +220,8 @@ public class VisualSTG extends AbstractVisualModel {
 
 	public VisualSignalTransition createSignalTransition(String signalName, SignalTransition.Type type, Direction direction) {
 		SignalTransition transition = stg.createSignalTransition(signalName);
-		transition.setSignalType(type);
-		transition.setDirection(direction);
+		transition.signalType().setValue(type);
+		transition.direction().setValue(direction);
 		VisualSignalTransition visualTransition = new VisualSignalTransition(transition);
 		add(visualTransition);
 		return visualTransition;

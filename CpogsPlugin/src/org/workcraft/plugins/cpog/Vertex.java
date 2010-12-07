@@ -23,8 +23,8 @@ package org.workcraft.plugins.cpog;
 
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.observation.PropertyChangedEvent;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 
@@ -32,15 +32,9 @@ import org.workcraft.plugins.cpog.optimisation.expressions.One;
 @VisualClass("org.workcraft.plugins.cpog.VisualVertex")
 public class Vertex extends MathNode
 {
-	private BooleanFormula condition = One.instance();
+	private final ModifiableExpression<BooleanFormula> condition = new org.workcraft.dependencymanager.advanced.user.Variable<BooleanFormula>(One.instance());
 	
-	public void setCondition(BooleanFormula condition)
-	{
-		this.condition = condition;
-		sendNotification(new PropertyChangedEvent(this, "condition"));
-	}	
-	
-	public BooleanFormula getCondition()
+	public ModifiableExpression<BooleanFormula> condition()
 	{
 		return condition;
 	}	

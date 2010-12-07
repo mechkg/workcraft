@@ -77,7 +77,7 @@ public class DotGParser {
 			{
 				DummyTransition dt = stg.createDummyTransition(null);
 				stg.setName(dt, reference);
-				dt.setName(name);
+				dt.name().setValue(name);
 				existing = dt;
 			}
 		}

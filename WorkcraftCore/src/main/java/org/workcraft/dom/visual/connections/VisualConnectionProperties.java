@@ -37,4 +37,45 @@ public interface VisualConnectionProperties {
 	public Touchable getFirstShape();
 	public Touchable getSecondShape();
 	public ScaleMode getScaleMode();
+	
+	class Inheriting implements VisualConnectionProperties {
+		private final VisualConnectionProperties target;
+
+		public Inheriting(VisualConnectionProperties target) {
+			this.target = target;
+		}
+
+		public Color getDrawColor() {
+			return target.getDrawColor();
+		}
+
+		public double getArrowWidth() {
+			return target.getArrowWidth();
+		}
+
+		public double getArrowLength() {
+			return target.getArrowLength();
+		}
+
+		public boolean hasArrow() {
+			return target.hasArrow();
+		}
+
+		public Stroke getStroke() {
+			return target.getStroke();
+		}
+
+		public Touchable getFirstShape() {
+			return target.getFirstShape();
+		}
+
+		public Touchable getSecondShape() {
+			return target.getSecondShape();
+		}
+
+		public ScaleMode getScaleMode() {
+			return target.getScaleMode();
+		}
+
+	}
 }

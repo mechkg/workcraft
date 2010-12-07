@@ -74,7 +74,7 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 	}
 
 	@Override
-	public final Expression<Touchable> localSpaceTouchable() {
+	public Expression<Touchable> localSpaceTouchable() {
 		return new ExpressionBase<Touchable>() {
 			@Override
 			protected Touchable evaluate(final EvaluationContext context) {

@@ -21,10 +21,12 @@
 
 package org.workcraft.plugins.cpog;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.observation.PropertyChangedEvent;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor;
 
@@ -32,17 +34,11 @@ import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor;
 @VisualClass("org.workcraft.plugins.cpog.VisualVariable")
 public class Variable extends MathNode implements Comparable<Variable>, BooleanVariable
 {
-	private VariableState state = VariableState.UNDEFINED;
+	private final ModifiableExpression<VariableState> state = new org.workcraft.dependencymanager.advanced.user.Variable<VariableState>(VariableState.UNDEFINED);
 	
-	private String label = "";
+	private final ModifiableExpression<String> label = new org.workcraft.dependencymanager.advanced.user.Variable<String>("");
 
-	public void setState(VariableState state)
-	{
-		this.state = state;
-		sendNotification(new PropertyChangedEvent(this, "state"));
-	}
-
-	public VariableState getState()
+	public ModifiableExpression<VariableState> state()
 	{
 		return state;
 	}	
@@ -50,17 +46,17 @@ public class Variable extends MathNode implements Comparable<Variable>, BooleanV
 	@Override
 	public int compareTo(Variable o)
 	{		
-		return label.compareTo(o.label);
+		return getLabel().compareTo(o.getLabel());
 	}
 
-	public void setLabel(String label)
-	{
-		this.label = label;
-	}
-
-	public String getLabel()
+	public ModifiableExpression<String> label()
 	{
 		return label;
+	}
+	
+	@Override
+	public String getLabel() {
+		return eval(label);
 	}
 
 	@Override

@@ -32,7 +32,11 @@ import java.awt.geom.Rectangle2D;
 
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
@@ -47,33 +51,55 @@ public class VisualVertex extends VisualComponent {
 		super(vertex);
 	}
 
-	public void draw(DrawRequest r) {
+	@Override
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return Expressions.constant(new GraphicalContent(){
 
-		Shape shape = new Ellipse2D.Double(
-				-size/2+strokeWidth/2,
-				-size/2+strokeWidth/2,
-				size-strokeWidth,
-				size-strokeWidth);
-		
-		Graphics2D g = r.getGraphics();
+			@Override
+			public void draw(DrawRequest r) {
 
-		g.setStroke(new BasicStroke(strokeWidth));
+				Shape shape = new Ellipse2D.Double(
+						-size/2+strokeWidth/2,
+						-size/2+strokeWidth/2,
+						size-strokeWidth,
+						size-strokeWidth);
+				
+				Graphics2D g = r.getGraphics();
 
-		g.setColor(Color.WHITE);
-		g.fill(shape);
-		g.setColor(Color.BLACK);
-		g.draw(shape);
+				g.setStroke(new BasicStroke(strokeWidth));
+
+				g.setColor(Color.WHITE);
+				g.fill(shape);
+				g.setColor(Color.BLACK);
+				g.draw(shape);
+			}
+		});
 	}
 
-	public Rectangle2D getBoundingBoxInLocalSpace() {
-		double size = CommonVisualSettings.getSize();
-		return new Rectangle2D.Double(-size/2, -size/2, size, size);	
-		}
+	@Override
+	public Expression<? extends Touchable> localSpaceTouchable() {
+		return Expressions.constant(new Touchable(){
 
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
-		double size = CommonVisualSettings.getSize();
-		
-		return pointInLocalSpace.distanceSq(0, 0) < size*size/4;
+			@Override
+			public boolean hitTest(Point2D point) {
+				double size = CommonVisualSettings.getSize();
+				
+				return point.distanceSq(0, 0) < size*size/4;
+			}
+
+			@Override
+			public Rectangle2D getBoundingBox() {
+				double size = CommonVisualSettings.getSize();
+				return new Rectangle2D.Double(-size/2, -size/2, size, size);	
+			}
+
+			@Override
+			public Point2D getCenter() {
+				Rectangle2D bb = getBoundingBox();
+				return new Point2D.Double(bb.getCenterX(), bb.getCenterY());
+			}
+			
+		});
 	}
 
 }

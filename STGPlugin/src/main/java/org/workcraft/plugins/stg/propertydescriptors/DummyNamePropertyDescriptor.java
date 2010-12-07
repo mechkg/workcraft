@@ -7,6 +7,8 @@ import org.workcraft.gui.propertyeditor.PropertyDescriptor;
 import org.workcraft.plugins.stg.DummyTransition;
 import org.workcraft.plugins.stg.STG;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class DummyNamePropertyDescriptor implements PropertyDescriptor {
 	private final STG stg;
 	private final DummyTransition node;
@@ -33,7 +35,7 @@ public class DummyNamePropertyDescriptor implements PropertyDescriptor {
 
 	@Override
 	public Object getValue() throws InvocationTargetException {
-		return node.getName();
+		return eval(node.name());
 	}
 
 	@Override

@@ -25,7 +25,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
-import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -33,12 +32,16 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.BoundingBoxHelper;
-import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.connections.ConnectionGraphic;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
+import org.workcraft.dom.visual.connections.ParametricCurve;
 import org.workcraft.dom.visual.connections.VisualConnection;
-import org.workcraft.gui.Coloriser;
-import org.workcraft.observation.PropertyChangedEvent;
+import org.workcraft.dom.visual.connections.VisualConnectionProperties;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer;
@@ -47,12 +50,14 @@ import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
+import org.workcraft.plugins.stg.Label;
+import org.workcraft.util.Func;
 import org.workcraft.util.Geometry;
 
 public class VisualArc extends VisualConnection
 {
 	private static Font labelFont;
-	private Rectangle2D labelBB = null; 
+	private final FormulaLabel label;
 	
 	Arc mathConnection;
 	
@@ -68,132 +73,175 @@ public class VisualArc extends VisualConnection
 		}
 	}
 	
+	FormulaLabel makeFormulaLabel() {
+		final Expression<FormulaRenderingResult> renderedLabel = new ExpressionBase<FormulaRenderingResult>(){
+			@Override
+			protected FormulaRenderingResult evaluate(EvaluationContext context) {
+				BooleanFormula condition = context.resolve(condition());
+				if (condition == One.instance()) return null;
+				
+				return FormulaToGraphics.render(condition, Label.podgonFontRenderContext(), labelFont);
+			}
+		};
+
+		return new FormulaLabel(renderedLabel, new ExpressionBase<Func<Rectangle2D, AffineTransform>>(){
+			@Override
+			protected Func<Rectangle2D, AffineTransform> evaluate(final EvaluationContext context) {
+				return new Func<Rectangle2D, AffineTransform>(){
+
+					@Override
+					public AffineTransform eval(Rectangle2D labelBB) {
+						ParametricCurve graphic = context.resolve(getGraphic().curve());
+						
+						Point2D p = graphic.getPointOnCurve(0.5);
+						Point2D d = graphic.getDerivativeAt(0.5);
+						Point2D dd = graphic.getSecondDerivativeAt(0.5);
+						
+						if (d.getX() < 0)
+						{
+							d = Geometry.multiply(d, -1);
+							//dd = Geometry.multiply(dd, -1);
+						}
+						Point2D labelPosition = new Point2D.Double(labelBB.getCenterX(), labelBB.getMaxY());
+						if (Geometry.crossProduct(d, dd) < 0) labelPosition.setLocation(labelPosition.getX(), labelBB.getMinY()); 
+
+						AffineTransform transform = AffineTransform.getTranslateInstance(p.getX() - labelPosition.getX(), p.getY() - labelPosition.getY()); 
+						transform.concatenate(AffineTransform.getRotateInstance(d.getX(), d.getY(), labelPosition.getX(), labelPosition.getY()));
+						
+						return transform;
+					}
+					
+				};
+			}
+			
+		});
+	}
+	
 	public VisualArc(Arc mathConnection)
 	{
 		super();
 		this.mathConnection = mathConnection;
+		label = makeFormulaLabel();
 	}
 	
 	public VisualArc(Arc mathConnection, VisualVertex first, VisualVertex second)
 	{
 		super(mathConnection, first, second);
 		this.mathConnection = mathConnection;
+		label = makeFormulaLabel();
 	}
 
-	public BooleanFormula getCondition()
+	public ModifiableExpression<BooleanFormula> condition()
 	{
-		return mathConnection.getCondition();
+		return mathConnection.condition();
 	}
 	
 	@Override
-	public Stroke getStroke()
-	{
-		BooleanFormula value = evaluate();
-		
-		if (value == Zero.instance()) 
-			return new BasicStroke((float) super.getLineWidth(), BasicStroke.CAP_BUTT,
-		        BasicStroke.JOIN_MITER, 1.0f, new float[] {0.18f, 0.18f}, 0.00f);
-		
-		return super.getStroke();
-	}
-	
-	@Override
-	public Color getDrawColor()
-	{
-		BooleanFormula value = evaluate();
-		
-		if (value == Zero.instance() || value == One.instance()) return super.getDrawColor();
-		
-		return Color.LIGHT_GRAY;
-	}
+	public ExpressionBase<VisualConnectionProperties> properties() {
+		return new ExpressionBase<VisualConnectionProperties>() {
 
-	private BooleanFormula evaluate()
-	{
-		BooleanFormula condition = getCondition();
-		
-		condition = BooleanOperations.and(condition, ((VisualVertex) getFirst()).evaluate());
-		condition = BooleanOperations.and(condition, ((VisualVertex) getSecond()).evaluate());
-		
-		return condition.accept(
-				new BooleanReplacer(new HashMap<BooleanVariable, BooleanFormula>())
-				{
+			@Override
+			protected VisualConnectionProperties evaluate(final EvaluationContext context) {
+				final VisualConnectionProperties superProperties = context.resolve(VisualArc.super.properties());
+
+				return new VisualConnectionProperties.Inheriting(superProperties) {
+
 					@Override
-					public BooleanFormula visit(BooleanVariable node) {
-						switch(((Variable)node).getState())
-						{
-						case TRUE:
-							return One.instance();
-						case FALSE:
-							return Zero.instance();
-						default:
-							return node;
-						}
+					public Color getDrawColor() {
+						BooleanFormula value = context.resolve(value());
+						
+						if (value == Zero.instance() || value == One.instance()) return superProperties.getDrawColor();
+						
+						return Color.LIGHT_GRAY;
 					}
-				}
-			);
+
+					@Override
+					public Stroke getStroke() {
+						BooleanFormula value = context.resolve(value());
+						
+						if (value == Zero.instance()) 
+							return new BasicStroke((float) VisualArc.super.getLineWidth(), BasicStroke.CAP_BUTT,
+						        BasicStroke.JOIN_MITER, 1.0f, new float[] {0.18f, 0.18f}, 0.00f);
+						
+						return superProperties.getStroke();
+					}
+				};
+			}
+		};
 	}
 
-	public void setCondition(BooleanFormula condition)
+	private Expression<BooleanFormula> value()
 	{
-		mathConnection.setCondition(condition);
-		sendNotification(new PropertyChangedEvent(this, "condition"));		
+		return new ExpressionBase<BooleanFormula>() {
+			@Override
+			protected BooleanFormula evaluate(final EvaluationContext context) {
+				BooleanFormula condition = context.resolve(condition());
+				
+				condition = BooleanOperations.and(condition, context.resolve(((VisualVertex) getFirst()).value()));
+				condition = BooleanOperations.and(condition, context.resolve(((VisualVertex) getSecond()).value()));
+				
+				return condition.accept(
+						new BooleanReplacer(new HashMap<BooleanVariable, BooleanFormula>())
+						{
+							@Override
+							public BooleanFormula visit(BooleanVariable node) {
+								switch(context.resolve(((Variable)node).state()))
+								{
+								case TRUE:
+									return One.instance();
+								case FALSE:
+									return Zero.instance();
+								default:
+									return node;
+								}
+							}
+						}
+					);
+			}
+		};
 	}
 	
 	@Override
-	public void draw(DrawRequest r)
-	{
-		labelBB = null;
-		
-		if (getCondition() == One.instance()) return;
-		
-		Graphics2D g = r.getGraphics();
-		
-		FormulaRenderingResult result = FormulaToGraphics.render(getCondition(), g.getFontRenderContext(), labelFont);
-		
-		labelBB = result.boundingBox;
-		
-		ConnectionGraphic graphic = getGraphic();
-		
-		Point2D p = graphic.getPointOnCurve(0.5);
-		Point2D d = graphic.getDerivativeAt(0.5);
-		Point2D dd = graphic.getSecondDerivativeAt(0.5);
-		
-		if (d.getX() < 0)
-		{
-			d = Geometry.multiply(d, -1);
-			//dd = Geometry.multiply(dd, -1);
-		}
-		
-		Point2D labelPosition = new Point2D.Double(labelBB.getCenterX(), labelBB.getMaxY());
-		if (Geometry.crossProduct(d, dd) < 0) labelPosition.setLocation(labelPosition.getX(), labelBB.getMinY()); 
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return label.graphicalContent;
+	}
+	
+	@Override
+	public Expression<? extends Touchable> shape() {
+		return new ExpressionBase<Touchable>() {
 
-		AffineTransform oldTransform = g.getTransform();
-		AffineTransform transform = AffineTransform.getTranslateInstance(p.getX() - labelPosition.getX(), p.getY() - labelPosition.getY()); 
-		transform.concatenate(AffineTransform.getRotateInstance(d.getX(), d.getY(), labelPosition.getX(), labelPosition.getY()));
-		
-		g.transform(transform);		
-		result.draw(g, Coloriser.colorise(Color.BLACK, r.getDecoration().getColorisation()));
-		g.setTransform(oldTransform);
-		
-		labelBB = BoundingBoxHelper.transform(labelBB, transform);
+			@Override
+			protected Touchable evaluate(final EvaluationContext context) {
+				
+				final Touchable superShape = context.resolve(VisualArc.super.shape());
+				
+				return new Touchable() {
+					
+					@Override
+					public boolean hitTest(Point2D point) {
+						Rectangle2D lbb = context.resolve(label.boundingBox);
+						if (lbb!=null && lbb.contains(point)) return true;
+						
+						return superShape.hitTest(point);
+					}
+					
+					@Override
+					public Point2D getCenter() {
+						return null;
+					}
+					
+					@Override
+					public Rectangle2D getBoundingBox() {
+						return BoundingBoxHelper.union(superShape.getBoundingBox(), context.resolve(label.boundingBox));
+					}
+				};
+			}
+			
+		};
 	}
-	
-	@Override
-	public Rectangle2D getBoundingBox()
+
+	public Expression<Rectangle2D> getLabelBoundingBox()
 	{
-		return BoundingBoxHelper.union(super.getBoundingBox(), labelBB);
-	}
-	
-	public Rectangle2D getLabelBoundingBox()
-	{
-		return labelBB;
-	}
-	
-	@Override
-	public boolean hitTest(Point2D pointInParentSpace)
-	{
-		if (labelBB != null && labelBB.contains(pointInParentSpace)) return true;
-		
-		return super.hitTest(pointInParentSpace);
+		return label.boundingBox;
 	}
 }

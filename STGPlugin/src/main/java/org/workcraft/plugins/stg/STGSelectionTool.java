@@ -25,6 +25,8 @@ import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.SelectionTool;
 import org.workcraft.plugins.petri.VisualPlace;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class STGSelectionTool extends SelectionTool
 {
 	private boolean cancelEdit = false;
@@ -33,7 +35,7 @@ public class STGSelectionTool extends SelectionTool
 		final Viewport viewport = editor.getViewport();
 		final STG model = (STG)editor.getModel().getMathModel();
 
-		Rectangle2D bb = t.getBoundingBox();
+		Rectangle2D bb = eval(t.shape()).getBoundingBox();
 		Rectangle r = viewport.userToScreen(bb);
 
 
@@ -115,10 +117,10 @@ public class STGSelectionTool extends SelectionTool
 				if(node instanceof VisualPlace)
 				{
 					VisualPlace place = (VisualPlace) node;
-					if (place.getTokens()==1)
-						place.setTokens(0);
-					else if (place.getTokens()==0)
-						place.setTokens(1);
+					if (eval(place.tokens())==1)
+						place.tokens().setValue(0);
+					else if (eval(place.tokens())==0)
+						place.tokens().setValue(1);
 				} else if (node instanceof VisualImplicitPlaceArc) {
 					STGPlace place = ((VisualImplicitPlaceArc) node).getImplicitPlace();
 					if (place.getTokens()==1)

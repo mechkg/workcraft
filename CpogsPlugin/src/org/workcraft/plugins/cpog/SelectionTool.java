@@ -7,7 +7,8 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
-import org.workcraft.observation.PropertyChangedEvent;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class SelectionTool extends org.workcraft.gui.graph.tools.SelectionTool
 {
@@ -35,9 +36,8 @@ public class SelectionTool extends org.workcraft.gui.graph.tools.SelectionTool
 					if (var == null) currentLevelDown(e.getModel());
 					else
 					{
-						Encoding encoding = scenario.getEncoding();
-						encoding.toggleState(var);
-						scenario.sendNotification(new PropertyChangedEvent(scenario, "encoding"));
+						Encoding encoding = eval(scenario.encoding());
+						scenario.encoding().setValue(encoding.toggleState(var));
 					}
 				}
 			}

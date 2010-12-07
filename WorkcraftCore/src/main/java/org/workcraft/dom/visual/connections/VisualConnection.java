@@ -33,6 +33,7 @@ import java.util.Set;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dom.Connection;
@@ -42,6 +43,8 @@ import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.Drawable;
+import org.workcraft.dom.visual.DrawableNew;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualNode;
@@ -49,7 +52,7 @@ import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
 public class VisualConnection extends VisualNode implements
-		Node, Drawable, Connection,
+		Node, DrawableNew, Connection,
 		DependentNode {
 	
 	private final class Properties extends ExpressionBase<VisualConnectionProperties> {
@@ -298,11 +301,6 @@ public class VisualConnection extends VisualNode implements
 		return GlobalCache.eval(graphic.curve()).getNearestPointOnCurve(pt);
 	}
 	
-	@Override
-	public void draw(DrawRequest r) {
-		
-	}
-
 	public MathConnection getReferencedConnection() {
 		return refConnection;
 	}
@@ -348,5 +346,15 @@ public class VisualConnection extends VisualNode implements
 	
 	public ExpressionBase<VisualConnectionProperties> properties() {
 		return new Properties();
+	}
+
+	@Override
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return Expressions.constant(new GraphicalContent() {
+			@Override
+			public void draw(DrawRequest request) {
+				
+			}
+		});
 	}
 }

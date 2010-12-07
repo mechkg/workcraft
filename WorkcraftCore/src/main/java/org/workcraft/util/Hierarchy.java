@@ -21,6 +21,8 @@
 
 package org.workcraft.util;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,13 +30,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.NodeHelper;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class Hierarchy {
 	public static <T> Func<Node, Boolean> getTypeFilter(
@@ -276,5 +276,15 @@ public class Hierarchy {
 			result.addAll(getDescendants(n));
 		}
 		return result;
+	}
+
+	public static <T> Expression<Collection<? extends T>> childrenOfType(final Node node, final Class<T> type) {
+		return new ExpressionBase<Collection<? extends T>>(){
+
+			@Override
+			protected Collection<? extends T> evaluate(EvaluationContext context) {
+				return NodeHelper.filterByType(context.resolve(node.children()), type);
+			}
+		};
 	}	 
 }

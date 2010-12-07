@@ -15,12 +15,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.observation.PropertyChangedEvent;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 import org.workcraft.util.Hierarchy;
@@ -40,14 +45,14 @@ public class VisualScenario extends VisualGroup
 	private static final float minVariableWidth = 0.7f;
 	private static final float minVariableHeight = 0.85f;
 	
-	private Rectangle2D contentsBB = null;
-	private Rectangle2D labelBB = null;
-	private Rectangle2D encodingBB = null; 
+	private final ModifiableExpression<Rectangle2D> contentsBB = new org.workcraft.dependencymanager.advanced.user.Variable<Rectangle2D>(null);
+	private final ModifiableExpression<Rectangle2D> labelBB = new org.workcraft.dependencymanager.advanced.user.Variable<Rectangle2D>(null);
+	private final ModifiableExpression<Rectangle2D> encodingBB = new org.workcraft.dependencymanager.advanced.user.Variable<Rectangle2D>(null);
 	
 	private Map<Rectangle2D, Variable> variableBBs = new HashMap<Rectangle2D, Variable>();
 	
-	private String label = "";
-	private Encoding encoding = new Encoding();
+	private ModifiableExpression<String> label = new org.workcraft.dependencymanager.advanced.user.Variable<String>("");
+	private ModifiableExpression<Encoding> encoding = new org.workcraft.dependencymanager.advanced.user.Variable<Encoding>(new Encoding());
 	
 	private static Font labelFont;
 	
@@ -71,170 +76,206 @@ public class VisualScenario extends VisualGroup
 	}
 
 	@Override
-	public Rectangle2D getBoundingBoxInLocalSpace()
-	{
-		Rectangle2D bb = getContentsBoundingBox();
-		
-		// Increase bb by the label height (to include the latter into the bb)
-		if(labelBB != null)
-			bb.add(bb.getMinX(), bb.getMinY() - labelBB.getHeight());
-		
-		// Increase bb by the encoding height (to include the latter into the bb)
-		if(encodingBB != null)
-			bb.add(bb.getMinX(), bb.getMaxY() + encodingBB.getHeight());
-		
-		return bb;
+	public Expression<Touchable> localSpaceTouchable() {
+		return new ExpressionBase<Touchable>() {
+
+			@Override
+			protected Touchable evaluate(final EvaluationContext context) {
+				return new Touchable() {
+					
+					@Override
+					public boolean hitTest(Point2D p) {
+						return 
+						getContentsBoundingBox(context).contains(p) ||
+						getLabelBB(context).contains(p) ||
+						context.resolve(encodingBB).contains(p);
+					}
+					
+					@Override
+					public Point2D getCenter() {
+						return new Point2D.Double(getBoundingBox().getCenterX(), getBoundingBox().getCenterY());
+					}
+					
+					@Override
+					public Rectangle2D getBoundingBox() {
+						Rectangle2D bb = getContentsBoundingBox(context);
+						
+						// Increase bb by the label height (to include the latter into the bb)
+						if(context.resolve(labelBB) != null)
+							bb.add(bb.getMinX(), bb.getMinY() - context.resolve(labelBB).getHeight());
+						
+						// Increase bb by the encoding height (to include the latter into the bb)
+						if(context.resolve(encodingBB) != null)
+							bb.add(bb.getMinX(), bb.getMaxY() + context.resolve(encodingBB).getHeight());
+						
+						return bb;
+					}
+				};
+			}
+		};
 	}
 
-	private Rectangle2D getContentsBoundingBox() {
+	private Rectangle2D getContentsBoundingBox(EvaluationContext context) {
 		Rectangle2D bb = null;
 		
-		for(VisualVertex v : Hierarchy.getChildrenOfType(this, VisualVertex.class))
-			bb = BoundingBoxHelper.union(bb, v.getBoundingBox());
+		for(VisualVertex v : context.resolve(Hierarchy.childrenOfType(this, VisualVertex.class)))
+			bb = BoundingBoxHelper.union(bb, context.resolve(v.shape()).getBoundingBox());
 
-		for(VisualVariable v : Hierarchy.getChildrenOfType(this, VisualVariable.class))
-			bb = BoundingBoxHelper.union(bb, v.getBoundingBox());
+		for(VisualVariable v : context.resolve(Hierarchy.childrenOfType(this, VisualVariable.class)))
+			bb = BoundingBoxHelper.union(bb, context.resolve(v.shape()).getBoundingBox());
 
-		for(VisualArc a : Hierarchy.getChildrenOfType(this, VisualArc.class))
-			bb = BoundingBoxHelper.union(bb, a.getLabelBoundingBox());
+		for(VisualArc a : context.resolve(Hierarchy.childrenOfType(this, VisualArc.class)))
+			bb = BoundingBoxHelper.union(bb, context.resolve(a.getLabelBoundingBox()));
 
-		if (bb == null) bb = contentsBB;
+		if (bb == null) bb = context.resolve(contentsBB);
 		else
 		bb.setRect(bb.getMinX() - frameDepth, bb.getMinY() - frameDepth, 
 				   bb.getWidth() + 2.0 * frameDepth, bb.getHeight() + 2.0 * frameDepth);
 		
 		if (bb == null) bb = new Rectangle2D.Double(0, 0, 1, 1);
 
-		contentsBB = (Rectangle2D) bb.clone();
+		contentsBB.setValue( (Rectangle2D) bb.clone());
 		
 		return bb;
 	}
 	
 	@Override
-	public void draw(DrawRequest r)
-	{
-		Graphics2D g = r.getGraphics();
-		Color colorisation = r.getDecoration().getColorisation();
-		
-		Rectangle2D bb = getContentsBoundingBox();
+	public ExpressionBase<GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>() {
 
-		if (bb != null && getParent() != null)
-		{
-			g.setColor(Coloriser.colorise(Color.WHITE, colorisation));
-			g.fill(bb);
-			g.setColor(Coloriser.colorise(Color.BLACK, colorisation));
-			g.setStroke(new BasicStroke(strokeWidth));
-			g.draw(bb);
-			
-			// draw label
-			
-			FormulaRenderingResult result = FormulaToGraphics.print(label, labelFont, g.getFontRenderContext());
-			
-			labelBB = BoundingBoxHelper.expand(result.boundingBox, 0.4, 0.2);
-				
-			Point2D labelPosition = new Point2D.Double(bb.getMaxX() - labelBB.getMaxX(), bb.getMinY() - labelBB.getMaxY());
-
-			g.setColor(Coloriser.colorise(Color.WHITE, colorisation));
-			g.fill(getLabelBB());
-			g.setStroke(new BasicStroke(strokeWidth));
-			g.setColor(Coloriser.colorise(Color.BLACK, colorisation));
-			g.draw(getLabelBB());			
-		
-			AffineTransform transform = g.getTransform();
-			g.translate(labelPosition.getX(), labelPosition.getY());
-					
-			result.draw(g, Coloriser.colorise(Color.BLACK, colorisation));
-			
-			g.setTransform(transform);
-
-			// draw encoding
-			
-			encodingBB = null;
-			
-			Set<Variable> sortedVariables = new TreeSet<Variable>(new ReverseComparator());
-			sortedVariables.addAll(encoding.getStates().keySet());
-			
-			double right = bb.getMaxX();
-			double top = bb.getMaxY();
-			
-			variableBBs.clear();			
-			
-			boolean perfectMatch = true;
-			
-			for(Variable var : sortedVariables) if (!var.getState().matches(encoding.getState(var))) perfectMatch = false;
-			
-			for(Variable var : sortedVariables)
-			{
-				String text = var.getLabel();
-				
-				result = FormulaToGraphics.print(text, labelFont, g.getFontRenderContext());
-								
-				bb = result.boundingBox;
-				bb = BoundingBoxHelper.expand(bb, 0.4, 0.2);
-				
-				if (bb.getWidth() < minVariableWidth) bb = BoundingBoxHelper.expand(bb, minVariableWidth - bb.getWidth(), 0);
-				if (bb.getHeight() < minVariableHeight) bb = BoundingBoxHelper.expand(bb, 0, minVariableHeight - bb.getHeight());
-				
-				labelPosition = new Point2D.Double(right - bb.getMaxX(), top - bb.getMinY());
-				
-				double left = right - bb.getWidth();
-				double bottom = top + bb.getHeight();
-				
-				Rectangle2D tmpBB = new Rectangle2D.Double(left, top, bb.getWidth(), bb.getHeight()); 
-				
-				encodingBB = BoundingBoxHelper.union(encodingBB, tmpBB);
-				
-				g.setColor(Coloriser.colorise(Color.WHITE, colorisation));
-				g.fill(tmpBB);
-				g.setStroke(new BasicStroke(strokeWidth));
-				g.setColor(Coloriser.colorise(Color.BLACK, colorisation));
-				g.draw(tmpBB);
-				
-				transform = g.getTransform();
-				g.translate(labelPosition.getX(), labelPosition.getY());
+			@Override
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent(){
+					@Override
+					public void draw(DrawRequest r) {
+						Graphics2D g = r.getGraphics();
+						Color colorisation = r.getDecoration().getColorisation();
 						
-				result.draw(g, Coloriser.colorise(Color.BLACK, colorisation));
-				
-				g.setTransform(transform);
-				
-				variableBBs.put(tmpBB, var);
-				
-				text = encoding.getState(var).toString();
-				if (text.equals("?")) text = "\u2013";
-				
-				result = FormulaToGraphics.print(text, labelFont, g.getFontRenderContext());
-				
-				bb = result.boundingBox;
-				bb = BoundingBoxHelper.expand(bb, tmpBB.getWidth() - bb.getWidth(), tmpBB.getHeight() - bb.getHeight());				
-				
-				labelPosition = new Point2D.Double(right - bb.getMaxX(), bottom - bb.getMinY());
-
-				tmpBB = new Rectangle2D.Double(left, bottom, bb.getWidth(), bb.getHeight()); 
-				
-				encodingBB = BoundingBoxHelper.union(encodingBB, tmpBB);
-				
-				g.setColor(Coloriser.colorise(Color.WHITE, colorisation));
-				g.fill(tmpBB);
-				g.setStroke(new BasicStroke(strokeWidth));
-				g.setColor(Coloriser.colorise(Color.BLACK, colorisation));
-				g.draw(tmpBB);
-				
-				transform = g.getTransform();
-				g.translate(labelPosition.getX(), labelPosition.getY());
-				
-				Color color = Color.BLACK;
-				if (!var.getState().matches(encoding.getState(var))) color = Color.RED;
-				if (perfectMatch) color = Color.GREEN;
-
-				result.draw(g, Coloriser.colorise(color, colorisation));
-				
-				g.setTransform(transform);
-				
-				variableBBs.put(tmpBB, var);
-				
-				right = left;
-			}			
-		}
+						Rectangle2D bb = getContentsBoundingBox(context);
+					
+						if (bb != null && context.resolve(parent()) != null)
+						{
+							g.setColor(Coloriser.colorise(Color.WHITE, colorisation));
+							g.fill(bb);
+							g.setColor(Coloriser.colorise(Color.BLACK, colorisation));
+							g.setStroke(new BasicStroke(strokeWidth));
+							g.draw(bb);
+							
+							// draw label
+							
+							FormulaRenderingResult result = FormulaToGraphics.print(context.resolve(label), labelFont, g.getFontRenderContext());
+							
+							Rectangle2D lbb = BoundingBoxHelper.expand(result.boundingBox, 0.4, 0.2);
+							labelBB.setValue(lbb);
+								
+							Point2D labelPosition = new Point2D.Double(bb.getMaxX() - lbb.getMaxX(), bb.getMinY() - lbb.getMaxY());
+					
+							g.setColor(Coloriser.colorise(Color.WHITE, colorisation));
+							g.fill(getLabelBB(context));
+							g.setStroke(new BasicStroke(strokeWidth));
+							g.setColor(Coloriser.colorise(Color.BLACK, colorisation));
+							g.draw(getLabelBB(context));			
+						
+							AffineTransform transform = g.getTransform();
+							g.translate(labelPosition.getX(), labelPosition.getY());
+									
+							result.draw(g, Coloriser.colorise(Color.BLACK, colorisation));
+							
+							g.setTransform(transform);
+					
+							// draw encoding
+							
+							Rectangle2D encBB = null;
+							
+							Set<Variable> sortedVariables = new TreeSet<Variable>(new ReverseComparator());
+							sortedVariables.addAll(context.resolve(encoding).getStates().keySet());
+							
+							double right = bb.getMaxX();
+							double top = bb.getMaxY();
+							
+							variableBBs.clear();			
+							
+							boolean perfectMatch = true;
+							
+							for(Variable var : sortedVariables) if (!context.resolve(var.state()).matches(context.resolve(encoding).getState(var))) perfectMatch = false;
+							
+							for(Variable var : sortedVariables)
+							{
+								String text = var.getLabel();
+								
+								result = FormulaToGraphics.print(text, labelFont, g.getFontRenderContext());
+												
+								bb = result.boundingBox;
+								bb = BoundingBoxHelper.expand(bb, 0.4, 0.2);
+								
+								if (bb.getWidth() < minVariableWidth) bb = BoundingBoxHelper.expand(bb, minVariableWidth - bb.getWidth(), 0);
+								if (bb.getHeight() < minVariableHeight) bb = BoundingBoxHelper.expand(bb, 0, minVariableHeight - bb.getHeight());
+								
+								labelPosition = new Point2D.Double(right - bb.getMaxX(), top - bb.getMinY());
+								
+								double left = right - bb.getWidth();
+								double bottom = top + bb.getHeight();
+								
+								Rectangle2D tmpBB = new Rectangle2D.Double(left, top, bb.getWidth(), bb.getHeight()); 
+								
+								encBB = BoundingBoxHelper.union(encBB, tmpBB);
+								
+								g.setColor(Coloriser.colorise(Color.WHITE, colorisation));
+								g.fill(tmpBB);
+								g.setStroke(new BasicStroke(strokeWidth));
+								g.setColor(Coloriser.colorise(Color.BLACK, colorisation));
+								g.draw(tmpBB);
+								
+								transform = g.getTransform();
+								g.translate(labelPosition.getX(), labelPosition.getY());
+										
+								result.draw(g, Coloriser.colorise(Color.BLACK, colorisation));
+								
+								g.setTransform(transform);
+								
+								variableBBs.put(tmpBB, var);
+								
+								text = context.resolve(encoding).getState(var).toString();
+								if (text.equals("?")) text = "\u2013";
+								
+								result = FormulaToGraphics.print(text, labelFont, g.getFontRenderContext());
+								
+								bb = result.boundingBox;
+								bb = BoundingBoxHelper.expand(bb, tmpBB.getWidth() - bb.getWidth(), tmpBB.getHeight() - bb.getHeight());				
+								
+								labelPosition = new Point2D.Double(right - bb.getMaxX(), bottom - bb.getMinY());
+					
+								tmpBB = new Rectangle2D.Double(left, bottom, bb.getWidth(), bb.getHeight()); 
+								
+								encBB = BoundingBoxHelper.union(encBB, tmpBB);
+								
+								g.setColor(Coloriser.colorise(Color.WHITE, colorisation));
+								g.fill(tmpBB);
+								g.setStroke(new BasicStroke(strokeWidth));
+								g.setColor(Coloriser.colorise(Color.BLACK, colorisation));
+								g.draw(tmpBB);
+								
+								transform = g.getTransform();
+								g.translate(labelPosition.getX(), labelPosition.getY());
+								
+								Color color = Color.BLACK;
+								if (!context.resolve(var.state()).matches(context.resolve(encoding).getState(var))) color = Color.RED;
+								if (perfectMatch) color = Color.GREEN;
+					
+								result.draw(g, Coloriser.colorise(color, colorisation));
+								
+								g.setTransform(transform);
+								
+								variableBBs.put(tmpBB, var);
+								
+								right = left;
+							}
+							encodingBB.setValue(encBB);
+						}
+					}					
+				};
+			}
+		};
 	}
 	
 	public Variable getVariableAt(Point2D p)
@@ -247,38 +288,18 @@ public class VisualScenario extends VisualGroup
 		return null;
 	}
 	
-	@Override
-	public boolean hitTestInLocalSpace(Point2D p)
-	{
-		return 
-			getContentsBoundingBox().contains(p) ||
-			getLabelBB().contains(p) ||
-			encodingBB.contains(p);
+	private Rectangle2D getLabelBB(EvaluationContext context) {
+		Rectangle2D bb = getContentsBoundingBox(context);
+		Rectangle2D lbb = context.resolve(labelBB);
+		return new Rectangle2D.Double(bb.getMaxX() - lbb.getWidth(), bb.getMinY() - lbb.getHeight(), lbb.getWidth(), lbb.getHeight());
 	}
 
-	private Rectangle2D getLabelBB() {
-		Rectangle2D bb = getContentsBoundingBox();
-		return new Rectangle2D.Double(bb.getMaxX() - labelBB.getWidth(), bb.getMinY() - labelBB.getHeight(), labelBB.getWidth(), labelBB.getHeight());
-	}
-
-	public void setLabel(String label)
-	{
-		this.label = label;
-		sendNotification(new PropertyChangedEvent(this, "label"));
-	}
-
-	public String getLabel()
+	public ModifiableExpression<String> label()
 	{
 		return label;
 	}
 
-	public void setEncoding(Encoding encoding)
-	{
-		this.encoding = encoding;
-		sendNotification(new PropertyChangedEvent(this, "encoding"));
-	}
-
-	public Encoding getEncoding()
+	public ModifiableExpression<Encoding> encoding()
 	{
 		return encoding;
 	}

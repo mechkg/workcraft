@@ -26,17 +26,18 @@ import java.awt.geom.Point2D;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.observation.StateEvent;
-import org.workcraft.observation.StateObserver;
-import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
@@ -80,16 +81,6 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 		this.refCon1 = refCon1;
 		this.refCon2 = refCon2;
 		this.implicitPlace = implicitPlace;
-		
-		addPlaceObserver(implicitPlace);
-	}
-
-	private void addPlaceObserver(Place implicitPlace) {
-		implicitPlace.addObserver( new StateObserver() {
-				public void notify(StateEvent e) {
-					observableStateImpl.sendNotification(e);
-				}
-			});
 	}
 
 	public VisualImplicitPlaceArc (VisualComponent first, VisualComponent second, MathConnection refCon1, MathConnection refCon2, STGPlace implicitPlace) {
@@ -98,35 +89,43 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 		this.refCon2 = refCon2;
 		this.implicitPlace = implicitPlace;
 		
-		addPlaceObserver(implicitPlace);
-
-		
 		addPropertyDeclarations();
 	}
 
-	public void draw(DrawRequest r) {
-		super.draw(r);
-		
-		int tokens = implicitPlace.getTokens();
-		
-		Point2D p = getPointOnConnection(0.5);
-		
-		r.getGraphics().translate(p.getX(), p.getY());		
-		VisualPlace.drawTokens(tokens, singleTokenSize, multipleTokenSeparation, tokenSpaceSize, 0, Coloriser.colorise(tokenColor, r.getDecoration().getColorisation()), r.getGraphics());
-	}
+	@Override
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>() {
 
+			@Override
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent() {
+
+					@Override
+					public void draw(DrawRequest r) {
+						
+						int tokens = implicitPlace.getTokens();
+						
+						Point2D p = getPointOnConnection(0.5);
+						
+						r.getGraphics().translate(p.getX(), p.getY());		
+						VisualPlace.drawTokens(tokens, singleTokenSize, multipleTokenSeparation, tokenSpaceSize, 0, Coloriser.colorise(tokenColor, r.getDecoration().getColorisation()), r.getGraphics());
+						
+						context.resolve(VisualImplicitPlaceArc.super.graphicalContent()).draw(r);
+					}
+					
+				};
+			}
+			
+		};
+	}
+	
 	public ModifiableExpression<Integer> tokens() {
 		return implicitPlace.tokens();
 	}
 
 	@NoAutoSerialisation
-	public int getCapacity() {
-		return implicitPlace.getCapacity();
-	}
-
-	@NoAutoSerialisation
-	public void setCapacity(int c) {
-		implicitPlace.setCapacity(c);
+	public ModifiableExpression<Integer> capacity() {
+		return implicitPlace.capacity();
 	}
 
 	@NoAutoSerialisation

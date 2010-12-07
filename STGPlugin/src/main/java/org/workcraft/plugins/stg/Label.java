@@ -17,6 +17,10 @@ import org.workcraft.dom.visual.GraphicalContent;
 
 public class Label {
 
+	public static FontRenderContext podgonFontRenderContext() {
+		return new FontRenderContext(AffineTransform.getScaleInstance(1000, 1000), true, true);
+	}
+	
 	public final Expression<GraphicalContent> graphics;
 	public final Expression<Rectangle2D> centeredBB;
 	
@@ -25,7 +29,7 @@ public class Label {
 		final Expression<GlyphVector> glyphVector = new ExpressionBase<GlyphVector>() {
 			@Override
 			protected GlyphVector evaluate(EvaluationContext context) {
-				return font.createGlyphVector(new FontRenderContext(AffineTransform.getScaleInstance(1000, 1000), true, true), context.resolve(text));
+				return font.createGlyphVector(podgonFontRenderContext(), context.resolve(text));
 			}
 		};
 		

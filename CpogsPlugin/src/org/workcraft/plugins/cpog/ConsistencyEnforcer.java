@@ -5,6 +5,8 @@ import java.util.List;
 import org.workcraft.dom.Node;
 import org.workcraft.observation.HierarchySupervisor;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class ConsistencyEnforcer extends HierarchySupervisor {
 
 	private final VisualCPOG visualCPOG;
@@ -43,7 +45,7 @@ public class ConsistencyEnforcer extends HierarchySupervisor {
 	{
 		for(VisualScenario group : visualCPOG.getGroups())
 		{
-			Encoding oldEncoding = group.getEncoding();
+			Encoding oldEncoding = eval(group.encoding());
 			Encoding newEncoding = new Encoding();
 		
 			for(VisualVariable var : visualCPOG.getVariables())
@@ -52,7 +54,7 @@ public class ConsistencyEnforcer extends HierarchySupervisor {
 				newEncoding.setState(mathVariable, oldEncoding.getState(mathVariable));
 			}
 		
-			group.setEncoding(newEncoding);
+			group.encoding().setValue(newEncoding);
 		}
 		
 	}

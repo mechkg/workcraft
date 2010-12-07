@@ -35,7 +35,13 @@ import java.util.HashMap;
 
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
@@ -52,7 +58,9 @@ public class VisualRhoClause extends VisualComponent
 {
 	private static float strokeWidth = 0.038f;
 
-	private Rectangle2D boudingBox = new Rectangle2D.Float(0, 0, 0, 0);
+	// Ideally should be done with a normal expression instead of variable. 
+	// This is a lazy approach to conversion to Expressions, which does not require big modifications to draw() method. 
+	private ModifiableExpression<Rectangle2D> boudingBox = new org.workcraft.dependencymanager.advanced.user.Variable<Rectangle2D>(new Rectangle2D.Float(0, 0, 0, 0));
 	
 	private static Font font;
 	
@@ -73,40 +81,53 @@ public class VisualRhoClause extends VisualComponent
 		super(rhoClause);
 	}
 	
-	public void draw(DrawRequest r)
-	{
-		Graphics2D g = r.getGraphics();
-		Color colorisation = r.getDecoration().getColorisation();
-		
-		FormulaRenderingResult result = FormulaToGraphics.render(getFormula(), g.getFontRenderContext(), font);
-		
-		Rectangle2D textBB = result.boundingBox;
-			
-		float textX = (float)-textBB.getCenterX();
-		float textY = (float)-textBB.getCenterY();
-			
-		float width = (float)textBB.getWidth() + 0.4f;
-		float height = (float)textBB.getHeight() + 0.2f;		
-		
-		boudingBox = new Rectangle2D.Float(-width / 2, -height / 2, width, height);
+	@Override
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>(){
 
-		g.setStroke(new BasicStroke(strokeWidth));
+			@Override
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent(){
+					public void draw(DrawRequest r)
+					{
+						Graphics2D g = r.getGraphics();
+						Color colorisation = r.getDecoration().getColorisation();
+						
+						FormulaRenderingResult result = FormulaToGraphics.render(context.resolve(formula()), g.getFontRenderContext(), font);
+						
+						Rectangle2D textBB = result.boundingBox;
+							
+						float textX = (float)-textBB.getCenterX();
+						float textY = (float)-textBB.getCenterY();
+							
+						float width = (float)textBB.getWidth() + 0.4f;
+						float height = (float)textBB.getHeight() + 0.2f;		
+						
+						Rectangle2D.Float bb = new Rectangle2D.Float(-width / 2, -height / 2, width, height);
+						boudingBox.setValue(bb);
+						// careful not to use boundingBox afterwards, or infinite re-evaluation would happen
 
-		g.setColor(Coloriser.colorise(getFillColor(), colorisation));
-		g.fill(boudingBox);
-		g.setColor(Coloriser.colorise(getForegroundColor(), colorisation));
-		g.draw(boudingBox);
-		
-		AffineTransform transform = g.getTransform();
-		g.translate(textX, textY);
-		
-		result.draw(g, Coloriser.colorise(getColor(), colorisation));
-				
-		g.setTransform(transform);		
+						g.setStroke(new BasicStroke(strokeWidth));
+
+						g.setColor(Coloriser.colorise(getFillColor(), colorisation));
+						g.fill(bb);
+						g.setColor(Coloriser.colorise(getForegroundColor(), colorisation));
+						g.draw(bb);
+						
+						AffineTransform transform = g.getTransform();
+						g.translate(textX, textY);
+						
+						result.draw(g, Coloriser.colorise(getColor(context), colorisation));
+								
+						g.setTransform(transform);		
+					}
+				};
+			}
+		};
 	}
-
-	private Color getColor() {
-		BooleanFormula value = evaluate(); 
+	
+	private Color getColor(EvaluationContext context) {
+		BooleanFormula value = context.resolve(value());
 		if(value == One.instance())
 			return new Color(0x00cc00);
 		else
@@ -116,34 +137,30 @@ public class VisualRhoClause extends VisualComponent
 				return getForegroundColor();
 	}
 
-	private BooleanFormula evaluate() {
-		return getFormula().accept(
-			new BooleanReplacer(new HashMap<BooleanVariable, BooleanFormula>())
-			{
-				@Override
-				public BooleanFormula visit(BooleanVariable node) {
-					switch(((Variable)node).getState())
-					{
-					case TRUE:
-						return One.instance();
-					case FALSE:
-						return Zero.instance();
-					default:
-						return node;
-					}
-				}
+	private Expression<BooleanFormula> value() {
+		return new ExpressionBase<BooleanFormula>() {
+
+			@Override
+			protected BooleanFormula evaluate(final EvaluationContext context) {
+				return context.resolve(formula()).accept(
+						new BooleanReplacer(new HashMap<BooleanVariable, BooleanFormula>())
+						{
+							@Override
+							public BooleanFormula visit(BooleanVariable node) {
+								switch(context.resolve(((Variable)node).state()))
+								{
+								case TRUE:
+									return One.instance();
+								case FALSE:
+									return Zero.instance();
+								default:
+									return node;
+								}
+							}
+						}
+					);
 			}
-		);
-	}
-
-	public Rectangle2D getBoundingBoxInLocalSpace()
-	{
-		return boudingBox;
-	}
-
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace)
-	{
-		return getBoundingBoxInLocalSpace().contains(pointInLocalSpace);
+		};
 	}
 
 	public RhoClause getMathRhoClause()
@@ -151,13 +168,36 @@ public class VisualRhoClause extends VisualComponent
 		return (RhoClause)getReferencedComponent();
 	}
 	
-	public BooleanFormula getFormula()
+	public ModifiableExpression<BooleanFormula> formula()
 	{
-		return getMathRhoClause().getFormula();
-	}	
+		return getMathRhoClause().formula();
+	}
 
-	public void setFormula(BooleanFormula formula)
-	{
-		getMathRhoClause().setFormula(formula);
+	@Override
+	public Expression<? extends Touchable> localSpaceTouchable() {
+		return new ExpressionBase<Touchable>() {
+
+			@Override
+			protected Touchable evaluate(final EvaluationContext context) {
+				return new Touchable(){
+
+					@Override
+					public boolean hitTest(Point2D point) {
+						return getBoundingBox().contains(point);
+					}
+
+					@Override
+					public Rectangle2D getBoundingBox() {
+						return context.resolve(boudingBox);
+					}
+
+					@Override
+					public Point2D getCenter() {
+						return new Point2D.Double(getBoundingBox().getCenterX(), getBoundingBox().getCenterY());
+					}
+					
+				};
+			}
+		};
 	}	
 }

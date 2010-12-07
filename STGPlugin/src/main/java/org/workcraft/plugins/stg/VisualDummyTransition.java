@@ -25,55 +25,96 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.observation.StateEvent;
-import org.workcraft.observation.StateObserver;
 import org.workcraft.plugins.petri.VisualTransition;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
 @Hotkey(KeyEvent.VK_D)
 @DisplayName("Dummy Transition")
 @SVGIcon("images/icons/svg/transition.svg")
-public class VisualDummyTransition extends VisualTransition implements StateObserver {
+public class VisualDummyTransition extends VisualTransition {
 	private static Font font = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.75f);
 	
-	private Label label = new Label(font, "");
+	private final Label label;
 
 	public VisualDummyTransition(DummyTransition transition) {
 		super(transition);
 		
-		transition.addObserver(this);
-		
-		updateText();
+		label = new Label(font, transition.name());
 	}
 
+	
 	@Override
-	public void draw(DrawRequest r) {
-		drawLabelInLocalSpace(r);
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>() {
 
-		Graphics2D g = r.getGraphics();
-		
-		Color background = r.getDecoration().getBackground();
-		if(background!=null)
-		{
-			g.setColor(background);
-			g.fill(getBoundingBoxInLocalSpace());
-		}
+			@Override
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				final GraphicalContent labelGraphics = context.resolve(label.graphics);
+				return new GraphicalContent() {
 
-		g.setColor(Coloriser.colorise(getColor(), r.getDecoration().getColorisation()));
-		
-		label.draw(g);
+					@Override
+					public void draw(DrawRequest r) {
+						drawLabelInLocalSpace(r);
+
+						Graphics2D g = r.getGraphics();
+						
+						Color background = r.getDecoration().getBackground();
+						if(background!=null)
+						{
+							g.setColor(background);
+							g.fill(context.resolve(shape()).getBoundingBox());
+						}
+
+						g.setColor(Coloriser.colorise(getColor(), r.getDecoration().getColorisation()));
+						
+						labelGraphics.draw(r);
+					}
+				};
+			}
+		};
 	}
 	
 	@Override
-	public Rectangle2D getBoundingBoxInLocalSpace() {
-		return label.getBoundingBox();
+	public Expression<Touchable> localSpaceTouchable() {
+		return new  ExpressionBase<Touchable>() {
+
+			@Override
+			protected Touchable evaluate(final EvaluationContext context) {
+				return new Touchable() {
+
+					@Override
+					public boolean hitTest(Point2D point) {
+						return getBoundingBox().contains(point);
+					}
+
+					@Override
+					public Rectangle2D getBoundingBox() {
+						return context.resolve(label.centeredBB);
+					}
+
+					@Override
+					public Point2D getCenter() {
+						Rectangle2D bb = getBoundingBox();
+						return new Point2D.Double(bb.getCenterX(), bb.getCenterY());
+					}
+					
+				};
+			}
+		};
 	}
 	
 	private Color getColor() {
@@ -85,25 +126,7 @@ public class VisualDummyTransition extends VisualTransition implements StateObse
 		return (DummyTransition)getReferencedComponent();
 	}
 	
-	private void updateText()
-	{
-		transformChanging();
-		label.setText(getReferencedTransition().getName());
-		transformChanged();
-	}
-	
-	@NoAutoSerialisation
-	public String getName() {
-		return getReferencedTransition().getName();
-	}
-	
-	@NoAutoSerialisation
-	public void setName(String name) {
-		getReferencedTransition().setName(name);
-	}
-
-	@Override
-	public void notify(StateEvent e) {
-		updateText();
+	public ModifiableExpression<String> name() {
+		return getReferencedTransition().name();
 	}
 }

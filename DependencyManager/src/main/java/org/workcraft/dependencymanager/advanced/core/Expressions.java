@@ -2,8 +2,6 @@ package org.workcraft.dependencymanager.advanced.core;
 
 import java.util.Collection;
 
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.Unfold;
 
 public class Expressions {

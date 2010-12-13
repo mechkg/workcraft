@@ -46,7 +46,7 @@ public class RelationalPetriNet {
 			plus(TreePVector.singleton("name"));
 			
 			PVector<PVector<String>> arcUniqueKeys = TreePVector.<PVector<String>>empty().
-			plus(TreePVector.singleton("name").plus("transition"));
+			plus(TreePVector.singleton("place").plus("transition"));
 			
 			Relation placeRelation = new Relation.Instance(place, placeFields, placeUniqueKeys);
 			Relation transitionRelation = new Relation.Instance(transition, transitionFields, transitionUniqueKeys);
@@ -66,6 +66,13 @@ public class RelationalPetriNet {
 			this.place = place;
 			this.transition = transition;
 			this.arc = arc;
+		}
+
+		public PVector<? extends Relation> getSchema() {
+			return TreePVector.<Relation>empty().
+			plus(place).
+			plus(transition).
+			plus(arc);
 		}
 	}
 }

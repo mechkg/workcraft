@@ -22,24 +22,24 @@ import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.relational.engine.DatabaseEngine;
 import org.workcraft.relational.engine.Id;
 
-public class VeryAbstractVisualGroup implements DrawableNew, MovableNew, Container{
+public class VisualGroupNode implements DrawableNew, MovableNew, Container{
 	private final ModifiableExpression<AffineTransform> transform;
-	private final Expression<Collection<Node>> children;
+	private final Expression<? extends Collection<Node>> children;
 	private final Expression<Touchable> localSpaceShape;
 	private final ModifiableExpression<Node> parent;
+	private final Id visualGroupId;
 
-	public static VeryAbstractVisualGroup create(DatabaseEngine engine, Id id) {
-		Expression<Id>
-		return new VeryAbstractVisualGroup();
+	public Id getVisualGroupId() {
+		return visualGroupId;
 	}
 	
-	public VeryAbstractVisualGroup(ModifiableExpression<AffineTransform> transform, Expression<Collection<Node>> children, ModifiableExpression<Node> parent) {
+	public VisualGroupNode(ModifiableExpression<AffineTransform> transform, Expression<? extends Collection<Node>> children, ModifiableExpression<Node> parent, Id visualGroupId) {
 		this.transform = transform;
 		this.children = children;
 		this.parent = parent;
+		this.visualGroupId = visualGroupId;
 		this.localSpaceShape = new ExpressionBase<Touchable>() {
 
 			@Override

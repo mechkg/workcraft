@@ -24,7 +24,7 @@ package org.workcraft.dom.visual;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
@@ -55,9 +55,9 @@ public interface VisualModel extends Model {
 	
 	public Collection<Node> boxHitTest(Point2D p1, Point2D p2);
 
-	public ExpressionBase<HierarchicalGraphicalContent> graphicalContent();
+	public Expression<HierarchicalGraphicalContent> graphicalContent();
 
-	public ExpressionBase<? extends Collection<? extends Node>> selection();
+	public Expression<? extends Collection<? extends Node>> selection();
 
 	public Collection<Node> getSelection();
 }

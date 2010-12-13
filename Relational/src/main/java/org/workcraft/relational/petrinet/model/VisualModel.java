@@ -1,27 +1,68 @@
 package org.workcraft.relational.petrinet.model;
 
+import java.awt.Color;
+import java.awt.geom.AffineTransform;
+
 import java.awt.geom.Point2D;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.swing.plaf.basic.BasicTreeUI.TreeHomeAction;
+
+import junit.framework.Assert;
+
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathModel;
+import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.HierarchicalGraphicalContent;
+import org.workcraft.dom.visual.HitMan;
+import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.exceptions.InvalidConnectionException;
+import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.relational.engine.DatabaseEngine;
 import org.workcraft.relational.engine.DatabaseEngineImpl;
+import org.workcraft.relational.engine.Id;
 import org.workcraft.relational.petrinet.declaration.RelationalPetriNet;
+import org.workcraft.relational.petrinet.typeunsafe.TypeUnsafePetriNetWrapper;
+
+import pcollections.HashTreePMap;
+import pcollections.TreePVector;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 
 public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 
-	DatabaseEngine data = new DatabaseEngineImpl(RelationalPetriNet.createSchema().getSchema());
+	public VisualModel() {
+		data = new DatabaseEngineImpl(RelationalPetriNet.createSchema().getSchema());
+		Id rootVNode = data.add("visualNode", HashTreePMap.<String,Object>empty().plus("parent", null).plus("transform", new AffineTransform()));
+		rootVisualGroup = data.add("visualGroup", HashTreePMap.<String,Object>empty().plus("visualNode", rootVNode));
+		root = TypeUnsafePetriNetWrapper.wrapVisualGroup(data, rootVisualGroup);
+		currentLevel = root;
+		
+		System.out.println("root visual group id: " + rootVNode);
+		
+		createVisualPlace(new Point2D.Double(3, 3));
+		createVisualTransition(new Point2D.Double(0, 0));
+		createVisualPlace(new Point2D.Double(3, 0));
+		createVisualTransition(new Point2D.Double(0, 3));
+		
+		Assert.assertEquals(4, eval(root.children()).size());
+	}
+	
+	final DatabaseEngine data;
+	final Id rootVisualGroup;
+	final VisualGroupNode root; 
 	
 	LinkedHashSet<Node> selection = new LinkedHashSet<Node>();
+	private VisualGroupNode currentLevel;
 	
 	@Override
 	public void addToSelection(Collection<Node> node) {
@@ -32,14 +73,37 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 	public void addToSelection(Node node) {
 		selection.add(node);
 	}
+	
+	public Id createVisualPlace(Point2D point) {
+		Id mathPlace = data.add("place", HashTreePMap.<String, Object>empty().plus("initialMarking", 0).plus("name", "p0"));
+		Id visualNode = data.add("visualNode", HashTreePMap.<String, Object>empty().plus("transform", AffineTransform.getTranslateInstance(point.getX(), point.getY())).plus("parent", currentLevel.getVisualGroupId()));
+		return data.add("visualPlace", HashTreePMap.<String, Object>empty().plus("tokenColor", Color.GREEN).plus("visualNode", visualNode).plus("mathNode", mathPlace));
+	}
 
-	@Override
-	public Collection<Node> boxHitTest(Point2D p1, Point2D p2) {
-		return null;
+	public Id createVisualTransition(Point2D point) {
+		Id mathTransition = data.add("transition", HashTreePMap.<String, Object>empty().plus("name", "t0"));
+		Id visualNode = data.add("visualNode", HashTreePMap.<String, Object>empty().plus("transform", AffineTransform.getTranslateInstance(point.getX(), point.getY())).plus("parent", currentLevel.getVisualGroupId()));
+		return data.add("visualTransition", HashTreePMap.<String, Object>empty().plus("visualNode", visualNode).plus("mathNode", mathTransition));
+	}
+
+	private Point2D transformToCurrentSpace(Point2D pointInRootSpace)
+	{
+		Point2D newPoint = new Point2D.Double();
+		TransformHelper.getTransform(getRoot(), currentLevel).transform(pointInRootSpace, newPoint);
+		return newPoint;
 	}
 
 	@Override
+	public Collection<Node> boxHitTest(Point2D p1, Point2D p2) {
+		p1 = transformToCurrentSpace(p1);
+		p2 = transformToCurrentSpace(p2);
+		return HitMan.boxHitTest(currentLevel, p1, p2);
+	}
+
+
+	@Override
 	public void connect(Node first, Node second) throws InvalidConnectionException {
+		// TODO Auto-generated method stub
 		
 	}
 
@@ -51,25 +115,22 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 
 	@Override
 	public Container getCurrentLevel() {
-		// TODO Auto-generated method stub
-		return null;
+		return currentLevel;
 	}
 
 	@Override
 	public MathModel getMathModel() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Collection<Node> getSelection() {
-		// TODO Auto-generated method stub
-		return null;
+		return selection;
 	}
 
 	@Override
 	public ExpressionBase<HierarchicalGraphicalContent> graphicalContent() {
-		return null;
+		return DrawMan.graphicalContent(getRoot());
 	}
 
 	@Override
@@ -80,50 +141,42 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 
 	@Override
 	public void removeFromSelection(Node node) {
-		// TODO Auto-generated method stub
-		
+		selection.remove(node);
 	}
 
 	@Override
 	public void removeFromSelection(Collection<Node> nodes) {
-		// TODO Auto-generated method stub
-		
+		selection.remove(nodes);
 	}
 
 	@Override
 	public void select(Node node) {
-		// TODO Auto-generated method stub
-		
+		select(TreePVector.singleton(node));
 	}
 
 	@Override
-	public void select(Collection<Node> node) {
-		// TODO Auto-generated method stub
-		
+	public void select(Collection<Node> newSelection) {
+		selection = new LinkedHashSet<Node>(newSelection);
 	}
 
 	@Override
 	public void selectAll() {
-		// TODO Auto-generated method stub
-		
+		select(Collections.unmodifiableCollection(eval(currentLevel.children())));
 	}
 
 	@Override
 	public void selectNone() {
-		// TODO Auto-generated method stub
-		
+		selection.clear();
 	}
 
 	@Override
-	public ExpressionBase<? extends Collection<? extends Node>> selection() {
-		// TODO Auto-generated method stub
-		return null;
+	public Expression<? extends Collection<? extends Node>> selection() {
+		return constant(selection);
 	}
 
 	@Override
 	public void setCurrentLevel(Container group) {
-		// TODO Auto-generated method stub
-		
+		currentLevel = (VisualGroupNode) group;
 	}
 
 	@Override
@@ -141,26 +194,22 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 
 	@Override
 	public void add(Node node) {
-		// TODO Auto-generated method stub
-		
+		throw new NotSupportedException();
 	}
 
 	@Override
 	public String getDisplayName() {
-		// TODO Auto-generated method stub
-		return null;
+		return "some shit. will this ever be displayed?";
 	}
 
 	@Override
 	public Node getNodeByReference(String reference) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotSupportedException("new serialisation should be used!");
 	}
 
 	@Override
 	public String getNodeReference(Node node) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotSupportedException("new serialisation should be used!");
 	}
 
 	@Override
@@ -171,13 +220,12 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 
 	@Override
 	public Container getRoot() {
-		return new VeryAbstractVisualGroup();
+		return root;
 	}
 
 	@Override
 	public String getTitle() {
-		// TODO Auto-generated method stub
-		return null;
+		return "some other shit. is this ever used?";
 	}
 
 	@Override

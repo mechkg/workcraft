@@ -189,7 +189,7 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 		setLayout(new SimpleFlowLayout (5, 5));
 		
 		try{
-			Iterable<GraphEditorTool> tools = modelDescriptor.createTools();
+			Iterable<? extends GraphEditorTool> tools = modelDescriptor.createTools();
 			for(GraphEditorTool tool : tools)
 				addTool(tool, false);
 			selectTool(tools.iterator().next());

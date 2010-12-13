@@ -195,4 +195,34 @@ public class DatabaseEngineTests {
 							TreePVector.<PVector<String>>empty())
 				);
 	}
+	
+	@Test
+	public void testSimpleTableSchemaAddNullValue() {
+		TreePVector<Instance> schema = simpleTableSchema();
+		final DatabaseEngineImpl engine = new DatabaseEngineImpl(schema);
+		Id objId = engine.add("table1", HashTreePMap.singleton("field1", (Integer)null));
+		Database db = eval(engine.database());
+		Assert.assertNull(db.get("table1", "field1", objId));
+	}
+	
+	
+	@Test
+	public void testReferentialTableSchemaAddNullValue() {
+		TreePVector<Instance> schema = referentialTableSchemaWithCascadeDeletion();
+		final DatabaseEngineImpl engine = new DatabaseEngineImpl(schema);
+		Id objId = engine.add("child", HashTreePMap.singleton("parentRef", (Integer)null));
+		Database db = eval(engine.database());
+		Assert.assertNull(db.get("child", "parentRef", objId));
+	}
+	
+	@Test
+	public void testSimpleTableSetValue() {
+		TreePVector<Instance> schema = simpleTableSchema();
+		final DatabaseEngineImpl engine = new DatabaseEngineImpl(schema);
+		Id objId = engine.add("table1", HashTreePMap.singleton("field1", (Integer)8));
+		engine.setValue("table1", "field1", objId, (Integer)9);
+		Database db = eval(engine.database());
+		Assert.assertEquals(9, db.get("table1", "field1", objId));
+	}
+	
 }

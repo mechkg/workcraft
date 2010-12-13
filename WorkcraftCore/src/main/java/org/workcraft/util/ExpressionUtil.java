@@ -8,11 +8,11 @@ import org.workcraft.exceptions.NotSupportedException;
 
 public class ExpressionUtil {
 	
-	public static <T> ModifiableExpression<T> modificationNotSupported(final Expression<T> parentConnection) {
+	public static <T> ModifiableExpression<T> modificationNotSupported(final Expression<T> expression) {
 		return new ModifiableExpressionImpl<T>() {
 			@Override
 			protected T evaluate(EvaluationContext context) {
-				return context.resolve(parentConnection);
+				return context.resolve(expression);
 			}
 
 			@Override

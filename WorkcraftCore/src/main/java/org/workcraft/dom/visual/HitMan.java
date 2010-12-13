@@ -281,7 +281,7 @@ public class HitMan
 	 * @param p2 		The bottom-right corner of the rectangle
 	 * @return 			The collection of nodes fitting completely inside the rectangle
 	 */
-	public static Collection<Node> boxHitTest (Container container, Point2D p1, Point2D p2) {
+	public static Collection<Node> boxHitTest (Node container, Point2D p1, Point2D p2) {
 		
 		if(container instanceof MovableNew)
 		{

@@ -38,7 +38,7 @@ interface GraphicalContentWithPreDecoration {
 	void draw(Graphics2D graphics, Decorator decorator, Decoration currentDecoration);
 }
 
-class DrawMan
+public class DrawMan
 {
 
 	private static ExpressionBase<GraphicalContentWithPreDecoration> transformedAndDecorated(final MovableNew node)

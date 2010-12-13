@@ -54,7 +54,7 @@ public class TransformHelper {
 		while (ancestor != node) {
 			Node next = eval(node.parent()); 
 			if (next == null)
-				throw new NotAnAncestorException();
+				throw new NotAnAncestorException(node, ancestor);
 			if(next instanceof MovableNew)
 				t.preConcatenate(GlobalCache.eval(((MovableNew)next).transform()));
 			node = next;
@@ -65,6 +65,8 @@ public class TransformHelper {
 
 	public static AffineTransform getTransform(Node node1, Node node2) {
 		Node parent = Hierarchy.getCommonParent(node1, node2);
+		if(parent == null)
+			throw new RuntimeException(String.format("Nodes '%s' and '%s' do not have a common parent", node1, node2));
 		AffineTransform node1ToParent = getTransformToAncestor(node1, parent);
 		AffineTransform node2ToParent = getTransformToAncestor(node2, parent);
 		AffineTransform parentToNode2 = Geometry.optimisticInverse(node2ToParent);

@@ -7,5 +7,5 @@ import org.workcraft.gui.graph.tools.GraphEditorTool;
 
 public interface VisualModelDescriptor {
 	public VisualModel create (MathModel mathModel) throws VisualModelInstantiationException;
-	public Iterable<GraphEditorTool> createTools();
+	public Iterable<? extends GraphEditorTool> createTools();
 }

@@ -13,11 +13,11 @@ public interface Relation {
 
 		private final ObjectDeclaration objectDeclaration;
 		private final PMap<String, ? extends Field> fields;
-		private final PVector<? extends PVector<? extends String>> uniqueKeys;
+		private final PVector<? extends PVector<String>> uniqueKeys;
 
 		public Instance(ObjectDeclaration objectDeclaration,
 				PMap<String, ? extends Field> fields,
-				PVector<? extends PVector<? extends String>> uniqueKeys) {
+				PVector<? extends PVector<String>> uniqueKeys) {
 			this.objectDeclaration = objectDeclaration;
 			this.fields = fields;
 			this.uniqueKeys = uniqueKeys;

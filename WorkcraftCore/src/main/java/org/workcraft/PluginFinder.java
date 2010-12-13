@@ -77,9 +77,6 @@ public class PluginFinder {
 
 		className = className.replace(File.separatorChar, '.').replace('/', '.');
 
-		if (!className.startsWith("org.workcraft.plugins"))
-			return;
-
 		className = className.substring(0, className.length() - ".class".length());
 
 		try {

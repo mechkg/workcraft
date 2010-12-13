@@ -128,6 +128,7 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 			}
 	}
 
+	
 	@Override
 	public ExpressionBase<GraphicalContent> graphicalContent() {
 		return new ExpressionBase<GraphicalContent>(){

@@ -21,7 +21,13 @@
 
 package org.workcraft.exceptions;
 
+import org.workcraft.dom.Node;
+
 @SuppressWarnings("serial")
 public class NotAnAncestorException extends RuntimeException {
+
+	public NotAnAncestorException(Node node, Node ancestor) {
+		super(String.format("Node '%s' is not an ancestor of the node '%s'", node, ancestor));
+	}
 
 }

@@ -88,6 +88,10 @@ public class DatabaseEngineImpl implements DatabaseEngine {
 					return f.getType();
 				}
 			});
+			
+			if(value == null)  
+				return; // all fields are nullable for now
+				
 			Class<? extends Object> actualType = value.getClass();
 			if(!expectedType.isAssignableFrom(actualType))
 				throw new RuntimeException(String.format("Incompatible types for field %s: '%s' when '%s' was expected", fieldName, actualType, expectedType));
@@ -215,6 +219,15 @@ public class DatabaseEngineImpl implements DatabaseEngine {
 		db.setValue(new DatabaseImpl(newData));
 		
 		return newObj;
+	}
+
+	@Override
+	public void setValue(String object, String fieldName, Id id, Object newValue) {
+		DatabaseImpl old = db.getValue();
+		PMap<Id, PMap<String, ? extends Object>> table = old.data.get(object);
+		PMap<String, ? extends Object> record = table.get(id);
+		// TODO: handle bad cases
+		db.setValue(new DatabaseImpl(old.data.plus(object, table.plus(id, plus(record, fieldName, newValue)))));
 	}
 
 }

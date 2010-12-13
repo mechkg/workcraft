@@ -46,7 +46,7 @@ import org.workcraft.plugins.stg.VisualSignalTransition;
 
 public class SerialisationTestingUtils {
 	public static void comparePlaces (Place p1, Place p2) {
-		assertEquals(p1.getTokens(), p2.getTokens());
+		assertEquals(eval(p1.tokens()), eval(p2.tokens()));
 		//assertEquals(p1.getCapacity(), p2.getCapacity());
 	}
 	

@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.stg.serialisation;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -158,7 +160,7 @@ public class DotGSerialiser implements ModelSerialiser {
 		ArrayList<String> markingEntries = new ArrayList<String>();
 		
 		for (Place p: places) {
-			final int tokens = p.getTokens();
+			final int tokens = eval(p.tokens());
 			final String reference;
 			
 			if (p instanceof STGPlace) {

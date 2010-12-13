@@ -123,10 +123,10 @@ public class STGSelectionTool extends SelectionTool
 						place.tokens().setValue(1);
 				} else if (node instanceof VisualImplicitPlaceArc) {
 					STGPlace place = ((VisualImplicitPlaceArc) node).getImplicitPlace();
-					if (place.getTokens()==1)
-						place.setTokens(0);
-					else if (place.getTokens()==0)
-						place.setTokens(1);
+					if (eval(place.tokens())==1)
+						place.tokens().setValue(0);
+					else if (eval(place.tokens())==0)
+						place.tokens().setValue(1);
 				} else if (node instanceof VisualSignalTransition || node instanceof VisualDummyTransition) {
 					editInPlace(e.getEditor(), (VisualComponent)node, null);
 				}

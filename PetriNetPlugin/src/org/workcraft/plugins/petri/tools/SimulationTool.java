@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.petri.tools;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -83,7 +85,7 @@ public class SimulationTool extends AbstractTool {
 	private void applyMarking(Map<Place, Integer> marking)
 	{
 		for (Place p : net.getPlaces()) {
-			p.setTokens(marking.get(p));
+			p.tokens().setValue(marking.get(p));
 		}
 	}
 	
@@ -274,7 +276,7 @@ public class SimulationTool extends AbstractTool {
 	private Map<Place, Integer> readMarking() {
 		HashMap<Place, Integer> result = new HashMap<Place, Integer>();
 		for (Place p : net.getPlaces()) {
-			result.put(p, p.getTokens());
+			result.put(p, eval(p.tokens()));
 		}
 		return result;
 	}

@@ -36,6 +36,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.Rectangle2D.Double;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
@@ -199,12 +200,11 @@ public class VisualVariable extends VisualComponent
 	}
 
 	@Override
-	public Expression<? extends GraphicalContent> graphicalContent() {
+	public Expression<GraphicalContent> graphicalContent() {
 		return new ExpressionBase<GraphicalContent>() {
 			@Override
 			protected GraphicalContent evaluate(final EvaluationContext context) {
 				return new GraphicalContent() {
-
 					@Override
 					public void draw(DrawRequest r) {
 						Graphics2D g = r.getGraphics();

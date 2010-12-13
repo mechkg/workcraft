@@ -22,7 +22,6 @@
 package org.workcraft.plugins.petri;
 
 import org.workcraft.annotations.VisualClass;
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.math.MathNode;
@@ -33,13 +32,5 @@ public class Place extends MathNode {
 	
 	public ModifiableExpression<Integer> tokens() {
 		return tokens;
-	}
-	
-	public int getTokens() {
-		return GlobalCache.eval(tokens());
-	}
-
-	public void setTokens(int i) {
-		GlobalCache.setValue(tokens(), i);
 	}
 }

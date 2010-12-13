@@ -103,7 +103,7 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 					@Override
 					public void draw(DrawRequest r) {
 						
-						int tokens = implicitPlace.getTokens();
+						int tokens = context.resolve(implicitPlace.tokens());
 						
 						Point2D p = getPointOnConnection(0.5);
 						

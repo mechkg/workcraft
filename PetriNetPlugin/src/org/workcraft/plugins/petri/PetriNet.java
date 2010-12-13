@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.petri;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -166,11 +168,11 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		for (Connection c : net.getConnections(t)) {
 			if (t==c.getFirst()) {
 				Place to = (Place)c.getSecond();
-				GlobalCache.setValue(to.tokens(), (((Place)to).getTokens()-1));
+				to.tokens().setValue(eval(to.tokens())-1);
 			} 
 			if (t==c.getSecond()) {
 				Place from = (Place)c.getFirst();
-				from.setTokens(((Place)from).getTokens()+1);
+				from.tokens().setValue(eval(from.tokens())+1);
 			}
 		}
 	}
@@ -181,11 +183,11 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 			for (Connection c : net.getConnections(t)) {
 				if (t==c.getFirst()) {
 					Place to = (Place)c.getSecond();
-					to.setTokens(((Place)to).getTokens()+1);
+					to.tokens().setValue(eval(to.tokens())+1);
 				} 
 				if (t==c.getSecond()) {
 					Place from = (Place)c.getFirst();
-					from.setTokens(((Place)from).getTokens()-1);
+					from.tokens().setValue(eval(from.tokens())-1);
 				}
 			}
 		}

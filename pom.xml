@@ -23,6 +23,7 @@
     <module>WorkcraftCore</module>
     <module>STGPlugin</module>
     <module>PetriNetPlugin</module>
+    <module>Relational</module>
 <!--    <module>BalsaPlugin</module> -->
     <module>BalsaWrapperGenerator</module>
     <module>BalsaPluginBase</module>

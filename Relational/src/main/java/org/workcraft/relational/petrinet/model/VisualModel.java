@@ -171,8 +171,7 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 
 	@Override
 	public Container getRoot() {
-		// TODO Auto-generated method stub
-		return null;
+		return new VeryAbstractVisualGroup();
 	}
 
 	@Override

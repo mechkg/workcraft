@@ -1,8 +1,15 @@
 package org.workcraft.relational.engine;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.Stack;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.relational.interfaces.DeletionPolicy;
@@ -19,8 +26,19 @@ import pcollections.PMap;
 import pcollections.PVector;
 import pcollections.TreePVector;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class DatabaseEngineImpl implements DatabaseEngine {
 
+	Stack<DatabaseImpl> history = new Stack<DatabaseImpl>();
+	
+	public void undo() {
+		if(history.size() > 1) {
+			history.pop();
+			db.refresh();
+		}
+	}
+	
 	static class DatabaseOperations {
 		private final PVector<? extends Relation> schema;
 		private final PMap<String, PMap<String, ? extends Field>> fields;
@@ -179,12 +197,25 @@ public class DatabaseEngineImpl implements DatabaseEngine {
 	}
 	
 	public DatabaseEngineImpl(PVector<? extends Relation> schema) {
-		db = new Variable<DatabaseImpl>(new DatabaseImpl(schema));
+		history.push(new DatabaseImpl(schema));
+		db = new ModifiableExpressionImpl<DatabaseImpl>() {
+
+			@Override
+			protected void simpleSetValue(DatabaseImpl newValue) {
+				history.push(newValue);
+			}
+
+			@Override
+			protected DatabaseImpl evaluate(EvaluationContext context) {
+				return history.lastElement();
+			}
+			
+		};
 		operations = new DatabaseOperations(schema);
 	}
 	
 	private final DatabaseOperations operations;
-	private final Variable<DatabaseImpl> db;
+	private final ModifiableExpressionImpl<DatabaseImpl> db;
 
 	@Override
 	public Expression<? extends Database> database() {
@@ -203,14 +234,14 @@ public class DatabaseEngineImpl implements DatabaseEngine {
 	
 	@Override
 	public void delete(String obj, Id id) {
-		DatabaseImpl dbImpl = db.getValue();
+		DatabaseImpl dbImpl = eval(db);
 		
 		db.setValue(operations.delete(dbImpl, obj, id));
 	}
 
 	@Override
 	public Id add(String obj, PMap<String, ? extends Object> data) {
-		DatabaseImpl dbImpl = db.getValue();
+		DatabaseImpl dbImpl = eval(db);
 		
 		operations.validateData(dbImpl, obj, data);
 		Id newObj = new Id();
@@ -223,7 +254,7 @@ public class DatabaseEngineImpl implements DatabaseEngine {
 
 	@Override
 	public void setValue(String object, String fieldName, Id id, Object newValue) {
-		DatabaseImpl old = db.getValue();
+		DatabaseImpl old = eval(db);
 		PMap<Id, PMap<String, ? extends Object>> table = old.data.get(object);
 		PMap<String, ? extends Object> record = table.get(id);
 		// TODO: handle bad cases

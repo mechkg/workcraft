@@ -39,7 +39,7 @@ public class VisualPlaceNode implements Node, DrawableNew, MovableNew {
 	private final Expression<Node> parent;
 	private final Expression<? extends Touchable> localTouchable;
 
-	public VisualPlaceNode(ModifiableExpression<AffineTransform> transform, Expression<Integer> tokenCount, Expression<Node> parent) {
+	public VisualPlaceNode(ModifiableExpression<AffineTransform> transform, Expression<Integer> tokenCount, Expression<Node> parent, ModifiableExpression<Color> tokenColor) {
 		this.transform = transform;
 		this.tokenCount = tokenCount;
 		this.parent = parent;

@@ -48,7 +48,7 @@ public class RelationalModule implements Module {
 
 							@Override
 							public Iterable<? extends GraphEditorTool> createTools() {
-								return TreePVector.singleton(new SelectionTool());
+								return TreePVector.<GraphEditorTool>singleton(new SelectionTool()).plus(new UndoTool());
 							}
 							
 						};

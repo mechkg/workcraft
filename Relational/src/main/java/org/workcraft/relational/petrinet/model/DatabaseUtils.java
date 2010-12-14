@@ -64,7 +64,7 @@ public class DatabaseUtils {
 						if(db.get(childObject, referenceField, candidate) == context.resolve(parentId))
 							result = result.plus(candidate);
 					}
-					System.out.println(String.format("%s children for %s.%s->%s with id %s", result.size(), childObject, referenceField, parentObject, context.resolve(parentId)));
+					//System.out.println(String.format("%s children for %s.%s->%s with id %s", result.size(), childObject, referenceField, parentObject, context.resolve(parentId)));
 					return result;
 				}
 				

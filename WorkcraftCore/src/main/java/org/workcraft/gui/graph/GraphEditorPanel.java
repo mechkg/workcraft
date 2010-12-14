@@ -70,7 +70,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 
 		public Repainter(VisualModel model) {
 			this.model = model;
-			new Timer(200, new ActionListener(){
+			new Timer(20, new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					eval(Repainter.this);

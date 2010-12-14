@@ -27,26 +27,26 @@ public class RelationalPetriNet {
 			ObjectDeclaration arc = new ObjectDeclaration.Instance("arc");
 			
 			PMap<String, Field> placeFields = HashTreePMap.<String, Field>empty().
-			plus("initialMarking", PrimitiveField.Instance.create(Integer.class)).
-			plus("name", PrimitiveField.Instance.create(String.class));
+				plus("initialMarking", PrimitiveField.Instance.create(Integer.class)).
+				plus("name", PrimitiveField.Instance.create(String.class));
 			
 			PMap<String, Field> transitionFields = HashTreePMap.<String, Field>empty().
-			plus("name", PrimitiveField.Instance.create(String.class));
+				plus("name", PrimitiveField.Instance.create(String.class));
 			
 			PMap<String, Field> arcFields = HashTreePMap.<String, Field>empty().
-			plus("place", new RelationField.Instance(place, DeletionPolicy.CASCADE_DELETE)).
-			plus("transition", new RelationField.Instance(transition, DeletionPolicy.CASCADE_DELETE)).
-			plus("consumed", PrimitiveField.Instance.create(Integer.class)).
-			plus("produced", PrimitiveField.Instance.create(Integer.class));
+				plus("place", new RelationField.Instance(place, DeletionPolicy.CASCADE_DELETE)).
+				plus("transition", new RelationField.Instance(transition, DeletionPolicy.CASCADE_DELETE)).
+				plus("consumed", PrimitiveField.Instance.create(Integer.class)).
+				plus("produced", PrimitiveField.Instance.create(Integer.class));
 			
 			PVector<PVector<String>> transitionUniqueKeys = TreePVector.<PVector<String>>empty().
-			plus(TreePVector.singleton("name"));
+				plus(TreePVector.singleton("name"));
 			
 			PVector<PVector<String>> placeUniqueKeys = TreePVector.<PVector<String>>empty().
-			plus(TreePVector.singleton("name"));
+				plus(TreePVector.singleton("name"));
 			
 			PVector<PVector<String>> arcUniqueKeys = TreePVector.<PVector<String>>empty().
-			plus(TreePVector.singleton("place").plus("transition"));
+				plus(TreePVector.singleton("place").plus("transition"));
 			
 			Relation placeRelation = new Relation.Instance(place, placeFields, placeUniqueKeys);
 			Relation transitionRelation = new Relation.Instance(transition, transitionFields, transitionUniqueKeys);

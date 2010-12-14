@@ -94,7 +94,6 @@ public class TypeUnsafePetriNetWrapper {
 		Expression<Id> asMathPlace = fieldValue(engine, "visualPlace", "mathNode", Id.class, id);
 		Expression<Integer> tokenCount = fieldValue(engine, "place", "initialMarking", Integer.class, asMathPlace);
 		ModifiableExpression<Color> tokenColor = fieldValue(engine, "visualPlace", "tokenColor", Color.class, id);
-		tokenColor.setValue(Color.RED);
 		Expression<Node> parent = getVisualNodeParent(engine, asVisualNode);
 		return new VisualPlaceNode(visualNodeTransform(engine, asVisualNode), tokenCount, parent, tokenColor);
 	}

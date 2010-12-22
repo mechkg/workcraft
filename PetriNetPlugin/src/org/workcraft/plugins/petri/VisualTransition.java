@@ -58,11 +58,11 @@ public class VisualTransition extends VisualComponent {
 	public Expression<? extends GraphicalContent> graphicalContent() {
 		return new ExpressionBase<GraphicalContent>() {
 			@Override
-			protected GraphicalContent evaluate(EvaluationContext context) {
+			protected GraphicalContent evaluate(final EvaluationContext context) {
 				return new GraphicalContent() {
 					@Override
 					public void draw(DrawRequest r) {
-						drawLabelInLocalSpace(r);
+						context.resolve(labelGraphics()).draw(r);
 						
 						Graphics2D g = r.getGraphics();
 						
@@ -74,9 +74,9 @@ public class VisualTransition extends VisualComponent {
 								-size / 2 + strokeWidth / 2,
 								size - strokeWidth,
 								size - strokeWidth);
-						g.setColor(Coloriser.colorise(Coloriser.colorise(getFillColor(), r.getDecoration().getBackground()), r.getDecoration().getColorisation()));
+						g.setColor(Coloriser.colorise(Coloriser.colorise(context.resolve(fillColor()), r.getDecoration().getBackground()), r.getDecoration().getColorisation()));
 						g.fill(shape);
-						g.setColor(Coloriser.colorise(Coloriser.colorise(getForegroundColor(), r.getDecoration().getBackground()), r.getDecoration().getColorisation()));
+						g.setColor(Coloriser.colorise(Coloriser.colorise(context.resolve(foregroundColor()), r.getDecoration().getBackground()), r.getDecoration().getColorisation()));
 						g.setStroke(new BasicStroke((float)CommonVisualSettings.getStrokeWidth()));
 						g.draw(shape);
 
@@ -107,7 +107,7 @@ public class VisualTransition extends VisualComponent {
 
 					@Override
 					public Point2D getCenter() {
-						return new Point2D.Double(getBoundingBox().getCenterX(), getBoundingBox().getCenterY());
+						return new Point2D.Double(0, 0);
 					}
 				};
 			}

@@ -40,7 +40,7 @@ import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
+import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.petri.VisualTransition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
@@ -76,8 +76,8 @@ public class VisualSignalTransition extends VisualTransition {
 		directions.put("", SignalTransition.Direction.TOGGLE);
 		
 		//addPropertyDeclaration(new PropertyDeclaration(this, "Signal name", "getSignalName", "setSignalName", String.class));
-		addPropertyDeclaration(new PropertyDeclaration(this, "Transition", "getDirection", "setDirection", SignalTransition.Direction.class, directions));
-		addPropertyDeclaration(new PropertyDeclaration(this, "Signal type", "getType", "setType", SignalTransition.Type.class, types));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Transition", direction(), direction(), SignalTransition.Direction.class, directions));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Signal type", signalType(), signalType(), SignalTransition.Type.class, types));
 	}
 	
 	@Override
@@ -88,7 +88,9 @@ public class VisualSignalTransition extends VisualTransition {
 				return new GraphicalContent() {
 					@Override
 					public void draw(DrawRequest r) {
-						drawLabelInLocalSpace(r);
+						
+						context.resolve(labelGraphics()).draw(r);
+						
 						Graphics2D g = r.getGraphics();
 						
 						Color background = r.getDecoration().getBackground();
@@ -120,7 +122,7 @@ public class VisualSignalTransition extends VisualTransition {
 					
 					@Override
 					public Point2D getCenter() {
-						return new Point2D.Double(getBoundingBox().getCenterX(), getBoundingBox().getCenterY());
+						return new Point2D.Double(0, 0);
 					}
 					
 					@Override

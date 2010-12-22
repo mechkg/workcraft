@@ -24,7 +24,7 @@ package org.workcraft.parsers.breeze.expressions;
 import org.workcraft.parsers.breeze.ParameterScope;
 import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
-public class VariableArrayType extends Expression<Integer[]> {
+public class VariableArrayType implements Expression<Integer[]> {
 	private final Expression<Integer> width;
 	private final Expression<Integer> readPortCount;
 	private final Expression<String> specification;

@@ -235,7 +235,7 @@ void markingEntry() : { STGPlace p; int value = 1; }
 	        ( value = assignment() ) ?
 	 )
 	 {
-	 	p.setTokens(value);
+	 	p.tokens().setValue(value);
 	 }
 }
 

@@ -73,9 +73,9 @@ public class SignalTransition extends Transition implements StgTransition
 		}
 	}
 
-	private Variable<Type> type = new Variable<Type>(Type.INTERNAL);
-	private Variable<Direction> direction = new Variable<Direction>(Direction.TOGGLE);
-	private Variable<String> signalName = new Variable<String>(null);
+	private final Variable<Type> type = new Variable<Type>(Type.INTERNAL);
+	private final Variable<Direction> direction = new Variable<Direction>(Direction.TOGGLE);
+	private final Variable<String> signalName = new Variable<String>(null);
 
 	public ModifiableExpression<Type> signalType() {
 		return type;

@@ -41,7 +41,6 @@ import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
@@ -49,8 +48,7 @@ import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
+import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer;
@@ -96,15 +94,9 @@ public class VisualVertex extends VisualComponent
 		for(LabelPositioning lp : LabelPositioning.values())
 			positions.put(lp.name, lp);
 		
-		PropertyDescriptor declaration = new PropertyDeclaration(this, "Label positioning", "getLabelPositioning", "setLabelPositioning", LabelPositioning.class, positions);
-		addPropertyDeclaration(declaration);
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Label positioning", labelPositioning(), labelPositioning(), LabelPositioning.class, positions));
 		
 		label = makeLabel();
-	}
-	
-	Expression<String> label() {
-		//TODO: make it non-constant
-		return Expressions.constant(getLabel());
 	}
 	
 	private FormulaLabel makeLabel() {
@@ -159,10 +151,10 @@ public class VisualVertex extends VisualComponent
 
 						BooleanFormula value = context.resolve(value());
 						
-						g.setColor(Coloriser.colorise(getFillColor(), colorisation));
+						g.setColor(Coloriser.colorise(context.resolve(fillColor()), colorisation));
 						g.fill(shape);
 						
-						g.setColor(Coloriser.colorise(getForegroundColor(), colorisation));
+						g.setColor(Coloriser.colorise(context.resolve(foregroundColor()), colorisation));
 						if (value == Zero.instance())
 						{
 							g.setStroke(new BasicStroke(strokeWidth, BasicStroke.CAP_BUTT,
@@ -250,7 +242,7 @@ public class VisualVertex extends VisualComponent
 
 					@Override
 					public Point2D getCenter() {
-						return new Point2D.Double(getBoundingBox().getMinX(), getBoundingBox().getMaxX());
+						return new Point2D.Double(0, 0);
 					}
 				};
 			}

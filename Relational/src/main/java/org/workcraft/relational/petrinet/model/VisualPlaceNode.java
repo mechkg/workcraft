@@ -38,11 +38,13 @@ public class VisualPlaceNode implements Node, DrawableNew, MovableNew {
 	private final Expression<Integer> tokenCount;
 	private final Expression<Node> parent;
 	private final Expression<? extends Touchable> localTouchable;
+	private final ModifiableExpression<Color> tokenColor;
 
 	public VisualPlaceNode(ModifiableExpression<AffineTransform> transform, Expression<Integer> tokenCount, Expression<Node> parent, ModifiableExpression<Color> tokenColor) {
 		this.transform = transform;
 		this.tokenCount = tokenCount;
 		this.parent = parent;
+		this.tokenColor = tokenColor;
 		this.localTouchable = constant(new Touchable(){
 
 			@Override
@@ -162,7 +164,7 @@ public class VisualPlaceNode implements Node, DrawableNew, MovableNew {
 						g.setStroke(new BasicStroke((float)strokeWidth));
 						g.draw(shape);
 	
-						drawTokens(context.resolve(tokenCount), singleTokenSize, multipleTokenSeparation, size, strokeWidth, Coloriser.colorise(Color.BLACK, r.getDecoration().getColorisation()), g);
+						drawTokens(context.resolve(tokenCount), singleTokenSize, multipleTokenSeparation, size, strokeWidth, Coloriser.colorise(context.resolve(tokenColor), r.getDecoration().getColorisation()), g);
 					}
 				};
 			}

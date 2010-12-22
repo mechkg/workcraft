@@ -24,7 +24,7 @@ import org.workcraft.parsers.breeze.ParameterScope;
 import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
 
-public class ToStringExpression<T> extends Expression<String> {
+public class ToStringExpression<T> implements Expression<String> {
 
 	private final Expression<T> arg;
 

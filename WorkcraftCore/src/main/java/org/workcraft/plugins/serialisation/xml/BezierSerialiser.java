@@ -30,6 +30,8 @@ import org.workcraft.serialisation.xml.CustomXMLSerialiser;
 import org.workcraft.serialisation.xml.NodeSerialiser;
 import org.workcraft.util.XmlUtil;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class BezierSerialiser implements CustomXMLSerialiser {
 
 	@Override
@@ -38,7 +40,7 @@ public class BezierSerialiser implements CustomXMLSerialiser {
 			ReferenceProducer externalReferences, NodeSerialiser nodeSerialiser)
 			throws SerialisationException {
 		Bezier b = (Bezier)object;
-		BezierControlPoint[] cp = b.getControlPoints();
+		BezierControlPoint[] cp = eval(b.getControlPoints());
 		
 		Element cp1e = XmlUtil.createChildElement("cp1", element);
 		Element cp2e = XmlUtil.createChildElement("cp2", element);

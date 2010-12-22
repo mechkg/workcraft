@@ -45,7 +45,7 @@ public abstract class HierarchySupervisor {
 	
 	public void start() {
 		registerChange(Arrays.asList(new Node[]{rootSupervisor.node}), Arrays.asList(new Node[]{}));
-		//autoRefresh = GlobalCache.autoRefresh(rootSupervisor);
+		autoRefresh = GlobalCache.autoRefresh(rootSupervisor);
 	}
 	
 	public void refresh() {

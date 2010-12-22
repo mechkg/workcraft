@@ -32,6 +32,8 @@ import org.workcraft.serialisation.xml.NodeFinaliser;
 import org.workcraft.serialisation.xml.NodeInitialiser;
 import org.workcraft.util.XmlUtil;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class BezierDeserialiser implements CustomXMLDeserialiser {
 	@Override
 	public String getClassName() {
@@ -43,7 +45,7 @@ public class BezierDeserialiser implements CustomXMLDeserialiser {
 			ReferenceResolver internalReferenceResolver,
 			ReferenceResolver externalReferenceResolver,
 			NodeFinaliser nodeFinaliser) throws DeserialisationException {
-		for (BezierControlPoint cp : ((Bezier)instance).getControlPoints())
+		for (BezierControlPoint cp : eval(((Bezier)instance).getControlPoints()))
 			nodeFinaliser.finaliseInstance(cp);
 		((Bezier)instance).finaliseControlPoints();
 	}

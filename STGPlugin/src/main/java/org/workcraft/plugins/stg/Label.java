@@ -14,11 +14,12 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.VisualComponent;
 
 public class Label {
 
 	public static FontRenderContext podgonFontRenderContext() {
-		return new FontRenderContext(AffineTransform.getScaleInstance(1000, 1000), true, true);
+		return VisualComponent.podgonFontRenderContext();
 	}
 	
 	public final Expression<GraphicalContent> graphics;
@@ -63,8 +64,8 @@ public class Label {
 			protected GraphicalContent evaluate(final EvaluationContext context) {
 			
 				Point2D textXY = context.resolve(textCoords);
-				final float textX = (float)-textXY.getX();
-				final float textY = (float)-textXY.getY();
+				final float textX = (float)textXY.getX();
+				final float textY = (float)textXY.getY();
 			
 				return new GraphicalContent() {
 					@Override

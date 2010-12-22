@@ -36,7 +36,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.Rectangle2D.Double;
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
@@ -50,8 +49,7 @@ import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
+import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 import org.workcraft.plugins.stg.Label;
@@ -95,16 +93,14 @@ public class VisualVariable extends VisualComponent
 		states.put("[0] false", VariableState.FALSE);
 		states.put("[?] undefined", VariableState.UNDEFINED);
 		
-		PropertyDescriptor declaration = new PropertyDeclaration(this, "State", "getState", "setState", VariableState.class, states);
-		addPropertyDeclaration(declaration);
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("State", state(), state(), VariableState.class, states));
 
 		LinkedHashMap<String, Object> positions = new LinkedHashMap<String, Object>();
 		
 		for(LabelPositioning lp : LabelPositioning.values())
 			positions.put(lp.name, lp);
 		
-		declaration = new PropertyDeclaration(this, "Label positioning", "getLabelPositioning", "setLabelPositioning", LabelPositioning.class, positions);
-		addPropertyDeclaration(declaration);
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Label positioning", labelPositioning(), labelPositioning(), LabelPositioning.class, positions));
 		
 		nameLabel = makeNameLabel();
 		valueLabel = makeValueLabel();
@@ -215,9 +211,9 @@ public class VisualVariable extends VisualComponent
 
 						g.setStroke(new BasicStroke(strokeWidth));
 
-						g.setColor(Coloriser.colorise(getFillColor(), colorisation));
+						g.setColor(Coloriser.colorise(context.resolve(fillColor()), colorisation));
 						g.fill(shape);
-						g.setColor(Coloriser.colorise(getForegroundColor(), colorisation));
+						g.setColor(Coloriser.colorise(context.resolve(foregroundColor()), colorisation));
 						g.draw(shape);
 						
 						context.resolve(nameLabel.graphicalContent).draw(r);
@@ -250,7 +246,7 @@ public class VisualVariable extends VisualComponent
 
 					@Override
 					public Point2D getCenter() {
-						return new Point2D.Double(getBoundingBox().getCenterX(), getBoundingBox().getCenterY());
+						return new Point2D.Double(0, 0);
 					}
 				};
 			}

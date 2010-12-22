@@ -1,7 +1,6 @@
 package org.workcraft.dependencymanager.advanced.user;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 
 
@@ -16,6 +15,8 @@ public class Variable<T> extends ExpressionBase<T> implements ModifiableExpressi
 	
 	@Override
 	public void setValue(T value) {
+		if(this.value == value)
+			return;
 		this.value = value;
 		refresh();
 	}
@@ -32,5 +33,9 @@ public class Variable<T> extends ExpressionBase<T> implements ModifiableExpressi
 	@Override
 	public String toString() {
 		return value == null ? "var equal to  null" : "var of type " + value.getClass() + " = " + value.toString();
+	}
+
+	public static <T> Variable<T> create(T initialValue) {
+		return new Variable<T>(initialValue);
 	}
 }

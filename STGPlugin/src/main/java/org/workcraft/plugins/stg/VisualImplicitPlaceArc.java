@@ -30,6 +30,8 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
@@ -37,14 +39,32 @@ import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
+import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class VisualImplicitPlaceArc extends VisualConnection {
-	private STGPlace implicitPlace;
-	private MathConnection refCon1;
-	private MathConnection refCon2;
+	
+	static <T> ModifiableExpression<T> unfold(final Expression<ModifiableExpression<T>> expr) {
+		return new ModifiableExpressionImpl<T>() {
+
+			@Override
+			protected void simpleSetValue(T newValue) {
+				eval(expr).setValue(newValue);
+			}
+
+			@Override
+			protected T evaluate(EvaluationContext context) {
+				return context.resolve(context.resolve(expr));
+			}
+		};
+	}
+	
+	private final Variable<STGPlace> implicitPlace = Variable.create(null);
+	private final Variable<MathConnection> refCon1 = Variable.create(null);
+	private final Variable<MathConnection> refCon2 = Variable.create(null);
 	
 	private static double tokenSpaceSize = 0.8;
 	private static double singleTokenSize = tokenSpaceSize / 1.9;
@@ -52,8 +72,8 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 	private static Color tokenColor = Color.BLACK;
 	
 	private void addPropertyDeclarations() {
-		addPropertyDeclaration(new PropertyDeclaration (this, "Tokens", "getTokens", "setTokens", int.class));
-		addPropertyDeclaration(new PropertyDeclaration (this, "Capacity", "getCapacity", "setCapacity", int.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Tokens", tokens(), Integer.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Capacity", capacity(), Integer.class));
 		
 		/*addPopupMenuSegment(new PopupMenuBuilder.PopupMenuSegment() {
 			public void addItems(JPopupMenu menu,
@@ -78,16 +98,16 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 	}
 	
 	public void setImplicitPlaceArcDependencies (MathConnection refCon1, MathConnection refCon2, STGPlace implicitPlace) {
-		this.refCon1 = refCon1;
-		this.refCon2 = refCon2;
-		this.implicitPlace = implicitPlace;
+		this.refCon1.setValue(refCon1);
+		this.refCon2.setValue(refCon2);
+		this.implicitPlace.setValue(implicitPlace);
 	}
 
 	public VisualImplicitPlaceArc (VisualComponent first, VisualComponent second, MathConnection refCon1, MathConnection refCon2, STGPlace implicitPlace) {
 		super(null, first, second);
-		this.refCon1 = refCon1;
-		this.refCon2 = refCon2;
-		this.implicitPlace = implicitPlace;
+		this.refCon1.setValue(refCon1);
+		this.refCon2.setValue(refCon2);
+		this.implicitPlace.setValue(implicitPlace);
 		
 		addPropertyDeclarations();
 	}
@@ -103,7 +123,7 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 					@Override
 					public void draw(DrawRequest r) {
 						
-						int tokens = context.resolve(implicitPlace.tokens());
+						int tokens = context.resolve(tokens());
 						
 						Point2D p = getPointOnConnection(0.5);
 						
@@ -120,33 +140,43 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 	}
 	
 	public ModifiableExpression<Integer> tokens() {
-		return implicitPlace.tokens();
+		return unfold(new ExpressionBase<ModifiableExpression<Integer>>(){
+			@Override
+			public ModifiableExpression<Integer> evaluate(EvaluationContext context) {
+				return context.resolve(implicitPlace).tokens();
+			}
+		});
 	}
 
 	@NoAutoSerialisation
 	public ModifiableExpression<Integer> capacity() {
-		return implicitPlace.capacity();
+		return unfold(new ExpressionBase<ModifiableExpression<Integer>>(){
+			@Override
+			public ModifiableExpression<Integer> evaluate(EvaluationContext context) {
+				return context.resolve(implicitPlace).capacity();
+			}
+		});
 	}
 
 	@NoAutoSerialisation
 	public STGPlace getImplicitPlace() {
-		return implicitPlace;
+		return eval(implicitPlace);
 	}
 
 	public MathConnection getRefCon1() {
-		return refCon1;
+		return eval(refCon1);
 	}
 
 	public MathConnection getRefCon2() {
-		return refCon2;
+		return eval(refCon2);
 	}
 
 	@Override
 	public Set<MathNode> getMathReferences() {
 		Set<MathNode> ret = new HashSet<MathNode>();
-		ret.add(implicitPlace);
-		ret.add(refCon1);
-		ret.add(refCon2);
+		ret.add(getImplicitPlace());
+		ret.add(getRefCon1());
+		ret.add(getRefCon2());
 		return ret;
 	}
 	

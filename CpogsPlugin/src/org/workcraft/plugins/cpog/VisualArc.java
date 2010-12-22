@@ -160,7 +160,7 @@ public class VisualArc extends VisualConnection
 						BooleanFormula value = context.resolve(value());
 						
 						if (value == Zero.instance()) 
-							return new BasicStroke((float) VisualArc.super.getLineWidth(), BasicStroke.CAP_BUTT,
+							return new BasicStroke((float)context.resolve(lineWidth()).doubleValue(), BasicStroke.CAP_BUTT,
 						        BasicStroke.JOIN_MITER, 1.0f, new float[] {0.18f, 0.18f}, 0.00f);
 						
 						return superProperties.getStroke();
@@ -221,13 +221,12 @@ public class VisualArc extends VisualConnection
 					public boolean hitTest(Point2D point) {
 						Rectangle2D lbb = context.resolve(label.boundingBox);
 						if (lbb!=null && lbb.contains(point)) return true;
-						
 						return superShape.hitTest(point);
 					}
 					
 					@Override
 					public Point2D getCenter() {
-						return null;
+						return VisualArc.this.getPointOnConnection(0.5);
 					}
 					
 					@Override

@@ -24,7 +24,7 @@ package org.workcraft.parsers.breeze.expressions;
 import org.workcraft.parsers.breeze.ParameterScope;
 import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
-public class Constant<T> extends Expression<T> {
+public class Constant<T> implements Expression<T> {
 	private final T value;
 	
 	public Constant (T value) {

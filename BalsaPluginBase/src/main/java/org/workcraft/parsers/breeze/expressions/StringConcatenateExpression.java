@@ -26,7 +26,7 @@ import org.workcraft.parsers.breeze.ParameterScope;
 import org.workcraft.parsers.breeze.expressions.visitors.Visitor;
 
 
-public class StringConcatenateExpression extends Expression<String> {
+public class StringConcatenateExpression implements Expression<String> {
 
 	private final List<Expression<String>> args;
 

@@ -30,11 +30,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
@@ -56,7 +56,8 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 	private final Expression<? extends ParametricCurve> parametricCurve;
 	
 	private Node parent;
-	private BezierControlPoint cp1, cp2;
+	private final Variable<BezierControlPoint> cp1 = new Variable<BezierControlPoint>(null);
+	private final Variable<BezierControlPoint> cp2 = new Variable<BezierControlPoint>(null);
 	private final ControlPointScaler scaler;
 	
 	@Override
@@ -87,11 +88,13 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 			@Override
 			public CubicCurve2D evaluate(org.workcraft.dependencymanager.advanced.core.EvaluationContext resolver) {
 				CubicCurve2D result = new CubicCurve2D.Double();
-				result.setCurve(resolver.resolve(connectionInfo).getFirstShape().getCenter(), resolver.resolve(cp1.position()), resolver.resolve(cp2.position()), resolver.resolve(connectionInfo).getSecondShape().getCenter());
+				result.setCurve(resolver.resolve(connectionInfo).getFirstShape().getCenter(), resolver.resolve(resolver.resolve(cp1).position()), resolver.resolve(resolver.resolve(cp2).position()), resolver.resolve(connectionInfo).getSecondShape().getCenter());
 				return result;
 			};
 		};
 		this.visibleCurve2D = getPartialCurve(fullCurve2D, curveInfo);
+		
+		setDefaultControlPoints();
 	}
 	
 	@Override
@@ -127,7 +130,9 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 			}
 		};
 		
-		initControlPoints (new BezierControlPoint(p1), new BezierControlPoint(p2)); 
+		BezierControlPoint cp1 = new BezierControlPoint(p1);
+		BezierControlPoint cp2 = new BezierControlPoint(p2);
+		initControlPoints (cp1, cp2);
 
 		Point2D c1 = eval(p1);
 		Point2D c2 = eval(p2);
@@ -138,17 +143,23 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 	}
 	
 	public void initControlPoints(BezierControlPoint cp1, BezierControlPoint cp2) {
-		this.cp1 = cp1;
-		this.cp2 = cp2;
+		this.cp1.setValue(cp1);
+		this.cp2.setValue(cp2);
 	}
 	
 	public void finaliseControlPoints() {
-		cp1.parent().setValue(this);
-		cp2.parent().setValue(this);
+		eval(cp1).parent().setValue(this);
+		eval(cp2).parent().setValue(this);
 	}
 	
-	public BezierControlPoint[] getControlPoints() {
-		return new BezierControlPoint[] { cp1, cp2 };
+	public Expression<BezierControlPoint[]> getControlPoints() {
+		return new ExpressionBase<BezierControlPoint[]>(){
+
+			@Override
+			protected BezierControlPoint[] evaluate(EvaluationContext context) {
+				return new BezierControlPoint[] { context.resolve(cp1), context.resolve(cp2) };
+			}
+		};
 	}
 	
 	@Override
@@ -202,8 +213,14 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 	}
 	
 	@Override
-	public Expression<? extends Collection<ControlPoint>> children() {
-		return Expressions.constant(Arrays.asList( new ControlPoint[] { cp1, cp2 }));
+	public Expression<? extends Collection<? extends ControlPoint>> children() {
+		return new ExpressionBase<List<BezierControlPoint>>(){
+			@Override
+			protected List<BezierControlPoint> evaluate(
+					EvaluationContext context) {
+				return Arrays.asList(context.resolve(getControlPoints()));
+			}
+		};
 	}
 	
 	@Override

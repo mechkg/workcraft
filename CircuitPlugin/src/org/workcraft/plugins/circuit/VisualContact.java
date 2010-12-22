@@ -41,6 +41,7 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
+import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 import org.workcraft.observation.PropertyChangedEvent;
 import org.workcraft.observation.StateEvent;
@@ -135,7 +136,7 @@ public class VisualContact extends VisualComponent implements StateObserver {
 		
 		addPropertyDeclaration(new PropertyDeclaration(this, "Direction", "getDirection", "setDirection", VisualContact.Direction.class, directions));
 		addPropertyDeclaration(new PropertyDeclaration(this, "I/O type", "getIOType", "setIOType", Contact.IOType.class, types));
-		addPropertyDeclaration(new PropertyDeclaration(this, "Name", "getName", "setName", String.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Name", name(), String.class));
 	}
 	
 	@Override

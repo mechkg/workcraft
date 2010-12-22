@@ -1,6 +1,6 @@
 /*
 *
-* Copyright 2008,2009 Newcastle University
+Copyright 2008,2009 Newcastle University
 *
 * This file is part of Workcraft.
 * 
@@ -36,18 +36,21 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.Drawable;
 import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualNode;
+import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
@@ -57,19 +60,19 @@ public class VisualConnection extends VisualNode implements
 	
 	private final class Properties extends ExpressionBase<VisualConnectionProperties> {
 		@Override
-		public VisualConnectionProperties evaluate(EvaluationContext resolver) {
+		public VisualConnectionProperties evaluate(final EvaluationContext resolver) {
 			final Touchable firstShape = resolver.resolve(transformedShape1);
 			final Touchable secondShape = resolver.resolve(transformedShape2);
 			return new VisualConnectionProperties() {
 
 				@Override
 				public Color getDrawColor() {
-					return color;
+					return resolver.resolve(color());
 				}
 
 				@Override
 				public double getArrowWidth() {
-					return VisualConnection.this.getArrowWidth();
+					return resolver.resolve(arrowWidth());
 				}
 
 				@Override
@@ -90,17 +93,17 @@ public class VisualConnection extends VisualNode implements
 				@Override
 				public Stroke getStroke()
 				{
-					return new BasicStroke((float)getLineWidth());
+					return new BasicStroke((float)resolver.resolve(lineWidth()).doubleValue());
 				}
 
 				@Override
 				public double getArrowLength() {
-					return VisualConnection.this.getArrowLength();
+					return resolver.resolve(arrowLength());
 				}
 
 				@Override
 				public ScaleMode getScaleMode() {
-					return VisualConnection.this.getScaleMode();
+					return resolver.resolve(scaleMode());
 				}
 			};
 		}
@@ -126,35 +129,62 @@ public class VisualConnection extends VisualNode implements
 	private VisualComponent second;
 
 	private ConnectionType connectionType = ConnectionType.POLYLINE;
-	private ScaleMode scaleMode = ScaleMode.LOCK_RELATIVELY;
+	private Variable<ScaleMode> scaleMode = new Variable<ScaleMode>(ScaleMode.LOCK_RELATIVELY);
 	
 	private ConnectionGraphic graphic = null;
 
+	static class BoundedVariable extends ModifiableExpressionImpl<Double>
+	{	
+		double value;
+		private final double min;
+		private final double max;
+		
+		public BoundedVariable(double min, double max, double value) {
+			this.min = min;
+			this.max = max;
+			this.value = value;
+		}
+
+		@Override
+		protected void simpleSetValue(Double newValue) {
+			if(newValue < min)
+				newValue = min;
+			if(newValue > max)
+				newValue = max;
+			value = newValue;
+		}
+
+		@Override
+		protected Double evaluate(EvaluationContext context) {
+			return value;
+		}
+	}
+	
 	private static double defaultLineWidth = 0.02;
 	private static double defaultArrowWidth = 0.15;
 	private static double defaultArrowLength = 0.4;
 	public static double HIT_THRESHOLD = 0.2;
 	private static Color defaultColor = Color.BLACK;
 
-	private Color color = defaultColor;
-	private double lineWidth = defaultLineWidth;
-	private double arrowWidth = defaultArrowWidth;
-	private double arrowLength = defaultArrowLength;
+	private Variable<Color> color = new Variable<Color>(defaultColor);
+	private ModifiableExpression<Double> lineWidth = new BoundedVariable(0.01, 0.5, defaultLineWidth);
+	private ModifiableExpression<Double> arrowWidth = new BoundedVariable(0.1, 1, defaultArrowWidth);
+	private ModifiableExpression<Double> arrowLength = new BoundedVariable(0.1, 1, defaultArrowLength);
 	
 	private CachedHashSet<Node> children = new CachedHashSet<Node>();
 	private ExpressionBase<Touchable> transformedShape1;
 	private ExpressionBase<Touchable> transformedShape2;
 	
 	protected void initialise() {
-		addPropertyDeclaration(new PropertyDeclaration(this, "Line width", "getLineWidth", "setLineWidth", double.class));
-		addPropertyDeclaration(new PropertyDeclaration(this, "Arrow width", "getArrowWidth", "setArrowWidth", double.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Line width", lineWidth(), lineWidth(), Double.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Arrow width", arrowWidth(), Double.class));
 
 		LinkedHashMap<String, Object> arrowLengths = new LinkedHashMap<String, Object>();
 		arrowLengths.put("short", 0.2);
 		arrowLengths.put("medium", 0.4);
 		arrowLengths.put("long", 0.8);
 
-		addPropertyDeclaration(new PropertyDeclaration(this, "Arrow length", "getArrowLength", "setArrowLength", double.class, arrowLengths));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Arrow length", arrowLength(), arrowLength(), Double.class, arrowLengths));
 
 		LinkedHashMap<String, Object> hm = new LinkedHashMap<String, Object>();
 
@@ -171,7 +201,7 @@ public class VisualConnection extends VisualNode implements
 		hm2.put("Stretch", ScaleMode.STRETCH);
 		hm2.put("Adaptive", ScaleMode.ADAPTIVE);
 
-		addPropertyDeclaration(new PropertyDeclaration(this, "Scale mode", "getScaleMode", "setScaleMode", ScaleMode.class, hm2));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Scale mode", scaleMode(), scaleMode(), ScaleMode.class, hm2));
 		
 		transformedShape1 = ComponentsTransformer.transform(first, this);
 		transformedShape2 = ComponentsTransformer.transform(second, this);
@@ -238,59 +268,20 @@ public class VisualConnection extends VisualNode implements
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.workcraft.dom.visual.connections.VisualConnectionInfo#getColor()
-	 */
-	public Color getColor() {
+	public ModifiableExpression<Color> color() {
 		return color;
 	}
 
-	public void setColor(Color color) {
-		this.color = color;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.workcraft.dom.visual.connections.VisualConnectionInfo#getLineWidth()
-	 */
-	public double getLineWidth() {
+	public ModifiableExpression<Double> lineWidth() {
 		return lineWidth;
 	}
-
-	public void setLineWidth(double lineWidth) {
-		if (lineWidth < 0.01)
-			lineWidth = 0.01;
-		if (lineWidth > 0.5)
-			lineWidth = 0.5;
-		this.lineWidth = lineWidth;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.workcraft.dom.visual.connections.VisualConnectionInfo#getArrowWidth()
-	 */
-	public double getArrowWidth() {
+	
+	public ModifiableExpression<Double> arrowWidth() {
 		return arrowWidth;
 	}
-
-	public void setArrowWidth(double arrowWidth) {
-		if (arrowWidth > 1)
-			arrowWidth = 1;
-		if (arrowWidth < 0.1)
-			arrowWidth = 0.1;
-		this.arrowWidth = arrowWidth;
-	}
-
-	public double getArrowLength()
-	{
-		//if (!hasArrow()) return 0.0;
+	
+	public ModifiableExpression<Double> arrowLength() {
 		return arrowLength;
-	}
-
-	public void setArrowLength(double arrowLength) {
-		if (arrowLength > 1)
-			arrowLength = 1;
-		if (arrowLength < 0.1)
-			arrowLength = 0.1;
-		this.arrowLength = arrowLength;
 	}
 
 	public Point2D getPointOnConnection(double t) {
@@ -335,13 +326,9 @@ public class VisualConnection extends VisualNode implements
 	public ExpressionBase<? extends Collection<Node>> children() {
 		return children;
 	}
-
-	public ScaleMode getScaleMode() {
+	
+	public ModifiableExpression<ScaleMode> scaleMode() {
 		return scaleMode;
-	}
-
-	public void setScaleMode(ScaleMode scaleMode) {
-		this.scaleMode = scaleMode;
 	}
 	
 	public ExpressionBase<VisualConnectionProperties> properties() {

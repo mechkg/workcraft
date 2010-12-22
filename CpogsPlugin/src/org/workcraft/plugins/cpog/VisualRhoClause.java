@@ -109,9 +109,9 @@ public class VisualRhoClause extends VisualComponent
 
 						g.setStroke(new BasicStroke(strokeWidth));
 
-						g.setColor(Coloriser.colorise(getFillColor(), colorisation));
+						g.setColor(Coloriser.colorise(context.resolve(fillColor()), colorisation));
 						g.fill(bb);
-						g.setColor(Coloriser.colorise(getForegroundColor(), colorisation));
+						g.setColor(Coloriser.colorise(context.resolve(foregroundColor()), colorisation));
 						g.draw(bb);
 						
 						AffineTransform transform = g.getTransform();
@@ -134,7 +134,7 @@ public class VisualRhoClause extends VisualComponent
 			if(value == Zero.instance())
 				return Color.RED;
 			else
-				return getForegroundColor();
+				return context.resolve(foregroundColor());
 	}
 
 	private Expression<BooleanFormula> value() {
@@ -193,7 +193,7 @@ public class VisualRhoClause extends VisualComponent
 
 					@Override
 					public Point2D getCenter() {
-						return new Point2D.Double(getBoundingBox().getCenterX(), getBoundingBox().getCenterY());
+						return new Point2D.Double(0, 0);
 					}
 					
 				};

@@ -65,7 +65,7 @@ public class VisualBreezeComponent extends VisualComponent implements Drawable
 	HandshakeVisualLayout visualLayout;
 	DynamicComponent balsaComponent;
 	
-	private static final double sideDoubleHandshakeAngle = 3.141592/4; // 45 degrees in radians
+	private static final double sideDoubleHandshakeAngle = Math.PI/4; // 45 degrees in radians
 	private static final double componentRadius = 0.5;
 	private static final double handshakeRadius = componentRadius/5;
 	private final BreezeComponent refComponent;
@@ -109,7 +109,6 @@ public class VisualBreezeComponent extends VisualComponent implements Drawable
 	}
 
 	Collection<Node> subNodes;
-
 	
 	@Override
 	public Collection<Node> getChildren() {

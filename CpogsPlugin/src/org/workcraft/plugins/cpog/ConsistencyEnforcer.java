@@ -32,11 +32,11 @@ public class ConsistencyEnforcer extends HierarchySupervisor {
 		{
 			if (node instanceof VisualVertex)
 			{
-				((VisualVertex) node).setLabel("v_" + vertexCount++);
+				((VisualVertex) node).label().setValue("v_" + vertexCount++);
 			}
 			if (node instanceof VisualVariable)
 			{
-				((VisualVariable) node).setLabel("x_" + variableCount++);
+				((VisualVariable) node).label().setValue("x_" + variableCount++);
 			}
 		}
 	}

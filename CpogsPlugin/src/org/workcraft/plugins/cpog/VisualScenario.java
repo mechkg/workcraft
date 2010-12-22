@@ -25,7 +25,7 @@ import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
+import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 import org.workcraft.util.Hierarchy;
@@ -71,8 +71,8 @@ public class VisualScenario extends VisualGroup
 	
 	public VisualScenario()
 	{
-		addPropertyDeclaration(new PropertyDeclaration(this, "Label", "getLabel", "setLabel", String.class));
-		addPropertyDeclaration(new PropertyDeclaration(this, "Encoding", "getEncoding", "setEncoding", Encoding.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Label", label(), String.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Encoding", encoding(), Encoding.class));
 	}
 
 	@Override
@@ -185,13 +185,13 @@ public class VisualScenario extends VisualGroup
 					
 							// draw encoding
 							
-							Rectangle2D encBB = null;
-							
 							Set<Variable> sortedVariables = new TreeSet<Variable>(new ReverseComparator());
 							sortedVariables.addAll(context.resolve(encoding).getStates().keySet());
 							
 							double right = bb.getMaxX();
 							double top = bb.getMaxY();
+							
+							Rectangle2D encBB = new Rectangle2D.Double(right, top, 0, 0);
 							
 							variableBBs.clear();			
 							

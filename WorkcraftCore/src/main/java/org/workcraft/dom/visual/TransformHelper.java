@@ -87,11 +87,13 @@ public class TransformHelper {
 			public AffineTransform evaluate(EvaluationContext resolver) {
 				
 				AffineTransform t = new AffineTransform();
-				Node tmp = resolver.resolve(node);
-				while (resolver.resolve(ancestor) != tmp) {
+				Node nodeInQuestion = resolver.resolve(node);
+				Node tmp = nodeInQuestion;
+				Node ancestorNode = resolver.resolve(ancestor);
+				while (ancestorNode != tmp) {
 					Node next = resolver.resolve(tmp.parent()); 
 					if (next == null)
-						throw new NotAnAncestorException();
+						throw new NotAnAncestorException(nodeInQuestion, ancestorNode);
 					if(next instanceof MovableNew)
 						t.preConcatenate(resolver.resolve(((MovableNew)next).transform()));
 					tmp = next;

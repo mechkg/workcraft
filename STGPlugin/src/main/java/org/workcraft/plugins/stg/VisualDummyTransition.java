@@ -68,7 +68,8 @@ public class VisualDummyTransition extends VisualTransition {
 
 					@Override
 					public void draw(DrawRequest r) {
-						drawLabelInLocalSpace(r);
+						
+						context.resolve(labelGraphics()).draw(r);
 
 						Graphics2D g = r.getGraphics();
 						
@@ -108,8 +109,7 @@ public class VisualDummyTransition extends VisualTransition {
 
 					@Override
 					public Point2D getCenter() {
-						Rectangle2D bb = getBoundingBox();
-						return new Point2D.Double(bb.getCenterX(), bb.getCenterY());
+						return new Point2D.Double(0, 0);
 					}
 					
 				};

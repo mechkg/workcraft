@@ -35,10 +35,11 @@ import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.GraphicalContent;
@@ -46,7 +47,6 @@ import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
 @DisplayName("Place")
@@ -56,7 +56,7 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 	protected static double singleTokenSize = CommonVisualSettings.getSize() / 1.9;
 	protected static double multipleTokenSeparation = CommonVisualSettings.getStrokeWidth() / 8;
 	
-	private Color tokenColor = CommonVisualSettings.getForegroundColor();
+	private Variable<Color> tokenColor = new Variable<Color>(CommonVisualSettings.getForegroundColor());
 	
 	public Place getPlace() {
 		return (Place)getReferencedComponent();
@@ -72,8 +72,8 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 	}
 	
 	private void addPropertyDeclarations() {
-		addPropertyDeclaration(new ExpressionPropertyDeclaration<Integer>("Tokens", tokens(), tokens(), Integer.class));
-		addPropertyDeclaration(new PropertyDeclaration (this, "Token color", "getTokenColor", "setTokenColor", Color.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Tokens", tokens(), tokens(), Integer.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Token color", tokenColor(), tokenColor(), Color.class));
 	}
 
 	public static void drawTokens(int tokens, double singleTokenSize, double multipleTokenSeparation, 
@@ -138,7 +138,7 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 					public void draw(DrawRequest r) {
 						Graphics2D g = r.getGraphics();
 						
-						drawLabelInLocalSpace(r);
+						context.resolve(labelGraphics()).draw(r);
 						
 						double size = CommonVisualSettings.getSize();
 						double strokeWidth = CommonVisualSettings.getStrokeWidth();
@@ -149,15 +149,15 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 								size - strokeWidth,
 								size - strokeWidth);
 	
-						g.setColor(Coloriser.colorise(getFillColor(), r.getDecoration().getColorisation()));
+						g.setColor(Coloriser.colorise(context.resolve(fillColor()), r.getDecoration().getColorisation()));
 						g.fill(shape);
-						g.setColor(Coloriser.colorise(getForegroundColor(), r.getDecoration().getColorisation()));
+						g.setColor(Coloriser.colorise(context.resolve(foregroundColor()), r.getDecoration().getColorisation()));
 						g.setStroke(new BasicStroke((float)strokeWidth));
 						g.draw(shape);
 	
 						Place p = (Place)getReferencedComponent();
 						
-						drawTokens(context.resolve(p.tokens()), singleTokenSize, multipleTokenSeparation, size, strokeWidth, Coloriser.colorise(getTokenColor(), r.getDecoration().getColorisation()), g);
+						drawTokens(context.resolve(p.tokens()), singleTokenSize, multipleTokenSeparation, size, strokeWidth, Coloriser.colorise(context.resolve(tokenColor()), r.getDecoration().getColorisation()), g);
 					}
 				};
 			}
@@ -167,12 +167,8 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 		return (Place)getReferencedComponent();
 	}
 
-	public Color getTokenColor() {
+	public ModifiableExpression<Color> tokenColor() {
 		return tokenColor;
-	}
-
-	public void setTokenColor(Color tokenColor) {
-		this.tokenColor = tokenColor;
 	}
 
 	@Override
@@ -193,7 +189,7 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 
 			@Override
 			public Point2D getCenter() {
-				return new Point2D.Double(getBoundingBox().getCenterX(), getBoundingBox().getCenterY());
+				return new Point2D.Double(0, 0);
 			}
 		});
 	}

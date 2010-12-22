@@ -23,6 +23,7 @@ package org.workcraft.plugins.cpog.serialisation;
 
 import org.workcraft.plugins.cpog.Arc;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class ArcSerialiser extends BooleanFormulaSerialiser
 {
@@ -35,6 +36,6 @@ public class ArcSerialiser extends BooleanFormulaSerialiser
 	@Override	
 	protected BooleanFormula getFormula(Object serialisee)
 	{
-		return ((Arc) serialisee).getCondition();
+		return eval(((Arc) serialisee).condition());
 	}
 }

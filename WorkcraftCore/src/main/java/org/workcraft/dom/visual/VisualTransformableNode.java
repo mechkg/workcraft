@@ -109,8 +109,8 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 	};
 	
 	private void addPropertyDeclarations() {
-		addPropertyDeclaration(new ExpressionPropertyDeclaration<Double>("X", x(), x(), Double.class));
-		addPropertyDeclaration(new ExpressionPropertyDeclaration<Double>("Y", y(), y(), Double.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("X", x(), Double.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Y", y(), Double.class));
 	}
 
 	public VisualTransformableNode() {

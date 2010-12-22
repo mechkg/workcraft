@@ -269,7 +269,7 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 				Line2D seg = getSegment(i);
 				result = BoundingBoxHelper.union(result, getSegmentBoundsWithThreshold(seg));
 			}
-			return null;
+			return result;
 		}
 	}
 

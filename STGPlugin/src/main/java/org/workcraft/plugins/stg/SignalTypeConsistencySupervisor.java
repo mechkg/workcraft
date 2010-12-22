@@ -24,6 +24,8 @@
  */
 package org.workcraft.plugins.stg;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -34,11 +36,14 @@ import org.workcraft.observation.StateSupervisor;
 import org.workcraft.util.Func;
 import org.workcraft.util.Null;
 
+
+//TODO: supervise signal consistency in some other way, to get rid of the listener
 class SignalTypeConsistencySupervisor extends StateSupervisor {
 	static class SupervisionNode extends ExpressionBase<Null> {
 
 		private final SignalTransition transition;
 		private String oldName = null;
+		private SignalTransition.Type oldType = null;
 		private final STG stg;
 
 		public SupervisionNode(STG stg, SignalTransition transition) {
@@ -47,22 +52,36 @@ class SignalTypeConsistencySupervisor extends StateSupervisor {
 		}
 		
 		@Override
-		public Null evaluate(EvaluationContext resolver) {
+		public Null evaluate(EvaluationContext context) {
 
-			String signalName = resolver.resolve(transition.signalName());
+			String signalName = context.resolve(transition.signalName());
 			
 			Collection<SignalTransition> sameName = new ArrayList<SignalTransition>(stg.getSignalTransitions(signalName));
 			sameName.remove(transition);
 			
-			SignalTransition.Type signalType = resolver.resolve(transition.signalType());
+			System.out.println("updated for node " + transition);
 			
 			if(oldName == null || !oldName.equals(signalName)) {
 				if (!sameName.isEmpty())
-					transition.signalType().setValue(resolver.resolve(sameName.iterator().next().signalType()));
+				{
+					// look out! replacing 'eval' with 'context.resolve' will make this expression self-modifying  
+					transition.signalType().setValue(eval(sameName.iterator().next().signalType()));
+				}
+				// subscribe to transition signal type changes:
+				oldType = context.resolve(transition.signalType()); 
+				
 			} else {
-				for (SignalTransition tt : sameName)
-					if (!signalType.equals(resolver.resolve(tt.signalType())))
-						tt.signalType().setValue(signalType);
+				SignalTransition.Type signalType = context.resolve(transition.signalType());
+				if(oldType == null || !oldType.equals(signalType)) {
+					oldType = signalType;
+					for (SignalTransition tt : sameName)
+					{
+						if(tt == transition)
+							throw new RuntimeException("qweqwe");
+						if (!signalType.equals(eval(tt.signalType())))
+							tt.signalType().setValue(signalType);
+					}
+				}
 			}
 			
 			oldName = signalName;

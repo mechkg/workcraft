@@ -1,15 +1,15 @@
 package org.workcraft.relational.petrinet.model;
 
+import static org.workcraft.dependencymanager.advanced.core.Expressions.constant;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
-
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import javax.swing.plaf.basic.BasicTreeUI.TreeHomeAction;
 
 import junit.framework.Assert;
 
@@ -35,9 +35,6 @@ import org.workcraft.relational.petrinet.typeunsafe.TypeUnsafePetriNetWrapper;
 import pcollections.HashTreePMap;
 import pcollections.TreePVector;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
-
 public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 
 	public VisualModel() {
@@ -49,9 +46,9 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 		
 		System.out.println("root visual group id: " + rootVNode);
 		
-		createVisualPlace(new Point2D.Double(3, 3));
+		createVisualPlace(new Point2D.Double(3, 3), Color.RED);
 		createVisualTransition(new Point2D.Double(0, 0));
-		createVisualPlace(new Point2D.Double(3, 0));
+		createVisualPlace(new Point2D.Double(3, 0), Color.GREEN);
 		createVisualTransition(new Point2D.Double(0, 3));
 		
 		Assert.assertEquals(4, eval(root.children()).size());
@@ -74,10 +71,10 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 		selection.add(node);
 	}
 	
-	public Id createVisualPlace(Point2D point) {
+	public Id createVisualPlace(Point2D point, Color tokenColor) {
 		Id mathPlace = data.add("place", HashTreePMap.<String, Object>empty().plus("initialMarking", 0).plus("name", "p0"));
 		Id visualNode = data.add("visualNode", HashTreePMap.<String, Object>empty().plus("transform", AffineTransform.getTranslateInstance(point.getX(), point.getY())).plus("parent", currentLevel.getVisualGroupId()));
-		return data.add("visualPlace", HashTreePMap.<String, Object>empty().plus("tokenColor", Color.GREEN).plus("visualNode", visualNode).plus("mathNode", mathPlace));
+		return data.add("visualPlace", HashTreePMap.<String, Object>empty().plus("tokenColor", tokenColor).plus("visualNode", visualNode).plus("mathNode", mathPlace));
 	}
 
 	public Id createVisualTransition(Point2D point) {

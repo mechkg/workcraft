@@ -1,5 +1,7 @@
 package org.workcraft.dependencymanager.advanced.core;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashSet;
 
 import org.workcraft.dependencymanager.util.listeners.Listener;
@@ -18,8 +20,10 @@ public abstract class ExpressionBase<T> implements Expression<T> {
 	
 	static class Cache<T> implements Listener {
 		public T value;
+		public boolean filled = false;
 		public boolean valid = true;
 		HashSet<Listener> dependencies = new HashSet<Listener>(); // used to make sure the dependencies don't get garbage collected too early
+		//Exception stackTrace = new Exception("Stack trace");
 
 		WeakFireOnceListenersCollection listeners = new WeakFireOnceListenersCollection();
 		
@@ -30,8 +34,19 @@ public abstract class ExpressionBase<T> implements Expression<T> {
 			return res.value;
 		}
 		
+/*		@Override
+		public String toString() {
+			StringWriter writer = new StringWriter();
+			stackTrace.printStackTrace(new PrintWriter(writer));
+			return super.toString() + " created with the following stack trace: \n" + writer.toString(); 
+		}*/
+		
 		@Override
 		public void changed() {
+			if(!filled) {
+				throw new RuntimeException("error: tried to invalidate an expression during its evaluation");
+			}
+			
 			if(listeners != null) {
 				valid = false;
 				listeners.changed();
@@ -56,7 +71,9 @@ public abstract class ExpressionBase<T> implements Expression<T> {
 				}
 			});
 			c.value = result;
-			c.listeners.addListener(subscriber);
+			c.filled = true;
+			WeakFireOnceListenersCollection listeners = c.listeners;
+			listeners.addListener(subscriber);
 			
 			cache = c;
 			

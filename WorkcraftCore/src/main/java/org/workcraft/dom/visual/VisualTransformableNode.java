@@ -104,7 +104,7 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 	protected ExpressionBase<AffineTransform> parentToLocalTransform = new ExpressionBase<AffineTransform>(){
 		@Override
 		public AffineTransform evaluate(org.workcraft.dependencymanager.advanced.core.EvaluationContext resolver) {
-			return Geometry.optimisticInverse(resolver.resolve(localToParentTransform));
+			return Geometry.optimisticInverse(resolver.resolve(transform()));
 		}
 	};
 	
@@ -133,17 +133,17 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 
 	@NoAutoSerialisation
 	public ModifiableExpression<Double> x() {
-		return new AffineTransform_X(localToParentTransform);
+		return new AffineTransform_X(transform());
 	}
 
 	@NoAutoSerialisation
 	public ModifiableExpression<Double> y() {
-		return new AffineTransform_Y(localToParentTransform);
+		return new AffineTransform_Y(transform());
 	}
 	
 	@NoAutoSerialisation
 	public ModifiableExpression<Point2D> position() {
-		return new AffineTransform_Position(localToParentTransform);
+		return new AffineTransform_Position(transform());
 	}
 
 	protected Rectangle2D transformToParentSpace(Rectangle2D rect)
@@ -168,8 +168,8 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		return localToParentTransform.getValue();
 	}
 	
-	public AffineTransform getParentToLocalTransform() {
-		return GlobalCache.eval(parentToLocalTransform);
+	public Expression<AffineTransform> parentToLocalTransform() {
+		return parentToLocalTransform;
 	}
 	
 	public void applyTransform(AffineTransform transform)

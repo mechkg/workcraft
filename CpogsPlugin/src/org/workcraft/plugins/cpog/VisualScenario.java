@@ -18,6 +18,7 @@ import java.util.TreeSet;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
@@ -281,7 +282,7 @@ public class VisualScenario extends VisualGroup
 	public Variable getVariableAt(Point2D p)
 	{
 		Point2D q = new Point2D.Double();
-		getParentToLocalTransform().transform(p, q);
+		GlobalCache.eval(parentToLocalTransform()).transform(p, q);
 		for(Rectangle2D rect : variableBBs.keySet())
 			if (rect.contains(q)) return variableBBs.get(rect);
 		

@@ -42,6 +42,8 @@ import org.workcraft.util.Hierarchy;
 import org.workcraft.util.Import;
 import org.workcraft.workspace.ModelEntry;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class DotGImporterTests {
 	@Test
 	public void Test1() throws IOException, DeserialisationException
@@ -93,7 +95,7 @@ public class DotGImporterTests {
 		int explicitPlaces = 0;
 		for(Place p : imported.getPlaces())
 		{
-			if(!((STGPlace)p).isImplicit()) explicitPlaces ++;
+			if(!eval(((STGPlace)p).implicit())) explicitPlaces ++;
 		}
 		
 		Assert.assertEquals(2, explicitPlaces);

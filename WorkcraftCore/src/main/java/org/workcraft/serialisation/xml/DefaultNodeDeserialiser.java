@@ -21,16 +21,15 @@
 
 package org.workcraft.serialisation.xml;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 
 import org.w3c.dom.Element;
+import org.workcraft.annotations.Annotations;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.serialisation.ReferenceResolver;
@@ -49,11 +48,12 @@ class DefaultNodeDeserialiser {
 	}
 
 	private void autoDeserialiseProperties(Element currentLevelElement,
-			Object instance, Class<?> currentLevel,
+			Object instance, Class<?> type,
 			ReferenceResolver externalReferenceResolver)
 			throws DeserialisationException {
-		if (currentLevel.getAnnotation(NoAutoSerialisation.class) != null)
-			return;
+		
+		// type explicitly requested to be auto-serialised
+		boolean autoSerialisedClass = Annotations.doAutoSerialisation(type); 
 
 		try
 		{
@@ -63,33 +63,18 @@ class DefaultNodeDeserialiser {
 			for (Element e : propertyElements)
 				nameMap.put(e.getAttribute("name"), e);
 
-			BeanInfo info = Introspector.getBeanInfo(currentLevel, currentLevel.getSuperclass());
-
-			for (PropertyDescriptor desc : info.getPropertyDescriptors())
+			for (Method property : DefaultNodeSerialiser.getProperties(type, autoSerialisedClass))
 			{
-				if (!nameMap.containsKey(desc.getName()))
+				if (!nameMap.containsKey(property.getName()))
 					continue;
 
-				if (desc.getPropertyType() == null)
-					continue;
-
-				if (desc.getWriteMethod() == null || desc.getReadMethod() == null)
-					continue;
-
-				// property explicitly requested to be excluded from auto serialisation
-				if (
-						desc.getReadMethod().getAnnotation(NoAutoSerialisation.class) != null ||
-						desc.getWriteMethod().getAnnotation(NoAutoSerialisation.class) != null
-				)
-					continue;
-
-				// the property is writable and is not of array type, try to get a deserialiser
-				XMLDeserialiser deserialiser = fac.getDeserialiserFor(desc.getPropertyType().getName());
+				Class<?> propertyType = DefaultNodeSerialiser.getPropertyType(property);
+				XMLDeserialiser deserialiser = fac.getDeserialiserFor(propertyType.getName());
 
 				if (!(deserialiser instanceof BasicXMLDeserialiser))
 				{
 					// no deserialiser, try to use the special case enum deserialiser
-					if (desc.getPropertyType().isEnum())
+					if (propertyType.isEnum())
 					{
 						deserialiser = fac.getDeserialiserFor(Enum.class.getName());
 						if (deserialiser == null)
@@ -98,20 +83,21 @@ class DefaultNodeDeserialiser {
 						continue;
 				}
 
-				Element element = nameMap.get(desc.getName());
+				Element element = nameMap.get(property.getName());
 				Object value = ((BasicXMLDeserialiser)deserialiser).deserialise(element);
 
-				desc.getWriteMethod().invoke(instance, value);
+				// we know that 'setValue' accepts propertyType
+				@SuppressWarnings("unchecked")
+				ModifiableExpression<Object> expr = (ModifiableExpression<Object>) property.invoke(instance);
+				expr.setValue(propertyType.cast(value));
 			}
 		} catch (IllegalArgumentException e) {
 			throw new DeserialisationException(e);
 		} catch (IllegalAccessException e) {
 			throw new DeserialisationException(e);
 		} catch (InvocationTargetException e) {
-			throw new DeserialisationException(instance.getClass().getName() + " " + currentLevel.getName() + " "+ e.getMessage(), e);			
+			throw new DeserialisationException(instance.getClass().getName() + " " + type.getName() + " "+ e.getMessage(), e);			
 		} catch (InstantiationException e) {
-			throw new DeserialisationException(e);			
-		} catch (IntrospectionException e) {
 			throw new DeserialisationException(e);
 		}
 	}

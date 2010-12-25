@@ -139,6 +139,7 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 		};
 	}
 	
+	@NoAutoSerialisation
 	public ModifiableExpression<Integer> tokens() {
 		return unfold(new ExpressionBase<ModifiableExpression<Integer>>(){
 			@Override

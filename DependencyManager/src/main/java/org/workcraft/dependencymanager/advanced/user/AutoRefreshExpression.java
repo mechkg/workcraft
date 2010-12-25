@@ -2,6 +2,7 @@ package org.workcraft.dependencymanager.advanced.user;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Handle;
 import org.workcraft.dependencymanager.util.listeners.Listener;
 
 /**
@@ -15,7 +16,7 @@ import org.workcraft.dependencymanager.util.listeners.Listener;
  */
 public abstract class AutoRefreshExpression extends ExpressionBase<Null> {
 
-	Listener handle; // to make sure it is not garbage collected
+	Handle handle; // to make sure it is not garbage collected
 	Listener l = new Listener() {
 		@Override
 		public void changed() {

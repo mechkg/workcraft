@@ -45,6 +45,8 @@ import org.workcraft.plugins.petri.VisualTransition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.util.Hierarchy;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 @DisplayName("Signal Transition Graph")
 @CustomTools ( STGToolsProvider.class )
 @DefaultCreateButtons ( { STGPlace.class,  SignalTransition.class, DummyTransition.class } )
@@ -161,7 +163,7 @@ public class VisualSTG extends AbstractVisualModel {
 
 	private void maybeMakeImplicit (VisualPlace place) {
 		final STGPlace stgPlace = (STGPlace)place.getReferencedPlace();
-		if ( stgPlace.isImplicit() ) {
+		if ( eval(stgPlace.implicit()) ) {
 
 			MathConnection refCon1 = null, refCon2 = null;
 

@@ -32,6 +32,6 @@ public class BooleanSerialiser implements BasicXMLSerialiser {
 	}
 
 	public String getClassName() {
-		return boolean.class.getName();
+		return Boolean.class.getName();
 	}
 }

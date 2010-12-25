@@ -25,11 +25,11 @@ public class AutoRefreshTests {
 		@SuppressWarnings("unused") // used to keep reference to avoid garbage collection
 		AutoRefreshExpression refresher = GlobalCache.autoRefresh(o);
 		v.setValue(15);
-		v.setValue(15);
-		v.setValue(15);
-		v.setValue(15);
-		v.setValue(15);
-		v.setValue(15);
+		v.setValue(14);
+		v.setValue(13);
+		v.setValue(12);
+		v.setValue(11);
+		v.setValue(10);
 		Assert.assertEquals(7, refreshCount[0]);
 	}
 }

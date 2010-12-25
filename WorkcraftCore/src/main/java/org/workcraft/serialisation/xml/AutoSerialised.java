@@ -19,19 +19,15 @@
 *
 */
 
-package org.workcraft.plugins.serialisation.xml;
+package org.workcraft.serialisation.xml;
 
-import org.w3c.dom.Element;
-import org.workcraft.exceptions.DeserialisationException;
-import org.workcraft.serialisation.xml.BasicXMLDeserialiser;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class IntDeserialiser implements BasicXMLDeserialiser {
-	public Object deserialise(Element element) throws DeserialisationException {
-		return Integer.parseInt(element.getAttribute("value"));
-	}
-
-	public String getClassName() {
-		return Integer.class.getName();
-	}
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface AutoSerialised {
 
 }

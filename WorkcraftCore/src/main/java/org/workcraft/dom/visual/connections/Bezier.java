@@ -126,7 +126,7 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 		Expression<Point2D> p2 = new ExpressionBase<Point2D>() {
 			@Override
 			protected Point2D evaluate(EvaluationContext context) {
-				return context.resolve(connectionInfo).getFirstShape().getCenter();
+				return context.resolve(connectionInfo).getSecondShape().getCenter();
 			}
 		};
 		

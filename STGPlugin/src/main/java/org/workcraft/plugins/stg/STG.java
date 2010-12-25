@@ -53,6 +53,8 @@ import org.workcraft.util.Pair;
 import org.workcraft.util.SetUtils;
 import org.workcraft.util.Triple;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 @VisualClass("org.workcraft.plugins.stg.VisualSTG")
 public class STG extends AbstractMathModel implements STGModel {
 	private STGReferenceManager referenceManager;
@@ -109,7 +111,7 @@ public class STG extends AbstractMathModel implements STGModel {
 	final public STGPlace createPlace(String name, boolean markAsImplicit) {
 		STGPlace newPlace = new STGPlace();
 
-		newPlace.setImplicit(markAsImplicit);
+		newPlace.implicit().setValue(markAsImplicit);
 
 		if (name!=null)
 			setName(newPlace, name);
@@ -233,7 +235,7 @@ public class STG extends AbstractMathModel implements STGModel {
 	public Properties getProperties(Node node) {
 		Properties.Mix result = new Properties.Mix();
 		if (node instanceof STGPlace) {
-			if (!((STGPlace) node).isImplicit())
+			if (!eval(((STGPlace) node).implicit()))
 				result.add (new NamePropertyDescriptor(this, node));
 		}
 		if (node instanceof SignalTransition) {
@@ -253,7 +255,7 @@ public class STG extends AbstractMathModel implements STGModel {
 	public ConnectionResult connect(Node first, Node second) throws InvalidConnectionException {
 		if (first instanceof Transition && second instanceof Transition) {
 			STGPlace p = new STGPlace();
-			p.setImplicit(true);
+			p.implicit().setValue(true);
 
 			MathConnection con1 = new MathConnection ( (Transition) first, p);
 			MathConnection con2 = new MathConnection ( p, (Transition) second);
@@ -275,7 +277,7 @@ public class STG extends AbstractMathModel implements STGModel {
 		refreshStupidObservers();
 		if(node instanceof STGPlace)
 		{
-			if(((STGPlace) node).isImplicit()) {
+			if(eval(((STGPlace) node).implicit())) {
 				Set<Node> preset = getPreset(node);
 				Set<Node> postset = getPostset(node);
 				
@@ -302,7 +304,7 @@ public class STG extends AbstractMathModel implements STGModel {
 
 			for (Node node : implicitPlaceCandidates) {
 				if (node instanceof STGPlace) {
-					if (((STGPlace) node).isImplicit())
+					if (eval(((STGPlace) node).implicit()))
 						return node;						
 				}
 			}
@@ -314,7 +316,7 @@ public class STG extends AbstractMathModel implements STGModel {
 	}
 
 	public void makeExplicit(STGPlace implicitPlace) {
-		implicitPlace.setImplicit(false);
+		implicitPlace.implicit().setValue(false);
 		referenceManager.setDefaultNameIfUnnamed(implicitPlace);
 	}
 	

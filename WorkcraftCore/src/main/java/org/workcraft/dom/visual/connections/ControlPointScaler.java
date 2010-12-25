@@ -21,6 +21,7 @@
 
 package org.workcraft.dom.visual.connections;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 import static org.workcraft.util.Geometry.add;
 import static org.workcraft.util.Geometry.changeBasis;
 import static org.workcraft.util.Geometry.multiply;
@@ -42,7 +43,6 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
-import org.workcraft.exceptions.ArgumentException;
 
 public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, ModifiableExpression<AffineTransform>>> {
 	private static double THRESHOLD = 0.00001;
@@ -131,12 +131,12 @@ public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, Modifia
 	}
 
 	private void applyScale(List<? extends ControlPoint> cpoints, List<? extends Point2D> scaled) {
-		if(cpoints.size() != scaled.size())
+		/*if(cpoints.size() != scaled.size())
 			throw new ArgumentException("bad arg sizes");
 		for(int i=0;i<cpoints.size();i++) {
 			Point2D p = scaled.get(i);
 			cpoints.get(i).simpleTransform().setValue(AffineTransform.getTranslateInstance(p.getX(), p.getY()));
-		}
+		}*/
 	}
 	
 	@Override
@@ -163,8 +163,8 @@ public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, Modifia
 		
 		applyScale(cpoints, scaled);
 		
-		oldC1 = newC1;
-		oldC2 = newC2;
+		//oldC1 = newC1;
+		//oldC2 = newC2;
 				
 		Map<ControlPoint, ModifiableExpression<AffineTransform>> result = new HashMap<ControlPoint, ModifiableExpression<AffineTransform>>();
 		
@@ -175,7 +175,14 @@ public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, Modifia
 
 				@Override
 				protected void simpleSetValue(AffineTransform newValue) {
-					cpoint.simpleTransform().setValue(newValue);
+					AffineTransform oldValue = eval(this);
+					Point2D shift = new Point2D.Double(
+							newValue.getTranslateX() - oldValue.getTranslateX(), 
+							newValue.getTranslateY() - oldValue.getTranslateY()); 
+					
+					AffineTransform tr = new AffineTransform(eval(cpoint.simpleTransform()));
+					tr.concatenate(AffineTransform.getTranslateInstance(shift.getX(), shift.getY()));
+					cpoint.simpleTransform().setValue(tr);
 				}
 
 				@Override
@@ -186,6 +193,6 @@ public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, Modifia
 			});
 		}
 			
-		return null;
+		return result;
 	}
 }

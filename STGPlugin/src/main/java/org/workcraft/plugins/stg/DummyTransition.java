@@ -31,7 +31,7 @@ import org.workcraft.serialisation.xml.NoAutoSerialisation;
 @DisplayName("Dummy transition")
 @VisualClass("org.workcraft.plugins.stg.VisualDummyTransition")
 public class DummyTransition extends Transition implements StgTransition {
-	private Variable<String> name;
+	private Variable<String> name = Variable.create(null);
 	
 	@NoAutoSerialisation
 	public ModifiableExpression<String> name() {

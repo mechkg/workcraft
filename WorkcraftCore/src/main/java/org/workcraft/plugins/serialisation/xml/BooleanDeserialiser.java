@@ -31,7 +31,7 @@ public class BooleanDeserialiser implements BasicXMLDeserialiser {
 	}
 
 	public String getClassName() {
-		return boolean.class.getName();
+		return Boolean.class.getName();
 	}
 
 }

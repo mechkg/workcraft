@@ -21,16 +21,28 @@
 
 package org.workcraft.annotations;
 
+import java.lang.reflect.Method;
+
 import org.workcraft.dom.visual.CustomToolButtons;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
+import org.workcraft.serialisation.xml.AutoSerialised;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
 public class Annotations {
 	public static boolean doAutoSerialisation(Class<?> cls) {
-		return cls.getAnnotation(NoAutoSerialisation.class) != null;
+		return true;
+		//return cls.getAnnotation(AutoSerialised.class) != null;
+	}
+
+	public static boolean doAutoSerialisation(Method method) {
+		return method.getAnnotation(AutoSerialised.class) != null;
+	}
+
+	public static boolean suppressAutoSerialisation(Method method) {
+		return method.getAnnotation(NoAutoSerialisation.class) != null;
 	}
 
 	public static String getDisplayName(Class<?> cls) {

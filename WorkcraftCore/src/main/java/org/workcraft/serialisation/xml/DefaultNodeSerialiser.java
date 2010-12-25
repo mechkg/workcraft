@@ -21,18 +21,25 @@
 
 package org.workcraft.serialisation.xml;
 
-import java.beans.BeanInfo;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.w3c.dom.Element;
+import org.workcraft.annotations.Annotations;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.serialisation.ReferenceProducer;
+
+import com.googlecode.gentyref.GenericTypeReflector;
 
 public class DefaultNodeSerialiser {
 	private SerialiserFactory fac;
@@ -43,35 +50,43 @@ public class DefaultNodeSerialiser {
 		this.serialiser = serialiser;
 	}
 	
-	private void autoSerialiseProperties(Element element, Object object, Class<?> currentLevel) throws IntrospectionException, InstantiationException, IllegalAccessException, IllegalArgumentException, SerialisationException, InvocationTargetException {
-		// type explicitly requested to be excluded from auto serialisation
-		if (currentLevel.getAnnotation(NoAutoSerialisation.class) != null)
-			return;
+	static Collection<Method> getProperties(Class<?> type, boolean auto) {
+		ArrayList<Method> result = new ArrayList<Method>();
+		for(Method method : type.getMethods()) {
+			boolean isModifiableExpression = ModifiableExpression.class.isAssignableFrom(method.getReturnType()); 
+			boolean markedAsAuto = Annotations.doAutoSerialisation(method);
+			boolean markedAsSuppress = Annotations.suppressAutoSerialisation(method);
+			if (markedAsAuto && !isModifiableExpression) {
+				System.err.println("Warning! The method " + method + " is marked as auto-serialised, but does not return a ModifiableExpression.");
+			}
+			if(!markedAsSuppress && (markedAsAuto || (auto && isModifiableExpression))) {
+				result.add(method);
+			}
+		}
+		if(result.size() == 0)
+			System.err.println("Warning! The class " + type+ " is marked as auto-serialised, but does not contain any methods returning a ModifiableExpression.");
+		return result;
+	}
+ 	
+	private void autoSerialiseProperties(Element element, Object object, Class<?> type) throws IntrospectionException, InstantiationException, IllegalAccessException, IllegalArgumentException, SerialisationException, InvocationTargetException {
+		// type explicitly requested to be auto-serialised
+		boolean autoSerialisedClass = Annotations.doAutoSerialisation(type); 
 		
-		BeanInfo info = Introspector.getBeanInfo(currentLevel, currentLevel.getSuperclass());
+		Collection<Method> properties = getProperties(type, autoSerialisedClass);
+
+		System.out.println("auto-serialising " + properties.size() + " properties of " + type);
 		
-		for (PropertyDescriptor desc : info.getPropertyDescriptors())
+		for (Method property : properties)
 		{
-			if (desc.getPropertyType() == null)
-				continue;
-			
-			if (desc.getWriteMethod() == null || desc.getReadMethod() == null)
-				continue;
-			
-			// property explicitly requested to be excluded from auto serialisation
-			if (
-					desc.getReadMethod().getAnnotation(NoAutoSerialisation.class) != null ||
-					desc.getWriteMethod().getAnnotation(NoAutoSerialisation.class) != null
-					)
-				continue;
-			
 			// the property is writable and is not of array type, try to get a serialiser
-			XMLSerialiser serialiser = fac.getSerialiserFor(desc.getPropertyType());
+			Class<?> propertyType = getPropertyType(property);
+			XMLSerialiser serialiser = fac.getSerialiserFor(propertyType);
 								
 			if (!(serialiser instanceof BasicXMLSerialiser))
 			{
+				System.out.println("no serialiser for " + propertyType + " :(");
 				// no serialiser, try to use the special case enum serialiser
-				if (desc.getPropertyType().isEnum())
+				if (propertyType.isEnum())
 				{
 					serialiser = fac.getSerialiserFor(Enum.class);
 					if (serialiser == null)
@@ -82,13 +97,34 @@ public class DefaultNodeSerialiser {
 			
 			Element propertyElement = element.getOwnerDocument().createElement("property");
 			element.appendChild(propertyElement);
-			propertyElement.setAttribute("class", desc.getPropertyType().getName());
-			propertyElement.setAttribute("name", desc.getName());
+			propertyElement.setAttribute("class", propertyType.getName());
+			propertyElement.setAttribute("name", property.getName());
 			
-			((BasicXMLSerialiser)serialiser).serialise(propertyElement, desc.getReadMethod().invoke(object));
+			((BasicXMLSerialiser)serialiser).serialise(propertyElement, eval((ModifiableExpression<?>)property.invoke(object)));
 		}
 	}
 	
+	public static Class<?> getPropertyType(Method property) {
+		Type returnType = property.getGenericReturnType();
+		
+		Type baseType = GenericTypeReflector.getExactSuperType(returnType, ModifiableExpression.class);
+
+		if (baseType instanceof Class<?>) {
+			return null;
+		}
+		else {
+			ParameterizedType pt = (ParameterizedType)baseType;
+			Type[] actualTypeArguments = pt.getActualTypeArguments();
+			if(actualTypeArguments.length != 1)
+				throw new RuntimeException("length must be 1");
+			return getRawType(actualTypeArguments[0]);
+		}
+	}
+
+	private static Class<?> getRawType(Type type) {
+		return type instanceof Class<?> ? (Class<?>)type : (Class<?>)((ParameterizedType)type).getRawType();
+	}
+
 	private void doSerialisation(Element parentElement, Object object,
 			ReferenceProducer internalReferences,
 			ReferenceProducer externalReferences, Class<?> currentLevel)

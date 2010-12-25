@@ -27,7 +27,7 @@ import org.workcraft.serialisation.xml.BasicXMLSerialiser;
 
 public class IntSerialiser implements BasicXMLSerialiser{
 	public String getClassName() {
-		return int.class.getName();
+		return Integer.class.getName();
 	}
 
 	public void serialise(Element element, Object object)

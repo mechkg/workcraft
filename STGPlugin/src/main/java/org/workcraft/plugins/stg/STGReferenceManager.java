@@ -75,7 +75,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 		final String reference = existingReferences.getReference(n);
 		if (reference != null) {
 			if (n instanceof STGPlace) {
-				if (! ((STGPlace) n).isImplicit())
+				if (!eval(((STGPlace) n).implicit()))
 					setName (n, reference);
 			} else setName (n, reference);
 		}
@@ -229,7 +229,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 
 			instancedNameManager.assign(dt);
 		} else if (node instanceof STGPlace) {
-			if (!((STGPlace) node).isImplicit())
+			if (!eval(((STGPlace) node).implicit()))
 				defaultNameManager.setDefaultNameIfUnnamed(node);
 		}
 		else

@@ -51,7 +51,8 @@ public class BezierControlPoint extends ControlPoint {
 			protected GraphicalContent evaluate(EvaluationContext context) {
 				
 				final GraphicalContent superContent = context.resolve(superContentExpr);
-				final Point2D orig = context.resolve(origin);
+				final Point2D orig = context.resolve(parentToLocalTransform()).transform(context.resolve(origin), null);
+
 				return new GraphicalContent() {
 
 					@Override

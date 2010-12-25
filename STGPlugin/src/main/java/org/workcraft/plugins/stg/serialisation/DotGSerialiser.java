@@ -88,14 +88,14 @@ public class DotGSerialiser implements ModelSerialiser {
 		
 	private void writeGraphEntry(PrintWriter out, Model model, Node node) {
 		if (node instanceof STGPlace)
-			if (((STGPlace)node).isImplicit())
+			if (eval(((STGPlace)node).implicit()))
 				return;
 		
 		out.write(model.getNodeReference(node));
 
 		for (Node n : sortNodes (model.getPostset(node), model)  ) {
 			if (n instanceof STGPlace) {
-				if (((STGPlace)n).isImplicit()) {
+				if (eval(((STGPlace)n).implicit())) {
 					Collection<Node> postset = model.getPostset(n);
 					if (postset.size() > 1)
 						throw new FormatException("Implicit place cannot have more than one node in postset");
@@ -164,7 +164,7 @@ public class DotGSerialiser implements ModelSerialiser {
 			final String reference;
 			
 			if (p instanceof STGPlace) {
-				if ( ((STGPlace)p).isImplicit() ) {
+				if ( eval(((STGPlace)p).implicit()) ) {
 					reference = "<" + model.getNodeReference(model.getPreset(p).iterator().next()) + "," +
 										model.getNodeReference(model.getPostset(p).iterator().next()) + ">";
 				} else

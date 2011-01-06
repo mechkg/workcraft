@@ -75,7 +75,6 @@ public abstract class VisualNode implements Properties, Node, Hidable {
 	}
 	
 	private final Variable<Node> parent = new Variable<Node>(null);
-	private final Variable<Boolean> hidden = new Variable<Boolean>(false);
 	
 	private PopupMenuBuilder popupMenuBuilder = new PopupMenuBuilder();
 	private PropertySupport propertySupport = new PropertySupport();
@@ -100,7 +99,7 @@ public abstract class VisualNode implements Properties, Node, Hidable {
 		return propertySupport.getPropertyDeclarations();
 	}
 
-	public ModifiableExpression<Boolean> hidden() {
-		return hidden;
+	public Expression<Boolean> hidden() {
+		return Expressions.constant(false);
 	}
 }

@@ -60,4 +60,5 @@ public interface VisualModel extends Model {
 	public Expression<? extends Collection<? extends Node>> selection();
 
 	public Collection<Node> getSelection();
+	public void ensureConsistency();
 }

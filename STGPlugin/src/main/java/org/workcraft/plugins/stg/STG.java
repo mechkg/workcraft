@@ -222,7 +222,7 @@ public class STG extends AbstractMathModel implements STGModel {
 	}
 
 	public String getName(Node node) {
-		refreshStupidObservers();
+		ensureConsistency();
 		return referenceManager.getName(node);
 	}
 
@@ -273,7 +273,7 @@ public class STG extends AbstractMathModel implements STGModel {
 
 	@Override
 	public String getNodeReference(Node node) {
-		refreshStupidObservers();
+		ensureConsistency();
 		if(node instanceof STGPlace)
 		{
 			if(eval(((STGPlace) node).implicit())) {
@@ -320,8 +320,8 @@ public class STG extends AbstractMathModel implements STGModel {
 	}
 	
 	@Override
-	public void refreshStupidObservers() {
-		super.refreshStupidObservers();
+	public void ensureConsistency() {
+		super.ensureConsistency();
 		referenceManager.refresh();
 		signalTypeConsistencySupervisor.refresh();
 	}

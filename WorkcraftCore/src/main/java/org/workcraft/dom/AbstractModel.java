@@ -127,34 +127,34 @@ public abstract class AbstractModel implements Model {
 	}
 
 	public final Container getRoot() {
-		refreshStupidObservers();
+		ensureConsistency();
 		return root;	
 	}
 
 	public Set<Connection> getConnections(Node component) {
-		refreshStupidObservers();
+		ensureConsistency();
 		return nodeContextTracker.getConnections(component);
 	}
 
 	public Set<Node> getPostset(Node component) {
-		refreshStupidObservers();
+		ensureConsistency();
 		return nodeContextTracker.getPostset(component);
 	}
 
 	public Set<Node> getPreset(Node component) {
-		refreshStupidObservers();
+		ensureConsistency();
 		return nodeContextTracker.getPreset(component);
 	}
 	
 	@Override
 	public Node getNodeByReference(String reference) {
-		refreshStupidObservers();
+		ensureConsistency();
 		return referenceManager.getNodeByReference(reference);
 	}
 
 	@Override
 	public String getNodeReference(Node node) {
-		refreshStupidObservers();
+		ensureConsistency();
 		return referenceManager.getNodeReference(node);
 	}
 	
@@ -170,7 +170,7 @@ public abstract class AbstractModel implements Model {
 	/**
 	 * This should be called almost always. Subclasses should call refresh() to their HierarchySupervisors here.
 	 */
-	public void refreshStupidObservers() {
+	public void ensureConsistency() {
 		if(defaultRefMan != null)
 			defaultRefMan.refresh();
 		//nodeContextTracker.refresh();

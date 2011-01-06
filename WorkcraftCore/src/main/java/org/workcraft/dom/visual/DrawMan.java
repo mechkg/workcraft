@@ -84,8 +84,8 @@ public class DrawMan
 			@Override
 			public GraphicalContentWithPreDecoration evaluate(EvaluationContext resolver) {
 				
-				//if (node instanceof Hidable && resolve(((Hidable)node).hidden()))
-				//	return IdleGraphicalContent.INSTANCE;
+				if (node instanceof Hidable && resolver.resolve(((Hidable)node).hidden()))
+					return IdleGraphicalContent.INSTANCE;
 				
 				final GraphicalContentWithPreDecoration toDraw;
 				if (node instanceof MovableNew)

@@ -105,7 +105,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		if (name!=null)
 			setName(newPlace, name);
 		getRoot().add(newPlace);
-		refreshStupidObservers();
+		ensureConsistency();
 		return newPlace;
 	}
 
@@ -114,22 +114,22 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		if (name!=null)
 			setName(newTransition, name);
 		getRoot().add(newTransition);
-		refreshStupidObservers();
+		ensureConsistency();
 		return newTransition;
 	}
 
 	final public Collection<Place> getPlaces() {
-		refreshStupidObservers();
+		ensureConsistency();
 		return Hierarchy.getDescendantsOfType(getRoot(), Place.class);
 	}
 
 	final public Collection<Transition> getTransitions() {
-		refreshStupidObservers();
+		ensureConsistency();
 		return Hierarchy.getDescendantsOfType(getRoot(), Transition.class);
 	}
 
 	final public boolean isEnabled (Transition t) {
-		refreshStupidObservers();
+		ensureConsistency();
 		return isEnabled (this, t);
 	}
 
@@ -203,30 +203,30 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		MathConnection con = new MathConnection((MathNode)first, (MathNode)second);
 		
 		Hierarchy.getNearestContainer(first, second).add(con);
-		refreshStupidObservers();
+		ensureConsistency();
 		
 		return con;
 	}
 
 	public String getName(Node n) {
-		refreshStupidObservers();
+		ensureConsistency();
 		return this.names.getNodeReference(n);
 	}
 
 	public void setName(Node n, String name) {
 		this.names.setName(n, name);
-		refreshStupidObservers();
+		ensureConsistency();
 	}
 
 	@Override
 	public Properties getProperties(Node node) {
-		refreshStupidObservers();
+		ensureConsistency();
 		return Properties.Mix.from(new NamePropertyDescriptor(this, node));
 	}
 	
 	@Override
-	public void refreshStupidObservers() {
+	public void ensureConsistency() {
 		names.refresh();
-		super.refreshStupidObservers();
+		super.ensureConsistency();
 	}
 }

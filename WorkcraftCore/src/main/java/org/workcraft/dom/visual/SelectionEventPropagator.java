@@ -32,8 +32,8 @@ import org.workcraft.observation.HierarchySupervisor;
 public class SelectionEventPropagator extends HierarchySupervisor {
 	private Expression<? extends Collection<? extends Node>> selection;
 	
-	public SelectionEventPropagator (VisualModel model) {
-		super(model.getRoot());
+	public SelectionEventPropagator (VisualGroup root, VisualModel model) {
+		super(root);
 		selection = model.selection();
 		start();
 	}

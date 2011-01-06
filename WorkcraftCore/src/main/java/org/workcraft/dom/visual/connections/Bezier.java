@@ -30,11 +30,13 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
@@ -93,8 +95,6 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 			};
 		};
 		this.visibleCurve2D = getPartialCurve(fullCurve2D, curveInfo);
-		
-		setDefaultControlPoints();
 	}
 	
 	@Override
@@ -117,12 +117,7 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 	}
 
 	public void setDefaultControlPoints() {
-		Expression<Point2D> p1 = new ExpressionBase<Point2D>() {
-			@Override
-			protected Point2D evaluate(EvaluationContext context) {
-				return context.resolve(connectionInfo).getFirstShape().getCenter();
-			}
-		};
+		Expression<Point2D> p1 = origin1();
 		Expression<Point2D> p2 = new ExpressionBase<Point2D>() {
 			@Override
 			protected Point2D evaluate(EvaluationContext context) {
@@ -140,6 +135,24 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 		cp2.position().setValue(Geometry.lerp(c1, c2, 0.6));
 		
 		finaliseControlPoints();
+	}
+
+	public ExpressionBase<Point2D> origin1() {
+		return new ExpressionBase<Point2D>() {
+			@Override
+			protected Point2D evaluate(EvaluationContext context) {
+				return context.resolve(connectionInfo).getFirstShape().getCenter();
+			}
+		};
+	}
+	
+	public ExpressionBase<Point2D> origin2() {
+		return new ExpressionBase<Point2D>() {
+			@Override
+			protected Point2D evaluate(EvaluationContext context) {
+				return context.resolve(connectionInfo).getSecondShape().getCenter();
+			}
+		};
 	}
 	
 	public void initControlPoints(BezierControlPoint cp1, BezierControlPoint cp2) {
@@ -308,10 +321,28 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 		}
 	}
 
-	Variable<Expression<? extends Collection<? extends Node>>> selectionTracker = new Variable<Expression<? extends Collection<? extends Node>>>(null); 
+	Variable<Expression<? extends Collection<? extends Node>>> selectionTracker = new Variable<Expression<? extends Collection<? extends Node>>>(Expressions.constant(Collections.<Node>emptyList()));
 	
+	Expression<Boolean> controlsHidden = new ExpressionBase<Boolean>(){
+		@Override
+		protected Boolean evaluate(EvaluationContext context) {
+			boolean controlsVisible = true;
+			for (Node n : context.resolve(context.resolve(selectionTracker)))
+				if (n==context.resolve(cp1) || n == context.resolve(cp2) || n == parent) {
+					controlsVisible = false;
+					break;
+				}
+			return controlsVisible;
+		}
+	};
+	
+	public Expression<Boolean> controlsHidden() {
+		return controlsHidden;
+	}
+
 	@Override
 	public void setSelection(Expression<? extends Collection<? extends Node>> selection) {
+		// only called once
 		selectionTracker.setValue(selection);
 	}
 }

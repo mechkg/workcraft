@@ -247,7 +247,7 @@ public class VisualConnection extends VisualNode implements
 				graphic = new Polyline(this);
 			}
 			if (t==ConnectionType.BEZIER) { 
-				Bezier b = new Bezier(this); 
+				Bezier b = new Bezier(this);
 				b.setDefaultControlPoints();
 				graphic = b;
 			}

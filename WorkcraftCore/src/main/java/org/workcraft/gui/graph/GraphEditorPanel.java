@@ -209,6 +209,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	
 		g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
+		visualModel.ensureConsistency();
 		eval(visualModel.graphicalContent()).draw(g2d, toolboxPanel.getTool().getDecorator());
 
 		if (hasFocus())

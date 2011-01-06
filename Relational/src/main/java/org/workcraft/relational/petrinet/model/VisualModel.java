@@ -257,4 +257,8 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 		return null;
 	}
 
+	@Override
+	public void ensureConsistency() {
+	}
+
 }

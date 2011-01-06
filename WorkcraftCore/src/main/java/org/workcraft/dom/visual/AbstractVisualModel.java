@@ -60,6 +60,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	private Container currentLevel;
 	private CachedHashSet<Node> selection = new CachedHashSet<Node>();
 	private final ExpressionBase<HierarchicalGraphicalContent> graphicalContent;
+	private SelectionEventPropagator selectionEventPropagator;
 
 	public AbstractVisualModel(VisualGroup root) {
 		this (null, root);
@@ -72,14 +73,26 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	public AbstractVisualModel(MathModel mathModel) {
 		this(mathModel, null);
 	}
+	
+	static class ConstructionInfo {
+		public ConstructionInfo(MathModel mathModel, VisualGroup root) {
+			this.mathModel = mathModel;
+			this.root = root == null ? new VisualGroup() : root;
+		}
+		MathModel mathModel; 
+		VisualGroup root;
+	}
 
 	public AbstractVisualModel(MathModel mathModel, VisualGroup root) {
-		super(root == null? new VisualGroup() : root);
-		this.mathModel = mathModel;
+		this(new ConstructionInfo(mathModel, root));
+	}
+	
+	public AbstractVisualModel(ConstructionInfo param) {
+		super(param.root);
+		this.mathModel = param.mathModel;
 		
-		currentLevel =  (VisualGroup)getRoot();
-		//new TransformEventPropagator(getRoot());
-		new SelectionEventPropagator(this);
+		currentLevel =  param.root;
+		selectionEventPropagator = new SelectionEventPropagator(param.root, this);
 		new RemovedNodeDeselector(this);
 		new DefaultMathNodeRemover(this, getRoot());
 		graphicalContent = makeGraphicalContent();
@@ -117,7 +130,6 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	}
 
 	public ExpressionBase<HierarchicalGraphicalContent> graphicalContent() {
-		refreshStupidObservers();
 		return graphicalContent;
 	}
 	
@@ -126,7 +138,6 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	}
 
 	public ExpressionBase<? extends Collection<? extends Node>> selection() {
-		refreshStupidObservers();
 		return selection;
 	}
 
@@ -378,8 +389,9 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	}
 	
 	@Override
-	public void refreshStupidObservers() {
-		super.refreshStupidObservers();
-		((AbstractModel)mathModel).refreshStupidObservers();
+	public void ensureConsistency() {
+		super.ensureConsistency();
+		((AbstractModel)mathModel).ensureConsistency();
+		selectionEventPropagator.refresh();
 	}
 }

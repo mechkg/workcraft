@@ -72,4 +72,14 @@ public class BezierControlPoint extends ControlPoint {
 			}
 		};
 	}
+	
+	@Override
+	public Expression<Boolean> hidden() {
+		return new ExpressionBase<Boolean>(){
+			@Override
+			protected Boolean evaluate(EvaluationContext context) {
+				return context.resolve(((Bezier)context.resolve(parent())).controlsHidden());
+			}
+		};
+	}
 }

@@ -21,8 +21,9 @@
 
 package org.workcraft.plugins.circuit.serialisation;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import org.w3c.dom.Element;
-import org.workcraft.Plugin;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.plugins.circuit.FunctionContact;
 import org.workcraft.plugins.cpog.serialisation.BooleanFormulaSerialiser;
@@ -48,7 +49,7 @@ public class FunctionSerialiser implements CustomXMLSerialiser
 			throws SerialisationException {
 		FunctionContact function = (FunctionContact) object;
 		
-		BooleanFormulaSerialiser.writeFormulaAttribute(element, internalReferences, function.getSetFunction(), SET_FUNCTION_ATTRIBUTE_NAME);
-		BooleanFormulaSerialiser.writeFormulaAttribute(element, internalReferences, function.getResetFunction(), RESET_FUNCTION_ATTRIBUTE_NAME);
+		BooleanFormulaSerialiser.writeFormulaAttribute(element, internalReferences, eval(function.setFunction()), SET_FUNCTION_ATTRIBUTE_NAME);
+		BooleanFormulaSerialiser.writeFormulaAttribute(element, internalReferences, eval(function.resetFunction()), RESET_FUNCTION_ATTRIBUTE_NAME);
 	}
 }

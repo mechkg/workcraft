@@ -31,6 +31,7 @@ import java.util.Collection;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.observation.StateSupervisor;
 import org.workcraft.util.Func;
@@ -58,8 +59,6 @@ class SignalTypeConsistencySupervisor extends StateSupervisor {
 			
 			Collection<SignalTransition> sameName = new ArrayList<SignalTransition>(stg.getSignalTransitions(signalName));
 			sameName.remove(transition);
-			
-			System.out.println("updated for node " + transition);
 			
 			if(oldName == null || !oldName.equals(signalName)) {
 				if (!sameName.isEmpty())
@@ -107,7 +106,7 @@ class SignalTypeConsistencySupervisor extends StateSupervisor {
 		}
 	}
 	
-	SignalTypeConsistencySupervisor(STG stg) {
-		super(stg.getRoot(), new SupervisionFunc(stg));
+	SignalTypeConsistencySupervisor(STG stg, Container root) {
+		super(root, new SupervisionFunc(stg));
 	}
 }

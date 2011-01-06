@@ -37,7 +37,7 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.advanced.user.RestrictedVariable;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
@@ -133,30 +133,20 @@ public class VisualConnection extends VisualNode implements
 	
 	private ConnectionGraphic graphic = null;
 
-	static class BoundedVariable extends ModifiableExpressionImpl<Double>
+	static class BoundedVariable extends RestrictedVariable<Double>
 	{	
-		double value;
 		private final double min;
 		private final double max;
 		
 		public BoundedVariable(double min, double max, double value) {
+			super(value);
 			this.min = min;
 			this.max = max;
-			this.value = value;
 		}
-
+		
 		@Override
-		protected void simpleSetValue(Double newValue) {
-			if(newValue < min)
-				newValue = min;
-			if(newValue > max)
-				newValue = max;
-			value = newValue;
-		}
-
-		@Override
-		protected Double evaluate(EvaluationContext context) {
-			return value;
+		protected Double correctValue(Double oldValue, Double newValue) {
+			return newValue < min ? min : newValue > max ? max : newValue;
 		}
 	}
 	
@@ -314,7 +304,9 @@ public class VisualConnection extends VisualNode implements
 	@Override
 	public Set<MathNode> getMathReferences() {
 		Set<MathNode> ret = new HashSet<MathNode>();
-		ret.add(getReferencedConnection());
+		MathConnection refCon = getReferencedConnection();
+		if(refCon!=null)
+			ret.add(refCon);
 		return ret;
 	}
 

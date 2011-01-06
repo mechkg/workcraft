@@ -23,22 +23,24 @@ package org.workcraft.plugins.circuit;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionFilter;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.observation.PropertyChangedEvent;
-import org.workcraft.observation.StateEvent;
-import org.workcraft.observation.StateObserver;
-import org.workcraft.plugins.circuit.Contact.IOType;
+import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
-import org.workcraft.plugins.cpog.optimisation.FreeVariable;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString;
@@ -48,59 +50,60 @@ import org.workcraft.plugins.cpog.optimisation.expressions.CleverBooleanWorker;
 import org.workcraft.plugins.cpog.optimisation.expressions.DumbBooleanWorker;
 import org.workcraft.plugins.cpog.optimisation.javacc.BooleanParser;
 import org.workcraft.plugins.cpog.optimisation.javacc.ParseException;
-import org.workcraft.serialisation.xml.NoAutoSerialisation;
 import org.workcraft.util.Func;
 
+public class VisualFunctionContact extends VisualContact {
 
+	private final class BooleanFormulaToStringExpression extends
+			ModifiableExpressionFilter<String, BooleanFormula> {
+		private BooleanFormulaToStringExpression(
+				ModifiableExpression<BooleanFormula> expr) {
+			super(expr);
+		}
 
-public class VisualFunctionContact extends VisualContact implements StateObserver {
+		@Override
+		protected BooleanFormula setFilter(String newValue) {
+			return parseFormula(newValue);
+		}
+
+		@Override
+		protected String getFilter(BooleanFormula value) {
+			return FormulaToString.toString(value);
+		}
+	}
 
 	private static Font font;
 	
 	static {
 		try {
 			font = Font.createFont(Font.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/eurm10.pfb")).deriveFont(0.5f);
-		} catch (FontFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	private FormulaRenderingResult renderedFormula = null;
-	public void resetRenderedFormula() {
-		renderedFormula = null;
+	private final Expression<FormulaRenderingResult> renderedFormula = createRenderedFormulaExpression(VisualComponent.podgonFontRenderContext());
+	
+	Expression<FormulaRenderingResult> createRenderedFormulaExpression(final FontRenderContext fcon) {
+		return new ExpressionBase<FormulaRenderingResult>(){
+			@Override
+			protected FormulaRenderingResult evaluate(EvaluationContext context) {
+				return FormulaToGraphics.render(context.resolve(createCombinedFunctionExpression()), fcon, font);
+			}
+		};
 	}
 	
-	
-	FormulaRenderingResult getRenderedFormula(FontRenderContext fcon) {
-		if (renderedFormula == null) {
-			updateCombinedFunction();
-			renderedFormula = FormulaToGraphics.render(((FunctionContact)getReferencedContact()).getCombinedFunction(), fcon, font);
-		}
-		return renderedFormula;
-	}
-	
-	private FunctionContact function=null;
+	private final FunctionContact function;
 	
 	public VisualFunctionContact(FunctionContact component) {
-		super(component);
-		function = component;
-		addPropertyDeclarations();
+		this(component, Direction.WEST);
 	}
 	
-	public VisualFunctionContact(FunctionContact component, VisualContact.Direction dir, String label) {
-		super(component);
+	public VisualFunctionContact(FunctionContact component, VisualContact.Direction dir) {
+		super(component, dir);
 		function = component;
 		
-		component.addObserver(this);
-		setName(label);
-		setDirection(dir);
-		
 		addPropertyDeclarations();
-		
 	}
 	
 	private BooleanFormula parseFormula(String resetFunction) {
@@ -109,7 +112,7 @@ public class VisualFunctionContact extends VisualContact implements StateObserve
 					new Func<String, BooleanFormula>() {
 						@Override
 						public BooleanFormula eval(String name) {
-							return ((VisualFunctionComponent)getParent()).getOrCreateInput(name)
+							return ((VisualFunctionComponent)GlobalCache.eval(parent())).getOrCreateInput(name)
 									.getReferencedContact();
 						}
 					});
@@ -117,41 +120,30 @@ public class VisualFunctionContact extends VisualContact implements StateObserve
 			throw new RuntimeException(e);
 		}
 	}
-
-	@NoAutoSerialisation
-	public String getResetFunction() {
-		return FormulaToString.toString(getFunction().getResetFunction());
-	}
-
-	@NoAutoSerialisation
-	public String getSetFunction() {
-		return FormulaToString.toString(getFunction().getSetFunction());
-	}
-
-	@NoAutoSerialisation
-	public void setResetFunction(String resetFunction) {
-		renderedFormula = null;
-		getFunction().setResetFunction(parseFormula(resetFunction));
-		sendNotification(new PropertyChangedEvent(this, "resetFunction"));
-	}
-
-	@NoAutoSerialisation
-	public void setSetFunction(String setFunction) {
-		renderedFormula = null;
-		getFunction().setSetFunction(parseFormula(setFunction));
-		
-		sendNotification(new PropertyChangedEvent(this, "setFunction"));
+	
+	ModifiableExpression<String> setFunction(){
+		return new BooleanFormulaToStringExpression(getFunction().setFunction());
 	}
 	
-	public void updateCombinedFunction() {
-		CleverBooleanWorker worker = new CleverBooleanWorker(); 
-		BooleanOperations.worker = new DumbBooleanWorker();
-		getFunction().setCombinedFunction(
-				DnfGenerator.generate(
-				worker.or(getFunction().getSetFunction(), worker.and(new FreeVariable(getName()), worker.not(getFunction().getResetFunction())))
-				)
-				
-		);
+	ModifiableExpression<String> resetFunction(){
+		return new BooleanFormulaToStringExpression(getFunction().resetFunction());
+	}
+	
+	public Expression<BooleanFormula> createCombinedFunctionExpression() {
+		return new ExpressionBase<BooleanFormula>() {
+			
+			@Override
+			protected BooleanFormula evaluate(EvaluationContext context) {
+				CleverBooleanWorker worker = new CleverBooleanWorker(); 
+				BooleanOperations.worker = new DumbBooleanWorker();
+				FunctionContact function = getFunction();
+				return DnfGenerator.generate(
+						worker.or(context.resolve(function.setFunction()), worker.and(function, worker.not(context.resolve(function.resetFunction()))))
+						
+				);
+			
+			}
+		};
 	}
 
 	private void addPropertyDeclarations() {
@@ -160,73 +152,66 @@ public class VisualFunctionContact extends VisualContact implements StateObserve
 	}
 	
 	@Override
-	public void draw(DrawRequest r) {
-		super.draw(r);
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>() {
 
-		Graphics2D g = r.getGraphics();
-		Color colorisation = r.getDecoration().getColorisation();
-		
-		if (getIOType()==IOType.OUTPUT) {
-			
-			FormulaRenderingResult result = getRenderedFormula(g.getFontRenderContext());
-				
-			Rectangle2D textBB = result.boundingBox;
-			
-			float textX = 0;
-			float textY = (float)-textBB.getCenterY()-(float)0.5;
-			
-			AffineTransform transform = g.getTransform();
-			AffineTransform at = new AffineTransform();
-			
-			switch (getDirection()) {
-			case EAST:
-				textX = (float)+0.5;
-				break;
-			case NORTH:
-				at.quadrantRotate(-1);
-				g.transform(at);
-				textX = (float)+0.5;
-				break;
-			case WEST:
-				textX = (float)-textBB.getWidth()-(float)0.5;
-				break;
-			case SOUTH:
-				at.quadrantRotate(-1);
-				g.transform(at);
-				textX = (float)-textBB.getWidth()-(float)0.5;
-				break;
+			@Override
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent(){
+					
+					@Override
+					public void draw(DrawRequest r) {
+						context.resolve(VisualFunctionContact.super.graphicalContent()).draw(r);
+
+						Graphics2D g = r.getGraphics();
+						Color colorisation = r.getDecoration().getColorisation();
+						
+						if (context.resolve(ioType())==IoType.OUTPUT) {
+							
+							FormulaRenderingResult result = context.resolve(renderedFormula);
+								
+							Rectangle2D textBB = result.boundingBox;
+							
+							float textX = 0;
+							float textY = (float)-textBB.getCenterY()-(float)0.5;
+							
+							AffineTransform transform = g.getTransform();
+							AffineTransform at = new AffineTransform();
+							
+							switch (context.resolve(direction())) {
+							case EAST:
+								textX = (float)+0.5;
+								break;
+							case NORTH:
+								at.quadrantRotate(-1);
+								g.transform(at);
+								textX = (float)+0.5;
+								break;
+							case WEST:
+								textX = (float)-textBB.getWidth()-(float)0.5;
+								break;
+							case SOUTH:
+								at.quadrantRotate(-1);
+								g.transform(at);
+								textX = (float)-textBB.getWidth()-(float)0.5;
+								break;
+							}
+							
+							g.translate(textX, textY);
+							
+							result.draw(g, Coloriser.colorise(Color.BLACK, colorisation));
+									
+							g.setTransform(transform);		
+							
+						}
+					}
+				};
 			}
 			
-			g.translate(textX, textY);
-			
-			result.draw(g, Coloriser.colorise(Color.BLACK, colorisation));
-					
-			g.setTransform(transform);		
-			
-		}
-		
-		/*
-		HashMap<BooleanVariable, BooleanFormula> values = new HashMap<BooleanVariable, BooleanFormula>();
-		
-		for(VisualContact c : Hierarchy.filterNodesByType(getChildren(), VisualContact.class))
-			values.put(c.getReferencedContact(), c.getDirection() == Direction.WEST ? One.instance() : Zero.instance());
-		
-		g.setColor(function.getSetFunction()
-				.accept(new BooleanReplacer(values))
-				.accept(new BooleanEvaluator()) ? Color.GREEN : Color.RED);
-		
-		g.drawOval(-1, -1, 2, 2);
-		*/
-	}
-	
-	
-	@Override
-	public void notify(StateEvent e) {
-//		renderedFormula = null;
+		};
 	}
 	
 	public FunctionContact getFunction() {
 		return function;
 	}
-	
 }

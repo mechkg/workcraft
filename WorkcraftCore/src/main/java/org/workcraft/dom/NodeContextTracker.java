@@ -56,7 +56,7 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 	}
 
 	private void nodeAdded (Node n) {
-		System.out.println ("(NCT) node added " + n);
+		//System.out.println ("(NCT) node added " + n);
 		initHashes(n);
 		
 		if (n instanceof Connection) {
@@ -78,7 +78,7 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 	}
 
 	private void nodeRemoved(Node n) {
-		System.out.println ("(NCT) node removed " + n);
+		//System.out.println ("(NCT) node removed " + n);
 		
 		for (Node postsetNodes: postsets.get(n))
 			presets.get(postsetNodes).remove(n);

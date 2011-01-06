@@ -43,7 +43,7 @@ import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
 public abstract class VisualComponent extends VisualTransformableNode implements DependentNode, DrawableNew {
-	private MathNode refNode = null;
+	private final MathNode refNode;
 
 	private static Font labelFont = new Font("Sans-serif", Font.PLAIN, 1)
 			.deriveFont(0.5f);
@@ -77,11 +77,6 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 
 		addPropertyDeclarations();
 	}
-
-	public VisualComponent() {
-		addPropertyDeclarations();
-	}
-
 	public ModifiableExpression<String> label() {
 		return label;
 	}
@@ -140,7 +135,9 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 	@Override
 	public Collection<MathNode> getMathReferences() {
 		ArrayList<MathNode> result = new ArrayList<MathNode>();
-		result.add(getReferencedComponent());
+		MathNode refNode = getReferencedComponent();
+		if(refNode != null)
+			result.add(refNode);
 		return result;
 	}
 }

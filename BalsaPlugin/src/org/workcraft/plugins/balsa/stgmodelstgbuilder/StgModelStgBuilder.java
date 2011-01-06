@@ -97,8 +97,8 @@ public class StgModelStgBuilder implements StgBuilder {
 	public StgModelStgTransition buildSignalTransition(Type type, String name, Direction direction)
 	{
 		SignalTransition transition = new SignalTransition();
-		transition.setSignalType(type);
-		transition.setDirection(direction);
+		transition.signalType().setValue(type);
+		transition.direction().setValue(direction);
 		model.add(transition);
 		model.setName(transition, name);
 		return new StgModelStgTransition(transition);
@@ -106,7 +106,7 @@ public class StgModelStgBuilder implements StgBuilder {
 
 	private StgModelStgPlace buildStgPlace(int tokenCount) {
 		STGPlace place = new STGPlace();
-		place.setTokens(tokenCount);
+		place.tokens().setValue(tokenCount);
 		model.add(place);
 		return new StgModelStgPlace(place);
 	}

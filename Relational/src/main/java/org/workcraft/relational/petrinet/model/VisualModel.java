@@ -11,8 +11,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Connection;
@@ -50,8 +48,6 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 		createVisualTransition(new Point2D.Double(0, 0));
 		createVisualPlace(new Point2D.Double(3, 0), Color.GREEN);
 		createVisualTransition(new Point2D.Double(0, 3));
-		
-		Assert.assertEquals(4, eval(root.children()).size());
 	}
 	
 	final DatabaseEngine data;

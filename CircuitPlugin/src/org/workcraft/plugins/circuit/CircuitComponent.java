@@ -21,45 +21,34 @@
 
 package org.workcraft.plugins.circuit;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.observation.HierarchyObserver;
-import org.workcraft.observation.ObservableHierarchy;
-import org.workcraft.observation.PropertyChangedEvent;
-import org.workcraft.plugins.circuit.Contact.IOType;
+import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.util.Hierarchy;
 
 @DisplayName("Component")
 @VisualClass("org.workcraft.plugins.circuit.VisualCircuitComponent")
 
-public class CircuitComponent extends MathNode implements Container, ObservableHierarchy {
+public class CircuitComponent extends MathNode implements Container {
 	
 
 	DefaultGroupImpl groupImpl = new DefaultGroupImpl(this);
-	private String name = "";
+	private Variable<String> name = Variable.create("");
 
-	public Node getParent() {
-		return groupImpl.getParent();
-	}
-
-	public void setParent(Node parent) {
-		groupImpl.setParent(parent);
-		checkName(parent);
-	}
-	
-	public void addObserver(HierarchyObserver obs) {
-		groupImpl.addObserver(obs);
-	}
-
-	public void removeObserver(HierarchyObserver obs) {
-		groupImpl.removeObserver(obs);
+	public ModifiableExpression<Node> parent() {
+		return groupImpl.parent();
 	}
 
 	@Override
@@ -94,18 +83,18 @@ public class CircuitComponent extends MathNode implements Container, ObservableH
 	}
 
 	@Override
-	public Collection<Node> getChildren() {
-		return groupImpl.getChildren();
+	public Expression<? extends Collection<? extends Node>> children() {
+		return groupImpl.children();
 	}
 
 	public Collection<Contact> getContacts() {
-		return Hierarchy.filterNodesByType(getChildren(), Contact.class);
+		return Hierarchy.filterNodesByType(eval(children()), Contact.class);
 	}
 	
 	public Collection<Contact> getInputs() {
 		ArrayList<Contact> result = new ArrayList<Contact>(); 
 		for(Contact c : getContacts())
-			if(c.getIOType() == IOType.INPUT)
+			if(eval(c.ioType()) == IoType.INPUT)
 				result.add(c);
 		return result;
 	}
@@ -119,9 +108,9 @@ public class CircuitComponent extends MathNode implements Container, ObservableH
 			num++;
 			found=false;
 			
-			for (Node vn : n.getChildren()) {
+			for (Node vn : eval(n.children())) {
 				if (vn instanceof CircuitComponent && vn!=this) {
-					if (((CircuitComponent)vn).getName().equals(start+num)) {
+					if (eval(((CircuitComponent)vn).name()).equals(start+num)) {
 						found=true;
 						break;
 					}
@@ -133,19 +122,14 @@ public class CircuitComponent extends MathNode implements Container, ObservableH
 	
 	public void checkName(Node parent) {
 		if (parent==null) return;
-		String start=getName();
+		String start=eval(name());
 		if (start==null||start=="") {
 			start="c";
-			setName(getNewName(parent, start));
+			name().setValue(getNewName(parent, start));
 		}
 	}
 
-	public void setName(String name) {
-		this.name = name;
-		sendNotification(new PropertyChangedEvent(this, "name"));
-	}
-
-	public String getName() {
+	public Variable<String> name() {
 		return name;
 	}
 	

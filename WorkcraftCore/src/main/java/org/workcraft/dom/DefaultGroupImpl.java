@@ -22,7 +22,6 @@
 package org.workcraft.dom;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
@@ -35,20 +34,16 @@ public class DefaultGroupImpl extends AbstractGroup implements Container {
 		super(groupRef);
 	}
 
-	public Collection<Node> getChildren() {
-		return Collections.unmodifiableCollection(children.getValue());
-	}
-
 	@Override
 	protected void addInternal(Node node) {
-		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(getChildren());
+		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(children.getValue());
 		newValue.add(node);
 		children.setValue(newValue);
 	}
 
 	@Override
 	protected void removeInternal(Node node) {
-		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(getChildren());
+		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(children.getValue());
 		if(newValue.remove(node))
 			children.setValue(newValue);
 	}

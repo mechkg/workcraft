@@ -40,7 +40,7 @@ public class DotExporter implements Exporter {
 						VisualBreezeComponent comp = (VisualBreezeComponent) n;
 						final String id = model.getNodeReference(comp);
 						if(id!=null) {
-							final Rectangle2D bb = comp.getBoundingBoxInLocalSpace();
+							final Rectangle2D bb = eval(comp.localSpaceTouchable()).getBoundingBox();
 							if(bb!=null) {
 								
 								final ArrayList<String> destinations = new ArrayList<String>(); 

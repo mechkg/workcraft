@@ -380,5 +380,6 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	@Override
 	public void refreshStupidObservers() {
 		super.refreshStupidObservers();
+		((AbstractModel)mathModel).refreshStupidObservers();
 	}
 }

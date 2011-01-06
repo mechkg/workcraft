@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Container;
@@ -39,7 +38,7 @@ import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.util.Hierarchy;
-
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class VisualGroup extends VisualTransformableNode implements DrawableNew, Container {
 	public static final int HIT_COMPONENT = 1;
@@ -107,9 +106,9 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 	}
 
 	public List<Node> unGroup() {
-		ArrayList<Node> nodesToReparent = new ArrayList<Node>(groupImpl.getChildren());
+		ArrayList<Node> nodesToReparent = new ArrayList<Node>(eval(groupImpl.children()));
 		
-		Container newParent = Hierarchy.getNearestAncestor(GlobalCache.eval(parent()), Container.class);
+		Container newParent = Hierarchy.getNearestAncestor(eval(parent()), Container.class);
 
 		groupImpl.reparent(nodesToReparent, newParent);
 

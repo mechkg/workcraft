@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -162,7 +161,6 @@ public class Framework {
 	}
 
 	private PluginManager pluginManager;
-	private ModelManager modelManager;
 	private TaskManager taskManager;
 	private Config config ;
 	private Workspace workspace;
@@ -204,7 +202,6 @@ public class Framework {
 					return super.execute(task, description, observer);
 			};
 		};
-		modelManager = new ModelManager();
 		config = new Config();
 		workspace = new Workspace(this);
 	}
@@ -259,15 +256,6 @@ public class Framework {
 			return defaultValue;
 		else
 			return Boolean.parseBoolean(s);
-	}
-
-	public String[] getModelNames() {
-		LinkedList<Class<?>> list = modelManager.getModelList();
-		String a[] = new String[list.size()];
-		int i=0;
-		for (Class<?> cls : list)
-			a[i++] = cls.getName();
-		return a;
 	}
 
 	public void initJavaScript() {
@@ -473,11 +461,7 @@ public class Framework {
 	public MainWindow getMainWindow() {
 		return mainWindow;
 	}
-
-	public ModelManager getModelManager() {
-		return modelManager;
-	}
-
+	
 	public PluginManager getPluginManager() {
 		return pluginManager;
 	}

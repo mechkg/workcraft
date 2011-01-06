@@ -57,7 +57,7 @@ import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 @VisualClass("org.workcraft.plugins.stg.VisualSTG")
 public class STG extends AbstractMathModel implements STGModel {
-	private STGReferenceManager referenceManager;
+	private final STGReferenceManager referenceManager;
 
 	private static class ConstructionInfo {
 		public ConstructionInfo(Container root, References refs) {
@@ -86,11 +86,10 @@ public class STG extends AbstractMathModel implements STGModel {
 	public STG(ConstructionInfo info) {
 		super(info.root, info.referenceManager);
 		referenceManager = info.referenceManager;
-		signalTypeConsistencySupervisor = new SignalTypeConsistencySupervisor(this);
+		signalTypeConsistencySupervisor = new SignalTypeConsistencySupervisor(this, info.root);
 	}
 
-	@SuppressWarnings("unused") // to avoid garbage collection
-	private SignalTypeConsistencySupervisor signalTypeConsistencySupervisor;
+	private final SignalTypeConsistencySupervisor signalTypeConsistencySupervisor;
 	
 	final public Place createPlace() {
 		return createPlace(null);
@@ -324,6 +323,7 @@ public class STG extends AbstractMathModel implements STGModel {
 	public void refreshStupidObservers() {
 		super.refreshStupidObservers();
 		referenceManager.refresh();
+		signalTypeConsistencySupervisor.refresh();
 	}
 
 }

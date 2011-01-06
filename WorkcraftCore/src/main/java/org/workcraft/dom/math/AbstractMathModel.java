@@ -27,10 +27,6 @@ import org.workcraft.dom.references.ReferenceManager;
 
 public abstract class AbstractMathModel extends AbstractModel implements MathModel {
 	
-	public AbstractMathModel() {
-		this (null, null);
-	}
-	
 	public AbstractMathModel (Container root) {
 		this (root, null);
 	}

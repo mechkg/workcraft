@@ -41,6 +41,7 @@ import org.workcraft.gui.propertyeditor.Properties;
 public abstract class AbstractModel implements Model {
 	private NodeContextTracker nodeContextTracker;
 	private ReferenceManager referenceManager;
+	private final DefaultReferenceManager defaultRefMan; 
 	
 	private String title = "";
 
@@ -52,7 +53,14 @@ public abstract class AbstractModel implements Model {
 	
 	public AbstractModel(Container root, ReferenceManager referenceManager) {
 		this.root = root;
-		this.referenceManager = (referenceManager == null) ? new DefaultReferenceManager(root) : referenceManager;
+		if(referenceManager == null) {
+			defaultRefMan = new DefaultReferenceManager(root);
+			this.referenceManager = defaultRefMan;
+		} else
+		{
+			defaultRefMan = null;
+			this.referenceManager = referenceManager;
+		}
 		nodeContextTracker = new NodeContextTracker(root);
 	}
 	
@@ -163,6 +171,8 @@ public abstract class AbstractModel implements Model {
 	 * This should be called almost always. Subclasses should call refresh() to their HierarchySupervisors here.
 	 */
 	public void refreshStupidObservers() {
+		if(defaultRefMan != null)
+			defaultRefMan.refresh();
 		//nodeContextTracker.refresh();
 	}
 }

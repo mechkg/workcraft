@@ -42,11 +42,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.Drawable;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.MovableHelper;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
@@ -56,10 +58,10 @@ import org.workcraft.plugins.balsa.handshakebuilder.Handshake;
 import org.workcraft.plugins.balsa.layouts.MainLayouter;
 import org.workcraft.util.Hierarchy;
 
-public class VisualBreezeComponent extends VisualComponent implements Drawable
+public class VisualBreezeComponent extends VisualComponent
 {
 	HandshakeComponentLayout layout;
-	Map<String, VisualHandshake> visualHandshakes;
+	Map<String, VisualHandshake> visualHandshakes; // TODO: make auto-updated Expression
 	Map<Handshake,BreezeHandshake> handshakeComponents;
 	Map<String,Handshake> handshakes;
 	HandshakeVisualLayout visualLayout;
@@ -92,6 +94,7 @@ public class VisualBreezeComponent extends VisualComponent implements Drawable
 	}
 	
 	public VisualBreezeComponent(BreezeComponent refComponent) {
+		super(refComponent);
 		this.refComponent = refComponent;
 		init();
 	}
@@ -111,8 +114,8 @@ public class VisualBreezeComponent extends VisualComponent implements Drawable
 	Collection<Node> subNodes;
 	
 	@Override
-	public Collection<Node> getChildren() {
-		return Collections.<Node>unmodifiableCollection(visualHandshakes.values());
+	public Expression<Collection<Node>> children() {
+		return Expressions.constant(Collections.<Node>unmodifiableCollection(visualHandshakes.values()));
 	}
 	
 	public Collection<VisualHandshake> getHandshakes() {
@@ -142,7 +145,7 @@ public class VisualBreezeComponent extends VisualComponent implements Drawable
 			else
 			{
 				visual = new VisualHandshake(handshakeComponents.get(handshake));
-				visual.setParent(this);
+				visual.parent().setValue(this);
 			}
 			
 			visualHandshakes.put(name, visual);
@@ -160,22 +163,34 @@ public class VisualBreezeComponent extends VisualComponent implements Drawable
 		}
 	}
 
+	
 	@Override
-	public Rectangle2D getBoundingBoxInLocalSpace() {
-		Rectangle2D result = new Rectangle2D.Double(-0.5, -0.5, 1, 1);
+	public Expression<? extends Touchable> localSpaceTouchable() {
+		return Expressions.constant(new Touchable(){
+			@Override
+			public Rectangle2D getBoundingBox() {
+				Rectangle2D result = new Rectangle2D.Double(-0.5, -0.5, 1, 1);
 
-		Rectangle2D children = BoundingBoxHelper.mergeBoundingBoxes(Hierarchy.getChildrenOfType(this, Touchable.class));
-		
-		if(children != null)
-			result.add(children);
-		
-		return result;
-	}
+				Rectangle2D children = BoundingBoxHelper.mergeBoundingBoxes(Hierarchy.getChildrenOfType(VisualBreezeComponent.this, Touchable.class));
+				
+				if(children != null)
+					result.add(children);
+				
+				return result;
+			}
 
-	@Override
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
-		return pointInLocalSpace.distanceSq(0.0, 0.0) < 0.25;
+			@Override
+			public boolean hitTest(Point2D point) {
+				return point.distanceSq(0.0, 0.0) < 0.25;
+			}
+			
+			public Point2D getCenter() {
+				return new Point2D.Double(0,0);
+			};
+			
+		});
 	}
+	
 
 	enum Direction { Up, Right, Down, Left	};
 	
@@ -207,29 +222,35 @@ public class VisualBreezeComponent extends VisualComponent implements Drawable
 	}
 	
 	@Override
-	public void draw(DrawRequest r) {
-		Graphics2D g = r.getGraphics();
-		g.setStroke(new BasicStroke(0.02f));
-		g.setColor(Coloriser.colorise(Color.black, r.getDecoration().getColorisation()));
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return Expressions.constant(new GraphicalContent() {
 
-		drawSideLine(g, visualLayout.left, -1);
-		drawSideLine(g, visualLayout.right, +1);
-		
-		drawCircle(g, 0, 0, componentRadius);
-		
+			@Override
+			public void draw(DrawRequest r) {
+				Graphics2D g = r.getGraphics();
+				g.setStroke(new BasicStroke(0.02f));
+				g.setColor(Coloriser.colorise(Color.black, r.getDecoration().getColorisation()));
 
-		/*AffineTransform t = g.getTransform();
-		t.concatenate(AffineTransform.getQuadrantRotateInstance(-1));
-		g.setTransform(t);*/
+				drawSideLine(g, visualLayout.left, -1);
+				drawSideLine(g, visualLayout.right, +1);
+				
+				drawCircle(g, 0, 0, componentRadius);
+				
 
-		Font font = g.getFont();
-		font = font.deriveFont(0.2f);
-		String symbol = balsaComponent.getClass().getSimpleName();
-		if (balsaComponent instanceof DynamicComponent)
-			symbol = ((DynamicComponent)balsaComponent).getSymbol();
-		GlyphVector vec = font.createGlyphVector(g.getFontRenderContext(), symbol);
-		Rectangle2D bounds = vec.getVisualBounds(); 
-		g.drawGlyphVector(vec, (float)-bounds.getCenterX(), (float)-bounds.getCenterY());
+				/*AffineTransform t = g.getTransform();
+				t.concatenate(AffineTransform.getQuadrantRotateInstance(-1));
+				g.setTransform(t);*/
+
+				Font font = g.getFont();
+				font = font.deriveFont(0.2f);
+				String symbol = balsaComponent.getClass().getSimpleName();
+				if (balsaComponent instanceof DynamicComponent)
+					symbol = ((DynamicComponent)balsaComponent).getSymbol();
+				GlyphVector vec = font.createGlyphVector(g.getFontRenderContext(), symbol);
+				Rectangle2D bounds = vec.getVisualBounds(); 
+				g.drawGlyphVector(vec, (float)-bounds.getCenterX(), (float)-bounds.getCenterY());
+			}
+		});
 	}
 	
 	private void drawSideLine(Graphics2D g, SideLine extent, int dir) {

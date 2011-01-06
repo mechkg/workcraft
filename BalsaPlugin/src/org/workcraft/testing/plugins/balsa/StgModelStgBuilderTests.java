@@ -33,7 +33,7 @@ import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.SignalTransition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.SignalTransition.Type;
-
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 public class StgModelStgBuilderTests {
 	
 	@Test
@@ -74,13 +74,13 @@ public class StgModelStgBuilderTests {
 		
 		for(SignalTransition t : transitions)
 		{
-			if(!t.getSignalName().equals(signalName))
+			if(!eval(t.signalName()).equals(signalName))
 				continue;
-			if(!t.getSignalType().equals(type))
+			if(!eval(t.signalType()).equals(type))
 				continue;
-			if(!t.getDirection().equals(Direction.MINUS))
+			if(!eval(t.direction()).equals(Direction.MINUS))
 				minusFound = true;
-			if(!t.getDirection().equals(Direction.PLUS))
+			if(!eval(t.direction()).equals(Direction.PLUS))
 				plusFound = true;
 		}
 		Assert.assertTrue(plusFound && minusFound);

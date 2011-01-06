@@ -35,7 +35,7 @@ import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
 import org.workcraft.util.Hierarchy;
-
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 @DisplayName("Visual Circuit")
 @CustomTools ( CircuitToolsProvider.class )
@@ -59,13 +59,13 @@ public class VisualCircuit extends AbstractVisualModel {
 			}
 			
 			if (second instanceof VisualContact) {
-				Node toParent = ((VisualComponent)second).getParent();
-				Contact.IOType toType = ((Contact)((VisualComponent)second).getReferencedComponent()).getIOType();
+				Node toParent = eval(((VisualComponent)second).parent());
+				Contact.IoType toType = eval(((Contact)((VisualComponent)second).getReferencedComponent()).ioType());
 				
-				if ((toParent instanceof VisualCircuitComponent) && toType == Contact.IOType.OUTPUT)
+				if ((toParent instanceof VisualCircuitComponent) && toType == Contact.IoType.OUTPUT)
 					throw new InvalidConnectionException ("Outputs of the components cannot be driven");
 
-				if (!(toParent instanceof VisualCircuitComponent) && toType == Contact.IOType.INPUT)
+				if (!(toParent instanceof VisualCircuitComponent) && toType == Contact.IoType.INPUT)
 					throw new InvalidConnectionException ("Inputs from the environment cannot be driven");
 			}
 		}

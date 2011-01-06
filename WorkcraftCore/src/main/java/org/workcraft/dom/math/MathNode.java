@@ -42,7 +42,7 @@ public abstract class MathNode implements Node {
 	private Variable<Node> parent = new Variable<Node>(null);
 	
 	@Override
-	public Expression<? extends Collection<Node>> children() {
+	public Expression<? extends Collection<? extends Node>> children() {
 		return Expressions.constant(new HashSet<Node>());
 	}
 

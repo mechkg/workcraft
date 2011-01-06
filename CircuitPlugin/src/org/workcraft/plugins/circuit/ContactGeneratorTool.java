@@ -18,7 +18,7 @@ public class ContactGeneratorTool extends NodeGeneratorTool {
 			protected MathNode createMathNode()
 					throws NodeCreationException {
 				MathNode node = super.createMathNode();
-				((Contact)node).setIOType(shiftPressed ? Contact.IOType.INPUT : Contact.IOType.OUTPUT);
+				((Contact)node).ioType().setValue(shiftPressed ? Contact.IoType.INPUT : Contact.IoType.OUTPUT);
 				return node;
 			}
 		});

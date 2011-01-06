@@ -9,6 +9,10 @@ public class GlobalCache {
 		return expression.getValue(null).value;
 	}
 
+	public static <T> void assign(ModifiableExpression<T> destination, Expression<T> source) {
+		destination.setValue(eval(source));
+	}
+
 	public static AutoRefreshExpression autoRefresh(final ExpressionBase<?> expr) {
 		
 		return new AutoRefreshExpression() {

@@ -22,6 +22,8 @@ import org.workcraft.plugins.interop.DotExportNode;
 import org.workcraft.plugins.interop.DotExportable;
 import org.workcraft.serialisation.Format;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class DotExporter implements Exporter {
 
 	@Override
@@ -33,12 +35,12 @@ public class DotExporter implements Exporter {
 			@Override
 			public DotExportNode[] getNodes() {
 				ArrayList<DotExportNode> result = new ArrayList<DotExportNode>();
-				for (Node n : model.getRoot().getChildren()) {
+				for (Node n : eval(model.getRoot().children())) {
 					if (n instanceof VisualBreezeComponent) {
 						VisualBreezeComponent comp = (VisualBreezeComponent) n;
 						final String id = model.getNodeReference(comp);
 						if(id!=null) {
-							final Rectangle2D bb = comp.getBoundingBoxInLocalSpace();
+							final Rectangle2D bb = eval(comp.localSpaceTouchable()).getBoundingBox();
 							if(bb!=null) {
 								
 								final ArrayList<String> destinations = new ArrayList<String>(); 
@@ -51,7 +53,7 @@ public class DotExporter implements Exporter {
 										nodes.addAll(model.getPreset(hs));
 										for(Node target : nodes) {
 											if (target instanceof VisualHandshake) {
-												VisualBreezeComponent targetComp = (VisualBreezeComponent)((VisualHandshake)target).getParent();
+												VisualBreezeComponent targetComp = (VisualBreezeComponent)eval(((VisualHandshake)target).parent());
 												String targetId = model.getNodeReference(targetComp);
 												if(targetId!=null) {
 													destinations.add(targetId);

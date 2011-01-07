@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.workcraft</groupId>
+  <artifactId>everything</artifactId>
+  <version>2</version>
+  <packaging>pom</packaging>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <repositories>
+      <repository>
+          <id>workcraft_repo</id>
+          <name>Workcraft Maven Repository</name>
+          <url>http://workcraft.org/maven2/</url>
+      </repository>
+  </repositories>
+
+  <name>Entire Workcraft Solution</name>
+  <modules>
+    <module>WorkcraftCore</module>
+    <module>STGPlugin</module>
+    <module>PetriNetPlugin</module>
+    <module>Relational</module>
+    <module>BalsaPlugin</module>
+    <module>BalsaWrapperGenerator</module>
+    <module>BalsaPluginBase</module>
+    <module>CpogsPlugin</module>
+    <module>GatesPlugin</module>
+    <module>PetrifyPlugin</module>
+    <module>Workflow</module>
+    <module>CircuitPlugin</module>
+    <module>DesiJPlugin</module>
+    <module>GraphPlugin</module>
+    <module>MpsatPlugin</module>
+    <module>Tests</module>
+    <module>DependencyManager</module>
+    <module>WorkcraftDistrWindowsBasic</module>
+    <module>WorkcraftDistrWindowsFull</module>
+    <module>WorkcraftDistrLinuxBasic</module>
+    <module>WorkcraftDistrLinuxFull</module>
+  </modules>
+  
+  <build>
+  	<plugins>
+  		<plugin>
+    	   <artifactId>maven-assembly-plugin</artifactId>
+    	   <version>2.2</version>
+    	</plugin>
+  	</plugins>
+  </build>
+</project>

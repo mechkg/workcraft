@@ -21,16 +21,18 @@
 
 package org.workcraft.plugins.cpog;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.workcraft.Plugin;
 import org.workcraft.annotations.CustomTools;
 import org.workcraft.annotations.DefaultCreateButtons;
 import org.workcraft.annotations.DisplayName;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.AbstractVisualModel;
@@ -41,6 +43,7 @@ import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
 import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.gui.propertyeditor.PropertyDescriptor;
+import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString;
 import org.workcraft.plugins.cpog.optimisation.javacc.BooleanParser;
 import org.workcraft.plugins.cpog.optimisation.javacc.ParseException;
@@ -80,9 +83,9 @@ public class VisualCPOG extends AbstractVisualModel
 		@Override
 		public Object getValue() throws InvocationTargetException
 		{
-			if (node instanceof VisualRhoClause) return FormulaToString.toString(((VisualRhoClause)node).getFormula());
-			if (node instanceof VisualVertex) return FormulaToString.toString(((VisualVertex)node).getCondition());
-			return FormulaToString.toString(((VisualArc)node).getCondition());
+			if (node instanceof VisualRhoClause) return FormulaToString.toString(eval(((VisualRhoClause)node).formula()));
+			if (node instanceof VisualVertex) return FormulaToString.toString(eval(((VisualVertex)node).condition()));
+			return FormulaToString.toString(eval(((VisualArc)node).condition()));
 		}
 
 		@Override
@@ -94,11 +97,14 @@ public class VisualCPOG extends AbstractVisualModel
 		public void setValue(Object value) throws InvocationTargetException {
 			try
 			{
-				if (node instanceof VisualRhoClause) ((VisualRhoClause)node).setFormula(BooleanParser.parse((String)value, mathModel.getVariables()));
+				ModifiableExpression<BooleanFormula> property = null;
+				if (node instanceof VisualRhoClause) property = ((VisualRhoClause)node).formula();
 				else
-				if (node instanceof VisualArc) ((VisualArc)node).setCondition(BooleanParser.parse((String)value, mathModel.getVariables()));
+				if (node instanceof VisualArc) property = ((VisualArc)node).condition();
 				else
-				if (node instanceof VisualVertex) ((VisualVertex)node).setCondition(BooleanParser.parse((String)value, mathModel.getVariables()));
+				if (node instanceof VisualVertex) property = ((VisualVertex)node).condition();
+				if(property != null)
+					property.setValue(BooleanParser.parse((String)value, mathModel.getVariables()));
 			} catch (ParseException e) {
 				throw new InvocationTargetException(e);
 			}
@@ -106,6 +112,8 @@ public class VisualCPOG extends AbstractVisualModel
 	}
 
 	private CPOG mathModel;
+	@SuppressWarnings("unused") // needed to avoid garbage collection
+	private ConsistencyEnforcer consistencyEnforcer;
 
 	public VisualCPOG(CPOG model) throws VisualModelInstantiationException
 	{
@@ -130,7 +138,7 @@ public class VisualCPOG extends AbstractVisualModel
 			}
 		}
 		
-		new ConsistencyEnforcer(this).attach(getRoot());
+		consistencyEnforcer = new ConsistencyEnforcer(this);
 	}
 
 	@Override

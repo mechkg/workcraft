@@ -44,6 +44,6 @@ public class RhoClauseDeserialiser extends BooleanFunctionDeserialiser
 	@Override
 	protected void setFormula(Object deserialisee, BooleanFormula formula)
 	{
-		((RhoClause)deserialisee).setFormula(formula);
+		((RhoClause)deserialisee).formula().setValue(formula);
 	}
 }

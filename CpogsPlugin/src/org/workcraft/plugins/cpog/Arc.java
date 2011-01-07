@@ -21,32 +21,27 @@
 
 package org.workcraft.plugins.cpog;
 
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.math.MathConnection;
-import org.workcraft.observation.PropertyChangedEvent;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 
 public class Arc extends MathConnection
 {
-	private BooleanFormula condition;
+	private final ModifiableExpression<BooleanFormula> condition;
 
 	public Arc()
 	{	
+		condition = new org.workcraft.dependencymanager.advanced.user.Variable<BooleanFormula>(One.instance());
 	}
 	
 	public Arc(Vertex first, Vertex second)
 	{
 		super(first, second);
-		condition = One.instance();
+		condition = new org.workcraft.dependencymanager.advanced.user.Variable<BooleanFormula>(One.instance());
 	}
 
-	public void setCondition(BooleanFormula condition)
-	{
-		this.condition = condition;
-		sendNotification(new PropertyChangedEvent(this, "condition"));
-	}	
-	
-	public BooleanFormula getCondition()
+	public ModifiableExpression<BooleanFormula> condition()
 	{
 		return condition;
 	}

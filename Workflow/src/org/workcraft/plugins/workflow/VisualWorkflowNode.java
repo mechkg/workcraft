@@ -6,7 +6,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import org.workcraft.annotations.DisplayName;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 
 @DisplayName("Node")
@@ -15,25 +19,40 @@ public class VisualWorkflowNode extends VisualComponent {
 	
 	public VisualWorkflowNode(WorkflowNode node)
 	{
-		
+		super(node);
+	}
+	
+	@Override
+	public Expression<? extends Touchable> localSpaceTouchable() {
+		return Expressions.constant(new Touchable(){
+			@Override
+			public boolean hitTest(Point2D pointInLocalSpace) {
+				return shape.contains(pointInLocalSpace);
+			}
+
+			@Override
+			public Rectangle2D getBoundingBox() {
+				return shape;
+			}
+			
+			@Override
+			public Point2D getCenter() {
+				return new Point2D.Double(0,0);
+			}
+		});
 	}
 
 	@Override
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
-		return shape.contains(pointInLocalSpace);
-	}
-
-	@Override
-	public Rectangle2D getBoundingBoxInLocalSpace() {
-		return shape;
-		
-	}
-
-	@Override
-	public void draw(DrawRequest r) {
-		r.setColor(Color.BLACK);
-		r.setStroke(new BasicStroke(0.01f));
-		r.draw(shape);
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return Expressions.constant(new GraphicalContent() {
+			
+			@Override
+			public void draw(DrawRequest r) {
+				r.getGraphics().setColor(Color.BLACK);
+				r.getGraphics().setStroke(new BasicStroke(0.01f));
+				r.getGraphics().draw(shape);
+			}
+		});
 	}
 
 }

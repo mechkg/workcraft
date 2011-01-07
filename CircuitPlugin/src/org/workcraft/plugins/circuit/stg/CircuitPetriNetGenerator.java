@@ -16,12 +16,14 @@ import java.util.TreeSet;
 
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.Movable;
+import org.workcraft.dom.visual.MovableHelper;
+import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.plugins.circuit.Contact;
+import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.plugins.circuit.VisualCircuit;
 import org.workcraft.plugins.circuit.VisualCircuitComponent;
 import org.workcraft.plugins.circuit.VisualCircuitConnection;
@@ -29,7 +31,6 @@ import org.workcraft.plugins.circuit.VisualContact;
 import org.workcraft.plugins.circuit.VisualFunctionComponent;
 import org.workcraft.plugins.circuit.VisualFunctionContact;
 import org.workcraft.plugins.circuit.VisualJoint;
-import org.workcraft.plugins.circuit.Contact.IOType;
 import org.workcraft.plugins.cpog.optimisation.Literal;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString;
 import org.workcraft.plugins.cpog.optimisation.dnf.Dnf;
@@ -40,10 +41,12 @@ import org.workcraft.plugins.cpog.optimisation.expressions.DumbBooleanWorker;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.SignalTransition;
+import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.VisualSTG;
 import org.workcraft.plugins.stg.VisualSignalTransition;
-import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.util.Hierarchy;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class CircuitPetriNetGenerator {
 	
@@ -61,8 +64,8 @@ public class CircuitPetriNetGenerator {
 	private static final double xScaling = 4;
 	private static final double yScaling = 4;
 	
-	static void setPosition(Movable node, Point2D point) {
-		TransformHelper.applyTransform(node, AffineTransform.getTranslateInstance(point.getX(), point.getY()));
+	static void setPosition(MovableNew node, Point2D point) {
+		MovableHelper.applyTransform(node, AffineTransform.getTranslateInstance(point.getX(), point.getY()));
 	}
 	
 	public static VisualContact findDriver(VisualCircuit circuit, VisualContact target) {
@@ -92,13 +95,12 @@ public class CircuitPetriNetGenerator {
 		
 		String contactName = getContactName(circuit, contact);
 		VisualPlace zeroPlace = stg.createPlace(contactName+"_0");
-		zeroPlace.setLabel(contactName+"=0");
-		
-		if (!contact.getInitOne()) zeroPlace.setTokens(1);
+		zeroPlace.label().setValue(contactName+"=0");
 		
 		VisualPlace onePlace = stg.createPlace(contactName+"_1");
-		onePlace.setLabel(contactName+"=1");
-		if (contact.getInitOne()) onePlace.setTokens(1);
+		onePlace.label().setValue(contactName+"=1");
+		
+		(eval(contact.initOne())?onePlace:zeroPlace).tokens().setValue(1);
 		
 		ContactSTG contactSTG = new ContactSTG(zeroPlace, onePlace);
 		
@@ -161,9 +163,6 @@ public class CircuitPetriNetGenerator {
 					
 					if (driver==null) {
 						// if target driver was not found, create artificial one that looks like input
-						//driver = new VisualContact(new Contact(IOType.INPUT), VisualContact.flipDirection(contact.getDirection()), contact.getName());
-						//driver.setTransform(contact.getTransform());
-						//driver.setParent(contact.getParent());
 						driver = contact;
 						cstg = generatePlaces(circuit, stg, contact);
 						
@@ -182,26 +181,26 @@ public class CircuitPetriNetGenerator {
 				if (c instanceof VisualFunctionContact) {
 					// function based driver
 					VisualFunctionContact contact = (VisualFunctionContact)c;
-					Dnf set = DnfGenerator.generate(contact.getFunction().getSetFunction());
+					Dnf set = DnfGenerator.generate(eval(contact.getFunction().setFunction()));
 					Dnf reset = null;
 					
-					if (contact.getFunction().getResetFunction()!=null) 
-						reset = DnfGenerator.generate(contact.getFunction().getResetFunction());
+					if (eval(contact.getFunction().resetFunction())!=null) 
+						reset = DnfGenerator.generate(eval(contact.getFunction().resetFunction()));
 					else {
 						BooleanOperations.worker = new DumbBooleanWorker();
-						reset = DnfGenerator.generate(BooleanOperations.worker.not(contact.getFunction().getSetFunction()));
+						reset = DnfGenerator.generate(BooleanOperations.worker.not(eval(contact.getFunction().setFunction())));
 					}
 					
 					SignalTransition.Type ttype = SignalTransition.Type.OUTPUT;
 					
 					
-					if (contact.getParent() instanceof VisualCircuitComponent) {
-						if (((VisualCircuitComponent)contact.getParent()).getIsEnvironment()) 
+					if (eval(contact.parent()) instanceof VisualCircuitComponent) {
+						if (eval(((VisualCircuitComponent)eval(contact.parent())).isEnvironment())) 
 								ttype = SignalTransition.Type.INPUT; 
-						else if (contact.getIOType()==IOType.INPUT)
+						else if (eval(contact.ioType())==IoType.INPUT)
 							ttype = SignalTransition.Type.INPUT;
 					} else {
-						if (contact.getIOType()==IOType.INPUT)
+						if (eval(contact.ioType())==IoType.INPUT)
 							ttype = SignalTransition.Type.INPUT;
 					}
 					
@@ -228,7 +227,7 @@ public class CircuitPetriNetGenerator {
 			Map<Contact, VisualContact> targetDrivers, Dnf set, Dnf reset, SignalTransition.Type ttype) throws InvalidConnectionException {
 		
 		AffineTransform transform = TransformHelper.getTransformToAncestor(contact, circuit.getRoot());
-		Point2D center = new Point2D.Double(xScaling*(transform.getTranslateX()+contact.getX()), yScaling*(transform.getTranslateY()+contact.getY()));
+		Point2D center = new Point2D.Double(xScaling*(transform.getTranslateX()+eval(contact.x())), yScaling*(transform.getTranslateY()+eval(contact.y())));
 		
 		Point2D direction;
 		Point2D pOffset;
@@ -237,9 +236,9 @@ public class CircuitPetriNetGenerator {
 		
 //		int maxC = Math.max(set.getClauses().size(), reset.getClauses().size()); 
 		
-		VisualContact.Direction dir = contact.getDirection();
+		VisualContact.Direction dir = eval(contact.direction());
 		
-		if (contact.getIOType()==IOType.INPUT) {
+		if (eval(contact.ioType())==IoType.INPUT) {
 			dir = VisualContact.flipDirection(dir); 
 		}
 		
@@ -334,7 +333,7 @@ public class CircuitPetriNetGenerator {
 			
 			stg.connect(transition, postset);
 			stg.connect(preset, transition);
-			transition.setLabel(FormulaToString.toString(clause));
+			transition.label().setValue(FormulaToString.toString(clause));
 			
 			baseOffset = add(baseOffset, transitionOffset);
 			
@@ -348,7 +347,7 @@ public class CircuitPetriNetGenerator {
 				ContactSTG source = drivers.get(driverContact);
 				
 				if(source == null)
-					throw new RuntimeException("No source for " + targetContact.getName() + " while generating " + signalName);
+					throw new RuntimeException("No source for " + eval(targetContact.name()) + " while generating " + signalName);
 				
 				VisualPlace p = literal.getNegation() ? source.p0 : source.p1;
 				
@@ -369,20 +368,19 @@ public class CircuitPetriNetGenerator {
 
 	private static String getContactName(VisualCircuit circuit, VisualContact contact) {
 		String prefix = "";
-		Node parent = contact.getParent();
+		Node parent = eval(contact.parent());
 		
 		if (parent instanceof VisualFunctionComponent) {
 			VisualFunctionComponent vc = (VisualFunctionComponent)parent;
-			prefix = ((VisualFunctionComponent)parent).getName()+"_";
 			int cnt=0;
-			for (Node n: vc.getChildren()) {
+			for (Node n: eval(vc.children())) {
 				if ((n instanceof VisualContact)&&
-						((VisualContact)n).getIOType()!=IOType.INPUT) {
+						eval(((VisualContact)n).ioType())!=IoType.INPUT) {
 					cnt++;
 				}
 			}
-			if (cnt==1) return ((VisualFunctionComponent)parent).getName();
+			if (cnt==1) return eval(((VisualFunctionComponent)parent).name());
 		}
-		return prefix+contact.getName();
+		return prefix + eval(contact.name());
 	}
 }

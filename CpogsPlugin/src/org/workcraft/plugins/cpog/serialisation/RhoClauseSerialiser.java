@@ -23,6 +23,7 @@ package org.workcraft.plugins.cpog.serialisation;
 
 import org.workcraft.plugins.cpog.RhoClause;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class RhoClauseSerialiser extends BooleanFormulaSerialiser
 {
@@ -35,6 +36,6 @@ public class RhoClauseSerialiser extends BooleanFormulaSerialiser
 	@Override
 	protected BooleanFormula getFormula(Object serialisee)
 	{
-		return ((RhoClause) serialisee).getFormula();
+		return eval(((RhoClause) serialisee).formula());
 	}
 }

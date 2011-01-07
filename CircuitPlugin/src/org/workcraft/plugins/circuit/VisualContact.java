@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.circuit;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -35,21 +37,24 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.observation.PropertyChangedEvent;
-import org.workcraft.observation.StateEvent;
-import org.workcraft.observation.StateObserver;
-import org.workcraft.observation.TransformChangedEvent;
-import org.workcraft.plugins.circuit.Contact.IOType;
+import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
+import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.stg.SignalTransition;
 
-
-public class VisualContact extends VisualComponent implements StateObserver {
+public class VisualContact extends VisualComponent {
 	public enum Direction {	NORTH, SOUTH, EAST, WEST};
 	public static final Color inputColor = Color.RED;
 	public static final Color outputColor = Color.BLUE;
@@ -57,17 +62,14 @@ public class VisualContact extends VisualComponent implements StateObserver {
 	private static Font nameFont = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.5f);
 	
 	private double size = 0.5;
+	private final Variable<Direction> direction;
 	
-	private GlyphVector nameGlyph = null;
-	
-	private Direction direction = Direction.WEST;
 	
 	private HashSet<SignalTransition> referencedTransitions=new HashSet<SignalTransition>();
 	private Place referencedZeroPlace=null;
 	private Place referencedOnePlace=null;
-	
-	public void resetNameGlyph() {
-		nameGlyph = null;
+	public VisualContact(Contact contact) {
+		this(contact, Direction.WEST);
 	}
 	
 	static public AffineTransform getDirectionTransform(Direction dir) {
@@ -89,30 +91,62 @@ public class VisualContact extends VisualComponent implements StateObserver {
 		return at;
 	}
 	
-	public VisualContact(Contact contact) {
+	public VisualContact(Contact contact, VisualContact.Direction dir) {
 		super(contact);
 		
-		contact.addObserver(this);
+		this.direction = Variable.create(dir);
+
 		addPropertyDeclarations();
 	}
-	
-	public VisualContact(Contact component, VisualContact.Direction dir, String label) {
-		super(component);
-		
-		component.addObserver(this);
-		addPropertyDeclarations();
-		
-		setName(label);
-		setDirection(dir);
+
+	public void transformChanged(AffineTransform at) {
+		Node parent = eval(parent());
+		if(parent instanceof VisualCircuitComponent) {
+			
+			double x = at.getTranslateX();
+			double y = at.getTranslateY();
+			
+			Rectangle2D r = eval(((VisualCircuitComponent)parent).createContactLabelBbExpression());
+			if (r==null) r = new Rectangle2D.Double(-0.5, -0.5, 1, 1);
+			
+			VisualContact.Direction dir = eval(direction());
+			VisualContact.Direction newDir = dir;
+			
+			if (x<r.getMinX()&&y>r.getMinY()&&y<r.getMaxY()) newDir = Direction.WEST;
+			if (x>r.getMaxX()&&y>r.getMinY()&&y<r.getMaxY()) newDir = Direction.EAST;
+			if (y<r.getMinY()&&x>r.getMinX()&&x<r.getMaxX()) newDir = Direction.NORTH;
+			if (y>r.getMaxY()&&x>r.getMinX()&&x<r.getMaxX()) newDir = Direction.SOUTH;
+			
+			if (dir!=newDir) {
+	 			direction().setValue(newDir);
+			}
+		}
 	}
 	
 	private int connections = 0;
+	@Override
+	public ModifiableExpression<AffineTransform> transform() {
+		
+		final ModifiableExpression<AffineTransform> superTransform = super.transform();
+		return new ModifiableExpressionImpl<AffineTransform>(){
+
+			@Override
+			protected void simpleSetValue(AffineTransform newValue) {
+				superTransform.setValue(newValue);
+				transformChanged(newValue);
+			}
+
+			@Override
+			protected AffineTransform evaluate(EvaluationContext context) {
+				return context.resolve(superTransform);
+			}
+		};
+	}
 	
-	private Shape getShape() {
-		
+	private Shape getShape(EvaluationContext context) {
+
 		double size = getSize();
-		
-		if (getParent() instanceof VisualCircuitComponent) {
+		if (context.resolve(parent()) instanceof VisualCircuitComponent) {
 			if (CircuitSettings.getShowContacts()) {
 				return new Rectangle2D.Double(
 						-size / 2 + CircuitSettings.getCircuitWireWidth(),
@@ -144,8 +178,8 @@ public class VisualContact extends VisualComponent implements StateObserver {
 	
 	private void addPropertyDeclarations() {
 		LinkedHashMap<String, Object> types = new LinkedHashMap<String, Object>();
-		types.put("Input", Contact.IOType.INPUT);
-		types.put("Output", Contact.IOType.OUTPUT);
+		types.put("Input", Contact.IoType.INPUT);
+		types.put("Output", Contact.IoType.OUTPUT);
 		
 		LinkedHashMap<String, Object> directions = new LinkedHashMap<String, Object>();
 		directions.put("North", VisualContact.Direction.NORTH);
@@ -153,34 +187,46 @@ public class VisualContact extends VisualComponent implements StateObserver {
 		directions.put("South", VisualContact.Direction.SOUTH);
 		directions.put("West", VisualContact.Direction.WEST);
 		
-		addPropertyDeclaration(new PropertyDeclaration(this, "Direction", "getDirection", "setDirection", VisualContact.Direction.class, directions));
-		addPropertyDeclaration(new PropertyDeclaration(this, "I/O type", "getIOType", "setIOType", Contact.IOType.class, types));
-		addPropertyDeclaration(new PropertyDeclaration(this, "Name", "getName", "setName", String.class));
-		addPropertyDeclaration(new PropertyDeclaration(this, "Init to one", "getInitOne", "setInitOne", boolean.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Direction", direction(), direction(), VisualContact.Direction.class, directions));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("I/O type", ioType(), ioType(), Contact.IoType.class, types));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Name", name(), String.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Init to one", initOne(), Boolean.class));
 	}
 	
-	public boolean getInitOne() {
-		return getReferencedContact().getInitOne();
-	}
-	
-	public void setInitOne(boolean value) {
-		getReferencedContact().setInitOne(value);
+	public ModifiableExpression<Boolean> initOne() {
+		return getReferencedContact().initOne();
 	}
 	
 	@Override
-	public void draw(DrawRequest r) {
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>(){
+
+			@Override
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent() {
+					
+					@Override
+					public void draw(DrawRequest request) {
+						VisualContact.this.draw(request, context);
+					}
+				};
+			}
+		};
+	}
+	
+	private void draw(DrawRequest r, EvaluationContext context) {
 		
 		connections = r.getModel().getConnections(this).size();
 		
 		Graphics2D g = r.getGraphics();
 		Color colorisation = r.getDecoration().getColorisation();
 		Color fillColor = r.getDecoration().getBackground();
-		if (fillColor==null) fillColor=getFillColor();
+		if (fillColor==null) fillColor=context.resolve(fillColor());
 		
-		if (!(getParent() instanceof VisualCircuitComponent)) {
+		if (!(context.resolve(parent()) instanceof VisualCircuitComponent)) {
 			
 			AffineTransform at = new AffineTransform();
-			switch (getDirection()) {
+			switch (context.resolve(direction())) {
 			case NORTH:
 				at.quadrantRotate(-1);
 				break;
@@ -195,10 +241,9 @@ public class VisualContact extends VisualComponent implements StateObserver {
 			g.transform(at);
 		}
 		
-		Shape shape = getShape();
-		if (connections>1&&(getParent() instanceof VisualCircuitComponent)&&!CircuitSettings.getShowContacts()) {
-			
-			g.setColor(Coloriser.colorise(getForegroundColor(), colorisation));
+		Shape shape = getShape(context);
+		if (connections>1&&(context.resolve(parent()) instanceof VisualCircuitComponent)&&!CircuitSettings.getShowContacts()) {
+			g.setColor(Coloriser.colorise(context.resolve(foregroundColor()), colorisation));
 			g.fill(shape);
 			
 		} else {
@@ -206,15 +251,15 @@ public class VisualContact extends VisualComponent implements StateObserver {
 				g.setStroke(new BasicStroke((float)CircuitSettings.getCircuitWireWidth()));
 				g.setColor(fillColor);
 				g.fill(shape);
-				g.setColor(Coloriser.colorise(getForegroundColor(), colorisation));
+				g.setColor(Coloriser.colorise(context.resolve(foregroundColor()), colorisation));
 				g.draw(shape);
 			}
 		}
 		
-		if (!(getParent() instanceof VisualCircuitComponent)) {
+		if (!(context.resolve(parent()) instanceof VisualCircuitComponent)) {
 			AffineTransform at = new AffineTransform();
 			
-			switch (getDirection()) {
+			switch (context.resolve(direction())) {
 			case SOUTH:
 				at.quadrantRotate(2);
 				break;
@@ -225,13 +270,13 @@ public class VisualContact extends VisualComponent implements StateObserver {
 			
 			g.transform(at);
 			
-			GlyphVector gv = getNameGlyphs(g);
+			GlyphVector gv = context.resolve(getNameGlyphs());
 			Rectangle2D cur = gv.getVisualBounds();
-			g.setColor(Coloriser.colorise((getIOType()==IOType.INPUT)?inputColor:outputColor, colorisation));
+			g.setColor(Coloriser.colorise((context.resolve(ioType())==IoType.INPUT)?inputColor:outputColor, colorisation));
 			
 			float xx = 0;
 			
-			if (getIOType()==IOType.INPUT) {
+			if (context.resolve(ioType())==IoType.INPUT) {
 				xx = (float)(-cur.getWidth()-0.5);
 			} else {
 				xx = (float)0.5;
@@ -243,117 +288,83 @@ public class VisualContact extends VisualComponent implements StateObserver {
 	}
 
 	@Override
-	public Rectangle2D getBoundingBoxInLocalSpace() {
-		if (getShape()!=null) {
-			return getShape().getBounds2D();
-		}
-		double size = getSize();
-		return new Rectangle2D.Double(-size/2, -size/2, size, size);
+	public Expression<? extends Touchable> localSpaceTouchable() {
+		return new ExpressionBase<Touchable>(){
+
+			@Override
+			protected Touchable evaluate(final EvaluationContext context) {
+				return new Touchable(){
+
+					@Override
+					public boolean hitTest(Point2D point) {
+						
+						if (!(context.resolve(parent()) instanceof VisualCircuitComponent)) {
+							AffineTransform at = new AffineTransform();
+							
+							switch (context.resolve(direction())) {
+							case NORTH:
+								at.quadrantRotate(1);
+								break;
+							case SOUTH:
+								at.quadrantRotate(-1);
+								break;
+							case EAST:
+								at.quadrantRotate(2);
+								break;
+							}
+							
+							point = at.transform(point, null);
+						}
+						
+						return getShape(context).contains(point);
+					}
+
+					@Override
+					public Rectangle2D getBoundingBox() {
+						return getShape(context).getBounds2D();
+					}
+
+					@Override
+					public Point2D getCenter() {
+						return new Point2D.Double(0,0);
+					}
+					
+				};
+			}
+			
+		};
 	}
 
 	private double getSize() {
 		return size;
 	}
 
-	@Override
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
-		
-		Point2D p2 = new Point2D.Double();
-		p2.setLocation(pointInLocalSpace);
-		
-		if (!(getParent() instanceof VisualCircuitComponent)) {
-			AffineTransform at = new AffineTransform();
-			
-			switch (getDirection()) {
-			case NORTH:
-				at.quadrantRotate(1);
-				break;
-			case SOUTH:
-				at.quadrantRotate(-1);
-				break;
-			case EAST:
-				at.quadrantRotate(2);
-				break;
-			}
-			
-			at.transform(pointInLocalSpace, p2);
-		}
-		
-		Shape shape = getShape(); 
-		if (shape!=null) return shape.contains(p2);
-		return false;
-	}	
-	
-	
-/*	@Override
- * 	public Collection<MathNode> getMathReferences() {
-		return Collections.emptyList();
-	}
-
-	*/
-	
 	/////////////////////////////////////////////////////////
-	public GlyphVector getNameGlyphs(Graphics2D g) {
-		if (nameGlyph == null) {
-			if (getDirection()==VisualContact.Direction.NORTH||getDirection()==VisualContact.Direction.SOUTH) {
-				AffineTransform at = new AffineTransform();
-				at.quadrantRotate(1);
+	public Expression<GlyphVector> getNameGlyphs() {
+		return new ExpressionBase<GlyphVector>(){
+
+			@Override
+			protected GlyphVector evaluate(EvaluationContext context) {
+				Direction direction = context.resolve(direction());
+				if (direction==VisualContact.Direction.NORTH||direction==VisualContact.Direction.SOUTH) {
+					AffineTransform at = new AffineTransform();
+					at.quadrantRotate(1);
+				}
+				return nameFont.createGlyphVector(VisualComponent.podgonFontRenderContext(), context.resolve(name()));
 			}
-			nameGlyph = nameFont.createGlyphVector(g.getFontRenderContext(), getName());
-		}
-		
-		return nameGlyph;
+		};
 	}
 	
-	public Rectangle2D getNameBB(Graphics2D g) {
-		return getNameGlyphs(g).getVisualBounds();
-	}
-	
-	public void setDirection(VisualContact.Direction dir) {
-		
-		if (dir==direction) return;
-		
-		this.direction=dir;
-		
-		nameGlyph = null;
-		
-		sendNotification(new PropertyChangedEvent(this, "direction"));
-		sendNotification(new TransformChangedEvent(this));
-	}	
-	
-	public VisualContact.Direction getDirection() {
+	public ModifiableExpression<VisualContact.Direction> direction() {
 		return direction;
 	}
 	
-	public void setIOType(Contact.IOType type) {
-		getReferencedContact().setIOType(type);
-		sendNotification(new PropertyChangedEvent(this, "IOtype"));
-		nameGlyph = null;
+	public ModifiableExpression<Contact.IoType> ioType() {
+		return getReferencedContact().ioType();
 	}
 
-	public Contact.IOType getIOType() {
-		return getReferencedContact().getIOType();
-	}
-
-	
-	public String getName() {
-		return getReferencedContact().getName();
-	}
-
-	public void setName(String name) {
-/*		if (name==null||name.equals("")&&((Contact)getReferencedComponent()).getIOType()==IOType.INPUT) 
-			name=getNewName(
-					((Contact)getReferencedComponent()).getParent(),
-					"input");
-		if (name==null||name.equals("")&&((Contact)getReferencedComponent()).getIOType()==IOType.OUTPUT) 
-			name=getNewName(
-				((Contact)getReferencedComponent()).getParent(),
-					"output");*/
-		
-		getReferencedContact().setName(name);
-		
-		sendNotification(new PropertyChangedEvent(this, "name"));
-		nameGlyph = null;
+	public ModifiableExpression<String> name() {
+		return getReferencedContact().name();
 	}
 
 	public Contact getReferencedContact() {
@@ -363,7 +374,7 @@ public class VisualContact extends VisualComponent implements StateObserver {
 	public static boolean isDriver(Node contact) {
 		if (!(contact instanceof VisualContact)) return false;
 		
-		return (((VisualContact)contact).getIOType() == IOType.OUTPUT) == (((VisualContact)contact).getParent() instanceof VisualComponent);
+		return (eval(((VisualContact)contact).ioType()) == IoType.OUTPUT) == (eval(((VisualContact)contact).parent()) instanceof VisualComponent);
 	}
 
 	public static Direction flipDirection(Direction direction) {
@@ -376,10 +387,6 @@ public class VisualContact extends VisualComponent implements StateObserver {
 
 	public HashSet<SignalTransition> getReferencedTransitions() {
 		return referencedTransitions;
-	}
-
-	@Override
-	public void notify(StateEvent e) {
 	}
 
 	public void setReferencedOnePlace(Place referencedOnePlace) {

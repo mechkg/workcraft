@@ -22,20 +22,15 @@
 package org.workcraft.plugins.petri;
 
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.observation.PropertyChangedEvent;
 
 @VisualClass("org.workcraft.plugins.petri.VisualPlace")
 public class Place extends MathNode {
-	protected int tokens = 0;
+	protected Variable<Integer> tokens = new Variable<Integer>(0);
 	
-	public int getTokens() {
+	public ModifiableExpression<Integer> tokens() {
 		return tokens;
-	}
-	
-	public void setTokens(int tokens) {
-		this.tokens = tokens;
-		
-		sendNotification( new PropertyChangedEvent(this, "tokens") );
 	}
 }

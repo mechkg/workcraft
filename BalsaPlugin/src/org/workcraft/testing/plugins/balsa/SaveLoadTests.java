@@ -53,7 +53,7 @@ import org.workcraft.plugins.balsa.VisualBreezeComponent;
 import org.workcraft.plugins.balsa.VisualHandshake;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
 import org.workcraft.workspace.ModelEntry;
-
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class SaveLoadTests {
 	//TODO: Re-write tests
@@ -72,7 +72,7 @@ public class SaveLoadTests {
 
 		Assert.assertNotNull(circuit);
 		
-		Node[] components = circuit.getRoot().getChildren().toArray(new Node[0]);
+		Node[] components = eval(circuit.getRoot().children()).toArray(new Node[0]);
 		
 		//TODO: fix the test, considering hierarchical math model structure
 		Assert.assertEquals(7, components.length);
@@ -124,13 +124,13 @@ public class SaveLoadTests {
 		Assert.assertNotNull(circuit);
 		Assert.assertNotNull(visual);
 		
-		Assert.assertEquals(3, visual.getRoot().getChildren().size());
+		Assert.assertEquals(3, eval(visual.getRoot().children()).size());
 		
 		VisualConnection con = null;
 		VisualBreezeComponent wh = null;
 		VisualBreezeComponent loop = null;
 		
-		for(Node node : visual.getRoot().getChildren())
+		for(Node node : eval(visual.getRoot().children()))
 			if(node instanceof VisualConnection)
 				con = (VisualConnection)node;
 			else if(node instanceof VisualBreezeComponent)
@@ -146,8 +146,8 @@ public class SaveLoadTests {
 		Assert.assertNotNull(wh);
 		Assert.assertNotNull(loop);
 		
-		Assert.assertEquals(3, wh.getChildren().size());
-		Assert.assertEquals(2, loop.getChildren().size());
+		Assert.assertEquals(3, eval(wh.children()).size());
+		Assert.assertEquals(2, eval(loop.children()).size());
 		
 		VisualHandshake whActivate = getVisualHandshakeByName(wh, "activate");
 		VisualHandshake loopActivateOut = getVisualHandshakeByName(loop, "activateOut");
@@ -157,12 +157,12 @@ public class SaveLoadTests {
 				con.getSecond() == whActivate && con.getFirst() == loopActivateOut 
 				);
 		
-		Assert.assertEquals(0.0, loop.getX(), 0.5);
-		Assert.assertEquals(10.0, wh.getX(), 0.5);
+		Assert.assertEquals(0.0, eval(loop.x()), 0.5);
+		Assert.assertEquals(10.0, eval(wh.x()), 0.5);
 	}
 
 	private VisualHandshake getVisualHandshakeByName(VisualBreezeComponent wh, String name) {
-		for(Node component : wh.getChildren())
+		for(Node component : eval(wh.children()))
 		{
 			VisualHandshake handshake = (VisualHandshake) component;
 			if(((BreezeHandshake)handshake.getReferencedComponent()).getHandshakeName().equals(name))
@@ -214,7 +214,7 @@ public class SaveLoadTests {
 		MathConnection con = (MathConnection)math.connect(loop.getHandshakeComponentByName("activateOut"), wh.getHandshakeComponentByName("activate"));
 		
 		VisualBreezeComponent whVis = new VisualBreezeComponent(wh);
-		whVis.setX(10);
+		whVis.x().setValue(10.0);
 		visual.getRoot().add(whVis);
 		VisualBreezeComponent loopVis = new VisualBreezeComponent(loop);
 		visual.getRoot().add(loopVis);

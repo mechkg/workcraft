@@ -23,14 +23,19 @@ package org.workcraft.plugins.balsa;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.plugins.balsa.handshakebuilder.Handshake;
 
@@ -48,31 +53,33 @@ public class VisualHandshake extends VisualComponent {
 		return (BreezeHandshake)getReferencedComponent();
 	}
 	
-	public Rectangle2D getBoundingBoxInLocalSpace() {
-		return new Rectangle2D.Double(-0.5, -0.5, 1, 1);
-	}
-
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
-		return pointInLocalSpace.distanceSq(0, 0) < 0.25;
-	}
 
 	public Set<MathNode> getMathReferences() {
 		return new HashSet<MathNode>();
 	}
 
-	public void draw(DrawRequest r) {
-		r.setStroke(new BasicStroke(0.1f));
-		Ellipse2D.Double circle = new Ellipse2D.Double(-0.5, -0.5, 1, 1);
-		r.setColor(handshake.isActive()?Color.BLACK : Color.WHITE);
-		r.fill(circle);
-		r.setColor(Color.BLACK);
-		r.draw(circle);
-		
-		
-		/*if(handshake instanceof DataHandshake)
-			drawDataConnector(g, (DataHandshake) handshake);
-		else
-			g.draw(new Line2D.Double(0.5, 0, 4, 0));*/
+	@Override
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		// TODO Auto-generated method stub
+		return Expressions.constant(new GraphicalContent(){
+			
+			@Override
+			public void draw(DrawRequest r) {
+				Graphics2D g = r.getGraphics();
+				g.setStroke(new BasicStroke(0.1f));
+				Ellipse2D.Double circle = new Ellipse2D.Double(-0.5, -0.5, 1, 1);
+				g.setColor(handshake.isActive()?Color.BLACK : Color.WHITE);
+				g.fill(circle);
+				g.setColor(Color.BLACK);
+				g.draw(circle);
+				
+				
+				/*if(handshake instanceof DataHandshake)
+					drawDataConnector(g, (DataHandshake) handshake);
+				else
+					g.draw(new Line2D.Double(0.5, 0, 4, 0));*/
+			}
+		});
 	}
 	
 	/*private void drawDataConnector(Graphics2D g, DataHandshake dataHandshake) {
@@ -117,6 +124,24 @@ public class VisualHandshake extends VisualComponent {
 
 	public Handshake getHandshake() {
 		return handshake;
+	}
+
+	@Override
+	public Expression<? extends Touchable> localSpaceTouchable() {
+		return Expressions.constant(new Touchable(){
+			public Rectangle2D getBoundingBox() {
+				return new Rectangle2D.Double(-0.5, -0.5, 1, 1);
+			}
+
+			public boolean hitTest(Point2D point) {
+				return point.distanceSq(0, 0) < 0.25;
+			}
+			
+			@Override
+			public Point2D getCenter() {
+				return new Point2D.Double(0,0);
+			}
+		});
 	}
 
 }

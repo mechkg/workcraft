@@ -45,8 +45,8 @@ public class VisualCPOGGroupDeserialiser implements CustomXMLDeserialiser
 	public void finaliseInstance(Element element, Object instance, ReferenceResolver internalReferenceResolver,
 			ReferenceResolver externalReferenceResolver, NodeFinaliser nodeFinaliser) throws DeserialisationException
 	{
-		Encoding encoding = ((VisualScenario) instance).getEncoding();
-
+		Encoding encoding = new Encoding();
+		
 		NodeList subelements = element.getElementsByTagName("encoding");
 
 		for (int i = 0; i < subelements.getLength(); i++)
@@ -58,6 +58,8 @@ public class VisualCPOGGroupDeserialiser implements CustomXMLDeserialiser
 			
 			encoding.setState(var, state);
 		}
+
+		((VisualScenario) instance).encoding().setValue(encoding);
 	}
 
 	@Override

@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.petri.tools;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -112,7 +114,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 	{
 		for (Place p: marking.keySet()) {
 			if (net.getPlaces().contains(p)) {
-				p.setTokens(marking.get(p));
+				p.tokens().setValue(marking.get(p));
 			} else {
 				//ExceptionDialog.show(null, new RuntimeException("Place "+p.toString()+" is not in the model"));
 			}
@@ -599,7 +601,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 	protected Map<Place, Integer> readMarking() {
 		HashMap<Place, Integer> result = new HashMap<Place, Integer>();
 		for (Place p : net.getPlaces()) {
-			result.put(p, p.getTokens());
+			result.put(p, eval(p.tokens()));
 		}
 		return result;
 	}

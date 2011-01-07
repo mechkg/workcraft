@@ -51,9 +51,9 @@ public class FunctionDeserialiser implements CustomXMLDeserialiser
 			ReferenceResolver externalReferenceResolver,
 			NodeFinaliser nodeFinaliser) throws DeserialisationException {
 		FunctionContact function = ((FunctionContact)instance);
-		function.setSetFunction(
+		function.setFunction().setValue(
 				BooleanFunctionDeserialiser.readFormulaFromAttribute(element, internalReferenceResolver, FunctionSerialiser.SET_FUNCTION_ATTRIBUTE_NAME));
-		function.setResetFunction(
+		function.resetFunction().setValue(
 				BooleanFunctionDeserialiser.readFormulaFromAttribute(element, internalReferenceResolver, FunctionSerialiser.RESET_FUNCTION_ATTRIBUTE_NAME));
 	}
 

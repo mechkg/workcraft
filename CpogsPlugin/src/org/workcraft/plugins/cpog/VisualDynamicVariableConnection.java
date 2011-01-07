@@ -21,7 +21,10 @@
 
 package org.workcraft.plugins.cpog;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.visual.connections.VisualConnection;
+import org.workcraft.dom.visual.connections.VisualConnectionProperties;
 
 public class VisualDynamicVariableConnection extends VisualConnection
 {
@@ -40,8 +43,19 @@ public class VisualDynamicVariableConnection extends VisualConnection
 	}
 	
 	@Override
-	public boolean hasArrow()
-	{
-		return false;
+	public ExpressionBase<VisualConnectionProperties> properties() {
+		return new ExpressionBase<VisualConnectionProperties>() {
+
+			@Override
+			protected VisualConnectionProperties evaluate(EvaluationContext context) {
+				VisualConnectionProperties superProperties = context.resolve(VisualDynamicVariableConnection.super.properties());
+				return new VisualConnectionProperties.Inheriting(superProperties){
+					@Override
+					public boolean hasArrow() {
+						return true;
+					}
+				};
+			}
+		};
 	}
 }

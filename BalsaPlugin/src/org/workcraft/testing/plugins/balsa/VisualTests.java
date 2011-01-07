@@ -44,6 +44,7 @@ import org.workcraft.plugins.balsa.VisualHandshake;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
 import org.workcraft.plugins.balsa.io.BalsaSystem;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class VisualTests {
 	@Test
@@ -55,10 +56,10 @@ public class VisualTests {
 		circuit.add(mathComp);
 		VisualBreezeComponent visual = new VisualBreezeComponent(mathComp);
 		
-		assertTrue(visual.hitTest(new Point2D.Double(0, 0)));
-		assertTrue(visual.hitTest(new Point2D.Double(0.4, 0)));
-		assertTrue(visual.hitTest(new Point2D.Double(0.3, 0.3)));
-		assertFalse(visual.hitTest(new Point2D.Double(3, 0)));
+		assertTrue(eval(visual.shape()).hitTest(new Point2D.Double(0, 0)));
+		assertTrue(eval(visual.shape()).hitTest(new Point2D.Double(0.4, 0)));
+		assertTrue(eval(visual.shape()).hitTest(new Point2D.Double(0.3, 0.3)));
+		assertFalse(eval(visual.shape()).hitTest(new Point2D.Double(3, 0)));
 	}
 	
 	private DynamicComponent createWhile() {
@@ -86,7 +87,7 @@ public class VisualTests {
 		circuit.add(mathComp);
 		VisualBreezeComponent visual = new VisualBreezeComponent(mathComp);
 
-		Rectangle2D box = visual.getBoundingBoxInLocalSpace();
+		Rectangle2D box = eval(visual.localSpaceTouchable()).getBoundingBox();
 		
 		assertTrue(-0.51 > box.getMinX());
 		assertTrue(-0.8 < box.getMinX());
@@ -114,7 +115,7 @@ public class VisualTests {
 		circuit.add(mathComp2);
 		VisualBreezeComponent visual1 = new VisualBreezeComponent(mathComp1);
 		VisualBreezeComponent visual2 = new VisualBreezeComponent(mathComp2);
-		visual1.setX(10);
+		visual1.x().setValue(10.0);
 		
 		VisualBalsaCircuit visualCircuit = new VisualBalsaCircuit(circuit);
 		
@@ -127,11 +128,11 @@ public class VisualTests {
 	//	VisualConnectionProperties connection = (VisualConnectionProperties)visualCircuit.connect(hs1, hs2);
 		
 		AffineTransform transform1 = TransformHelper.getTransform(hs1, root);
-		Point2D p1 = hs1.getPosition();
+		Point2D p1 = eval(hs1.position());
 		transform1.transform(p1, p1);
 
 		AffineTransform transform2 = TransformHelper.getTransform(hs2, root);
-		Point2D p2 = hs2.getPosition();
+		Point2D p2 = eval(hs2.position());
 		transform2.transform(p2, p2);
 
 		

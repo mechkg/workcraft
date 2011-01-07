@@ -1,0 +1,41 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                      http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.workcraft</groupId>
+  <artifactId>WorkcraftDistrWindowsFull</artifactId>
+  <packaging>pom</packaging>
+  <name>Workcraft Windows Distribution (full model set)</name>
+
+  <parent>
+    <groupId>org.workcraft</groupId>
+    <artifactId>WorkcraftDistrFull</artifactId>
+    <version>2.0-SNAPSHOT</version>
+    <relativePath>../pom-full-distr.xml</relativePath>
+  </parent>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+          <executions>
+            <execution>
+            <id>bundle-everything</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+	      <finalName>Workcraft-${project.version}-${timestamp}</finalName>
+              <descriptors>
+                <descriptor>../assembly-windows.xml</descriptor>
+              </descriptors>            	
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

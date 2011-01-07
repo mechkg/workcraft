@@ -8,6 +8,7 @@ import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.tools.DefaultNodeGenerator;
 import org.workcraft.gui.graph.tools.NodeGeneratorTool;
 import org.workcraft.plugins.circuit.FunctionContact;
+import org.workcraft.plugins.circuit.Contact.IoType;
 
 public class ContactGeneratorTool extends NodeGeneratorTool {
 	static boolean shiftPressed;
@@ -19,7 +20,7 @@ public class ContactGeneratorTool extends NodeGeneratorTool {
 			protected MathNode createMathNode()
 					throws NodeCreationException {
 				MathNode node = super.createMathNode();
-				((FunctionContact)node).setIOType(shiftPressed ? FunctionContact.IOType.INPUT : FunctionContact.IOType.OUTPUT);
+				((FunctionContact)node).ioType().setValue(shiftPressed ? IoType.INPUT : IoType.OUTPUT);
 				
 				return node;
 			}

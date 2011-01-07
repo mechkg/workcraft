@@ -26,7 +26,7 @@ import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.tools.STGSimulationTool;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
-
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class CircuitSimulationTool extends STGSimulationTool {
 
@@ -74,9 +74,9 @@ public class CircuitSimulationTool extends STGSimulationTool {
 		for (SignalTransition tr: c.getReferencedTransitions()) {
 			if (net.isEnabled(tr)) {
 				if (st==null) st = tr;
-				if (tr.getDirection()==Direction.MINUS)
+				if (eval(tr.direction())==Direction.MINUS)
 					down = true;
-				if (tr.getDirection()==Direction.PLUS)
+				if (eval(tr.direction())==Direction.PLUS)
 					up=true;
 				if (up&&down) break;
 			}
@@ -110,7 +110,7 @@ public class CircuitSimulationTool extends STGSimulationTool {
 		for (VisualContact vc: Hierarchy.getDescendantsOfType(circuit.getRoot(), VisualContact.class)) {
 			Contact c = (Contact)vc.getReferencedComponent();
 			if (!vc.getReferencedTransitions().isEmpty()) {
-				c.setInitOne(vc.getReferencedOnePlace().getTokens()==1);
+				c.initOne().setValue(eval(vc.getReferencedOnePlace().tokens())==1);
 			}
 		}
 	}
@@ -188,8 +188,8 @@ public class CircuitSimulationTool extends STGSimulationTool {
 						
 					if (contact.getReferencedOnePlace()==null||contact.getReferencedZeroPlace()==null) return null;
 					
-					boolean isOne = contact.getReferencedOnePlace().getTokens()==1;
-					boolean isZero = contact.getReferencedZeroPlace().getTokens()==1;
+					boolean isOne = eval(contact.getReferencedOnePlace().tokens())==1;
+					boolean isZero = eval(contact.getReferencedZeroPlace().tokens())==1;
 					
 					
 					if (isOne&&!isZero)
@@ -222,8 +222,8 @@ public class CircuitSimulationTool extends STGSimulationTool {
 					
 					if (vj.getReferencedOnePlace()==null||vj.getReferencedZeroPlace()==null) return null;
 					
-					boolean isOne = vj.getReferencedOnePlace().getTokens()==1;
-					boolean isZero = vj.getReferencedZeroPlace().getTokens()==1;
+					boolean isOne = eval(vj.getReferencedOnePlace().tokens())==1;
+					boolean isZero = eval(vj.getReferencedZeroPlace().tokens())==1;
 					
 					if (isOne&&!isZero)
 						return new Decoration(){
@@ -252,8 +252,8 @@ public class CircuitSimulationTool extends STGSimulationTool {
 					
 					if (vc.getReferencedOnePlace()==null||vc.getReferencedZeroPlace()==null) return null;
 					
-					boolean isOne = vc.getReferencedOnePlace().getTokens()==1;
-					boolean isZero = vc.getReferencedZeroPlace().getTokens()==1;
+					boolean isOne = eval(vc.getReferencedOnePlace().tokens())==1;
+					boolean isZero = eval(vc.getReferencedZeroPlace().tokens())==1;
 					
 					if (isOne&&!isZero)
 						return new Decoration(){

@@ -37,7 +37,7 @@ public class VertexDeserialiser extends BooleanFunctionDeserialiser
 	@Override
 	protected void setFormula(Object deserialisee, BooleanFormula formula)
 	{
-		((Vertex)deserialisee).setCondition(formula);		
+		((Vertex)deserialisee).condition().setValue(formula);		
 	}
 
 	@Override

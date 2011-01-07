@@ -23,8 +23,8 @@ package org.workcraft.plugins.cpog;
 
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.observation.PropertyChangedEvent;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 
@@ -32,15 +32,9 @@ import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 @VisualClass("org.workcraft.plugins.cpog.VisualRhoClause")
 public class RhoClause extends MathNode
 {
-	private BooleanFormula formula = BooleanOperations.ONE;
+	private final ModifiableExpression<BooleanFormula> formula = new org.workcraft.dependencymanager.advanced.user.Variable<BooleanFormula>(BooleanOperations.ONE);
 	
-	public void setFormula(BooleanFormula formula)
-	{
-		this.formula = formula;
-		sendNotification(new PropertyChangedEvent(this, "formula"));
-	}	
-	
-	public BooleanFormula getFormula()
+	public ModifiableExpression<BooleanFormula> formula()
 	{
 		return formula;
 	}	

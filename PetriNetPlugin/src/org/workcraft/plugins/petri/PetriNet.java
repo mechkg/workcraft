@@ -21,16 +21,20 @@
 
 package org.workcraft.plugins.petri;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.AbstractMathModel;
 import org.workcraft.dom.math.MathConnection;
+import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.references.UniqueNameReferenceManager;
 import org.workcraft.exceptions.InvalidConnectionException;
@@ -42,6 +46,8 @@ import org.workcraft.util.Hierarchy;
 
 @VisualClass ("org.workcraft.plugins.petri.VisualPetriNet")
 public class PetriNet extends AbstractMathModel implements PetriNetModel {
+	
+	
 	final UniqueNameReferenceManager names;
 
 	public PetriNet() {
@@ -53,20 +59,34 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 	}
 
 	public PetriNet(Container root, References refs) {
-		super(root, new UniqueNameReferenceManager(refs, new Func<Node, String>() {
-			@Override
-			public String eval(Node arg) {
-				if (arg instanceof Place)
-					return "p";
-				if (arg instanceof Transition)
-					return "t";
-				if (arg instanceof Connection)
-					return "con";
-				return "node";
-			}
-		}));
-
-		names = (UniqueNameReferenceManager) getReferenceManager();
+		this(new ConstructionParameters(root, refs));
+	}
+	
+	static class ConstructionParameters {
+		public ConstructionParameters(Container root, References refs) {
+			this.root = (root == null) ? new MathGroup() : root;
+			this.referenceManager = new UniqueNameReferenceManager(this.root, refs, new Func<Node, String>() {
+				@Override
+				public String eval(Node arg) {
+					if (arg instanceof Place)
+						return "p";
+					if (arg instanceof Transition)
+						return "t";
+					if (arg instanceof Connection)
+						return "con";
+					return "node";
+				}
+			});
+		}
+		
+		final Container root;
+		final UniqueNameReferenceManager referenceManager;
+	}
+	
+	
+	protected PetriNet(ConstructionParameters construction) {
+		super(construction.root, construction.referenceManager);
+		names = construction.referenceManager;
 	}
 
 	public void validate() throws ModelValidationException {
@@ -85,6 +105,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		if (name!=null)
 			setName(newPlace, name);
 		getRoot().add(newPlace);
+		ensureConsistency();
 		return newPlace;
 	}
 
@@ -93,14 +114,17 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		if (name!=null)
 			setName(newTransition, name);
 		getRoot().add(newTransition);
+		ensureConsistency();
 		return newTransition;
 	}
 
 	final public Collection<Place> getPlaces() {
+		ensureConsistency();
 		return Hierarchy.getDescendantsOfType(getRoot(), Place.class);
 	}
 
 	final public Collection<Transition> getTransitions() {
+		ensureConsistency();
 		return Hierarchy.getDescendantsOfType(getRoot(), Transition.class);
 	}
 
@@ -110,6 +134,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 	}
 	
 	final public boolean isEnabled (Transition t) {
+		ensureConsistency();
 		return isEnabled (this, t);
 	}
 
@@ -128,7 +153,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		}
 		
 		for (Node n : net.getPostset(t))
-			if (((Place)n).getTokens() < map.get((Place)n))
+			if (eval(((Place)n).tokens()) < map.get((Place)n))
 				return false;
 		return true;
 	}
@@ -147,7 +172,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		}
 		
 		for (Node n : net.getPreset(t))
-			if (((Place)n).getTokens() < map.get((Place)n))
+			if (GlobalCache.eval(((Place)n).tokens()) < map.get((Place)n))
 				return false;
 		return true;
 	}
@@ -168,11 +193,11 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		for (Connection c : net.getConnections(t)) {
 			if (t==c.getFirst()) {
 				Place to = (Place)c.getSecond();
-				to.setTokens(((Place)to).getTokens()-1);
+				to.tokens().setValue(eval(to.tokens())-1);
 			}
 			if (t==c.getSecond()) {
 				Place from = (Place)c.getFirst();
-				from.setTokens(((Place)from).getTokens()+1);
+				from.tokens().setValue(eval(from.tokens())+1);
 			}
 		}
 	}
@@ -183,11 +208,11 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 			for (Connection c : net.getConnections(t)) {
 				if (t==c.getFirst()) {
 					Place to = (Place)c.getSecond();
-					to.setTokens(((Place)to).getTokens()+1);
+					to.tokens().setValue(eval(to.tokens())+1);
 				} 
 				if (t==c.getSecond()) {
 					Place from = (Place)c.getFirst();
-					from.setTokens(((Place)from).getTokens()-1);
+					from.tokens().setValue(eval(from.tokens())-1);
 				}
 			}
 		}
@@ -203,21 +228,31 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		MathConnection con = new MathConnection((MathNode)first, (MathNode)second);
 		
 		Hierarchy.getNearestContainer(first, second).add(con);
+		ensureConsistency();
 		
 		return con;
 	}
 
 	public String getName(Node n) {
+		ensureConsistency();
 		return this.names.getNodeReference(n);
 	}
 
 	public void setName(Node n, String name) {
 		this.names.setName(n, name);
+		ensureConsistency();
 	}
 
 	@Override
 	public Properties getProperties(Node node) {
+		ensureConsistency();
 		return Properties.Mix.from(new NamePropertyDescriptor(this, node));
+	}
+	
+	@Override
+	public void ensureConsistency() {
+		names.refresh();
+		super.ensureConsistency();
 	}
 
 }

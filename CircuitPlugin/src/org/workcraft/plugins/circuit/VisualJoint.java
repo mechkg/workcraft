@@ -31,7 +31,13 @@ import java.awt.geom.Rectangle2D;
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.petri.Place;
@@ -74,24 +80,44 @@ public class VisualJoint extends VisualComponent {
 	}
 
 	@Override
-	public void draw(DrawRequest r) {
-//		drawLabelInLocalSpace(g);
-		Graphics2D g = r.getGraphics();
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>(){
+			@Override
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent() {
+					
+					@Override
+					public void draw(DrawRequest r) {
+//							drawLabelInLocalSpace(g);
+						Graphics2D g = r.getGraphics();
+						
 		
-		
-		
-		g.setColor(Coloriser.colorise(getForegroundColor(), r.getDecoration().getColorisation()));
-		g.fill(shape);
+						
+						g.setColor(Coloriser.colorise(context.resolve(foregroundColor()), r.getDecoration().getColorisation()));
+						g.fill(shape);
+					}
+				};
+			}
+		};
 	}
 	
 	@Override
-	public Rectangle2D getBoundingBoxInLocalSpace() {
-		return new Rectangle2D.Double(-jointSize/2, -jointSize/2, jointSize, jointSize);
-	}
+	public Expression<? extends Touchable> localSpaceTouchable() {
+		return Expressions.constant(new Touchable() {
+			@Override
+			public boolean hitTest(Point2D point) {
+				return point.distanceSq(0, 0) < jointSize*jointSize/4;
+			}
 	
-	@Override
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
-		return pointInLocalSpace.distanceSq(0, 0) < jointSize*jointSize/4;
+			@Override
+			public Point2D getCenter() {
+				return new Point2D.Double(0,0);
+			}
+			@Override
+			public Rectangle2D getBoundingBox() {
+				return new Rectangle2D.Double(-jointSize/2, -jointSize/2, jointSize, jointSize);
+			}
+		});
 	}
 	
 }

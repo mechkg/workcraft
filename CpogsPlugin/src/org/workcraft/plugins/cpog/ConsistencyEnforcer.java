@@ -1,10 +1,11 @@
 package org.workcraft.plugins.cpog;
 
+import java.util.List;
+
 import org.workcraft.dom.Node;
-import org.workcraft.observation.HierarchyEvent;
 import org.workcraft.observation.HierarchySupervisor;
-import org.workcraft.observation.NodesAddedEvent;
-import org.workcraft.observation.NodesDeletedEvent;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class ConsistencyEnforcer extends HierarchySupervisor {
 
@@ -14,34 +15,28 @@ public class ConsistencyEnforcer extends HierarchySupervisor {
 	
 	public ConsistencyEnforcer(VisualCPOG visualCPOG)
 	{
+		super(visualCPOG.getRoot());
 		this.visualCPOG  = visualCPOG;
+		start();
 	}
 	
 	@Override
-	public void handleEvent(HierarchyEvent e)
+	public void handleEvent(List<Node> added, List<Node> removed) 
 	{
-		if (e instanceof NodesAddedEvent)
-		{
-			updateEncoding();
-			createDefaultLabels(e);
-		}
-		else
-		if (e instanceof NodesDeletedEvent)
-		{
-			updateEncoding();			
-		}
+		updateEncoding();
+		createDefaultLabels(added);
 	}
 	
-	private void createDefaultLabels(HierarchyEvent e) {
-		for(Node node : e.getAffectedNodes())
+	private void createDefaultLabels(List<Node> added) {
+		for(Node node : added)
 		{
 			if (node instanceof VisualVertex)
 			{
-				((VisualVertex) node).setLabel("v_" + vertexCount++);
+				((VisualVertex) node).label().setValue("v_" + vertexCount++);
 			}
 			if (node instanceof VisualVariable)
 			{
-				((VisualVariable) node).setLabel("x_" + variableCount++);
+				((VisualVariable) node).label().setValue("x_" + variableCount++);
 			}
 		}
 	}
@@ -50,7 +45,7 @@ public class ConsistencyEnforcer extends HierarchySupervisor {
 	{
 		for(VisualScenario group : visualCPOG.getGroups())
 		{
-			Encoding oldEncoding = group.getEncoding();
+			Encoding oldEncoding = eval(group.encoding());
 			Encoding newEncoding = new Encoding();
 		
 			for(VisualVariable var : visualCPOG.getVariables())
@@ -59,7 +54,7 @@ public class ConsistencyEnforcer extends HierarchySupervisor {
 				newEncoding.setState(mathVariable, oldEncoding.getState(mathVariable));
 			}
 		
-			group.setEncoding(newEncoding);
+			group.encoding().setValue(newEncoding);
 		}
 		
 	}

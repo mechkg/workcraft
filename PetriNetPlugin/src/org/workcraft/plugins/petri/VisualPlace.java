@@ -34,77 +34,36 @@ import java.awt.geom.Rectangle2D;
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.DrawableNew;
+import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
+import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.shared.CommonVisualSettings;
-import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
 @DisplayName("Place")
 @Hotkey(KeyEvent.VK_P)
 @SVGIcon("images/icons/svg/place.svg")
-public class VisualPlace extends VisualComponent {
-	/*static public class AddTokenAction extends ScriptedAction {
-		private int placeID;
-		public AddTokenAction(Place place) {
-			super();
-			this.placeID = place.getID();
-		}
-		public String getScript() {
-			return "p=model.getComponentByID("+placeID+");\np.setTokens(p.getTokens()+1);\nmodel.fireNodePropertyChanged(\"Tokens\", p);";
-		}
-		public String getUndoScript() {
-			return "p=model.getComponentByID("+placeID+");\np.setTokens(p.getTokens()-1);\n";			
-		}
-		public String getRedoScript() {
-			return getScript();
-		}
-		public String getText() {
-			return "Add token";
-		}
-	}
-
-	static public class RemoveTokenAction extends ScriptedAction {
-		private int placeID;
-		
-		public RemoveTokenAction(Place place) {
-			super();
-			this.placeID = place.getID();
-				if (place.getTokens() < 1)
-					setEnabled(false);
-		}
-		public String getScript() {
-				return "p=model.getComponentByID("+placeID+");p.setTokens(p.getTokens()-1);\nmodel.fireNodePropertyChanged(\"Tokens\", p);";
-		}
-		public String getUndoScript() {
-				return "p=model.getComponentByID("+placeID+");\np.setTokens(p.getTokens()+1);\n"; 
-		}
-		public String getRedoScript() {
-			return getScript();
-		}
-		public String getText() {
-			return "Remove token";
-		}
-	}	*/
-	
+public class VisualPlace extends VisualComponent implements DrawableNew {
 	protected static double singleTokenSize = CommonVisualSettings.getSize() / 1.9;
 	protected static double multipleTokenSeparation = CommonVisualSettings.getStrokeWidth() / 8;
 	
-	private Color tokenColor = CommonVisualSettings.getForegroundColor();
+	private Variable<Color> tokenColor = new Variable<Color>(CommonVisualSettings.getForegroundColor());
 	
 	public Place getPlace() {
 		return (Place)getReferencedComponent();
 	}
 	
-	@NoAutoSerialisation
-	public int getTokens() {
-		return getPlace().getTokens();
-	}
-
-	@NoAutoSerialisation
-	public void setTokens(int tokens) {
-		getPlace().setTokens(tokens);
+	public ModifiableExpression<Integer> tokens() {
+		return getPlace().tokens();
 	}
 
 	public VisualPlace(Place place) {
@@ -113,26 +72,10 @@ public class VisualPlace extends VisualComponent {
 	}
 	
 	private void addPropertyDeclarations() {
-		addPropertyDeclaration(new PropertyDeclaration (this, "Tokens", "getTokens", "setTokens", int.class));
-		addPropertyDeclaration(new PropertyDeclaration (this, "Token color", "getTokenColor", "setTokenColor", Color.class));
-
-	/*	addPopupMenuSegment(new PopupMenuBuilder.PopupMenuSegment() {
-			public void addItems(JPopupMenu menu,
-					ScriptedActionListener actionListener) {
-				ScriptedActionMenuItem addToken = new ScriptedActionMenuItem(new AddTokenAction(getReferencedPlace()));
-				addToken.addScriptedActionListener(actionListener);
-				
-				ScriptedActionMenuItem removeToken = new ScriptedActionMenuItem(new RemoveTokenAction(getReferencedPlace()));
-				removeToken.addScriptedActionListener(actionListener);
-				
-				menu.add(new JLabel ("Place"));
-				menu.addSeparator();
-				menu.add(addToken);
-				menu.add(removeToken);				
-			}
-		});*/
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Tokens", tokens(), tokens(), Integer.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Token color", tokenColor(), tokenColor(), Color.class));
 	}
-	
+
 	public static void drawTokens(int tokens, double singleTokenSize, double multipleTokenSeparation, 
 			double diameter, double borderWidth, Color tokenColor,	Graphics2D g) {
 		Shape shape;
@@ -185,55 +128,69 @@ public class VisualPlace extends VisualComponent {
 			}
 	}
 
-	@Override
-	public void draw(DrawRequest r)
-	{
-		Graphics2D g = r.getGraphics();
-		
-		drawLabelInLocalSpace(r);
-		
-		double size = CommonVisualSettings.getSize();
-		double strokeWidth = CommonVisualSettings.getStrokeWidth();
-		
-		Shape shape = new Ellipse2D.Double(
-				-size / 2 + strokeWidth / 2,
-				-size / 2 + strokeWidth / 2,
-				size - strokeWidth,
-				size - strokeWidth);
-
-		g.setColor(Coloriser.colorise(getFillColor(), r.getDecoration().getColorisation()));
-		g.fill(shape);
-		g.setColor(Coloriser.colorise(getForegroundColor(), r.getDecoration().getColorisation()));
-		g.setStroke(new BasicStroke((float)strokeWidth));
-		g.draw(shape);
-
-		Place p = (Place)getReferencedComponent();
-		
-		drawTokens(p.getTokens(), singleTokenSize, multipleTokenSeparation, size, strokeWidth, Coloriser.colorise(getTokenColor(), r.getDecoration().getColorisation()), g);
-	}
-
-	public Rectangle2D getBoundingBoxInLocalSpace() {
-		double size = CommonVisualSettings.getSize();
-		Rectangle2D rect1 = new Rectangle2D.Double(-size/2, -size/2, size, size);
-		return mergeLabelBB(rect1);
-	}
-
-
-	public boolean hitTestInLocalSpace(Point2D pointInLocalSpace) {
-		double size = CommonVisualSettings.getSize();
-		
-		return pointInLocalSpace.distanceSq(0, 0) < size*size/4;
-	}
 	
+	@Override
+	public ExpressionBase<GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>(){
+			@Override
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent() {
+					public void draw(DrawRequest r) {
+						Graphics2D g = r.getGraphics();
+						
+						context.resolve(labelGraphics()).draw(r);
+						
+						double size = CommonVisualSettings.getSize();
+						double strokeWidth = CommonVisualSettings.getStrokeWidth();
+						
+						Shape shape = new Ellipse2D.Double(
+								-size / 2 + strokeWidth / 2,
+								-size / 2 + strokeWidth / 2,
+								size - strokeWidth,
+								size - strokeWidth);
+	
+						g.setColor(Coloriser.colorise(context.resolve(fillColor()), r.getDecoration().getColorisation()));
+						g.fill(shape);
+						g.setColor(Coloriser.colorise(context.resolve(foregroundColor()), r.getDecoration().getColorisation()));
+						g.setStroke(new BasicStroke((float)strokeWidth));
+						g.draw(shape);
+	
+						Place p = (Place)getReferencedComponent();
+						
+						drawTokens(context.resolve(p.tokens()), singleTokenSize, multipleTokenSeparation, size, strokeWidth, Coloriser.colorise(context.resolve(tokenColor()), r.getDecoration().getColorisation()), g);
+					}
+				};
+			}
+		};
+	}
 	public Place getReferencedPlace() {
 		return (Place)getReferencedComponent();
 	}
 
-	public Color getTokenColor() {
+	public ModifiableExpression<Color> tokenColor() {
 		return tokenColor;
 	}
 
-	public void setTokenColor(Color tokenColor) {
-		this.tokenColor = tokenColor;
+	@Override
+	public Expression<? extends Touchable> localSpaceTouchable() {
+		return Expressions.constant(new Touchable(){
+
+			@Override
+			public boolean hitTest(Point2D point) {
+				double size = CommonVisualSettings.getSize();
+				return point.distanceSq(0, 0) < size*size/4;
+			}
+
+			@Override
+			public Rectangle2D getBoundingBox() {
+				double size = CommonVisualSettings.getSize();
+				return new Rectangle2D.Double(-size/2, -size/2, size, size);	
+			}
+
+			@Override
+			public Point2D getCenter() {
+				return new Point2D.Double(0, 0);
+			}
+		});
 	}
 }

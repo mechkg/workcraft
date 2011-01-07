@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.circuit;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.geom.Point2D;
 
 import org.workcraft.annotations.CustomTools;
@@ -36,9 +38,8 @@ import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
 import org.workcraft.gui.propertyeditor.Properties;
-import org.workcraft.plugins.circuit.Contact.IOType;
+import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.util.Hierarchy;
-
 
 @DisplayName("Visual Circuit")
 @CustomTools ( CircuitToolsProvider.class )
@@ -66,13 +67,13 @@ public class VisualCircuit extends AbstractVisualModel {
 			}
 			
 			if (second instanceof VisualContact) {
-				Node toParent = ((VisualComponent)second).getParent();
-				Contact.IOType toType = ((Contact)((VisualComponent)second).getReferencedComponent()).getIOType();
+				Node toParent = eval(((VisualComponent)second).parent());
+				Contact.IoType toType = eval(((Contact)((VisualComponent)second).getReferencedComponent()).ioType());
 				
-				if ((toParent instanceof VisualCircuitComponent) && toType == Contact.IOType.OUTPUT)
+				if ((toParent instanceof VisualCircuitComponent) && toType == Contact.IoType.OUTPUT)
 					throw new InvalidConnectionException ("Outputs of the components cannot be driven");
 
-				if (!(toParent instanceof VisualCircuitComponent) && toType == Contact.IOType.INPUT)
+				if (!(toParent instanceof VisualCircuitComponent) && toType == Contact.IoType.INPUT)
 					throw new InvalidConnectionException ("Inputs from the environment cannot be driven");
 			}
 		}
@@ -136,19 +137,17 @@ public class VisualCircuit extends AbstractVisualModel {
 
 	public VisualFunctionContact  getOrCreateOutput(String name, double x, double y) {
 		
-		for(VisualFunctionContact c : Hierarchy.filterNodesByType(getRoot().getChildren(), VisualFunctionContact.class)) {
-			if(c.getName().equals(name)) return c;
+		for(VisualFunctionContact c : Hierarchy.filterNodesByType(eval(getRoot().children()), VisualFunctionContact.class)) {
+			if(eval(c.name()).equals(name)) return c;
 		}
 		
-		FunctionContact fc = new FunctionContact(IOType.OUTPUT);
+		FunctionContact fc = new FunctionContact(IoType.OUTPUT, name);
 		VisualFunctionContact vc = new VisualFunctionContact(fc);
 		Point2D p2d = new Point2D.Double();
 		p2d.setLocation(x,y);
-		vc.setPosition(p2d);
+		vc.position().setValue(p2d);
 		circuit.add(fc);
 		this.add(vc);
-		
-		vc.setName(name);
 		
 		return vc;
 	}

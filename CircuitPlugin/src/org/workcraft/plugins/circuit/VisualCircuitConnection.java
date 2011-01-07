@@ -1,7 +1,13 @@
 package org.workcraft.plugins.circuit;
+import java.awt.BasicStroke;
+import java.awt.Stroke;
+
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.connections.VisualConnection;
+import org.workcraft.dom.visual.connections.VisualConnectionProperties;
 import org.workcraft.plugins.petri.Place;
 
 public class VisualCircuitConnection extends VisualConnection {
@@ -26,8 +32,19 @@ public class VisualCircuitConnection extends VisualConnection {
 	}
 
 	@Override
-	public double getLineWidth() {
-		return CircuitSettings.getCircuitWireWidth();
+	public ExpressionBase<VisualConnectionProperties> properties() {
+		final ExpressionBase<VisualConnectionProperties> superProperties = super.properties();
+		return new ExpressionBase<VisualConnectionProperties>(){
+			@Override
+			protected VisualConnectionProperties evaluate(EvaluationContext context) {
+				return new VisualConnectionProperties.Inheriting(context.resolve(superProperties)){
+					@Override
+					public Stroke getStroke() {
+						return new BasicStroke((float)CircuitSettings.getCircuitWireWidth());
+					}
+				};
+			}
+		};
 	}
 	
 	public Place getReferencedZeroPlace() {

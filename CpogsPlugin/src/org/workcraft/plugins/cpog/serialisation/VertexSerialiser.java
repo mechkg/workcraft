@@ -23,7 +23,7 @@ package org.workcraft.plugins.cpog.serialisation;
 
 import org.workcraft.plugins.cpog.Vertex;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
-
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 public class VertexSerialiser extends BooleanFormulaSerialiser
 {
 	@Override
@@ -35,6 +35,6 @@ public class VertexSerialiser extends BooleanFormulaSerialiser
 	@Override	
 	protected BooleanFormula getFormula(Object serialisee)
 	{
-		return ((Vertex) serialisee).getCondition();
+		return eval(((Vertex) serialisee).condition());
 	}
 }

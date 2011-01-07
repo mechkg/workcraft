@@ -42,8 +42,11 @@ public class Encoding
 		return res; 
 	}
 
-	public void toggleState(Variable var)
+	public Encoding toggleState(Variable var)
 	{
-		setState(var, getState(var).toggle());
+		Encoding result = new Encoding();
+		result.states = new HashMap<Variable, VariableState>(states);
+		result.setState(var, getState(var).toggle());
+		return result;
 	}	
 }

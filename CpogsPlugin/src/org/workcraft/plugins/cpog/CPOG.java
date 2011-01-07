@@ -25,6 +25,7 @@ import java.util.Collection;
 
 import org.workcraft.dom.Container;
 import org.workcraft.dom.math.AbstractMathModel;
+import org.workcraft.dom.math.MathGroup;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.plugins.stg.STGReferenceManager;
 import org.workcraft.serialisation.References;
@@ -44,11 +45,24 @@ public class CPOG extends AbstractMathModel
 	{
 		this(root, null);
 	}
+	
+	static class StartupParameters {
+		public StartupParameters(Container root, References refs) {
+			this.root = root==null?new MathGroup():root;
+			this.refs = refs;
+		}
+		Container root;
+		References refs;
+	}
 
+	public CPOG(StartupParameters p) {
+		super(p.root, new STGReferenceManager(p.root, p.refs));
+		referenceManager = (STGReferenceManager) getReferenceManager();
+	}
+	
 	public CPOG(Container root, References refs)
 	{
-		super(root, new STGReferenceManager(refs));
-		referenceManager = (STGReferenceManager) getReferenceManager();
+		this(new StartupParameters(root, refs));
 	}
 
 	public String getName(Vertex vertex)

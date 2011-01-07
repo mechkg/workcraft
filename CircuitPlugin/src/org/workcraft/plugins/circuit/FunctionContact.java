@@ -23,47 +23,32 @@ package org.workcraft.plugins.circuit;
 
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
-import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
+import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 
 
 @DisplayName("FunctionContact")
 @VisualClass("org.workcraft.plugins.circuit.VisualFunctionContact")
 
 public class FunctionContact extends Contact {
-	private BooleanFormula setFunction=Zero.instance();
-	private BooleanFormula resetFunction=null;
-	private BooleanFormula combinedFunction=null;
+	private Variable<BooleanFormula> setFunction = Variable.create(BooleanOperations.ZERO);
+	private Variable<BooleanFormula> resetFunction = Variable.create(null);
 	
-	public FunctionContact(IOType ioType) {
-		super(ioType);
+	public FunctionContact(IoType ioType, String name) {
+		super(ioType, name);
 	}
 	
 	public FunctionContact() {
 		super();
 	}
 	
-	public BooleanFormula getSetFunction() {
+	public ModifiableExpression<BooleanFormula> setFunction() {
 		return setFunction;
 	}
 	
-	public void setSetFunction(BooleanFormula setFunction) {
-		this.setFunction = setFunction;
-	}
-	
-	public BooleanFormula getResetFunction() {
+	public ModifiableExpression<BooleanFormula> resetFunction() {
 		return resetFunction;
-	}
-	
-	public void setResetFunction(BooleanFormula resetFunction) {
-		this.resetFunction = resetFunction;
-	}
-
-	public void setCombinedFunction(BooleanFormula combinedFunction) {
-		this.combinedFunction = combinedFunction;
-	}
-
-	public BooleanFormula getCombinedFunction() {
-		return combinedFunction;
 	}
 }

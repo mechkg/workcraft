@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                      http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.workcraft</groupId>
+  <artifactId>WorkcraftDistrBasic</artifactId>
+  <version>2.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Workcraft Distribution (basic model set) parent POM</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.workcraft</groupId>
+      <artifactId>WorkcraftCore</artifactId>
+      <version>2.0-SNAPSHOT</version>
+      <classifier>jar-with-dependencies</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.workcraft</groupId>
+      <artifactId>PetriNetPlugin</artifactId>
+      <version>2.0-SNAPSHOT</version>
+      <classifier>jar-with-dependencies</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.workcraft</groupId>
+      <artifactId>STGPlugin</artifactId>
+      <version>2.0-SNAPSHOT</version>
+      <classifier>jar-with-dependencies</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.workcraft</groupId>
+      <artifactId>MpsatPlugin</artifactId>
+      <version>2.0-SNAPSHOT</version>
+      <classifier>jar-with-dependencies</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.workcraft</groupId>
+      <artifactId>PetrifyPlugin</artifactId>
+      <version>2.0-SNAPSHOT</version>
+      <classifier>jar-with-dependencies</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.workcraft</groupId>
+      <artifactId>DesiJPlugin</artifactId>
+      <version>2.0-SNAPSHOT</version>
+      <classifier>jar-with-dependencies</classifier>
+    </dependency>
+  </dependencies>
+  <build>
+
+    <plugins>
+  
+  <plugin>
+   <groupId>com.keyboardsamurais.maven</groupId>
+   <artifactId>maven-timestamp-plugin</artifactId>
+   <configuration>
+    <propertyName>timestamp</propertyName>
+    <timestampPattern>dd-MM-yyyy-HH-mm</timestampPattern>
+   </configuration>
+   <executions>
+    <execution>
+     <goals>
+      <goal>create</goal>
+     </goals>
+    </execution>
+   </executions>
+  </plugin>
+
+    </plugins>
+  </build>
+
+    	<pluginRepositories>
+  		<pluginRepository>
+        <id>maven-timestamp</id>
+          <url>
+                http://maven-timestamp-plugin.googlecode.com/svn/trunk/repository
+          </url>
+		  </pluginRepository>
+   	</pluginRepositories>
+
+</project>

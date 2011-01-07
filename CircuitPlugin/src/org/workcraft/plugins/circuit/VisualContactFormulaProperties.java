@@ -1,8 +1,9 @@
 package org.workcraft.plugins.circuit;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionFilter;
+import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.gui.propertyeditor.PropertyDescriptor;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString;
@@ -23,98 +24,47 @@ public class VisualContactFormulaProperties {
 					new Func<String, BooleanFormula>() {
 						@Override
 						public BooleanFormula eval(String name) {
-							if (contact.getParent() instanceof VisualFunctionComponent) {
-								return ((VisualFunctionComponent)contact.getParent()).getOrCreateInput(name)
+							if (GlobalCache.eval(contact.parent()) instanceof VisualFunctionComponent) {
+								return ((VisualFunctionComponent)GlobalCache.eval(contact.parent())).getOrCreateInput(name)
 								.getReferencedContact();
 							}
 							
 							else
-								return circuit.getOrCreateOutput(name, contact.getX()+1, contact.getY()+1).getReferencedContact();
+								return circuit.getOrCreateOutput(name, GlobalCache.eval(contact.x())+1, GlobalCache.eval(contact.y())+1).getReferencedContact();
 						}
 					});
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	public PropertyDescriptor getSetProperty(final VisualFunctionContact contact) {
-		return new PropertyDescriptor() {
-			
+
+	private ModifiableExpression<String> createStringExpression(final VisualFunctionContact contact, ModifiableExpression<BooleanFormula> reset) {
+		return new ModifiableExpressionFilter<String, BooleanFormula>(reset) {
+
 			@Override
-			public void setValue(Object value) throws InvocationTargetException {
-				String setFunction = (String)value;
-				if (!setFunction.equals("")) {
-					contact.setSetFunction(parseFormula(contact, setFunction));
+			protected BooleanFormula setFilter(String newValue) {
+				if (!newValue.equals("")) {
+					return parseFormula(contact, newValue);
 				} else {
-					contact.setSetFunction(null);
+					return null;
 				}
 			}
-			
+
 			@Override
-			public boolean isWritable() {
-				return true;
-			}
-			
-			@Override
-			public Object getValue() throws InvocationTargetException {
-				return FormulaToString.toString(contact.getFunction().getSetFunction());
-			}
-			
-			@Override
-			public Class<?> getType() {
-				return String.class;
-			}
-			
-			@Override
-			public String getName() {
-				return "Set Function";
-			}
-			
-			@Override
-			public Map<Object, String> getChoice() {
-				return null;
+			protected String getFilter(BooleanFormula value) {
+				return FormulaToString.toString(value);
 			}
 		};
+	}
+	
+	public PropertyDescriptor getSetProperty(final VisualFunctionContact contact) {
+		ModifiableExpression<BooleanFormula> set = contact.getFunction().setFunction();
+		return ExpressionPropertyDeclaration.create("setProperty", createStringExpression(contact, set), String.class);
 	}
 	
 	public PropertyDescriptor getResetProperty(final VisualFunctionContact contact) {
-		return new PropertyDescriptor() {
-			
-			@Override
-			public void setValue(Object value) throws InvocationTargetException {
-				String setFunction = (String)value;
-				if (!setFunction.equals("")) {
-					contact.setResetFunction(parseFormula(contact, setFunction));
-				} else {
-					contact.setResetFunction(null);
-				}
-			}
-			
-			@Override
-			public boolean isWritable() {
-				return true;
-			}
-			
-			@Override
-			public Object getValue() throws InvocationTargetException {
-				return FormulaToString.toString(contact.getFunction().getResetFunction());
-			}
-			
-			@Override
-			public Class<?> getType() {
-				return String.class;
-			}
-			
-			@Override
-			public String getName() {
-				return "Reset Function";
-			}
-			
-			@Override
-			public Map<Object, String> getChoice() {
-				return null;
-			}
-		};
+		ModifiableExpression<BooleanFormula> reset = contact.getFunction().resetFunction();
+		return ExpressionPropertyDeclaration.create("resetProperty", createStringExpression(contact, reset), String.class);
 	}
-	
+
 }

@@ -36,11 +36,7 @@ import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.AbstractMathModel;
 import org.workcraft.dom.math.MathConnection;
-import org.workcraft.dom.math.MathGroup;
 import org.workcraft.exceptions.InvalidConnectionException;
-import org.workcraft.observation.HierarchyEvent;
-import org.workcraft.observation.HierarchyObserver;
-import org.workcraft.observation.NodesAddedEvent;
 import org.workcraft.parsers.breeze.Netlist;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
 import org.workcraft.plugins.balsa.handshakebuilder.DataHandshake;
@@ -61,21 +57,17 @@ public final class BalsaCircuit extends AbstractMathModel
 	public BalsaCircuit() {
 		super(null);
 		
-		((MathGroup)getRoot()).addObserver(new HierarchyObserver(){
-			@Override
-			public void notify(HierarchyEvent e) {
-				if(e instanceof NodesAddedEvent)
-					for(Node node : e.getAffectedNodes())
+		//TODO: do this somehow
+				//if(e instanceof NodesAddedEvent)
+					/*for(Node node : e.getAffectedNodes())
 					{
 						if(node instanceof BreezeComponent)
 							createHandshakeComponents((BreezeComponent)node);
 						if(node instanceof BreezeHandshake)
 							handshakeAdded((BreezeHandshake)node);
-					}
+					}*/
 				// TODO: delete handshake components if needed
 				// TODO: re-create handshakes if needed
-			}
-		});
 	}
 
 	private void handshakeAdded(BreezeHandshake component) {

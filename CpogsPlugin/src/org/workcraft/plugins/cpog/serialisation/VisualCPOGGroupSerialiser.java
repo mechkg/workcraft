@@ -32,7 +32,7 @@ import org.workcraft.plugins.cpog.VisualScenario;
 import org.workcraft.serialisation.ReferenceProducer;
 import org.workcraft.serialisation.xml.CustomXMLSerialiser;
 import org.workcraft.serialisation.xml.NodeSerialiser;
-
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 public class VisualCPOGGroupSerialiser implements CustomXMLSerialiser
 {
 	@Override
@@ -45,7 +45,7 @@ public class VisualCPOGGroupSerialiser implements CustomXMLSerialiser
 	public void serialise(Element element, Object object, ReferenceProducer internalReferences,
 			ReferenceProducer externalReferences, NodeSerialiser nodeSerialiser) throws SerialisationException
 	{
-		Encoding encoding = ((VisualScenario) object).getEncoding();
+		Encoding encoding = eval(((VisualScenario) object).encoding());
 		
 		Map<Variable, VariableState> states = encoding.getStates();
 		

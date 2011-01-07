@@ -21,11 +21,16 @@
 
 package org.workcraft.plugins.circuit;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.observation.PropertyChangedEvent;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor;
 
@@ -34,30 +39,24 @@ import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor;
 
 public class Contact extends MathNode implements BooleanVariable {
 
-	public enum IOType { INPUT, OUTPUT};
-	private IOType ioType = IOType.OUTPUT;
+	public enum IoType { INPUT, OUTPUT};
+	private final IoTypeVariable ioType;
+	private final ModifiableExpression<String> name;
+	private Variable<Boolean> initOne = Variable.create(false);
 	
-	private String name = "";
-	private boolean initOne = false;
-
-	
-	//private boolean invertSignal = false;
-	
-	public boolean getInitOne() {
+	public ModifiableExpression<Boolean> initOne() {
 		return initOne;
 	}
 
-	public void setInitOne(boolean initOne) {
-		this.initOne = initOne;
-	}
-
 	public Contact() {
+		this(IoType.OUTPUT, "");
 	}
 	
-	public Contact(IOType iot) {
+	public Contact(IoType ioType, String name) {
 		super();
 		
-		setIOType(iot);
+		this.ioType = new IoTypeVariable(ioType);
+		this.name = Variable.create(name);
 	}
 	
 	
@@ -72,9 +71,9 @@ public class Contact extends MathNode implements BooleanVariable {
 			
 			if (allowShort) {
 				
-				for (Node vn : n.getChildren()) {
+				for (Node vn : eval(n.children())) {
 					if (vn instanceof Contact&& vn!=curNode) {
-						if (((Contact)vn).getName().equals(start)) {
+						if (eval(((Contact)vn).name()).equals(start)) {
 							found=true;
 							break;
 						}
@@ -84,9 +83,9 @@ public class Contact extends MathNode implements BooleanVariable {
 				allowShort=false;
 			}
 			
-			for (Node vn : n.getChildren()) {
+			for (Node vn : eval(n.children())) {
 				if (vn instanceof Contact&& vn!=curNode) {
-					if (((Contact)vn).getName().equals(start+num)) {
+					if (eval(((Contact)vn).name()).equals(start+num)) {
 						found=true;
 						break;
 					}
@@ -98,47 +97,55 @@ public class Contact extends MathNode implements BooleanVariable {
 	
 	public void checkName(Node parent) {
 		if (parent==null) return;
-		String start=getName();
+		String start=eval(name());
 		if (start==null||start=="") {
-			if (getIOType()==IOType.INPUT) {
+			if (eval(ioType())==IoType.INPUT) {
 				start="input";
 			} else {
 				start="output";
 			}
-			setName(getNewName(parent, start, this, false));
+			name().setValue(getNewName(parent, start, this, false));
 		}
 	}
 	
 	@Override
-	public void setParent(Node parent) {
-		super.setParent(parent);
-		checkName(parent);
+	public ModifiableExpression<Node> parent() {
+		return new ModifiableExpressionImpl<Node>() {
+
+			@Override
+			protected void simpleSetValue(Node newParent) {
+				Contact.super.parent().setValue(newParent);
+				checkName(newParent);
+			}
+
+			@Override
+			protected Node evaluate(EvaluationContext context) {
+				return context.resolve(Contact.super.parent());
+			}
+		};
 	}
 
-
-	public void setIOType(IOType t) {
-		this.ioType = t;
-		if (getName().startsWith("input")&&getIOType()==IOType.OUTPUT) {
-			setName(getNewName(getParent(), "output", this, false));
-		} else if (getName().startsWith("output")&&getIOType()==IOType.INPUT) {
-			setName(getNewName(getParent(), "input", this, false));
+	class IoTypeVariable extends Variable<IoType> {
+		public IoTypeVariable(IoType initialValue) {
+			super(initialValue);
 		}
-		
-		sendNotification(new PropertyChangedEvent(this, "ioType"));
+
+		@Override
+		public void setValue(IoType value) {
+			super.setValue(value);
+			if (eval(name()).startsWith("input")&&value==IoType.OUTPUT) {
+				name().setValue(getNewName(eval(parent()), "output", Contact.this, false));
+			} else if (eval(name()).startsWith("output")&&value==IoType.INPUT) {
+				name().setValue(getNewName(eval(parent()), "input", Contact.this, false));
+			}
+		}
 	}
 	
-	public IOType getIOType() {
+	public ModifiableExpression<IoType> ioType() {
 		return ioType;
 	}
-
 	
-	public void setName(String name) {
-		this.name = name;
-		sendNotification(new PropertyChangedEvent(this, "name"));
-	}
-
-
-	public String getName() {
+	public ModifiableExpression<String> name() {
 		return name;
 	}
 
@@ -151,7 +158,7 @@ public class Contact extends MathNode implements BooleanVariable {
 
 	@Override
 	public String getLabel() {
-		return getName();
+		return eval(name());
 	}
 
 }

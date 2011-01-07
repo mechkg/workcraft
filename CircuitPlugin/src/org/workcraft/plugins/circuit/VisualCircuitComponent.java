@@ -232,7 +232,7 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 				double width = Math.max(north, south)*contactStep+width_e+width_w+marginSize*4;
 			
 				Rectangle2D result = new Rectangle2D.Double(-width/2, -height/2, width, height);
-				updateSidePosition(result, null); // dangerous
+				//updateSidePosition(result, null); // dangerous
 			
 				return result;
 			}
@@ -311,11 +311,12 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 				step_pos = eval(c.y());
 				x = BB.getMinX()+marginSize;
 				y = step_pos+(cur.getHeight())/2;
-				break;
+				break;				
 			case EAST:
 				step_pos = eval(c.y());
 				x = BB.getMaxX()-marginSize-cur.getWidth();
 				y = step_pos+(cur.getHeight())/2;
+				break;
 			case NORTH:
 				transform.quadrantRotate(-1);
 				step_pos = eval(c.x());
@@ -460,32 +461,6 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 			return null;
 	}
 	
-	//TODO: stick it somewhere
-	public void notify(StateEvent e) {
-		// need to do it after the vc transform is changed
-			
-		VisualContact vc = null;//(VisualContact)t.sender;
-		
-		AffineTransform at = eval(vc.transform());
-		double x = at.getTranslateX();
-		double y = at.getTranslateY();
-		
-		Rectangle2D r = eval(contactLabelBB);
-		if (r==null) return;
-		
-		VisualContact.Direction dir = eval(vc.direction());
-		VisualContact.Direction newDir = dir;
-		
-		if (x<r.getMinX()&&y>r.getMinY()&&y<r.getMaxY()) newDir = Direction.WEST;
-		if (x>r.getMaxX()&&y>r.getMinY()&&y<r.getMaxY()) newDir = Direction.EAST;
-		if (y<r.getMinY()&&x>r.getMinX()&&x<r.getMaxX()) newDir = Direction.NORTH;
-		if (y>r.getMaxY()&&x>r.getMinX()&&x<r.getMaxX()) newDir = Direction.SOUTH;
-		
-		if (dir!=newDir) {
- 			vc.direction().setValue(dir);
-		}
-	}
-
 	public VisualContact addInput(String name, VisualContact.Direction dir) {
 		
 		if (dir==null) dir=VisualContact.Direction.WEST;

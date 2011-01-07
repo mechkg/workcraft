@@ -43,6 +43,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
@@ -75,9 +76,52 @@ public class VisualContact extends VisualComponent {
 	public VisualContact(Contact contact, VisualContact.Direction dir) {
 		super(contact);
 		
-		addPropertyDeclarations();
-		
 		this.direction = Variable.create(dir);
+
+		addPropertyDeclarations();
+	}
+
+	public void transformChanged(AffineTransform at) {
+		Node parent = eval(parent());
+		if(parent instanceof VisualCircuitComponent) {
+			
+			double x = at.getTranslateX();
+			double y = at.getTranslateY();
+			
+			Rectangle2D r = eval(((VisualCircuitComponent)parent).createContactLabelBbExpression());
+			if (r==null) return;
+			
+			VisualContact.Direction dir = eval(direction());
+			VisualContact.Direction newDir = dir;
+			
+			if (x<r.getMinX()&&y>r.getMinY()&&y<r.getMaxY()) newDir = Direction.WEST;
+			if (x>r.getMaxX()&&y>r.getMinY()&&y<r.getMaxY()) newDir = Direction.EAST;
+			if (y<r.getMinY()&&x>r.getMinX()&&x<r.getMaxX()) newDir = Direction.NORTH;
+			if (y>r.getMaxY()&&x>r.getMinX()&&x<r.getMaxX()) newDir = Direction.SOUTH;
+			
+			if (dir!=newDir) {
+	 			direction().setValue(newDir);
+			}
+		}
+	}
+	
+	@Override
+	public ModifiableExpression<AffineTransform> transform() {
+		
+		final ModifiableExpression<AffineTransform> superTransform = super.transform();
+		return new ModifiableExpressionImpl<AffineTransform>(){
+
+			@Override
+			protected void simpleSetValue(AffineTransform newValue) {
+				superTransform.setValue(newValue);
+				transformChanged(newValue);
+			}
+
+			@Override
+			protected AffineTransform evaluate(EvaluationContext context) {
+				return context.resolve(superTransform);
+			}
+		};
 	}
 	
 	private Shape getShape(EvaluationContext context) {

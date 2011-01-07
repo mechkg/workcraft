@@ -38,6 +38,7 @@ import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
+import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
@@ -147,8 +148,8 @@ public class VisualFunctionContact extends VisualContact {
 	}
 
 	private void addPropertyDeclarations() {
-		addPropertyDeclaration(new PropertyDeclaration(this, "Set function", "getSetFunction", "setSetFunction", String.class));
-		addPropertyDeclaration(new PropertyDeclaration(this, "Reset function", "getResetFunction", "setResetFunction", String.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Set function", setFunction(), String.class));
+		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Reset function", resetFunction(), String.class));
 	}
 	
 	@Override

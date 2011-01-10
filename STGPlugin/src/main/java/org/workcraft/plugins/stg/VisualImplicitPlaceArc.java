@@ -114,23 +114,25 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 
 	@Override
 	public Expression<? extends GraphicalContent> graphicalContent() {
+		
+		final Expression<? extends GraphicalContent> superGraphicalContent = super.graphicalContent();
 		return new ExpressionBase<GraphicalContent>() {
 
 			@Override
 			protected GraphicalContent evaluate(final EvaluationContext context) {
+				final int tokens = context.resolve(tokens());
+				
 				return new GraphicalContent() {
 
 					@Override
 					public void draw(DrawRequest r) {
-						
-						int tokens = context.resolve(tokens());
 						
 						Point2D p = getPointOnConnection(0.5);
 						
 						r.getGraphics().translate(p.getX(), p.getY());		
 						VisualPlace.drawTokens(tokens, singleTokenSize, multipleTokenSeparation, tokenSpaceSize, 0, Coloriser.colorise(tokenColor, r.getDecoration().getColorisation()), r.getGraphics());
 						
-						context.resolve(VisualImplicitPlaceArc.super.graphicalContent()).draw(r);
+						context.resolve(superGraphicalContent).draw(r);
 					}
 					
 				};

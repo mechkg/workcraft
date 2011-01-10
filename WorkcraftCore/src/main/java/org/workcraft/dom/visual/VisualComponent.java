@@ -85,26 +85,29 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 				+ textBB.getHeight() + 0.1);
 	}
 	
+	private final Expression<GraphicalContent> labelGraphics = new ExpressionBase<GraphicalContent>(){
+		@Override
+		protected GraphicalContent evaluate(EvaluationContext context) {
+			final Point2D labelPosition = labelPosition(context);
+			final Color labelColor = context.resolve(VisualComponent.this.labelColor);
+			final GraphicalContent labelGraphics = context.resolve(label.graphics);
+			
+			return new GraphicalContent(){
+				@Override
+				public void draw(DrawRequest r) {
+					Graphics2D g = r.getGraphics();
+					g.setColor(Coloriser.colorise(labelColor, r.getDecoration().getColorisation()));
+					AffineTransform transform = g.getTransform();
+					g.translate(labelPosition.getX(), labelPosition.getX());
+					labelGraphics.draw(r);
+					g.setTransform(transform);
+				}
+			};
+		}
+	};
+	
 	protected Expression<GraphicalContent> labelGraphics(){
-		return new ExpressionBase<GraphicalContent>(){
-			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
-				return new GraphicalContent(){
-					@Override
-					public void draw(DrawRequest r) {
-						Point2D labelPosition = labelPosition(context);
-						
-						Graphics2D g = r.getGraphics();
-						g.setColor(Coloriser.colorise(context.resolve(labelColor), r.getDecoration().getColorisation()));
-						AffineTransform transform = g.getTransform();
-						g.translate(labelPosition.getX(), labelPosition.getX());
-						context.resolve(label.graphics).draw(r);
-						g.setTransform(transform);
-					}
-					
-				};
-			}
-		};
+		return labelGraphics;
 	}
 	
 	public ModifiableExpression<Color> labelColor() {

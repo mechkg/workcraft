@@ -123,7 +123,7 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 
 	@Override
 	public ExpressionBase<HierarchicalGraphicalContent> graphicalContent() {
-		return DrawMan.graphicalContent(getRoot());
+		return new DrawMan(this).graphicalContent(getRoot());
 	}
 
 	@Override

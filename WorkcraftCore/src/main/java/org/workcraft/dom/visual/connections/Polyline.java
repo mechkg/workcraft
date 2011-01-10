@@ -30,6 +30,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
@@ -88,20 +89,19 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 	}
 
 	private final class Curve implements ParametricCurve {
-		private final class AnchorPointExpression extends ExpressionBase<Point2D> {
-			private final int index;
-
-			private AnchorPointExpression(int index) {
-				this.index = index;
-			}
+		
+		AnchorPointsExpression anchorPoints = new AnchorPointsExpression();
+		private final class AnchorPointsExpression extends ExpressionBase<List<Point2D>> {
 
 			@Override
-			public Point2D evaluate(EvaluationContext resolver) {
-				if (index == 0)
-					return resolver.resolve(connectionInfo).getFirstShape().getCenter();
-				if (index > resolver.resolve(groupImpl.children()).size())
-					return resolver.resolve(connectionInfo).getSecondShape().getCenter();
-				return resolver.resolve(((ControlPoint) resolver.resolve(groupImpl.children()).get(index-1)).position());
+			public List<Point2D> evaluate(EvaluationContext resolver) {
+				List<Point2D> result = new ArrayList<Point2D>();
+				result.add(resolver.resolve(connectionInfo).getFirstShape().getCenter());
+				LinkedList<Node> children = resolver.resolve(groupImpl.children());
+				for(Node child : children)
+					result.add(resolver.resolve(((ControlPoint) child).position()));
+				result.add(resolver.resolve(connectionInfo).getSecondShape().getCenter());
+				return result;
 			}
 		}
 
@@ -115,17 +115,14 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 			return controlPoints().size() + 1;
 		}
 
-		private ExpressionBase<Point2D> getAnchorPointLocation(final int index) {
-			return new AnchorPointExpression(index);
-		}
-
 		private Line2D getSegment(final int index) {
 			int segments = getSegmentCount();
 
 			if (index > segments-1)
 				throw new RuntimeException ("Segment index is greater than number of segments");
 
-			return new Line2D.Double(resolver.resolve(getAnchorPointLocation(index)), resolver.resolve(getAnchorPointLocation(index+1)));
+			List<Point2D> anchorPoints = resolver.resolve(this.anchorPoints);
+			return new Line2D.Double(anchorPoints.get(index), anchorPoints.get(index+1));
 		}
 
 		private List<Node> controlPoints() {

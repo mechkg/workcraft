@@ -34,7 +34,7 @@ import org.workcraft.gui.graph.tools.Decoration;
 import org.workcraft.gui.graph.tools.Decorator;
 
 
-interface GraphicalContentWithPreDecoration {
+interface PartialHierarchicalGraphicalContent {
 	void draw(Graphics2D graphics, Decorator decorator, Decoration currentDecoration);
 }
 
@@ -46,15 +46,15 @@ public class DrawMan
 		this.model = model;
 	}
 	
-	private ExpressionBase<GraphicalContentWithPreDecoration> transformedAndDecorated(final MovableNew node)
+	private ExpressionBase<PartialHierarchicalGraphicalContent> transformedAndDecorated(final MovableNew node)
 	{
-		return new ExpressionBase<GraphicalContentWithPreDecoration>() {
+		return new ExpressionBase<PartialHierarchicalGraphicalContent>() {
 			@Override
-			public GraphicalContentWithPreDecoration evaluate(EvaluationContext resolver) {
+			public PartialHierarchicalGraphicalContent evaluate(EvaluationContext resolver) {
 				final AffineTransform transform = resolver.resolve(node.transform());
-				final GraphicalContentWithPreDecoration decorated = resolver.resolve(decorated(node));
+				final PartialHierarchicalGraphicalContent decorated = resolver.resolve(decorated(node));
 				
-				return new GraphicalContentWithPreDecoration() {
+				return new PartialHierarchicalGraphicalContent() {
 					@Override
 					public void draw(Graphics2D graphics, Decorator decorator, Decoration decoration) {
 						graphics.transform(transform);
@@ -70,7 +70,7 @@ public class DrawMan
 
 			@Override
 			public HierarchicalGraphicalContent evaluate(EvaluationContext resolver) {
-				final GraphicalContentWithPreDecoration content = resolver.resolve(graphicalContextWithDefaultDecoration(node));
+				final PartialHierarchicalGraphicalContent content = resolver.resolve(partialHierarchicalGraphicalContent(node));
 				return new HierarchicalGraphicalContent() {
 
 					@Override
@@ -83,21 +83,21 @@ public class DrawMan
 		};
 	}
 	
-	public ExpressionBase<GraphicalContentWithPreDecoration> graphicalContextWithDefaultDecoration(final Node node) {
-		return new ExpressionBase<GraphicalContentWithPreDecoration>() {
+	public ExpressionBase<PartialHierarchicalGraphicalContent> partialHierarchicalGraphicalContent(final Node node) {
+		return new ExpressionBase<PartialHierarchicalGraphicalContent>() {
 			@Override
-			public GraphicalContentWithPreDecoration evaluate(EvaluationContext resolver) {
+			public PartialHierarchicalGraphicalContent evaluate(EvaluationContext resolver) {
 				
 				if (node instanceof Hidable && resolver.resolve(((Hidable)node).hidden()))
 					return IdleGraphicalContent.INSTANCE;
 				
-				final GraphicalContentWithPreDecoration toDraw;
+				final PartialHierarchicalGraphicalContent toDraw;
 				if (node instanceof MovableNew)
 					toDraw = resolver.resolve(transformedAndDecorated((MovableNew)node));
 				else
 					toDraw = resolver.resolve(decorated(node));
 				
-				return new GraphicalContentWithPreDecoration() {
+				return new PartialHierarchicalGraphicalContent() {
 					@Override
 					public void draw(Graphics2D graphics, Decorator decorator, Decoration currentDecoration) {
 						Decoration decoration = decorator.getDecoration(node);
@@ -110,20 +110,25 @@ public class DrawMan
 			}
 		};
 	}
-	
-	private ExpressionBase<GraphicalContentWithPreDecoration> decorated(final Node node)
+
+	private ExpressionBase<PartialHierarchicalGraphicalContent> decorated(final Node node)
 	{
-		return new ExpressionBase<GraphicalContentWithPreDecoration>() {
+		return new ExpressionBase<PartialHierarchicalGraphicalContent>() {
 
 				@Override
-				public GraphicalContentWithPreDecoration evaluate(final EvaluationContext resolver) {
+				public PartialHierarchicalGraphicalContent evaluate(final EvaluationContext resolver) {
 					
 					Collection<? extends Node> children = resolver.resolve(node.children());
-					final List<GraphicalContentWithPreDecoration> childrenGraphics = new ArrayList<GraphicalContentWithPreDecoration>();
+					final List<PartialHierarchicalGraphicalContent> childrenGraphics = new ArrayList<PartialHierarchicalGraphicalContent>();
 					for(Node n : children)
-						childrenGraphics.add(resolver.resolve(graphicalContextWithDefaultDecoration(n)));
+						childrenGraphics.add(resolver.resolve(partialHierarchicalGraphicalContent(n)));
 					
-					return new GraphicalContentWithPreDecoration() {
+					final GraphicalContent nodeGraphicalContent = 
+						(node instanceof DrawableNew) ?
+						resolver.resolve(((DrawableNew)node).graphicalContent()) :
+						null;
+					
+					return new PartialHierarchicalGraphicalContent() {
 						@Override
 						public void draw(final Graphics2D graphics, Decorator decorator, final Decoration decoration) {
 							AffineTransform oldTransform = graphics.getTransform();
@@ -141,14 +146,12 @@ public class DrawMan
 									return model;
 								}
 							};
-							if (node instanceof DrawableNew)
-								resolver.resolve(((DrawableNew)node).graphicalContent()).draw(drawRequest);
-							if (node instanceof Drawable) {
-								(((Drawable)node)).draw(drawRequest);
-							}
+							if (nodeGraphicalContent != null)
+								nodeGraphicalContent.draw(drawRequest);
+
 							graphics.setTransform(oldTransform);
 							
-							for (GraphicalContentWithPreDecoration child : childrenGraphics)
+							for (PartialHierarchicalGraphicalContent child : childrenGraphics)
 								child.draw(graphics, decorator, decoration);
 						}
 					};

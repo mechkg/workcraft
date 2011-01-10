@@ -4,7 +4,7 @@ import java.awt.Graphics2D;
 
 import org.workcraft.gui.graph.tools.Decorator;
 
-public class IdleGraphicalContent implements GraphicalContentWithPreDecoration {
+public class IdleGraphicalContent implements PartialHierarchicalGraphicalContent {
 	
 	public final static IdleGraphicalContent INSTANCE = new IdleGraphicalContent();
 	

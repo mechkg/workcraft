@@ -58,7 +58,7 @@ public class VisualSignalTransition extends VisualTransition {
 
 	private static Font font = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.75f);
 	
-	private Label label = new Label(font, text());
+	private Label nameLabel = new Label(font, text());
 	
 	public VisualSignalTransition(Transition transition) {
 		super(transition);
@@ -86,11 +86,16 @@ public class VisualSignalTransition extends VisualTransition {
 		return new ExpressionBase<GraphicalContent>() {
 			@Override
 			protected GraphicalContent evaluate(final EvaluationContext context) {
+				final GraphicalContent labelGraphics = context.resolve(labelGraphics());
+				final GraphicalContent nameLabelGraphics = context.resolve(nameLabel.graphics);
+				final Color color = context.resolve(color());
+				final Touchable shape = context.resolve(localSpaceTouchable());
+				
 				return new GraphicalContent() {
 					@Override
 					public void draw(DrawRequest r) {
 						
-						context.resolve(labelGraphics()).draw(r);
+						labelGraphics.draw(r);
 						
 						Graphics2D g = r.getGraphics();
 						
@@ -98,12 +103,12 @@ public class VisualSignalTransition extends VisualTransition {
 						if(background!=null)
 						{
 							g.setColor(background);
-							g.fill(context.resolve(localSpaceTouchable()).getBoundingBox());
+							g.fill(shape.getBoundingBox());
 						}
 						
-						g.setColor(Coloriser.colorise(context.resolve(color()), r.getDecoration().getColorisation()));
+						g.setColor(Coloriser.colorise(color, r.getDecoration().getColorisation()));
 						
-						context.resolve(label.graphics).draw(r);
+						nameLabelGraphics.draw(r);
 					}
 				};
 			}
@@ -118,7 +123,7 @@ public class VisualSignalTransition extends VisualTransition {
 				return new Touchable() {
 					@Override
 					public Rectangle2D getBoundingBox() {
-						return context.resolve(label.centeredBB);
+						return context.resolve(nameLabel.centeredBB);
 					}
 					
 					@Override

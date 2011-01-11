@@ -90,6 +90,7 @@ public class VisualFunctionContact extends VisualContact {
 	}
 	
 	public Expression<? extends GraphicalContent> graphicalContent() {
+		final Expression<? extends GraphicalContent> superGraphicalContent = super.graphicalContent();
 		return new ExpressionBase<GraphicalContent>() {
 
 			@Override
@@ -183,7 +184,7 @@ public class VisualFunctionContact extends VisualContact {
 					
 					@Override
 					public void draw(DrawRequest r) {
-						context.resolve(VisualFunctionContact.super.graphicalContent()).draw(r);
+						context.resolve(superGraphicalContent).draw(r);
 						
 						Graphics2D g = r.getGraphics();
 						

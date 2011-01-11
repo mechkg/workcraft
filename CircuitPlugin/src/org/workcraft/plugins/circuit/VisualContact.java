@@ -95,6 +95,7 @@ public class VisualContact extends VisualComponent {
 		super(contact);
 		
 		this.direction = Variable.create(dir);
+		nameGlyphs = createGlyphsExpression(direction, contact.name());
 
 		addPropertyDeclarations();
 	}
@@ -124,6 +125,7 @@ public class VisualContact extends VisualComponent {
 	}
 	
 	private int connections = 0;
+	private final Expression<GlyphVector> nameGlyphs;
 	@Override
 	public ModifiableExpression<AffineTransform> transform() {
 		
@@ -270,7 +272,7 @@ public class VisualContact extends VisualComponent {
 			
 			g.transform(at);
 			
-			GlyphVector gv = context.resolve(getNameGlyphs());
+			GlyphVector gv = context.resolve(nameGlyphs());
 			Rectangle2D cur = gv.getVisualBounds();
 			g.setColor(Coloriser.colorise((context.resolve(ioType())==IoType.INPUT)?inputColor:outputColor, colorisation));
 			
@@ -340,17 +342,21 @@ public class VisualContact extends VisualComponent {
 	}
 
 	/////////////////////////////////////////////////////////
-	public Expression<GlyphVector> getNameGlyphs() {
+	public Expression<GlyphVector> nameGlyphs() {
+		return nameGlyphs;
+	}
+
+	private static Expression<GlyphVector> createGlyphsExpression(final Expression<Direction> direction, final Expression<String> name) {
 		return new ExpressionBase<GlyphVector>(){
 
 			@Override
 			protected GlyphVector evaluate(EvaluationContext context) {
-				Direction direction = context.resolve(direction());
-				if (direction==VisualContact.Direction.NORTH||direction==VisualContact.Direction.SOUTH) {
+				Direction dir = context.resolve(direction);
+				if (dir==VisualContact.Direction.NORTH||dir==VisualContact.Direction.SOUTH) {
 					AffineTransform at = new AffineTransform();
 					at.quadrantRotate(1);
 				}
-				return nameFont.createGlyphVector(VisualComponent.podgonFontRenderContext(), context.resolve(name()));
+				return nameFont.createGlyphVector(VisualComponent.podgonFontRenderContext(), context.resolve(name));
 			}
 		};
 	}

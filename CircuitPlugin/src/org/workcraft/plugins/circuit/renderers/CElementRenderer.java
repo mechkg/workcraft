@@ -124,13 +124,17 @@ public class CElementRenderer {
 		
 	};
 	
+	static <T> LinkedList<T> emptyIfNull(LinkedList<T> list) {
+		return list != null ? list : new LinkedList<T>();
+	}
+	
 	public static ComponentRenderingResult renderGate(
 			BooleanFormula set, BooleanFormula reset) {
 		
 		doNegate = false; isNegated = false; isFirstNode = true; isGlobalNegation = false;
-		final LinkedList<Pair<String,Boolean>> setVars = set.accept(defaultVisitor);
+		final LinkedList<Pair<String,Boolean>> setVars = emptyIfNull(set.accept(defaultVisitor));
 		doNegate = true; isNegated = false;
-		final LinkedList<Pair<String,Boolean>> resetVars = reset.accept(defaultVisitor);
+		final LinkedList<Pair<String,Boolean>> resetVars = emptyIfNull(reset.accept(defaultVisitor));
 		final LinkedList<Pair<String,Boolean>> bothVars = new LinkedList<Pair<String,Boolean>>();
 		
 		for (Pair<String,Boolean> p: setVars) {

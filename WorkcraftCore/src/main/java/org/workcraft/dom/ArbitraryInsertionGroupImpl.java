@@ -42,14 +42,16 @@ public class ArbitraryInsertionGroupImpl extends AbstractGroup implements Contai
 	}
 	
 	public void add(int index, Node node) {
-		children.getValue().add(index, node);
-		children.setValue(children.getValue());
+		LinkedList<Node> newValue = new LinkedList<Node>(children.getValue());
+		newValue.add(index, node); // TODO: use PCollections?
+		children.setValue(newValue);
 	}
 
 	@Override
 	protected void addInternal(Node node) {
-		children.getValue().add(node);
-		children.setValue(children.getValue());
+		LinkedList<Node> newValue = new LinkedList<Node>(children.getValue());
+		newValue.add(node);
+		children.setValue(newValue);
 	}
 
 	@Override

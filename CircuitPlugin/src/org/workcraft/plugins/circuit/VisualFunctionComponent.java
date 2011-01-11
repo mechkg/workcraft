@@ -269,6 +269,7 @@ public class VisualFunctionComponent extends VisualCircuitComponent {
 	
 	@Override
 	public Expression<? extends GraphicalContent> graphicalContent() {
+		final Expression<? extends GraphicalContent> superGraphicalContent = super.graphicalContent();
 		return new ExpressionBase<GraphicalContent>(){
 
 			@Override
@@ -414,7 +415,7 @@ public class VisualFunctionComponent extends VisualCircuitComponent {
 							
 							
 						} else {
-							context.resolve(VisualFunctionComponent.super.graphicalContent()).draw(r);
+							context.resolve(superGraphicalContent).draw(r);
 						}
 					}
 				};

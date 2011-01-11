@@ -32,10 +32,13 @@ public abstract class ExpressionBase<T> implements Expression<T> {
 		WeakFireOnceListenersCollection listeners = new WeakFireOnceListenersCollection();
 		public Exception invalidationStackTrace;
 		
+		boolean warningGiven = false;
+		
 		public <T2> T2 getValue(Expression<T2> expr) {
 			ValueHandleTuple<T2> res = expr.getValue(this);
 			dependencies.add(res.handle);
-			if(dependencies.size()==100){
+			if(!warningGiven && dependencies.size()==100){
+				warningGiven = true;
 				System.err.println("Warning: dependencies size has became 100!");
 				Thread.dumpStack();
 			}

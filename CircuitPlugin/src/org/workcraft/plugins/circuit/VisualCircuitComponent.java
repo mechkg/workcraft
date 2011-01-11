@@ -131,10 +131,12 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 		g.setFont(nameFont);
 		Rectangle2D contactLabelBB = context.resolve(this.contactLabelBB);
 		if (contactLabelBB!=null) {
-			context.resolve(nameLabel.graphics).draw(r);
+			AffineTransform oldTransform = g.getTransform();
 			Rectangle2D textBB = context.resolve(nameLabel.centeredBB);
 			g.translate(contactLabelBB.getMaxX() + 0.2 - textBB.getMinX(), 
 					contactLabelBB.getMaxY() + 0.2 - textBB.getMinY());
+			context.resolve(nameLabel.graphics).draw(r);
+			g.setTransform(oldTransform);
 		}
 	}
 	
@@ -270,10 +272,12 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 				int east=0;
 				int west=0;
 				for (VisualContact vc : getContacts(context)) {
-					if (context.resolve(vc.direction()).equals(Direction.EAST)) east++;
-					if (context.resolve(vc.direction()).equals(Direction.SOUTH)) south++;
-					if (context.resolve(vc.direction()).equals(Direction.NORTH)) north++;
-					if (context.resolve(vc.direction()).equals(Direction.WEST)) west++;
+					switch(context.resolve(vc.direction())) {
+					case EAST : east++; break;
+					case SOUTH : south++; break;
+					case NORTH : north++; break;
+					case WEST : west++; break;
+					}
 				}
 				
 				Rectangle2D cur;
@@ -284,7 +288,7 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 				double width_s=0;
 				
 				for (VisualContact c: getContacts(context)) {
-					GlyphVector gv = context.resolve(c.getNameGlyphs());
+					GlyphVector gv = context.resolve(c.nameGlyphs());
 					cur = gv.getVisualBounds();
 					xx = cur.getWidth();
 					xx = (double)(Math.round(xx*4))/4;
@@ -292,16 +296,16 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 					
 					switch (context.resolve(c.direction())) {
 						case WEST:
-							width_w=(xx>width_w)?xx:width_w;
+							width_w = Math.max(xx, width_w);
 							break;
 						case EAST:
-							width_e=(xx>width_e)?xx:width_e;
+							width_e = Math.max(xx, width_e);
 							break;
 						case NORTH:
-							width_n=(xx>width_n)?xx:width_n;
+							width_n = Math.max(xx, width_n);
 							break;
 						case SOUTH:
-							width_s=(xx>width_s)?xx:width_s;
+							width_s = Math.max(xx, width_s);
 							break;
 					}
 				}
@@ -355,13 +359,10 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 
 	private Collection<VisualContact> getContacts(EvaluationContext context) {
 		ArrayList<VisualContact> result = new ArrayList<VisualContact>();
-		Collection<Node> children = context.resolve(children());
-		System.out.println("children: " + children.size());
-		for (Node n: children) {
+		for (Node n: context.resolve(children())) {
 			if(n instanceof VisualContact)
 				result.add((VisualContact)n);
 		}
-		System.out.println("contacts: " + result.size());
 		return result;
 	}
 	
@@ -374,7 +375,7 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 	
 		
 		for (VisualContact c: getContacts(context)) {
-			GlyphVector gv = context.resolve(c.getNameGlyphs());
+			GlyphVector gv = context.resolve(c.nameGlyphs());
 			Rectangle2D cur = gv.getVisualBounds();
 			g.setColor(Coloriser.colorise((context.resolve(c.ioType())==IoType.INPUT)?inputColor:outputColor, colorisation));
 			

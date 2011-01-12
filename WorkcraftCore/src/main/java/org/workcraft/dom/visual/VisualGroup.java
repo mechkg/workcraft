@@ -59,7 +59,7 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 
 			@Override
 			public GraphicalContent evaluate(EvaluationContext resolver) {
-				final Rectangle2D bb = BoundingBoxHelper.expand(resolver.resolve(localSpaceTouchable()).getBoundingBox(), 0.1, 0.1);
+				final Rectangle2D bb = BoundingBoxHelper.expand(resolver.resolve(localSpaceTouchable()).getBoundingBox(), 0.2, 0.2);
 				final Node parent = resolver.resolve(parent());
 				
 				return new GraphicalContent() {
@@ -67,7 +67,6 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 					@Override
 					public void draw(DrawRequest r) {
 						if (bb != null && parent != null) {
-							bb.setRect(bb.getX() - 0.1, bb.getY() - 0.1, bb.getWidth() + 0.2, bb.getHeight() + 0.2);
 							r.getGraphics().setColor(Coloriser.colorise(Color.GRAY, r.getDecoration().getColorisation()));
 							r.getGraphics().setStroke(new BasicStroke(0.02f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[]{0.2f, 0.2f}, 0.0f));
 							r.getGraphics().draw(bb);

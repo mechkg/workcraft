@@ -31,6 +31,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
@@ -92,8 +93,8 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 		});*/
 	}
 	
-	public VisualImplicitPlaceArc () {
-		super();
+	public VisualImplicitPlaceArc (StorageManager storage) {
+		super(storage);
 		addPropertyDeclarations();
 	}
 	
@@ -103,8 +104,8 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 		this.implicitPlace.setValue(implicitPlace);
 	}
 
-	public VisualImplicitPlaceArc (VisualComponent first, VisualComponent second, MathConnection refCon1, MathConnection refCon2, STGPlace implicitPlace) {
-		super(null, first, second);
+	public VisualImplicitPlaceArc (VisualComponent first, VisualComponent second, MathConnection refCon1, MathConnection refCon2, STGPlace implicitPlace, StorageManager storage) {
+		super(null, first, second, storage);
 		this.refCon1.setValue(refCon1);
 		this.refCon2.setValue(refCon2);
 		this.implicitPlace.setValue(implicitPlace);

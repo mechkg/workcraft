@@ -21,22 +21,22 @@
 
 package org.workcraft.dom.visual;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 
 import org.w3c.dom.Element;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
-import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 import org.workcraft.util.Geometry;
-
 
 public abstract class VisualTransformableNode extends VisualNode implements MovableNew {
 	private final static class AffineTransform_X extends ModifiableExpressionImpl<Double> {
@@ -100,8 +100,8 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		}
 	}
 
-	protected Variable<AffineTransform> localToParentTransform = new Variable<AffineTransform>(new AffineTransform());
-	protected ExpressionBase<AffineTransform> parentToLocalTransform = new ExpressionBase<AffineTransform>(){
+	protected final ModifiableExpression<AffineTransform> localToParentTransform;
+	protected final ExpressionBase<AffineTransform> parentToLocalTransform = new ExpressionBase<AffineTransform>(){
 		@Override
 		public AffineTransform evaluate(org.workcraft.dependencymanager.advanced.core.EvaluationContext resolver) {
 			return Geometry.optimisticInverse(resolver.resolve(transform()));
@@ -113,14 +113,16 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Y", y(), Double.class));
 	}
 
-	public VisualTransformableNode() {
-		super();
+	public VisualTransformableNode(StorageManager storage) {
+		super(storage);
+		
+		localToParentTransform = storage.create(new AffineTransform());
+		
 		addPropertyDeclarations();
 	}
 
-	public VisualTransformableNode (Element visualNodeElement) {
-		super();
-		addPropertyDeclarations();
+	public VisualTransformableNode (Element visualNodeElement, StorageManager storage) {
+		this(storage);
 		
 		VisualTransformableNodeDeserialiser.initTransformableNode(visualNodeElement, this);
 	}
@@ -146,35 +148,13 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		return new AffineTransform_Position(transform());
 	}
 
-	protected Rectangle2D transformToParentSpace(Rectangle2D rect)
-	{
-		if(rect == null)
-    		return null;
-		
-		Point2D p0 = new Point2D.Double(rect.getMinX(), rect.getMinY()); 
-		Point2D p1 = new Point2D.Double(rect.getMaxX(), rect.getMaxY());
-		
-		AffineTransform t = getLocalToParentTransform();
-		t.transform(p0, p0);
-		t.transform(p1, p1);
-
-		Rectangle2D.Double result = new Rectangle2D.Double(p0.getX(), p0.getY(), 0, 0);
-		result.add(p1);
-		
-		return result;
-	}
-
-	public AffineTransform getLocalToParentTransform() {
-		return localToParentTransform.getValue();
-	}
-	
 	public Expression<AffineTransform> parentToLocalTransform() {
 		return parentToLocalTransform;
 	}
 	
 	public void applyTransform(AffineTransform transform)
 	{
-		AffineTransform result = new AffineTransform(localToParentTransform.getValue());
+		AffineTransform result = new AffineTransform(eval(localToParentTransform));
 		result.preConcatenate(transform);
 		localToParentTransform.setValue(result);
 	}

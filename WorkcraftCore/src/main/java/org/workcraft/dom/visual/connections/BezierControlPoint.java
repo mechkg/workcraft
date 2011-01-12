@@ -33,13 +33,15 @@ import java.awt.geom.Point2D;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 
 public class BezierControlPoint extends ControlPoint {
 	private Expression<Point2D> origin;
 	
-	public BezierControlPoint(Expression<Point2D> origin) {
+	public BezierControlPoint(Expression<Point2D> origin, StorageManager storage) {
+		super(storage);
 		this.origin = origin;
 	}
 

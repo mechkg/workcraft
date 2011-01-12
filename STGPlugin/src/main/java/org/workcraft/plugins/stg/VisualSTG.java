@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.stg;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,14 +47,13 @@ import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.tools.STGSimulationTool;
 import org.workcraft.util.Hierarchy;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-
 @DisplayName("Signal Transition Graph")
 @CustomTools ( STGToolsProvider.class )
 @DefaultCreateButtons ( { STGPlace.class,  SignalTransition.class, DummyTransition.class } )
 @CustomToolButtons ( { STGSimulationTool.class } )  
 public class VisualSTG extends AbstractVisualModel {
 	private STG stg;
+	public HistoryPreservingStorageManager storage;
 
 	@Override
 	public void validateConnection(Node first, Node second)	throws InvalidConnectionException {
@@ -129,7 +130,7 @@ public class VisualSTG extends AbstractVisualModel {
 		if (implicitPlace == null || con1 == null || con2 == null)
 			throw new NullPointerException();
 
-		VisualImplicitPlaceArc result = new VisualImplicitPlaceArc(t1, t2, con1, con2, implicitPlace);
+		VisualImplicitPlaceArc result = new VisualImplicitPlaceArc(t1, t2, con1, con2, implicitPlace, storage);
 		Hierarchy.getNearestContainer(t1, t2).add(result);
 		return result;
 	}
@@ -145,7 +146,7 @@ public class VisualSTG extends AbstractVisualModel {
 		if (con == null)
 			throw new NullPointerException();
 
-		VisualConnection result = new VisualConnection(con, firstComponent, secondComponent);
+		VisualConnection result = new VisualConnection(con, firstComponent, secondComponent, storage);
 		Hierarchy.getNearestContainer(firstComponent, secondComponent).add(result);
 		return result;
 	}
@@ -157,12 +158,12 @@ public class VisualSTG extends AbstractVisualModel {
 		
 		stg.makeExplicit(implicitPlace);
 		
-		VisualPlace place = new VisualPlace(implicitPlace);
+		VisualPlace place = new VisualPlace(implicitPlace, storage);
 		Point2D p = con.getPointOnConnection(0.5);
 		place.position().setValue(p);
 
-		VisualConnection con1 = new VisualConnection(con.getRefCon1(), con.getFirst(), place);
-		VisualConnection con2 = new VisualConnection(con.getRefCon2(), place, con.getSecond());
+		VisualConnection con1 = new VisualConnection(con.getRefCon1(), con.getFirst(), place, storage);
+		VisualConnection con2 = new VisualConnection(con.getRefCon2(), place, con.getSecond(), storage);
 
 		group.add(place);
 		group.add(con1);
@@ -189,7 +190,7 @@ public class VisualSTG extends AbstractVisualModel {
 					refCon1 = ((VisualConnection)con).getReferencedConnection();
 
 
-			VisualImplicitPlaceArc con = new VisualImplicitPlaceArc(first, second, refCon1, refCon2, (STGPlace)place.getReferencedPlace());
+			VisualImplicitPlaceArc con = new VisualImplicitPlaceArc(first, second, refCon1, refCon2, (STGPlace)place.getReferencedPlace(), storage);
 
 			Hierarchy.getNearestAncestor(
 					Hierarchy.getCommonParent(first, second), Container.class)
@@ -201,11 +202,13 @@ public class VisualSTG extends AbstractVisualModel {
 	} 
 
 	public VisualSTG(STG model) {
-		this (model, null);
+		this (model, null, model.storage);
 	}
 
-	public VisualSTG(STG model, VisualGroup root) {
-		super(model, root);
+	public VisualSTG(STG model, VisualGroup root, HistoryPreservingStorageManager storage) {
+		super(model, root, storage);
+		
+		this.storage = storage;
 
 		if (root == null)
 			try {
@@ -226,7 +229,7 @@ public class VisualSTG extends AbstractVisualModel {
 	}
 	
 	public VisualPlace createPlace(String name) {
-		VisualPlace place = new VisualPlace(stg.createPlace(name));
+		VisualPlace place = new VisualPlace(stg.createPlace(name), storage);
 		add(place);
 		return place;
 	}
@@ -235,7 +238,15 @@ public class VisualSTG extends AbstractVisualModel {
 		SignalTransition transition = stg.createSignalTransition(signalName);
 		transition.signalType().setValue(type);
 		transition.direction().setValue(direction);
-		VisualSignalTransition visualTransition = new VisualSignalTransition(transition);
+		VisualSignalTransition visualTransition = new VisualSignalTransition(transition, storage);
+		add(visualTransition);
+		return visualTransition;
+	}
+
+	public VisualSignalTransition createSignalTransition() {
+		SignalTransition transition = stg.createSignalTransition();
+		VisualSignalTransition visualTransition = new VisualSignalTransition(transition, storage);
+		System.out.println("trans: " + transition);
 		add(visualTransition);
 		return visualTransition;
 	}

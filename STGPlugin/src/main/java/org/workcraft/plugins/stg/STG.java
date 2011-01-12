@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.stg;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -53,16 +55,17 @@ import org.workcraft.util.Pair;
 import org.workcraft.util.SetUtils;
 import org.workcraft.util.Triple;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-
 @VisualClass("org.workcraft.plugins.stg.VisualSTG")
 public class STG extends AbstractMathModel implements STGModel {
+	
 	private final STGReferenceManager referenceManager;
 
 	private static class ConstructionInfo {
-		public ConstructionInfo(Container root, References refs) {
+		private final HistoryPreservingStorageManager storage;
+		public ConstructionInfo(Container root, References refs, HistoryPreservingStorageManager storage) {
+			this.storage = storage;
 			if(root == null)
-				this.root = new MathGroup();
+				this.root = new MathGroup(storage);
 			else
 				this.root = root;
 			this.referenceManager = new STGReferenceManager(this.root, refs);
@@ -71,20 +74,21 @@ public class STG extends AbstractMathModel implements STGModel {
 		public final Container root; 
 	}
 	
-	public STG() {
-		this((Container)null);
+	public STG(HistoryPreservingStorageManager storage) {
+		this((Container)null, storage);
 	}
 
-	public STG(Container root) {
-		this (root, null);
+	public STG(Container root, HistoryPreservingStorageManager storage) {
+		this (root, null, storage);
 	}
 
-	public STG(Container root, References refs) {
-		this(new ConstructionInfo(root, refs));
+	public STG(Container root, References refs, HistoryPreservingStorageManager storage) {
+		this(new ConstructionInfo(root, refs, storage));
 	}
 	
 	public STG(ConstructionInfo info) {
 		super(info.root, info.referenceManager);
+		storage = info.storage;
 		referenceManager = info.referenceManager;
 		signalTypeConsistencySupervisor = new SignalTypeConsistencySupervisor(this, info.root);
 	}
@@ -108,7 +112,7 @@ public class STG extends AbstractMathModel implements STGModel {
 	}
 
 	final public STGPlace createPlace(String name, boolean markAsImplicit) {
-		STGPlace newPlace = new STGPlace();
+		STGPlace newPlace = new STGPlace(storage);
 
 		newPlace.implicit().setValue(markAsImplicit);
 
@@ -122,15 +126,17 @@ public class STG extends AbstractMathModel implements STGModel {
 
 
 	final public DummyTransition createDummyTransition(String name) {
-		DummyTransition newTransition = new DummyTransition();
+		DummyTransition newTransition = new DummyTransition(storage);
 		if (name!=null)
 			setName(newTransition, name);
 		getRoot().add(newTransition);
 		return newTransition;
 	}
 
+	public final HistoryPreservingStorageManager storage;
+	
 	final public SignalTransition createSignalTransition(String name) {
-		SignalTransition ret = new SignalTransition();
+		SignalTransition ret = new SignalTransition(storage);
 		if (name!=null)
 			setName(ret, name);
 		getRoot().add(ret);
@@ -256,11 +262,11 @@ public class STG extends AbstractMathModel implements STGModel {
 
 	public ConnectionResult connect(Node first, Node second) throws InvalidConnectionException {
 		if (first instanceof Transition && second instanceof Transition) {
-			STGPlace p = new STGPlace();
+			STGPlace p = new STGPlace(storage);
 			p.implicit().setValue(true);
 
-			MathConnection con1 = new MathConnection ( (Transition) first, p);
-			MathConnection con2 = new MathConnection ( p, (Transition) second);
+			MathConnection con1 = new MathConnection ( (Transition) first, p, storage);
+			MathConnection con2 = new MathConnection ( p, (Transition) second, storage);
 
 			Hierarchy.getNearestContainer(first, second).add( Arrays.asList(new Node[] { p, con1, con2}) );
 
@@ -268,7 +274,7 @@ public class STG extends AbstractMathModel implements STGModel {
 		} else if (first instanceof Place && second instanceof Place)
 			throw new InvalidConnectionException ("Connections between places are not valid");
 		else {
-			MathConnection con = new MathConnection((MathNode) first, (MathNode) second);
+			MathConnection con = new MathConnection((MathNode) first, (MathNode) second, storage);
 			Hierarchy.getNearestContainer(first, second).add(con);
 			return new SimpleResult(con);
 		}

@@ -35,6 +35,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Label;
@@ -51,8 +52,8 @@ public class VisualDummyTransition extends VisualTransition {
 	
 	private final Label label;
 
-	public VisualDummyTransition(DummyTransition transition) {
-		super(transition);
+	public VisualDummyTransition(DummyTransition transition, StorageManager storage) {
+		super(transition, storage);
 		
 		label = new Label(font, transition.name());
 	}

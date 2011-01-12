@@ -24,14 +24,12 @@ package org.workcraft.plugins.stg;
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.ArgumentException;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
-@DisplayName("Signal transition")
-@VisualClass("org.workcraft.plugins.stg.VisualSignalTransition")
 public class SignalTransition extends Transition implements StgTransition 
 {
 	public enum Type {
@@ -73,9 +71,16 @@ public class SignalTransition extends Transition implements StgTransition
 		}
 	}
 
-	private final Variable<Type> type = new Variable<Type>(Type.INTERNAL);
-	private final Variable<Direction> direction = new Variable<Direction>(Direction.TOGGLE);
-	private final Variable<String> signalName = new Variable<String>(null);
+	public SignalTransition(StorageManager storage) {
+		super(storage);
+		type = storage.create(Type.INTERNAL);
+		direction = storage.create(Direction.TOGGLE);
+		signalName = storage.create(null);
+	}
+	
+	private final ModifiableExpression<Type> type;
+	private final ModifiableExpression<Direction> direction;
+	private final ModifiableExpression<String> signalName;
 
 	public ModifiableExpression<Type> signalType() {
 		return type;

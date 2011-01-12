@@ -35,6 +35,7 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.GraphicalContent;
@@ -47,6 +48,10 @@ public class ControlPoint extends VisualTransformableNode implements DrawableNew
 	private double size = 0.15;
 	private Color fillColor = Color.BLUE;
 
+	public ControlPoint(StorageManager storage) {
+		super(storage);
+	}
+	
 	Shape shape = new Ellipse2D.Double(
 			-size / 2,
 			-size / 2,

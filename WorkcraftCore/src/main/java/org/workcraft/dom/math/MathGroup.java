@@ -25,13 +25,19 @@ import java.util.Collection;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
 
 public class MathGroup extends MathNode implements Container {
-	DefaultGroupImpl groupImpl = new DefaultGroupImpl(this);
+	final DefaultGroupImpl groupImpl;
 
+	public MathGroup(StorageManager storage) {
+		super(storage);
+		groupImpl = new DefaultGroupImpl(this, storage);
+	}
+	
 	@Override
 	public void add(Node node) {
 		groupImpl.add(node);

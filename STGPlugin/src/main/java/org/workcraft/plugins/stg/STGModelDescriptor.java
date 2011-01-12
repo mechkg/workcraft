@@ -13,7 +13,7 @@ public class STGModelDescriptor implements ModelDescriptor
 
 	@Override
 	public MathModel createMathModel() {
-		return new STG();
+		return new STG(new HistoryPreservingStorageManager());
 	}
 
 	@Override

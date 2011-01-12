@@ -31,7 +31,6 @@ import org.workcraft.exceptions.NodeCreationException;
 public interface NodeGenerator {
 	public Icon getIcon();
 	public String getLabel();
-	public String getText();
 	public void generate(VisualModel model, Point2D where) throws NodeCreationException;
 	public int getHotKeyCode();
 }

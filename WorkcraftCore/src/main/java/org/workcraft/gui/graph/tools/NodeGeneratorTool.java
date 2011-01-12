@@ -55,7 +55,7 @@ public class NodeGeneratorTool extends AbstractTool {
 	}
 
 	public void drawInScreenSpace(GraphEditor editor, Graphics2D g) {
-		GUI.drawEditorMessage(editor, g, Color.BLACK, generator.getText());	
+		GUI.drawEditorMessage(editor, g, Color.BLACK, "Click to create a " + generator.getLabel());	
 	}
 	
 	public int getHotKeyCode() {

@@ -50,6 +50,9 @@ public class BoundingBoxHelper {
 	
 	public static Rectangle2D expand(Rectangle2D rect, double x, double y)
 	{
+		if(rect == null)
+			return null;
+		
 		Rectangle2D res = new Rectangle2D.Double();
 		res.setRect(rect);
 		

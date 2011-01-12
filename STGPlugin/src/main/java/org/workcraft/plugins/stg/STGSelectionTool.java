@@ -19,6 +19,7 @@ import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.ArgumentException;
+import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.GraphEditor;
@@ -139,6 +140,15 @@ public class STGSelectionTool extends SelectionTool
 			if (popup!=null)
 				popup.show(e.getSystemEvent().getComponent(), e.getSystemEvent().getX(), e.getSystemEvent().getY());
 		}
+	}
+	
+	@Override
+	public void keyPressed(GraphEditorKeyEvent e) {
+		super.keyPressed(e);
+		if(e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_S)
+			((VisualSTG)e.getModel()).storage.dosave();
+		if(e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_R)
+			((VisualSTG)e.getModel()).storage.dorestore();
 	}
 
 	private JPopupMenu createPopupMenu(VisualNode node) {

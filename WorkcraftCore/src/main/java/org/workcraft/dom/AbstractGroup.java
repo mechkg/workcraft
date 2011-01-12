@@ -24,10 +24,9 @@ package org.workcraft.dom;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.Touchable;
 
 public abstract class AbstractGroup implements Container {
@@ -38,12 +37,13 @@ public abstract class AbstractGroup implements Container {
 		return null;
 	}
 	
-	AbstractGroup (Container groupRef) {
+	AbstractGroup (Container groupRef, ModifiableExpression<Node> parent) {
 		this.groupRef = groupRef;
+		this.parent = parent;
 	}
-	Variable<Node> parent = new Variable<Node>(null);
+	final ModifiableExpression<Node> parent;
 	
-	public Variable<Node> parent() {
+	public ModifiableExpression<Node> parent() {
 		return parent;
 	}
 
@@ -97,7 +97,7 @@ public abstract class AbstractGroup implements Container {
 	}
 
 	@Override
-	public abstract ExpressionBase<? extends Collection<? extends Node>> children();
+	public abstract Expression<? extends Collection<? extends Node>> children();
 
 	protected abstract void addInternal(Node node);
 	protected abstract void removeInternal (Node node);

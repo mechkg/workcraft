@@ -6,25 +6,30 @@ import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 
 public class CachedHashSet<Node> extends ExpressionBase<Set<Node>> {
 
-	Variable<LinkedHashSet<Node>> data = new Variable<LinkedHashSet<Node>>(new LinkedHashSet<Node>());
+	private final ModifiableExpression<LinkedHashSet<Node>> data;
 	
+	public CachedHashSet(StorageManager storage) {
+		data = storage.create(new LinkedHashSet<Node>());
+	}
+
 	public void add(Node node) {
-		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(data.getValue());
+		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(getValue());
 		newValue.add(node);
 		data.setValue(newValue);
 	}
 	
 	public void remove(Node node) {
-		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(data.getValue());
+		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(getValue());
 		if(newValue.remove(node))
 			data.setValue(newValue);
 	}
 	
 	public LinkedHashSet<Node> getValue() {
-		return data.getValue();
+		return GlobalCache.eval(data);
 	}
 	
 	@Override
@@ -37,13 +42,13 @@ public class CachedHashSet<Node> extends ExpressionBase<Set<Node>> {
 	}
 
 	public void addAll(Collection<? extends Node> nodes) {
-		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(data.getValue());
+		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(getValue());
 		newValue.addAll(nodes);
 		data.setValue(newValue);
 	}
 
 	public void removeAll(Collection<Node> nodes) {
-		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(data.getValue());
+		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(getValue());
 		if(newValue.removeAll(nodes))
 			data.setValue(newValue);
 	}

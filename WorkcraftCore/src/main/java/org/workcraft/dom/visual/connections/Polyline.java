@@ -39,6 +39,7 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.ArbitraryInsertionGroupImpl;
 import org.workcraft.dom.Container;
@@ -282,12 +283,13 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 	private ExpressionBase<VisualConnectionProperties> connectionInfo;
 	private ExpressionBase<PartialCurveInfo> curveInfo = new CurveInfo();
 	
-	//TODO: implement control point hiding
-	ControlPointScaler scaler; 
+	ControlPointScaler scaler;
+	private final StorageManager storage; 
 	
 	
-	public Polyline(VisualConnection parent) {
-		groupImpl = new ArbitraryInsertionGroupImpl(this, parent);
+	public Polyline(VisualConnection parent, StorageManager storage) {
+		this.storage = storage;
+		groupImpl = new ArbitraryInsertionGroupImpl(this, parent, storage);
 		connectionInfo = parent.properties();
 		scaler = new ControlPointScaler(connectionInfo, controlPoints());
 	}
@@ -364,13 +366,13 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 		createControlPoint(segment, pointOnConnection);
 	}
 	public void createControlPoint(int index, Point2D userLocation) {
-		ControlPoint ap = new ControlPoint();
+		ControlPoint ap = new ControlPoint(storage);
 		GlobalCache.setValue(ap.position(), userLocation);
 		groupImpl.add(index, ap);
 	}
 	
 	@Override
-	public ExpressionBase<? extends Collection<Node>> children() {
+	public Expression<? extends Collection<Node>> children() {
 		return groupImpl.children();
 	}
 

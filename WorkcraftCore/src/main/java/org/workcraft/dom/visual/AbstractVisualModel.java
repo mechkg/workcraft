@@ -38,6 +38,7 @@ import org.workcraft.annotations.MouseListeners;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultMathNodeRemover;
@@ -58,38 +59,42 @@ import org.workcraft.util.XmlUtil;
 public abstract class AbstractVisualModel extends AbstractModel implements VisualModel {
 	private MathModel mathModel;
 	private Container currentLevel;
-	private CachedHashSet<Node> selection = new CachedHashSet<Node>();
+	private final CachedHashSet<Node> selection;
 	private final ExpressionBase<HierarchicalGraphicalContent> graphicalContent;
 	private SelectionEventPropagator selectionEventPropagator;
 
-	public AbstractVisualModel(VisualGroup root) {
-		this (null, root);
+	public AbstractVisualModel(VisualGroup root, StorageManager storage) {
+		this (null, root, storage);
 	}
 
-	public AbstractVisualModel() {
-		this ((MathModel)null);
+	public AbstractVisualModel(StorageManager storage) {
+		this ((MathModel)null, storage);
 	}
 
-	public AbstractVisualModel(MathModel mathModel) {
-		this(mathModel, null);
+	public AbstractVisualModel(MathModel mathModel, StorageManager storage) {
+		this(mathModel, null, storage);
 	}
 	
 	static class ConstructionInfo {
-		public ConstructionInfo(MathModel mathModel, VisualGroup root) {
+		public ConstructionInfo(MathModel mathModel, VisualGroup root, StorageManager storage) {
 			this.mathModel = mathModel;
-			this.root = root == null ? new VisualGroup() : root;
+			this.storage = storage;
+			this.root = root == null ? new VisualGroup(storage) : root;
 		}
 		MathModel mathModel; 
 		VisualGroup root;
+		StorageManager storage;
 	}
 
-	public AbstractVisualModel(MathModel mathModel, VisualGroup root) {
-		this(new ConstructionInfo(mathModel, root));
+	public AbstractVisualModel(MathModel mathModel, VisualGroup root, StorageManager storage) {
+		this(new ConstructionInfo(mathModel, root, storage));
 	}
 	
 	public AbstractVisualModel(ConstructionInfo param) {
 		super(param.root);
 		this.mathModel = param.mathModel;
+		this.storage = param.storage;
+		selection = new CachedHashSet<Node>(storage);
 		
 		currentLevel =  param.root;
 		selectionEventPropagator = new SelectionEventPropagator(param.root, this);
@@ -124,7 +129,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		for (VisualConnection vc : createdConnections.keySet()) {
 			MathConnection mc = createdConnections.get(vc);
 			vc.setVisualConnectionDependencies(createdNodes.get(mc.getFirst()), 
-					createdNodes.get(mc.getSecond()), new Polyline(vc), mc);
+					createdNodes.get(mc.getSecond()), new Polyline(vc, storage), mc);
 			getRoot().add(vc);
 		}
 	}
@@ -275,12 +280,14 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		if (vg!=null) select(vg);
 	}
 	
+	final StorageManager storage;
+	
 	public VisualGroup groupCollection(Collection<Node> selected) {
 
 		if(selected.size() <= 1)
 			return null;
 		
-		VisualGroup group = new VisualGroup();
+		VisualGroup group = new VisualGroup(storage);
 
 		currentLevel.add(group);
 

@@ -38,6 +38,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawHelper;
@@ -58,16 +59,21 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 	private final Expression<? extends ParametricCurve> parametricCurve;
 	
 	private Node parent;
-	private final Variable<BezierControlPoint> cp1 = new Variable<BezierControlPoint>(null);
-	private final Variable<BezierControlPoint> cp2 = new Variable<BezierControlPoint>(null);
+	private final ModifiableExpression<BezierControlPoint> cp1;
+	private final ModifiableExpression<BezierControlPoint> cp2;
 	private final ControlPointScaler scaler;
+	private final StorageManager storage;
 	
 	@Override
 	public ControlPointScaler scaler() {
 		return scaler;
 	}
 	
-	public Bezier(VisualConnection parent) {
+	public Bezier(VisualConnection parent, StorageManager storage) {
+		this.storage = storage;
+		cp1 = storage.create(null);
+		cp2 = storage.create(null);
+		
 		this.connectionInfo = parent.properties();
 		this.parent = parent;
 		this.scaler = new ControlPointScaler(connectionInfo, children());
@@ -125,8 +131,8 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 			}
 		};
 		
-		BezierControlPoint cp1 = new BezierControlPoint(p1);
-		BezierControlPoint cp2 = new BezierControlPoint(p2);
+		BezierControlPoint cp1 = new BezierControlPoint(p1, storage);
+		BezierControlPoint cp2 = new BezierControlPoint(p2, storage);
 		initControlPoints (cp1, cp2);
 
 		Point2D c1 = eval(p1);

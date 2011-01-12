@@ -34,6 +34,7 @@ import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
@@ -46,8 +47,8 @@ import org.workcraft.plugins.shared.CommonVisualSettings;
 @SVGIcon("images/icons/svg/transition.svg")
 public class VisualTransition extends VisualComponent {
 
-	public VisualTransition(Transition transition) {
-		super(transition);
+	public VisualTransition(Transition transition, StorageManager storage) {
+		super(transition, storage);
 	}
 	
 	public Transition getReferencedTransition() {

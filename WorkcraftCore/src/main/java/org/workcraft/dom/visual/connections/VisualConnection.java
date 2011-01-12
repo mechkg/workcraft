@@ -38,6 +38,7 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.RestrictedVariable;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
@@ -161,11 +162,14 @@ public class VisualConnection extends VisualNode implements
 	private ModifiableExpression<Double> arrowWidth = new BoundedVariable(0.1, 1, defaultArrowWidth);
 	private ModifiableExpression<Double> arrowLength = new BoundedVariable(0.1, 1, defaultArrowLength);
 	
-	private CachedHashSet<Node> children = new CachedHashSet<Node>();
+	private CachedHashSet<Node> children;
 	private ExpressionBase<Touchable> transformedShape1;
 	private ExpressionBase<Touchable> transformedShape2;
+	private final StorageManager storage;
 	
 	protected void initialise() {
+		children = new CachedHashSet<Node>(storage);
+
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Line width", lineWidth(), lineWidth(), Double.class));
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Arrow width", arrowWidth(), Double.class));
 
@@ -199,8 +203,9 @@ public class VisualConnection extends VisualNode implements
 		children.add(graphic);
 	}
 
-	public VisualConnection() {
-		
+	public VisualConnection(StorageManager storage) {
+		super(storage);
+		this.storage = storage;
 	}
 	
 	public void setVisualConnectionDependencies(VisualComponent first, VisualComponent second, ConnectionGraphic graphic, MathConnection refConnection) {
@@ -224,11 +229,13 @@ public class VisualConnection extends VisualNode implements
 		initialise();
 	}
 	
-	public VisualConnection(MathConnection refConnection, VisualComponent first, VisualComponent second) {
+	public VisualConnection(MathConnection refConnection, VisualComponent first, VisualComponent second, StorageManager storage) {
+		super(storage);
 		this.refConnection = refConnection;
 		this.first = first;
 		this.second = second;
-		this.graphic = new Polyline(this);
+		this.graphic = new Polyline(this, storage);
+		this.storage = storage;
 		
 		initialise();
 	}
@@ -244,10 +251,10 @@ public class VisualConnection extends VisualNode implements
 			children.remove(graphic);
 			
 			if (t==ConnectionType.POLYLINE) { 
-				graphic = new Polyline(this);
+				graphic = new Polyline(this, storage);
 			}
 			if (t==ConnectionType.BEZIER) { 
-				Bezier b = new Bezier(this);
+				Bezier b = new Bezier(this, storage);
 				b.setDefaultControlPoints();
 				graphic = b;
 			}

@@ -36,7 +36,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
@@ -52,12 +52,12 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 		return new FontRenderContext(AffineTransform.getScaleInstance(1000, 1000), true, true);
 	}
 	
-	private final Variable<String> labelText = Variable.create("");
-	private final Label label = new Label(labelFont, labelText);
+	private final ModifiableExpression<String> labelText;
+	private final Label label;
 	
-	private Variable<Color> labelColor = Variable.create(CommonVisualSettings.getForegroundColor());
-	private Variable<Color> foregroundColor = Variable.create(CommonVisualSettings.getForegroundColor());
-	private Variable<Color> fillColor = Variable.create(CommonVisualSettings.getFillColor());
+	private final ModifiableExpression<Color> labelColor;
+	private final ModifiableExpression<Color> foregroundColor;
+	private final ModifiableExpression<Color> fillColor;
 
 	private void addPropertyDeclarations() {
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Label", label(), String.class));
@@ -66,10 +66,17 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Fill color", fillColor(), Color.class));
 	}
 
-	public VisualComponent(MathNode refNode) {
-		super();
+	public VisualComponent(MathNode refNode, StorageManager storage) {
+		super(storage);
 		this.refNode = refNode;
 
+		labelText = storage.create("");
+		label = new Label(labelFont, labelText);
+		
+		labelColor = storage.create(CommonVisualSettings.getForegroundColor());
+		foregroundColor = storage.create(CommonVisualSettings.getForegroundColor());
+		fillColor = storage.create(CommonVisualSettings.getFillColor());
+		
 		addPropertyDeclarations();
 	}
 	public ModifiableExpression<String> label() {

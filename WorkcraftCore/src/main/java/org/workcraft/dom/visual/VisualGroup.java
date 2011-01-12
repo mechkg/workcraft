@@ -33,6 +33,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
@@ -45,7 +46,12 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 	public static final int HIT_CONNECTION = 2;
 	public static final int HIT_GROUP = 3;
 
-	DefaultGroupImpl groupImpl = new DefaultGroupImpl(this);
+	public VisualGroup(StorageManager storage) {
+		super(storage);
+		groupImpl = new DefaultGroupImpl(this, storage);		
+	}
+	
+	final DefaultGroupImpl groupImpl;
 
 	@Override
 	public ExpressionBase<GraphicalContent> graphicalContent() {
@@ -53,7 +59,7 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 
 			@Override
 			public GraphicalContent evaluate(EvaluationContext resolver) {
-				final Rectangle2D bb = resolver.resolve(localSpaceTouchable()).getBoundingBox();
+				final Rectangle2D bb = BoundingBoxHelper.expand(resolver.resolve(localSpaceTouchable()).getBoundingBox(), 0.1, 0.1);
 				final Node parent = resolver.resolve(parent());
 				
 				return new GraphicalContent() {
@@ -113,7 +119,7 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 		groupImpl.reparent(nodesToReparent, newParent);
 
 		for (Node node : nodesToReparent)
-			TransformHelper.applyTransform(node, localToParentTransform.getValue());
+			TransformHelper.applyTransform(node, eval(localToParentTransform));
 		
 		return nodesToReparent;
 	}
@@ -155,7 +161,7 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 	}
 
 	@Override
-	public ExpressionBase<? extends Collection<Node>> children() {
+	public Expression<? extends Collection<Node>> children() {
 		return groupImpl.children();
 	}
 }

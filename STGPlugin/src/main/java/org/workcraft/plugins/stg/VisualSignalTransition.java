@@ -36,6 +36,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Label;
@@ -48,9 +49,6 @@ import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.SignalTransition.Type;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
-@Hotkey(KeyEvent.VK_T)
-@DisplayName("Signal Transition")
-@SVGIcon("images/icons/svg/signal-transition.svg")
 public class VisualSignalTransition extends VisualTransition {
 	private static Color inputsColor = Color.RED.darker();
 	private static Color outputsColor = Color.BLUE.darker();
@@ -60,8 +58,8 @@ public class VisualSignalTransition extends VisualTransition {
 	
 	private Label nameLabel = new Label(font, text());
 	
-	public VisualSignalTransition(Transition transition) {
-		super(transition);
+	public VisualSignalTransition(Transition transition, StorageManager storage) {
+		super(transition, storage);
 		addPropertyDeclarations();
 	}
 

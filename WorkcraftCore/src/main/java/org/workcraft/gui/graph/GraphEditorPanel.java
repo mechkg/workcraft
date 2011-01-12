@@ -80,6 +80,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 
 		@Override
 		public ImageModel evaluate(EvaluationContext resolver) {
+			model.ensureConsistency();
 			resolver.resolve(model.graphicalContent());
 			resolver.resolve(model.selection());
 			repaint();

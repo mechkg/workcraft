@@ -21,47 +21,46 @@
 
 package org.workcraft.dom;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.user.Variable;
+import java.util.LinkedList;
+
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.connections.VisualConnection;
 
 public class ArbitraryInsertionGroupImpl extends AbstractGroup implements Container {
-	Variable<LinkedList<Node>> children = new Variable<LinkedList<Node>> (new LinkedList<Node>());
 	
-	public ArbitraryInsertionGroupImpl (Container groupRef, VisualConnection parent) {
-		super(groupRef);
-		this.parent.setValue(parent);
+	final ModifiableExpression<LinkedList<Node>> children;
+	
+	public ArbitraryInsertionGroupImpl (Container groupRef, VisualConnection parent, StorageManager storage) {
+		super(groupRef, storage.<Node>create(parent));
+		children = storage.create(new LinkedList<Node>());
 	}
 
-	public List<Node> getChildren() {
-		return Collections.unmodifiableList(children.getValue());
-	}
-	
 	public void add(int index, Node node) {
-		LinkedList<Node> newValue = new LinkedList<Node>(children.getValue());
+		LinkedList<Node> newValue = new LinkedList<Node>(eval(children));
 		newValue.add(index, node); // TODO: use PCollections?
 		children.setValue(newValue);
 	}
 
 	@Override
 	protected void addInternal(Node node) {
-		LinkedList<Node> newValue = new LinkedList<Node>(children.getValue());
+		LinkedList<Node> newValue = new LinkedList<Node>(eval(children));
 		newValue.add(node);
 		children.setValue(newValue);
 	}
 
 	@Override
 	protected void removeInternal(Node node) {
-		children.getValue().remove(node);
-		children.setValue(children.getValue());
+		LinkedList<Node> newValue = new LinkedList<Node>(eval(children));
+		newValue.remove(node);
+		children.setValue(newValue);
 	}
 
 	@Override
-	public ExpressionBase<? extends LinkedList<Node>> children() {
+	public Expression<? extends LinkedList<Node>> children() {
 		return children;
 	}
 }

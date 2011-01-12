@@ -21,35 +21,39 @@
 
 package org.workcraft.dom;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 
 public class DefaultGroupImpl extends AbstractGroup implements Container {
-	Variable<LinkedHashSet<Node>> children = new Variable<LinkedHashSet<Node>>(new LinkedHashSet<Node>());
+	ModifiableExpression<LinkedHashSet<Node>> children;
 	
-	public DefaultGroupImpl (Container groupRef) {
-		super(groupRef);
+	public DefaultGroupImpl (Container groupRef, StorageManager storage) {
+		super(groupRef, storage.<Node>create(null));
+		children = storage.create(new LinkedHashSet<Node>());
 	}
 
 	@Override
 	protected void addInternal(Node node) {
-		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(children.getValue());
+		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(eval(children));
 		newValue.add(node);
 		children.setValue(newValue);
 	}
 
 	@Override
 	protected void removeInternal(Node node) {
-		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(children.getValue());
+		LinkedHashSet<Node> newValue = new LinkedHashSet<Node>(eval(children));
 		if(newValue.remove(node))
 			children.setValue(newValue);
 	}
 
 	@Override
-	public ExpressionBase<? extends Collection<Node>> children() {
+	public Expression<? extends Collection<Node>> children() {
 		return children;
 	}
 

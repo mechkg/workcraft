@@ -26,19 +26,16 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.event.KeyEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.workcraft.annotations.DisplayName;
-import org.workcraft.annotations.Hotkey;
-import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
@@ -49,9 +46,6 @@ import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
-@DisplayName("Place")
-@Hotkey(KeyEvent.VK_P)
-@SVGIcon("images/icons/svg/place.svg")
 public class VisualPlace extends VisualComponent implements DrawableNew {
 	protected static double singleTokenSize = CommonVisualSettings.getSize() / 1.9;
 	protected static double multipleTokenSeparation = CommonVisualSettings.getStrokeWidth() / 8;
@@ -66,8 +60,8 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 		return getPlace().tokens();
 	}
 
-	public VisualPlace(Place place) {
-		super(place);
+	public VisualPlace(Place place, StorageManager storage) {
+		super(place, storage);
 		addPropertyDeclarations();
 	}
 	

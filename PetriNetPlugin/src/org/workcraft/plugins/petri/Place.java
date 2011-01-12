@@ -23,12 +23,17 @@ package org.workcraft.plugins.petri;
 
 import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 
 @VisualClass("org.workcraft.plugins.petri.VisualPlace")
 public class Place extends MathNode {
-	protected Variable<Integer> tokens = new Variable<Integer>(0);
+	public Place(StorageManager storage) {
+		super(storage);
+		tokens = storage.create(0);
+	}
+
+	private final ModifiableExpression<Integer> tokens;
 	
 	public ModifiableExpression<Integer> tokens() {
 		return tokens;

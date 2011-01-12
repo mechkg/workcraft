@@ -22,6 +22,7 @@
 package org.workcraft.dom.math;
 
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
 
 
@@ -30,11 +31,12 @@ public class MathConnection extends MathNode implements Connection {
 	private MathNode first;
 	private MathNode second;
 	
-	public MathConnection () {
+	public MathConnection (StorageManager storage) {
+		super(storage);
 	}
 	
-	public MathConnection (MathNode first, MathNode second) {
-		super();
+	public MathConnection (MathNode first, MathNode second, StorageManager storage) {
+		super(storage);
 		setDependencies(first, second);
 	}
 	

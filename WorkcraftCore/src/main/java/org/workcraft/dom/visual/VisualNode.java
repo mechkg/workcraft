@@ -33,7 +33,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.PopupMenuBuilder.PopupMenuSegment;
 import org.workcraft.gui.actions.ScriptedActionListener;
@@ -44,6 +44,10 @@ import org.workcraft.gui.propertyeditor.PropertySupport;
 
 public abstract class VisualNode implements Properties, Node, Hidable {
 
+	public VisualNode(StorageManager storage) {
+		parent = storage.create(null);
+	}
+	
 	@Override
 	public Expression<? extends Touchable> shape() {
 		return new ExpressionBase<Touchable>() {
@@ -74,7 +78,7 @@ public abstract class VisualNode implements Properties, Node, Hidable {
 		return Expressions.constant(Collections.<Node>emptyList());
 	}
 	
-	private final Variable<Node> parent = new Variable<Node>(null);
+	private final ModifiableExpression<Node> parent;
 	
 	private PopupMenuBuilder popupMenuBuilder = new PopupMenuBuilder();
 	private PropertySupport propertySupport = new PropertySupport();

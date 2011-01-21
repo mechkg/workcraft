@@ -368,6 +368,7 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 	public void createControlPoint(int index, Point2D userLocation) {
 		ControlPoint ap = new ControlPoint(storage);
 		GlobalCache.setValue(ap.position(), userLocation);
+		GlobalCache.setValue(ap.parent(), this);
 		groupImpl.add(index, ap);
 	}
 	

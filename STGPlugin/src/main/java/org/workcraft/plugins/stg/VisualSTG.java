@@ -202,8 +202,8 @@ public class VisualSTG extends AbstractVisualModel {
 		}
 	} 
 
-	public VisualSTG(STG model) {
-		this (model, null, model.storage);
+	public VisualSTG(STG model, StorageManager storage) {
+		this (model, null, storage);
 	}
 
 	public VisualSTG(STG model, VisualGroup root, StorageManager storage) {

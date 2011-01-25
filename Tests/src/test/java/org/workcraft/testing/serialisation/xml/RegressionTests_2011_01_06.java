@@ -94,8 +94,9 @@ public class RegressionTests_2011_01_06 {
 	
 	@Test
 	public void bezierHideUnhideControlPointsTest() throws Exception {
-		STG mat = new STG(new HistoryPreservingStorageManager());
-		VisualSTG visual = new VisualSTG(mat);
+		HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
+		STG mat = new STG(storage);
+		VisualSTG visual = new VisualSTG(mat, storage);
 		DummyTransition t1 = new DummyTransition(new DefaultStorageManager());
 		STGPlace p1 = new STGPlace(new DefaultStorageManager());
 		mat.add(t1);

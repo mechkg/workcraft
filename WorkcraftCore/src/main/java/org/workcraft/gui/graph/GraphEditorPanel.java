@@ -214,14 +214,14 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		eval(visualModel.graphicalContent()).draw(g2d, toolboxPanel.getTool().getDecorator());
 
 		if (hasFocus())
-			toolboxPanel.getTool().drawInUserSpace(this, g2d);
+			toolboxPanel.getTool().drawInUserSpace(g2d);
 
 		g2d.setTransform(screenTransform);
 
 		ruler.draw(g2d);
 
 		if (hasFocus()) {
-			toolboxPanel.getTool().drawInScreenSpace(this, g2d);
+			toolboxPanel.getTool().drawInScreenSpace(g2d);
 			g2d.setTransform(screenTransform);
 
 			g2d.setStroke(borderStroke);

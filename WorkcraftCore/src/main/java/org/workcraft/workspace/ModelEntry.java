@@ -1,5 +1,6 @@
 package org.workcraft.workspace;
 
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.math.MathModel;
@@ -8,11 +9,13 @@ import org.workcraft.dom.visual.VisualModel;
 public class ModelEntry {
 	private final ModelDescriptor descriptor;
 	private Model model;
+	private final StorageManager storage;
 
-	public ModelEntry(ModelDescriptor descriptor, Model model)
+	public ModelEntry(ModelDescriptor descriptor, Model model, StorageManager storage)
 	{
 		this.descriptor = descriptor;
 		this.model = model;
+		this.storage = storage;
 	}
 
 	public ModelDescriptor getDescriptor() {
@@ -43,5 +46,9 @@ public class ModelEntry {
 	
 	public boolean isVisual() {
 		return model instanceof VisualModel;
+	}
+	
+	public StorageManager getStorage() {
+		return storage;
 	}
 }

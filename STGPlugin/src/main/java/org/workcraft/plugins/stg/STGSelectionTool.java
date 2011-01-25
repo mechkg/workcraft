@@ -30,6 +30,10 @@ import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class STGSelectionTool extends SelectionTool
 {
+	public STGSelectionTool(GraphEditor editor) {
+		super(editor);
+	}
+
 	private boolean cancelEdit = false;
 	
 	private void editInPlace (final GraphEditor editor, final VisualComponent t, String initialText) {

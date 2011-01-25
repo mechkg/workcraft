@@ -26,6 +26,7 @@ import org.workcraft.exceptions.FormatException;
 import org.workcraft.exceptions.NotFoundException;
 import org.workcraft.plugins.layout.*;
 
+@SuppressWarnings("all")
 public class DotParser {
 }
 PARSER_END(DotParser)

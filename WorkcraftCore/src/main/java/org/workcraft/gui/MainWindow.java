@@ -89,6 +89,7 @@ import org.workcraft.interop.Exporter;
 import org.workcraft.interop.Importer;
 import org.workcraft.plugins.PluginInfo;
 import org.workcraft.plugins.layout.DotLayout;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.tasks.Task;
 import org.workcraft.util.Export;
 import org.workcraft.util.FileUtils;
@@ -243,7 +244,7 @@ public class MainWindow extends JFrame {
 					JOptionPane.showMessageDialog(MainWindow.this, "A visual model could not be created for the selected model.\n" + "Model \"" 
 							+ descriptor.getDisplayName() +"\" does not have visual model support.", "Error", JOptionPane.ERROR_MESSAGE);
 				
-				visualModel = vmd.create((MathModel)modelEntry.getModel());
+				visualModel = vmd.create((MathModel)modelEntry.getModel(), modelEntry.getStorage());
 				
 				modelEntry.setModel(visualModel);
 
@@ -668,7 +669,9 @@ public class MainWindow extends JFrame {
 		if (dialog.getModalResult() == 1) {
 			ModelDescriptor info = dialog.getSelectedModel();
 			try {
-				MathModel mathModel = info.createMathModel();
+				HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
+				
+				MathModel mathModel = info.createMathModel(storage);
 
 				String name = dialog.getModelTitle();
 
@@ -682,14 +685,14 @@ public class MainWindow extends JFrame {
 						throw new VisualModelInstantiationException("visual model is not defined for \"" + info.getDisplayName() + "\".");
 					
 					
-					VisualModel visualModel = v.create(mathModel);
-					WorkspaceEntry we = framework.getWorkspace().add(path, name, new ModelEntry(info, visualModel), false);
+					VisualModel visualModel = v.create(mathModel, storage);
+					WorkspaceEntry we = framework.getWorkspace().add(path, name, new ModelEntry(info, visualModel, storage), false);
 					if (dialog.openInEditorSelected())
 						createEditorWindow (we);
 					//rootDockingPort.dock(new GraphEditorPane(visualModel), CENTER_REGION);
 					//addView(new GraphEditorPane(visualModel), mathModel.getTitle() + " - " + mathModel.getDisplayName(), DockingManager.NORTH_REGION, 0.8f);
 				} else
-					framework.getWorkspace().add(path, name, new ModelEntry(info, mathModel), false);
+					framework.getWorkspace().add(path, name, new ModelEntry(info, mathModel, storage), false);
 			} catch (VisualModelInstantiationException e) {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(this, "Visual model could not be created: " + e.getMessage() + "\n\nPlease see the Problems window for details.", "Error", JOptionPane.ERROR_MESSAGE);

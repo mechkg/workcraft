@@ -25,6 +25,7 @@ import javax.swing.Icon;
 
 import org.workcraft.NodeFactory;
 import org.workcraft.annotations.Annotations;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.util.GUI;
@@ -37,7 +38,8 @@ public class DefaultNodeGenerator extends AbstractNodeGenerator {
 	private int hk;
 	private Icon icon = null;
 
-	public DefaultNodeGenerator (Class<?> cls) {
+	public DefaultNodeGenerator (Class<?> cls, StorageManager storage) {
+		super(storage);
 		this.cls = cls;
 		this.vcls = Annotations.getVisualClass(cls);
 		this.displayName = Annotations.getDisplayName(vcls);

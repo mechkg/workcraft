@@ -10,6 +10,7 @@ import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
+import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.NodeGenerator;
 import org.workcraft.gui.graph.tools.NodeGeneratorTool;
@@ -95,15 +96,15 @@ public class STGToolsProvider implements CustomToolsProvider {
 	}
 	
 	@Override
-	public Iterable<GraphEditorTool> getTools() {
+	public Iterable<GraphEditorTool> getTools(GraphEditor editor) {
 		ArrayList<GraphEditorTool> result = new ArrayList<GraphEditorTool>();
 		
-		result.add(new STGSelectionTool());
-		result.add(new ConnectionTool());
+		result.add(new STGSelectionTool(editor));
+		result.add(new ConnectionTool(editor));
 		result.add(new NodeGeneratorTool(new PlaceGenerator()));
 		result.add(new NodeGeneratorTool(new SignalTransitionGenerator()));
 		result.add(new NodeGeneratorTool(new DummyTransitionGenerator()));
-		result.add(new STGSimulationTool());
+		result.add(new STGSimulationTool(editor));
 
 		return result;
 	}

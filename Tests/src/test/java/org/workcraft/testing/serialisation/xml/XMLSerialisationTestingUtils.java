@@ -168,14 +168,15 @@ public class XMLSerialisationTestingUtils {
 	
 	public static VisualSTG createTestSTG3() {
 		try {		
-			STG stg = new STG(new HistoryPreservingStorageManager());
+			HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
+			STG stg = new STG(storage);
 
 			SignalTransition t1 = stg.createSignalTransition();
 			SignalTransition t2 = stg.createSignalTransition();
 			SignalTransition t3 = stg.createSignalTransition();
 			SignalTransition t4 = stg.createSignalTransition();
 			
-			VisualSTG visualSTG = new VisualSTG(stg);
+			VisualSTG visualSTG = new VisualSTG(stg, storage);
 			
 			VisualSignalTransition vt1 = new VisualSignalTransition(t1, new DefaultStorageManager());
 			VisualSignalTransition vt2 = new VisualSignalTransition(t2, new DefaultStorageManager());

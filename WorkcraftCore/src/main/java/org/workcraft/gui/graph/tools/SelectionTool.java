@@ -73,24 +73,19 @@ public class SelectionTool extends AbstractTool {
 	
 	private Rectangle2D selectionBox = null;
 	
-	GraphEditor editor;
+	private final GraphEditor editor;
 	
-	@Override
-	public void activated(GraphEditor editor) {
-		this.editor = editor; 
-	}
-
-	@Override
-	public void deactivated(GraphEditor editor) {
+	DefaultAnchorGenerator anchorGenerator = new DefaultAnchorGenerator();
+	
+	public SelectionTool(GraphEditor editor) {
+		this.editor = editor;
 	}
 	
 	@Override
 	public boolean isDragging() {
 		return drag!=DRAG_NONE;
 	}
-	
-	DefaultAnchorGenerator anchorGenerator = new DefaultAnchorGenerator();
-	
+		
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e) {
 
@@ -144,8 +139,6 @@ public class SelectionTool extends AbstractTool {
 			selected.addAll(model.boxHitTest(e.getStartPosition(), e.getPosition()));
 
 			selectionBox = selectionRect(e.getStartPosition(), e.getPosition());
-
-			e.getEditor().repaint();
 		}
 	}
 
@@ -217,7 +210,6 @@ public class SelectionTool extends AbstractTool {
 			
 			if(isDragging()) {
 				cancelDrag(e);
-				e.getEditor().repaint();
 				notClick1 = true;
 				notClick3 = true;
 			}
@@ -242,8 +234,6 @@ public class SelectionTool extends AbstractTool {
 		drag = DRAG_NONE;
 		
 		selected.clear();
-
-		e.getEditor().repaint();
 	}
 	
 
@@ -259,8 +249,6 @@ public class SelectionTool extends AbstractTool {
 			selectionBox = null;
 		}
 		drag = DRAG_NONE;
-
-		e.getEditor().repaint();
 	}
 	
 	@Override
@@ -272,7 +260,6 @@ public class SelectionTool extends AbstractTool {
 	public void keyPressed(GraphEditorKeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_DELETE) {
 			e.getModel().deleteSelection();
-			e.getEditor().repaint();
 		}
 
 		if (!e.isCtrlDown())
@@ -323,11 +310,9 @@ public class SelectionTool extends AbstractTool {
 			switch(e.getKeyCode()){
 			case KeyEvent.VK_G: 
 				e.getModel().groupSelection();
-				e.getEditor().repaint();
 				break;
 			case KeyEvent.VK_U:
 				e.getModel().ungroupSelection();
-				e.getEditor().repaint();
 				break;
 			case KeyEvent.VK_C: 
 				break;
@@ -337,7 +322,6 @@ public class SelectionTool extends AbstractTool {
 				e.getModel().selectNone();
 				//addToSelection(e.getModel(), e.getModel().paste(Toolkit.getDefaultToolkit().getSystemClipboard(), prevPosition));
 				//e.getModel().fireSelectionChanged();
-				e.getEditor().repaint();
 			}
 		}
 	}
@@ -350,7 +334,6 @@ public class SelectionTool extends AbstractTool {
 			if(selectedNode instanceof Container)
 				model.setCurrentLevel((Container)selectedNode);
 		}
-		editor.repaint();
 	}
 
 	protected void currentLevelUp(VisualModel model) {
@@ -361,7 +344,6 @@ public class SelectionTool extends AbstractTool {
 			model.setCurrentLevel(parent);
 			model.addToSelection(level);
 		}
-		editor.repaint();
 	}
 
 	private void offsetSelection(GraphEditorMouseEvent e, double dx, double dy) {
@@ -384,7 +366,8 @@ public class SelectionTool extends AbstractTool {
 		);
 	}
 
-	public void drawInUserSpace(GraphEditor editor, Graphics2D g) {
+	@Override
+	public void drawInUserSpace(Graphics2D g) {
 		if(drag==DRAG_SELECT && selectionBox!=null) {
 			g.setStroke(new BasicStroke((float) editor.getViewport().pixelSizeInUserSpace().getX()));
 			

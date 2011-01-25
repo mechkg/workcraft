@@ -560,7 +560,7 @@ public class Framework {
 			Element visualElement = XmlUtil.getChildElement("visual", metaDoc.getDocumentElement());
 
 			if (visualElement == null)
-				return new ModelEntry(descriptor, mathResult.model);
+				return new ModelEntry(descriptor, mathResult.model, storage);
 
 			//UUID visualFormatUUID = UUID.fromString(visualElement.getAttribute("format-uuid"));
 			InputStream visualData = getUncompressedEntry (visualElement.getAttribute("entry-name"), new ByteArrayInputStream(bufferedInput));
@@ -570,7 +570,7 @@ public class Framework {
 
 			DeserialisationResult visualResult = visualDeserialiser.deserialise(visualData, storage, mathResult.referenceResolver);
 			//visualResult.model.getVisualModel().setMathModel(mathResult.model.getMathModel());
-			return new ModelEntry(descriptor, visualResult.model);
+			return new ModelEntry(descriptor, visualResult.model, storage);
 
 		} catch (IOException e) {
 			throw new DeserialisationException(e);

@@ -27,11 +27,11 @@ import javax.swing.Icon;
 import javax.swing.JPanel;
 
 public interface GraphEditorTool extends GraphEditorKeyListener, GraphEditorMouseListener {
-	public void activated(GraphEditor editor);
-	public void deactivated(GraphEditor editor);
+	public void activated();
+	public void deactivated();
 	
-	public void drawInUserSpace(GraphEditor editor, Graphics2D g);
-	public void drawInScreenSpace(GraphEditor editor, Graphics2D g);
+	public void drawInUserSpace(Graphics2D g);
+	public void drawInScreenSpace(Graphics2D g);
 	
 	public JPanel getInterfacePanel();
 

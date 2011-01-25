@@ -37,16 +37,14 @@ import javax.swing.SwingConstants;
 
 import org.workcraft.annotations.Annotations;
 import org.workcraft.dom.VisualModelDescriptor;
-import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.graph.GraphEditorPanel;
 import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
-import org.workcraft.gui.graph.tools.DefaultNodeGenerator;
+import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
-import org.workcraft.gui.graph.tools.NodeGeneratorTool;
 import org.workcraft.gui.graph.tools.SelectionTool;
 import org.workcraft.gui.graph.tools.ToolProvider;
 import org.workcraft.plugins.shared.CommonVisualSettings;
@@ -165,7 +163,7 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 			if(oldTracker!=null)
 				oldTracker.reset();
 			
-			selectedTool.deactivated(editor);
+			selectedTool.deactivated();
 			buttons.get(selectedTool).setSelected(false);
 		}
 
@@ -173,7 +171,7 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 		if (tracker != null)
 			tracker.track(tool);
 		
-		tool.activated(editor);
+		tool.activated();
 		controlPanel.setTool(tool);
 		buttons.get(tool).setSelected(true);
 		selectedTool = tool;
@@ -185,11 +183,11 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 		addTool(connectionTool, false);
 	}
 
-	private void setToolsForModel (VisualModelDescriptor modelDescriptor, VisualModel model) {
+	private void setToolsForModel (VisualModelDescriptor modelDescriptor, GraphEditor editor) {
 		setLayout(new SimpleFlowLayout (5, 5));
 		
 		try{
-			Iterable<? extends GraphEditorTool> tools = modelDescriptor.createTools();
+			Iterable<? extends GraphEditorTool> tools = modelDescriptor.createTools(editor);
 			for(GraphEditorTool tool : tools)
 				addTool(tool, false);
 			selectTool(tools.iterator().next());
@@ -198,7 +196,7 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 		catch(NotImplementedException e) {
 		}
 		
-		Class<? extends CustomToolsProvider> customTools = Annotations.getCustomToolsProvider(model.getClass());
+		Class<? extends CustomToolsProvider> customTools = Annotations.getCustomToolsProvider(editor.getModel().getClass());
 		if(customTools != null)
 		{
 			boolean selected = true;
@@ -209,7 +207,7 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 				e.printStackTrace();
 			}
 			if(provider != null)
-				for(GraphEditorTool tool : provider.getTools())
+				for(GraphEditorTool tool : provider.getTools(editor))
 				{
 					addTool(tool, selected);
 					selected = false;
@@ -220,12 +218,7 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 			addCommonTools();
 		}
 		
-		for (Class<?> cls : Annotations.getDefaultCreateButtons(model.getClass())) {
-			NodeGeneratorTool tool = new NodeGeneratorTool(new DefaultNodeGenerator(cls));
-			addTool(tool, false);
-		}
-		
-		for (Class<? extends GraphEditorTool>  tool : Annotations.getCustomTools(model.getClass()))
+		for (Class<? extends GraphEditorTool>  tool : Annotations.getCustomTools(editor.getModel().getClass()))
 			try {
 				addTool(tool.newInstance() , false);
 			} catch (InstantiationException e) {
@@ -242,11 +235,11 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 		this.editor = editor;
 		this.setFocusable(false);
 
-		selectionTool = new SelectionTool();
-		connectionTool = new ConnectionTool();
+		selectionTool = new SelectionTool(editor);
+		connectionTool = new ConnectionTool(editor);
 		selectedTool = null;
 
-		setToolsForModel(descriptor, editor.getModel());
+		setToolsForModel(descriptor, editor);
 	}
 
 	public GraphEditorTool getTool() {

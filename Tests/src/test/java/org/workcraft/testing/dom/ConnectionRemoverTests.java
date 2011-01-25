@@ -39,7 +39,8 @@ public class ConnectionRemoverTests {
 	public void removeMany() throws InvalidConnectionException {
 		//PropertyConfigurator.configure("config/logging.properties");
 		
-		STG stg = new STG(new HistoryPreservingStorageManager());
+		HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
+		STG stg = new STG(storage);
 		
 		SignalTransition t1 = stg.createSignalTransition();
 		Place p1 = stg.createPlace();
@@ -52,7 +53,7 @@ public class ConnectionRemoverTests {
 		stg.connect(t2, p1);
 		stg.connect(p1, t1);
 		
-		VisualSTG vstg = new VisualSTG(stg);
+		VisualSTG vstg = new VisualSTG(stg, storage);
 		
 		//System.out.println ("Created VSTG");
 		

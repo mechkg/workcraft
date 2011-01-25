@@ -98,8 +98,9 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 	private Trace savedBranchTrace;
 	private int savedBranchStep = 0;
 	
-	public SimulationTool() {
+	public SimulationTool(GraphEditor editor) {
 		super();
+		this.editor = editor;
 		createInterface();
 	}
 	
@@ -109,6 +110,8 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 	protected int traceStep = 0;
 	
 	private Timer timer = null;
+
+	private final GraphEditor editor;
 	
 	private void applyMarking(Map<Place, Integer> marking)
 	{
@@ -579,13 +582,13 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 	}
 	
 	@Override
-	public void deactivated(GraphEditor editor) 
+	public void deactivated() 
 	{
 		reset();
 	}
 
 	@Override
-	public void activated(GraphEditor editor) 
+	public void activated() 
 	{
 		visualNet = editor.getModel();
 		net = (PetriNetModel)visualNet.getMathModel();
@@ -658,7 +661,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 	}
 	
 	@Override
-	public void drawInScreenSpace(GraphEditor editor, Graphics2D g) {
+	public void drawInScreenSpace(Graphics2D g) {
 		GUI.drawEditorMessage(editor, g, Color.BLACK, "Simulation: click on the highlighted transitions to fire them");
 	}
 

@@ -22,6 +22,7 @@ public class HistoryPreservingStorageManager implements StorageManager {
 		return result;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void restore(Map<ModifiableExpression<?>, Object> values) {
 		for(ModifiableExpression<?> expr : values.keySet()) {
 			((ModifiableExpression<Object>)expr).setValue(values.get(expr));

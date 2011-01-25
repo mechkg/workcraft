@@ -27,6 +27,7 @@ import java.io.InputStream;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.FormatException;
 import org.workcraft.interop.Importer;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.plugins.stg.javacc.generated.DotGParser;
@@ -46,7 +47,7 @@ public class DotGImporter implements Importer {
 
 	@Override
 	public ModelEntry importFrom(InputStream in) throws DeserialisationException {
-		return new ModelEntry(new STGModelDescriptor(), importSTG(in));
+		return new ModelEntry(new STGModelDescriptor(), importSTG(in), new HistoryPreservingStorageManager());
 	}
 
 	public STGModel importSTG(InputStream in) throws DeserialisationException {

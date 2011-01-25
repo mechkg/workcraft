@@ -22,6 +22,7 @@
 package org.workcraft.plugins.petri;
 
 import org.workcraft.annotations.DisplayName;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.visual.AbstractVisualModel;
@@ -37,12 +38,12 @@ import org.workcraft.util.Hierarchy;
 public class VisualPetriNet extends AbstractVisualModel {
 	private PetriNet net;
 	
-	public VisualPetriNet(PetriNet model) throws VisualModelInstantiationException {
-		this (model, null);
+	public VisualPetriNet(PetriNet model, StorageManager storage) throws VisualModelInstantiationException {
+		this (model, null, storage);
 	}
 
-	public VisualPetriNet (PetriNet model, VisualGroup root) {
-		super(model, root);
+	public VisualPetriNet (PetriNet model, VisualGroup root, StorageManager storage) {
+		super(model, root, storage);
 
 		if (root == null)
 			try {
@@ -52,6 +53,10 @@ public class VisualPetriNet extends AbstractVisualModel {
 			}
 			
 		this.net = model;
+	}
+
+	public VisualPetriNet(PetriNet petri) throws VisualModelInstantiationException {
+		this(petri, petri.storage);
 	}
 
 	public void validateConnection(Node first, Node second) throws InvalidConnectionException {
@@ -70,7 +75,7 @@ public class VisualPetriNet extends AbstractVisualModel {
 
 		MathConnection con = (MathConnection) net.connect(c1.getReferencedComponent(), c2.getReferencedComponent());
 
-		VisualConnection ret = new VisualConnection(con, c1, c2);
+		VisualConnection ret = new VisualConnection(con, c1, c2, storage);
 		
 		Hierarchy.getNearestContainer(c1, c2).add(ret);
 	}

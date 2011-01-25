@@ -4,13 +4,14 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.workcraft.plugins.petri.Place;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.SignalTransition;
 
 public class NameManagerTests {
 	@Test
 	public void test1() {
-		STG stg = new STG();
+		STG stg = new STG(new HistoryPreservingStorageManager());
 
 		Place p1 = stg.createPlace();
 		Place p2 = stg.createPlace();

@@ -22,6 +22,7 @@
 package org.workcraft.plugins.serialisation.xml;
 
 import org.w3c.dom.Element;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.connections.Bezier;
 import org.workcraft.dom.visual.connections.BezierControlPoint;
 import org.workcraft.dom.visual.connections.VisualConnection;
@@ -54,7 +55,7 @@ public class BezierDeserialiser implements CustomXMLDeserialiser {
 	public Object createInstance(Element element,
 			ReferenceResolver externalReferenceResolver,
 			Object... constructorParameters) {
-		return new Bezier ((VisualConnection)constructorParameters[0]);
+		return new Bezier ((VisualConnection)constructorParameters[0], (StorageManager)constructorParameters[1]);
 	}
 
 	@Override
@@ -67,8 +68,8 @@ public class BezierDeserialiser implements CustomXMLDeserialiser {
 
 		Bezier bezier = (Bezier)instance;
 		
-		BezierControlPoint cp1 = (BezierControlPoint)nodeInitialiser.initInstance(cp1e, bezier.origin1());
-		BezierControlPoint cp2 = (BezierControlPoint)nodeInitialiser.initInstance(cp2e, bezier.origin2());
+		BezierControlPoint cp1 = (BezierControlPoint)nodeInitialiser.initInstance(cp1e, bezier.origin1(), bezier.storage);
+		BezierControlPoint cp2 = (BezierControlPoint)nodeInitialiser.initInstance(cp2e, bezier.origin2(), bezier.storage);
 
 		bezier.initControlPoints(cp1, cp2);
 	}

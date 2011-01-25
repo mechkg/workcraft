@@ -30,7 +30,9 @@ import org.workcraft.dom.visual.connections.VisualConnection.ConnectionType;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.plugins.petri.VisualPlace;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.DummyTransition;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.STGPlace;
 import org.workcraft.plugins.stg.VisualDummyTransition;
@@ -41,8 +43,8 @@ public class RegressionTests_2011_01_06 {
 	@Test
 	public void bezierDeserialisationInitTest() throws DeserialisationException {
 		
-		VisualConnection conn = new VisualConnection();
-		new Bezier(conn);
+		VisualConnection conn = new VisualConnection(new DefaultStorageManager());
+		new Bezier(conn, new DefaultStorageManager());
 	}
 	
 	class HiddenNode implements Node, DrawableNew, Hidable {
@@ -92,14 +94,14 @@ public class RegressionTests_2011_01_06 {
 	
 	@Test
 	public void bezierHideUnhideControlPointsTest() throws Exception {
-		STG mat = new STG();
+		STG mat = new STG(new HistoryPreservingStorageManager());
 		VisualSTG visual = new VisualSTG(mat);
-		DummyTransition t1 = new DummyTransition();
-		STGPlace p1 = new STGPlace();
+		DummyTransition t1 = new DummyTransition(new DefaultStorageManager());
+		STGPlace p1 = new STGPlace(new DefaultStorageManager());
 		mat.add(t1);
 		mat.add(p1);
-		VisualDummyTransition vt1 = new VisualDummyTransition(t1);
-		VisualPlace vp1 = new VisualPlace(p1);
+		VisualDummyTransition vt1 = new VisualDummyTransition(t1, new DefaultStorageManager());
+		VisualPlace vp1 = new VisualPlace(p1, new DefaultStorageManager());
 		visual.add(vt1);
 		visual.add(vp1);
 		VisualConnection vConn = visual.createConnection(vt1, vp1);

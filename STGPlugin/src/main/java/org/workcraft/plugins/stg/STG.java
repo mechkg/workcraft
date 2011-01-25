@@ -28,8 +28,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.AbstractMathModel;
@@ -55,14 +55,13 @@ import org.workcraft.util.Pair;
 import org.workcraft.util.SetUtils;
 import org.workcraft.util.Triple;
 
-@VisualClass("org.workcraft.plugins.stg.VisualSTG")
 public class STG extends AbstractMathModel implements STGModel {
 	
 	private final STGReferenceManager referenceManager;
 
 	private static class ConstructionInfo {
-		private final HistoryPreservingStorageManager storage;
-		public ConstructionInfo(Container root, References refs, HistoryPreservingStorageManager storage) {
+		private final StorageManager storage;
+		public ConstructionInfo(Container root, References refs, StorageManager storage) {
 			this.storage = storage;
 			if(root == null)
 				this.root = new MathGroup(storage);
@@ -74,15 +73,15 @@ public class STG extends AbstractMathModel implements STGModel {
 		public final Container root; 
 	}
 	
-	public STG(HistoryPreservingStorageManager storage) {
+	public STG(StorageManager storage) {
 		this((Container)null, storage);
 	}
 
-	public STG(Container root, HistoryPreservingStorageManager storage) {
+	public STG(Container root, StorageManager storage) {
 		this (root, null, storage);
 	}
 
-	public STG(Container root, References refs, HistoryPreservingStorageManager storage) {
+	public STG(Container root, References refs, StorageManager storage) {
 		this(new ConstructionInfo(root, refs, storage));
 	}
 	
@@ -100,7 +99,7 @@ public class STG extends AbstractMathModel implements STGModel {
 	}
 
 	final public Transition createTransition() {
-		return createDummyTransition(null);
+		return createDummyTransition();
 	}
 
 	final public SignalTransition createSignalTransition() {
@@ -133,7 +132,7 @@ public class STG extends AbstractMathModel implements STGModel {
 		return newTransition;
 	}
 
-	public final HistoryPreservingStorageManager storage;
+	public final StorageManager storage;
 	
 	final public SignalTransition createSignalTransition(String name) {
 		SignalTransition ret = new SignalTransition(storage);
@@ -333,6 +332,10 @@ public class STG extends AbstractMathModel implements STGModel {
 		super.ensureConsistency();
 		referenceManager.refresh();
 		signalTypeConsistencySupervisor.refresh();
+	}
+
+	public DummyTransition createDummyTransition() {
+		return createDummyTransition(null);
 	}
 
 }

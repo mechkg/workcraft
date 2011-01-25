@@ -34,7 +34,7 @@ public class DotGParser {
 
 	private void init() {
 		signals = new HashMap<String, Type>();
-		stg = new STG();
+		stg = new STG(new org.workcraft.plugins.stg.HistoryPreservingStorageManager());
 		implicitPlaces = new HashMap<Pair<Node, Node>, STGPlace>();
 	}
 	

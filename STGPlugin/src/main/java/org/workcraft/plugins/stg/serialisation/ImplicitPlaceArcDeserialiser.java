@@ -22,6 +22,7 @@
 package org.workcraft.plugins.stg.serialisation;
 
 import org.w3c.dom.Element;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.plugins.stg.STGPlace;
@@ -55,7 +56,7 @@ public class ImplicitPlaceArcDeserialiser implements CustomXMLDeserialiser {
 	public Object createInstance(Element element,
 			ReferenceResolver externalReferenceResolver,
 			Object... constructorParameters) {
-		return new VisualImplicitPlaceArc();
+		return new VisualImplicitPlaceArc((StorageManager)constructorParameters[0]);
 	}
 
 	@Override

@@ -48,6 +48,8 @@ import org.workcraft.plugins.serialisation.xml.StringDeserialiser;
 import org.workcraft.plugins.serialisation.xml.StringSerialiser;
 import org.workcraft.plugins.serialisation.xml.VisualConnectionDeserialiser;
 import org.workcraft.plugins.serialisation.xml.VisualConnectionSerialiser;
+import org.workcraft.plugins.stg.DefaultStorageManager;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.SignalTransition;
 import org.workcraft.plugins.stg.VisualSTG;
@@ -109,7 +111,7 @@ public class XMLSerialisationTestingUtils {
 
 	public static STG createTestSTG1() {
 		try {		
-			STG stg = new STG();
+			STG stg = new STG(new HistoryPreservingStorageManager());
 
 			Place p1 = stg.createPlace();
 			Place p2 = stg.createPlace();
@@ -133,7 +135,7 @@ public class XMLSerialisationTestingUtils {
 	
 	public static STG createTestSTG2() {
 		try {		
-			STG stg = new STG();
+			STG stg = new STG(new HistoryPreservingStorageManager());
 
 			Place p1 = stg.createPlace();
 			Place p2 = stg.createPlace();
@@ -148,10 +150,10 @@ public class XMLSerialisationTestingUtils {
 			stg.connect(t2, p2);
 			stg.connect(p2, t1);
 
-			MathGroup g1 = new MathGroup();
+			MathGroup g1 = new MathGroup(new DefaultStorageManager());
 
-			Place p3 = new Place();
-			SignalTransition t3 = new SignalTransition();
+			Place p3 = new Place(new DefaultStorageManager());
+			SignalTransition t3 = new SignalTransition(new DefaultStorageManager());
 			
 			g1.add(p3); g1.add(t3);
 			
@@ -166,7 +168,7 @@ public class XMLSerialisationTestingUtils {
 	
 	public static VisualSTG createTestSTG3() {
 		try {		
-			STG stg = new STG();
+			STG stg = new STG(new HistoryPreservingStorageManager());
 
 			SignalTransition t1 = stg.createSignalTransition();
 			SignalTransition t2 = stg.createSignalTransition();
@@ -175,10 +177,10 @@ public class XMLSerialisationTestingUtils {
 			
 			VisualSTG visualSTG = new VisualSTG(stg);
 			
-			VisualSignalTransition vt1 = new VisualSignalTransition(t1);
-			VisualSignalTransition vt2 = new VisualSignalTransition(t2);
-			VisualSignalTransition vt3 = new VisualSignalTransition(t3);
-			VisualSignalTransition vt4 = new VisualSignalTransition(t4);
+			VisualSignalTransition vt1 = new VisualSignalTransition(t1, new DefaultStorageManager());
+			VisualSignalTransition vt2 = new VisualSignalTransition(t2, new DefaultStorageManager());
+			VisualSignalTransition vt3 = new VisualSignalTransition(t3, new DefaultStorageManager());
+			VisualSignalTransition vt4 = new VisualSignalTransition(t4, new DefaultStorageManager());
 			
 			visualSTG.add(vt1);visualSTG.add(vt2);visualSTG.add(vt3);visualSTG.add(vt4);
 			

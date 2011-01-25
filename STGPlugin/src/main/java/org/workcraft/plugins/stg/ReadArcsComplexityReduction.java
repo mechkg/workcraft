@@ -1,17 +1,19 @@
 package org.workcraft.plugins.stg;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.assign;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
 import org.workcraft.dom.Connection;
 import org.workcraft.plugins.petri.Place;
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class ReadArcsComplexityReduction {
 
 	public static STG reduce (STG source) {
-		STG net = new STG();
+		STG net = new STG(new HistoryPreservingStorageManager());
 		try
 		{
 			// TODO: doesn't work with multiple instances of the same type  -- unfinished!

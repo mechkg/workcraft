@@ -35,6 +35,7 @@ import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.dom.visual.connections.VisualConnectionProperties;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 public class VisualComponentGroupTests {
 
@@ -80,7 +81,7 @@ public class VisualComponentGroupTests {
 	@Test
 	public void TestHitNode()
 	{
-		VisualGroup group = new VisualGroup();
+		VisualGroup group = new VisualGroup(new DefaultStorageManager());
 		
 		Rectangle2D.Double r1 = new Rectangle2D.Double();
 		Rectangle2D.Double r1_ = new Rectangle2D.Double();
@@ -128,10 +129,11 @@ public class VisualComponentGroupTests {
 	@Test
 	public void TestHitSubGroup()
 	{
-		VisualGroup root = new VisualGroup();
+		DefaultStorageManager storage = new DefaultStorageManager();
+		VisualGroup root = new VisualGroup(storage);
 		
-		VisualGroup node1 = new VisualGroup();
-		VisualGroup node2 = new VisualGroup();
+		VisualGroup node1 = new VisualGroup(storage);
+		VisualGroup node2 = new VisualGroup(storage);
 		root.add(node1);
 		root.add((VisualNode)node2);
 		node1.add(getSquareNode(node1, 0, 0));
@@ -143,15 +145,16 @@ public class VisualComponentGroupTests {
 	@Test
 	public void TestUngroup()
 	{
-		VisualGroup root = new VisualGroup();
+		DefaultStorageManager storage = new DefaultStorageManager();
+		VisualGroup root = new VisualGroup(storage);
 		
-		VisualGroup node1 = new VisualGroup();
+		VisualGroup node1 = new VisualGroup(storage);
 		root.add(node1);
 		
 		node1.x().setValue(10.0);
 		node1.y().setValue(15.0);
 		
-		VisualGroup node2 = new VisualGroup();
+		VisualGroup node2 = new VisualGroup(storage);
 		node1.add(node2);
 		
 		SquareNode sq1 = getSquareNode(node1, 0, 0);

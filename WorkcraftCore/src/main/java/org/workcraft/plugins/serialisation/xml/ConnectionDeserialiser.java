@@ -22,6 +22,7 @@
 package org.workcraft.plugins.serialisation.xml;
 
 import org.w3c.dom.Element;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.exceptions.DeserialisationException;
@@ -52,7 +53,7 @@ public class ConnectionDeserialiser implements CustomXMLDeserialiser {
 	public Object createInstance(Element element,
 			ReferenceResolver externalReferenceResolver,
 			Object... constructorParameters) {
-		return new MathConnection();
+		return new MathConnection((StorageManager)constructorParameters[0]);
 	}
 
 	@Override

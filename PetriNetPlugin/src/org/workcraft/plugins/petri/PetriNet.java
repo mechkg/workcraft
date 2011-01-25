@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
@@ -44,27 +45,28 @@ import org.workcraft.serialisation.References;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
 
-@VisualClass ("org.workcraft.plugins.petri.VisualPetriNet")
 public class PetriNet extends AbstractMathModel implements PetriNetModel {
 	
 	
 	final UniqueNameReferenceManager names;
+	public final StorageManager storage;
 
-	public PetriNet() {
-		this(null, null);
+	public PetriNet(StorageManager storage) {
+		this(null, null, storage);
 	}
 
-	public PetriNet(Container root) {
-		this(root, null);
+	public PetriNet(Container root, StorageManager storage) {
+		this(root, null, storage);
 	}
 
-	public PetriNet(Container root, References refs) {
-		this(new ConstructionParameters(root, refs));
+	public PetriNet(Container root, References refs, StorageManager storage) {
+		this(new ConstructionParameters(root, refs, storage));
 	}
 	
 	static class ConstructionParameters {
-		public ConstructionParameters(Container root, References refs) {
-			this.root = (root == null) ? new MathGroup() : root;
+		public ConstructionParameters(Container root, References refs, StorageManager storage) {
+			this.storage = storage;
+			this.root = (root == null) ? new MathGroup(storage) : root;
 			this.referenceManager = new UniqueNameReferenceManager(this.root, refs, new Func<Node, String>() {
 				@Override
 				public String eval(Node arg) {
@@ -79,14 +81,16 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 			});
 		}
 		
-		final Container root;
-		final UniqueNameReferenceManager referenceManager;
+		public final StorageManager storage;
+		public final Container root;
+		public final UniqueNameReferenceManager referenceManager;
 	}
 	
 	
 	protected PetriNet(ConstructionParameters construction) {
 		super(construction.root, construction.referenceManager);
 		names = construction.referenceManager;
+		this.storage = construction.storage;
 	}
 
 	public void validate() throws ModelValidationException {
@@ -101,7 +105,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 	}
 
 	final public Place createPlace(String name) {
-		Place newPlace = new Place();
+		Place newPlace = new Place(storage);
 		if (name!=null)
 			setName(newPlace, name);
 		getRoot().add(newPlace);
@@ -110,7 +114,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 	}
 
 	final public Transition createDummyTransition(String name) {
-		Transition newTransition = new Transition();
+		Transition newTransition = new Transition(storage);
 		if (name!=null)
 			setName(newTransition, name);
 		getRoot().add(newTransition);
@@ -225,7 +229,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 			throw new InvalidConnectionException ("Connections between transitions are not valid");
 		
 		
-		MathConnection con = new MathConnection((MathNode)first, (MathNode)second);
+		MathConnection con = new MathConnection((MathNode)first, (MathNode)second, storage);
 		
 		Hierarchy.getNearestContainer(first, second).add(con);
 		ensureConsistency();

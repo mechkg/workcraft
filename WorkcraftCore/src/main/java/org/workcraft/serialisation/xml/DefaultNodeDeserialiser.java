@@ -30,6 +30,7 @@ import java.util.List;
 import org.w3c.dom.Element;
 import org.workcraft.annotations.Annotations;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.serialisation.ReferenceResolver;
@@ -102,7 +103,7 @@ class DefaultNodeDeserialiser {
 		}
 	}
 
-	public Object initInstance (Element element, ReferenceResolver externalReferenceResolver, Object ... constructorParameters) throws DeserialisationException {
+	public Object initInstance (Element element, ReferenceResolver externalReferenceResolver, StorageManager storage, Object ... constructorParameters) throws DeserialisationException {
 		String className = element.getAttribute("class");
 
 		if (className == null || className.isEmpty())
@@ -134,34 +135,27 @@ class DefaultNodeDeserialiser {
 				// a sub-node to be deserialised which should know how to construct this class and pass
 				// the proper constructor arguments
 				
-				if (constructorParameters.length != 0) {
+				// FIXME: brain-dead check 
+				// Let's see if it is a dependent node.
+				if (constructorParameters.length == 1 && DependentNode.class.isAssignableFrom(cls))  {
+					// Check for the simple case when there is only one reference to the underlying model.
+					String ref = currentLevelElement.getAttribute("ref");
+					if (ref.isEmpty())
+						// Bad luck, we probably can't do anything.
+						// But let's try a default constructor just in case.
+						instance = ConstructorParametersMatcher.construct(cls, storage);
+					else {
+						// Hooray, we've got a reference, so there is likely an appropriate constructor.
+						Object refObject = externalReferenceResolver.getObject(ref);
+						instance = ConstructorParametersMatcher.construct(cls, refObject, storage);
+					}
+				}
+				else {
 					Class<?>[] parameterTypes = new Class<?>[constructorParameters.length];
 					for (int i=0; i<constructorParameters.length; i++)
 						parameterTypes[i] = constructorParameters[i].getClass();
 					Constructor<?> ctor = new ConstructorParametersMatcher().match(Class.forName(className), parameterTypes);
 					instance = ctor.newInstance(constructorParameters);
-				}
-				else {
-					// Still don't know how to deserialise the class.
-					// Let's see if it is a dependent node.
-					
-					if (DependentNode.class.isAssignableFrom(cls)) {
-						// Check for the simple case when there is only one reference to the underlying model.
-						String ref = currentLevelElement.getAttribute("ref");
-						if (ref.isEmpty())
-							// Bad luck, we probably can't do anything.
-							// But let's try a default constructor just in case.
-							instance = cls.newInstance();
-						else {
-							// Hooray, we've got a reference, so there is likely an appropriate constructor.
-							Object refObject = externalReferenceResolver.getObject(ref);
-							Constructor<?> ctor = new ConstructorParametersMatcher().match(cls, refObject.getClass());
-							instance = ctor.newInstance(refObject);
-						}
-					} else {
-						// It is not a dependent node, so there should be a default constructor.
-						instance = cls.newInstance();
-					}
 				}
 			}
 			

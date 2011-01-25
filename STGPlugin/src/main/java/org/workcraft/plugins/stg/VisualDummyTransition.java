@@ -44,9 +44,6 @@ import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.petri.VisualTransition;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
-@Hotkey(KeyEvent.VK_D)
-@DisplayName("Dummy Transition")
-@SVGIcon("images/icons/svg/transition.svg")
 public class VisualDummyTransition extends VisualTransition {
 	private static Font font = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.75f);
 	

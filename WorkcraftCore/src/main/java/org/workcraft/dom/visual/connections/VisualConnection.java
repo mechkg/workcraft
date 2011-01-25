@@ -1,6 +1,5 @@
 /*
-*
-Copyright 2008,2009 Newcastle University
+* Copyright 2008,2009 Newcastle University
 *
 * This file is part of Workcraft.
 * 
@@ -165,7 +164,7 @@ public class VisualConnection extends VisualNode implements
 	private CachedHashSet<Node> children;
 	private ExpressionBase<Touchable> transformedShape1;
 	private ExpressionBase<Touchable> transformedShape2;
-	private final StorageManager storage;
+	public final StorageManager storage;
 	
 	protected void initialise() {
 		children = new CachedHashSet<Node>(storage);

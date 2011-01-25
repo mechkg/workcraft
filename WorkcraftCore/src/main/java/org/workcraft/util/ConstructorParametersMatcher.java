@@ -26,6 +26,20 @@ import java.util.ArrayList;
 
 public class ConstructorParametersMatcher
 {
+	public static <T> T construct(Class<T> cls, Object... parameters) throws NoSuchMethodException {
+		try {
+			Class<?>[] parameterTypes = new Class<?>[parameters.length];
+			for(int i=0;i<parameters.length;i++)
+				parameterTypes[i] = parameters[i].getClass();
+			return new ConstructorParametersMatcher().match(cls, parameterTypes).newInstance((Object[])parameters);
+		}
+		catch (NoSuchMethodException e) {
+			throw e;
+		}catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	private static class ConstructorInfo<T> implements MethodParametersMatcher.MethodInfo
 	{
 		public ConstructorInfo (Constructor<? extends T> constructor)

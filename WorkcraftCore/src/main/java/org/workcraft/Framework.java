@@ -63,6 +63,7 @@ import org.workcraft.gui.propertyeditor.SettingsPage;
 import org.workcraft.plugins.PluginInfo;
 import org.workcraft.plugins.serialisation.XMLModelDeserialiser;
 import org.workcraft.plugins.serialisation.XMLModelSerialiser;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.serialisation.DeserialisationResult;
 import org.workcraft.serialisation.ModelDeserialiser;
 import org.workcraft.serialisation.ModelSerialiser;
@@ -532,6 +533,8 @@ public class Framework {
 			
 			metadata.close();
 			
+			HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager(); 
+			
 			Element descriptorElement = XmlUtil.getChildElement("descriptor", metaDoc.getDocumentElement());
 			
 			String descriptorClass = XmlUtil.readStringAttr(descriptorElement, "class");
@@ -548,7 +551,7 @@ public class Framework {
 
 			ModelDeserialiser mathDeserialiser = new XMLModelDeserialiser(getPluginManager()); //pluginManager.getSingleton(XMLDeserialiser.class);
 
-			DeserialisationResult mathResult = mathDeserialiser.deserialise(mathData, null);
+			DeserialisationResult mathResult = mathDeserialiser.deserialise(mathData, storage, null);
 
 			mathData.close();
 
@@ -565,7 +568,7 @@ public class Framework {
 			//TODO:get proper deserialiser
 			XMLModelDeserialiser visualDeserialiser = new XMLModelDeserialiser(getPluginManager());//pluginManager.getSingleton(XMLDeserialiser.class);
 
-			DeserialisationResult visualResult = visualDeserialiser.deserialise(visualData, mathResult.referenceResolver);
+			DeserialisationResult visualResult = visualDeserialiser.deserialise(visualData, storage, mathResult.referenceResolver);
 			//visualResult.model.getVisualModel().setMathModel(mathResult.model.getMathModel());
 			return new ModelEntry(descriptor, visualResult.model);
 

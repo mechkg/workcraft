@@ -26,7 +26,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 
-@VisualClass("org.workcraft.plugins.petri.VisualPlace")
+@VisualClass(org.workcraft.plugins.petri.VisualPlace.class)
 public class Place extends MathNode {
 	public Place(StorageManager storage) {
 		super(storage);

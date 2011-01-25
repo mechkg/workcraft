@@ -62,7 +62,7 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 	private final ModifiableExpression<BezierControlPoint> cp1;
 	private final ModifiableExpression<BezierControlPoint> cp2;
 	private final ControlPointScaler scaler;
-	private final StorageManager storage;
+	public final StorageManager storage;
 	
 	@Override
 	public ControlPointScaler scaler() {

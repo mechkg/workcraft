@@ -1,13 +1,11 @@
 package org.workcraft.plugins.stg;
 
-import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.plugins.petri.Place;
 
-@VisualClass("org.workcraft.plugins.petri.VisualPlace")
-@DisplayName("Place")
+@VisualClass(org.workcraft.plugins.petri.VisualPlace.class)
 public class STGPlace extends Place {
 	
 	public STGPlace(StorageManager storage) {

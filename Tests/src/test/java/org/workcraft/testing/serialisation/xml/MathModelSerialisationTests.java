@@ -34,6 +34,7 @@ import org.workcraft.exceptions.PluginInstantiationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.plugins.serialisation.XMLModelDeserialiser;
 import org.workcraft.plugins.serialisation.XMLModelSerialiser;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.testing.serialisation.SerialisationTestingUtils;
 import org.workcraft.util.DataAccumulator;
@@ -60,7 +61,7 @@ public class MathModelSerialisationTests {
 			// deserialise
 			XMLModelDeserialiser deserisaliser = new XMLModelDeserialiser(mock);
 
-			STG stg2 = (STG)deserisaliser.deserialise(accum.getInputStream(), null).model;
+			STG stg2 = (STG)deserisaliser.deserialise(accum.getInputStream(), new DefaultStorageManager(), null).model;
 
 			compareMathModels(stg, stg2);
 		} catch (SerialisationException e) {

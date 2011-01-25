@@ -27,6 +27,7 @@ import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.plugins.petri.PetriNet;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.Transition;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 import static org.junit.Assert.*;
 
@@ -34,7 +35,7 @@ public class DOMTests {
 	
 	@Test
 	public void Test1 () throws InvalidConnectionException {
-		PetriNet pn = new PetriNet();
+		PetriNet pn = new PetriNet(new DefaultStorageManager());
 		
 		Place p1 = pn.createPlace();
 		Place p2 = pn.createPlace();

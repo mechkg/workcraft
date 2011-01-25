@@ -145,10 +145,6 @@ public class STGSelectionTool extends SelectionTool
 	@Override
 	public void keyPressed(GraphEditorKeyEvent e) {
 		super.keyPressed(e);
-		if(e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_S)
-			((VisualSTG)e.getModel()).storage.dosave();
-		if(e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_R)
-			((VisualSTG)e.getModel()).storage.dorestore();
 	}
 
 	private JPopupMenu createPopupMenu(VisualNode node) {

@@ -29,6 +29,7 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.plugins.petri.Place;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.SignalTransition;
 import org.workcraft.plugins.stg.VisualSTG;
@@ -38,7 +39,7 @@ public class ConnectionRemoverTests {
 	public void removeMany() throws InvalidConnectionException {
 		//PropertyConfigurator.configure("config/logging.properties");
 		
-		STG stg = new STG();
+		STG stg = new STG(new HistoryPreservingStorageManager());
 		
 		SignalTransition t1 = stg.createSignalTransition();
 		Place p1 = stg.createPlace();

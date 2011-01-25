@@ -22,6 +22,7 @@
 package org.workcraft.plugins.serialisation.xml;
 
 import org.w3c.dom.Element;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.connections.ConnectionGraphic;
@@ -61,13 +62,13 @@ public class VisualConnectionDeserialiser implements CustomXMLDeserialiser {
 	public Object createInstance(Element element,
 			ReferenceResolver externalReferenceResolver,
 			Object... constructorParameters) {
-		return new VisualConnection();
+		return new VisualConnection((StorageManager)constructorParameters[0]);
 	}
 
 	@Override
 	public void initInstance(Element element, Object instance,
 			ReferenceResolver externalReferenceResolver,
 			NodeInitialiser nodeInitialiser) throws DeserialisationException {
-		nodeInitialiser.initInstance(XmlUtil.getChildElement("graphic", element), (VisualConnection)instance);
+		nodeInitialiser.initInstance(XmlUtil.getChildElement("graphic", element), (VisualConnection)instance, ((VisualConnection)instance).storage);
 	}
 }

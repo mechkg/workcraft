@@ -113,11 +113,11 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 
 				// Will create incomplete instance, setConnection() needs to be called later to finalise.
 				// This is to avoid cross-reference problems.
-				VisualConnection visualConnection = NodeFactory.createVisualConnection(connection);
+				VisualConnection visualConnection = NodeFactory.createVisualConnection(connection, storage);
 				createdConnections.put(visualConnection, connection);
 			} else {
 				MathNode node = (MathNode)n;
-				VisualComponent visualComponent = (VisualComponent)NodeFactory.createVisualComponent(node);
+				VisualComponent visualComponent = (VisualComponent)NodeFactory.createVisualComponent(node, storage);
 
 				if (visualComponent != null) {
 					getRoot().add(visualComponent);
@@ -280,7 +280,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		if (vg!=null) select(vg);
 	}
 	
-	final StorageManager storage;
+	protected final StorageManager storage;
 	
 	public VisualGroup groupCollection(Collection<Node> selected) {
 

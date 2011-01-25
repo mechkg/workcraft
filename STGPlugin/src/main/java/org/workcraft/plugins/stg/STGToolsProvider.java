@@ -69,6 +69,31 @@ public class STGToolsProvider implements CustomToolsProvider {
 		}
 	}
 	
+	private final static class DummyTransitionGenerator implements NodeGenerator {
+		Icon icon = GUI.createIconFromSVG("images/icons/svg/transition.svg");
+
+		@Override
+		public Icon getIcon() {
+			return icon;
+		}
+
+		@Override
+		public String getLabel() {
+			return "Dummy Transition";
+		}
+
+		@Override
+		public void generate(VisualModel model, Point2D where) throws NodeCreationException {
+			VisualDummyTransition transition = ((VisualSTG)model).createDummyTransition();
+			transition.position().setValue(where);
+		}
+
+		@Override
+		public int getHotKeyCode() {
+			return KeyEvent.VK_D;
+		}
+	}
+	
 	@Override
 	public Iterable<GraphEditorTool> getTools() {
 		ArrayList<GraphEditorTool> result = new ArrayList<GraphEditorTool>();
@@ -77,7 +102,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 		result.add(new ConnectionTool());
 		result.add(new NodeGeneratorTool(new PlaceGenerator()));
 		result.add(new NodeGeneratorTool(new SignalTransitionGenerator()));
-		// todo: DummyTransitionGenerator
+		result.add(new NodeGeneratorTool(new DummyTransitionGenerator()));
 		result.add(new STGSimulationTool());
 
 		return result;

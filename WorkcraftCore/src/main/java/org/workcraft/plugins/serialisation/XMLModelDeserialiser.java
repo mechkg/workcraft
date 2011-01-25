@@ -30,6 +30,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.workcraft.PluginProvider;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
 import org.workcraft.exceptions.DeserialisationException;
@@ -48,18 +49,18 @@ public class XMLModelDeserialiser implements ModelDeserialiser {
 		deserialisation.processPlugins(mock);
 	}
 
-	public DeserialisationResult deserialise(InputStream inputStream,
+	public DeserialisationResult deserialise(InputStream inputStream, StorageManager storage,
 			ReferenceResolver externalReferenceResolver)
 	throws DeserialisationException {
 		try {
 			Document doc = XmlUtil.loadDocument(inputStream);
 			Element modelElement = doc.getDocumentElement();
 			
-			deserialisation.begin(externalReferenceResolver);
+			deserialisation.begin(externalReferenceResolver, storage);
 
 			// 1st pass -- init instances
 			Element rootElement = XmlUtil.getChildElement("root", modelElement);
-			Node root = (Node) deserialisation.initInstance(rootElement);
+			Node root = (Node) deserialisation.initInstance(rootElement, storage);
 
 			// 2nd pass -- finalise instances
 			deserialisation.finaliseInstances();

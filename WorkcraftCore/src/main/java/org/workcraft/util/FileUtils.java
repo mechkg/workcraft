@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +36,8 @@ import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class FileUtils{
 	public static void copyFile(File in, File out)  throws IOException 
@@ -199,5 +202,23 @@ public class FileUtils{
 					stream.close();
 			}
 		}
+	}
+
+	public static Collection<String> readAllLines(File file) throws IOException {
+		FileReader fileReader = new FileReader(file);
+		
+		Collection<String> result = new ArrayList<String>();
+		
+		try {
+			BufferedReader reader = new BufferedReader(fileReader);
+			String line;
+			while((line = reader.readLine()) != null)
+				result.add(line);
+		}
+		finally {
+			fileReader.close();
+		}
+		
+		return result;
 	}
 }

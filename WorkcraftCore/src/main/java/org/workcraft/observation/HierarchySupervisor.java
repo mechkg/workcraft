@@ -35,6 +35,9 @@ import org.workcraft.dependencymanager.advanced.user.AutoRefreshExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.util.Null;
 
+import pcollections.HashTreePMap;
+import pcollections.PMap;
+
 public abstract class HierarchySupervisor {
 	
 	public HierarchySupervisor(Node root) {
@@ -57,7 +60,7 @@ public abstract class HierarchySupervisor {
 	private SupervisingNode rootSupervisor;
 	
 	class SupervisingNode extends ExpressionBase<Null> {
-		Map<Node, SupervisingNode> latest = new HashMap<Node, SupervisingNode>();
+		Map<Node, SupervisingNode> latest = HashTreePMap.empty();
 		final Node node;
 
 		public SupervisingNode(Node node) {

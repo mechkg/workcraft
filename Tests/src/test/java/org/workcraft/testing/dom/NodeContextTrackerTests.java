@@ -21,6 +21,9 @@
 
 package org.workcraft.testing.dom;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Set;
 
 import org.junit.Test;
@@ -29,27 +32,31 @@ import org.workcraft.dom.NodeContextTracker;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
-
-import static org.junit.Assert.*;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 
 public class NodeContextTrackerTests {
 	class MockNode extends MathNode {
 
+		public MockNode() {
+			super(new DefaultStorageManager());
+		}
+
 	}
 
 	@Test
 	public void TestInit() {
-		MathGroup group = new MathGroup();
+		DefaultStorageManager storage = new DefaultStorageManager();
+		MathGroup group = new MathGroup(storage);
 		
 		MockNode n1 = new MockNode();
 		MockNode n2 = new MockNode();
 		MockNode n3 = new MockNode();
 		MockNode n4 = new MockNode();
 
-		MathConnection con1 = new MathConnection(n1, n3);
-		MathConnection con2 = new MathConnection(n2, n3);
-		MathConnection con3 = new MathConnection(n3, n4);
+		MathConnection con1 = new MathConnection(n1, n3, storage);
+		MathConnection con2 = new MathConnection(n2, n3, storage);
+		MathConnection con3 = new MathConnection(n3, n4, storage);
 
 		group.add(con1);
 		group.add(con2);
@@ -84,7 +91,7 @@ public class NodeContextTrackerTests {
 
 	@Test
 	public void TestAddRemove1() {
-		MathGroup group = new MathGroup();
+		MathGroup group = new MathGroup(new DefaultStorageManager());
 		
 		NodeContextTracker nct = new NodeContextTracker(group);
 		
@@ -94,9 +101,9 @@ public class NodeContextTrackerTests {
 		MockNode n3 = new MockNode();
 		MockNode n4 = new MockNode();
 
-		MathConnection con1 = new MathConnection(n1, n3);
-		MathConnection con2 = new MathConnection(n2, n3);
-		MathConnection con3 = new MathConnection(n3, n4);
+		MathConnection con1 = new MathConnection(n1, n3, new DefaultStorageManager());
+		MathConnection con2 = new MathConnection(n2, n3, new DefaultStorageManager());
+		MathConnection con3 = new MathConnection(n3, n4, new DefaultStorageManager());
 
 		group.add(con1);
 		group.add(con2);
@@ -155,7 +162,7 @@ public class NodeContextTrackerTests {
 
 	@Test
 	public void TestAddRemove2() {
-		MathGroup group = new MathGroup();
+		MathGroup group = new MathGroup(new DefaultStorageManager());
 		
 		NodeContextTracker nct = new NodeContextTracker(group);
 		
@@ -165,9 +172,9 @@ public class NodeContextTrackerTests {
 		MockNode n3 = new MockNode();
 		MockNode n4 = new MockNode();
 
-		MathConnection con1 = new MathConnection(n1, n3);
-		MathConnection con2 = new MathConnection(n2, n3);
-		MathConnection con3 = new MathConnection(n3, n4);
+		MathConnection con1 = new MathConnection(n1, n3, new DefaultStorageManager());
+		MathConnection con2 = new MathConnection(n2, n3, new DefaultStorageManager());
+		MathConnection con3 = new MathConnection(n3, n4, new DefaultStorageManager());
 
 		group.add(con1);
 		group.add(con2);

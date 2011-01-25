@@ -25,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.VisualComponentGeneratorAttribute;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
@@ -36,7 +37,7 @@ import org.workcraft.util.ConstructorParametersMatcher;
 
 public class NodeFactory {
 
-	public static VisualConnection createVisualConnection (MathConnection connection)
+	public static VisualConnection createVisualConnection (MathConnection connection, StorageManager storage)
 	throws NodeCreationException {
 
 		// Find the corresponding visual class
@@ -47,24 +48,14 @@ public class NodeFactory {
 			return null;
 
 		try {
-			Class<?> visualClass = Class.forName(vcat.value());
-			Constructor<?> ctor = visualClass.getConstructor();
-			VisualConnection visual = (VisualConnection)ctor.newInstance();
-			return visual;
+			Class<? extends VisualConnection> visualClass = vcat.value().asSubclass(VisualConnection.class);
+			return ConstructorParametersMatcher.construct(visualClass, storage);
 
-		} catch (ClassNotFoundException e) {
-			throw new NodeCreationException (e);
 		} catch (SecurityException e) {
 			throw new NodeCreationException (e);
 		} catch (NoSuchMethodException e) {
 			throw new NodeCreationException (e);
 		} catch (IllegalArgumentException e) {
-			throw new NodeCreationException (e);
-		} catch (InstantiationException e) {
-			throw new NodeCreationException (e);
-		} catch (IllegalAccessException e) {
-			throw new NodeCreationException (e);
-		} catch (InvocationTargetException e) {
 			throw new NodeCreationException (e);
 		}
 	}
@@ -98,9 +89,9 @@ public class NodeFactory {
 		}
 	}
 
-	public static VisualNode createVisualComponent (MathNode component) throws NodeCreationException
+	public static VisualNode createVisualComponent (MathNode component, StorageManager storage) throws NodeCreationException
 	{
-		return createVisualComponentInternal(component);
+		return createVisualComponentInternal(component, storage);
 	}
 
 	public static VisualNode createVisualComponentInternal (MathNode component, Object ... constructorParameters) throws NodeCreationException {
@@ -113,8 +104,8 @@ public class NodeFactory {
 			} catch (Exception e) {
 				throw new NodeCreationException (e);
 			}
-			else
-				return createVisualComponentSimple(component, constructorParameters);
+		else
+			return createVisualComponentSimple(component, constructorParameters);
 	}
 
 	private static VisualComponent createVisualComponentSimple (MathNode component, Object ... constructorParameters) throws NodeCreationException {
@@ -122,38 +113,28 @@ public class NodeFactory {
 		VisualClass vcat = component.getClass().getAnnotation(VisualClass.class);
 
 		// The component/connection does not define a visual representation
-		if (vcat == null)
+		if (vcat == null) {
+			System.out.println(component + "bad");
 			return null;
+		}
 
 		try {
-			Class<?> visualClass = Class.forName(vcat.value());
+			Class<? extends VisualComponent> visualClass = vcat.value().asSubclass(VisualComponent.class);
 
 			Object [] args = new Object[constructorParameters.length+1];
 			args[0] = component;
 			for(int i=0;i<constructorParameters.length;i++)
 				args[i+1] = constructorParameters[i];
 
-			Class <?> [] types = new Class <?> [args.length];
-			for(int i=0;i<args.length;i++)
-				types[i] = args[i].getClass();
-
-			Constructor<?> ctor = new ConstructorParametersMatcher().match(visualClass, types);
-			VisualComponent visual = (VisualComponent) ctor.newInstance(args);
+			VisualComponent visual = ConstructorParametersMatcher.construct(visualClass, args);
+			
 			return visual;
 
-		} catch (ClassNotFoundException e) {
-			throw new NodeCreationException (e);
 		} catch (SecurityException e) {
 			throw new NodeCreationException (e);
 		} catch (NoSuchMethodException e) {
 			throw new NodeCreationException (e);
 		} catch (IllegalArgumentException e) {
-			throw new NodeCreationException (e);
-		} catch (InstantiationException e) {
-			throw new NodeCreationException (e);
-		} catch (IllegalAccessException e) {
-			throw new NodeCreationException (e);
-		} catch (InvocationTargetException e) {
 			throw new NodeCreationException (e);
 		}
 	}

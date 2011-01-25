@@ -26,8 +26,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.workcraft.dom.Node;
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface VisualClass {
-	String value();
+	Class<? extends Node> value();
 }

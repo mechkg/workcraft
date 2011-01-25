@@ -14,7 +14,7 @@ public class Expressions {
 		};
 	}
 	
-	public static ExpressionBase<Integer> sum(final ExpressionBase<Integer> a, final ExpressionBase<Integer> b) {
+	public static Expression<Integer> sum(final Expression<Integer> a, final Expression<Integer> b) {
 		return new ExpressionBase<Integer>() {
 			@Override
 			public Integer evaluate(EvaluationContext resolver) {
@@ -23,7 +23,7 @@ public class Expressions {
 
 		};
 	}
-	public static ExpressionBase<Integer> size(final ExpressionBase<? extends Collection<?>> collection) {
+	public static Expression<Integer> size(final Expression<? extends Collection<?>> collection) {
 		return new ExpressionBase<Integer>() {
 			@Override
 			public Integer evaluate(EvaluationContext resolver) {
@@ -32,7 +32,7 @@ public class Expressions {
 		};
 	}
 	
-	public static <T> ExpressionBase<T> unfold(Expression<? extends Expression<? extends T>> indirect) {
+	public static <T> Expression<T> unfold(Expression<? extends Expression<? extends T>> indirect) {
 		return new Unfold<T>(indirect);
 	}
 }

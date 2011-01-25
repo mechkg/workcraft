@@ -29,12 +29,13 @@ import org.junit.Test;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.VisualPlace;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 public class VisualPlaceTests {
 	@Test
 	public void TestHitTest() {
-		Place p = new Place();
-		VisualPlace vp = new VisualPlace(p);
+		Place p = new Place(new DefaultStorageManager());
+		VisualPlace vp = new VisualPlace(p, new DefaultStorageManager());
 		
 		Assert.assertTrue(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(0,0)));
 		Assert.assertFalse(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(5,5)));

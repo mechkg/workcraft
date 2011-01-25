@@ -65,11 +65,6 @@ public abstract class AbstractNodeGenerator implements NodeGenerator {
 	public Icon getIcon() {
 		return null;
 	}
-
-	@Override
-	public String getText() {
-		return "Click to create a " + getLabel();
-	}
 	
 	@Override
 	public int getHotKeyCode() {

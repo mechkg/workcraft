@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.w3c.dom.Element;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.serialisation.ReferenceResolver;
@@ -43,8 +44,11 @@ class XMLDeserialiserState implements References {
 	HashMap<Object, Element> instanceElements = new HashMap<Object, Element>();
 	ListMap<Container, Node> children = new ListMap<Container, Node>();
 	
-	public XMLDeserialiserState(ReferenceResolver externalReferences) {
+	public final StorageManager storage;
+	
+	public XMLDeserialiserState(ReferenceResolver externalReferences, StorageManager storage) {
 		this.externalReferences = externalReferences;
+		this.storage = storage;
 	}
 	
 	public void addChildNode (Container parent, Node child) {

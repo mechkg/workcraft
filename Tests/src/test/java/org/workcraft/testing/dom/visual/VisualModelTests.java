@@ -47,19 +47,20 @@ import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 public class VisualModelTests {
 
 	private class MockMathModel extends AbstractModel implements MathModel{
 		public MockMathModel() {
-			super(new MathGroup());
+			super(new MathGroup(new DefaultStorageManager()));
 		}
 	}
 	
 	private class MockConcreteVisualModel extends AbstractVisualModel {
 
 		public MockConcreteVisualModel() {
-			super(new MockMathModel());			
+			super(new MockMathModel(), new DefaultStorageManager());			
 		}
 
 		@Override
@@ -78,7 +79,7 @@ public class VisualModelTests {
 			throws VisualModelInstantiationException {
 		VisualModel model = new MockConcreteVisualModel();
 
-		model.getCurrentLevel().add(new VisualGroup());
+		model.getCurrentLevel().add(new VisualGroup(new DefaultStorageManager()));
 
 		VisualNode[] old = eval(model.getCurrentLevel().children()).toArray(new VisualNode[0]);
 		Assert.assertEquals(1, old.length);
@@ -175,10 +176,11 @@ public class VisualModelTests {
 		VisualModel model = createModel();
 
 		Container root = model.getCurrentLevel();
-		VisualGroup node1 = new VisualGroup();
-		VisualGroup node2 = new VisualGroup();
-		VisualGroup node3 = new VisualGroup();
-		VisualGroup node4 = new VisualGroup();
+		DefaultStorageManager storage = new DefaultStorageManager();
+		VisualGroup node1 = new VisualGroup(storage);
+		VisualGroup node2 = new VisualGroup(storage);
+		VisualGroup node3 = new VisualGroup(storage);
+		VisualGroup node4 = new VisualGroup(storage);
 		SquareNode sq1 = new SquareNode(root,
 				new Rectangle2D.Double(0, 0, 1, 1));
 		SquareNode sq2 = new SquareNode(root,
@@ -209,11 +211,12 @@ public class VisualModelTests {
 
 		Container root = model.getCurrentLevel();
 
-		VisualGroup node1 = new VisualGroup();
-		VisualGroup node2 = new VisualGroup();
-		VisualGroup node3 = new VisualGroup();
-		VisualGroup node4 = new VisualGroup();
-		VisualGroup node5 = new VisualGroup();
+		DefaultStorageManager storage = new DefaultStorageManager();
+		VisualGroup node1 = new VisualGroup(storage);
+		VisualGroup node2 = new VisualGroup(storage);
+		VisualGroup node3 = new VisualGroup(storage);
+		VisualGroup node4 = new VisualGroup(storage);
+		VisualGroup node5 = new VisualGroup(storage);
 
 		node2.add(node3);
 		node1.add(node2);
@@ -242,11 +245,12 @@ public class VisualModelTests {
 
 		Container root = model.getCurrentLevel();
 
-		VisualGroup node1 = new VisualGroup();
-		VisualGroup node2 = new VisualGroup();
-		VisualGroup node3 = new VisualGroup();
-		VisualGroup node4 = new VisualGroup();
-		VisualGroup node5 = new VisualGroup();
+		DefaultStorageManager storage = new DefaultStorageManager();
+		VisualGroup node1 = new VisualGroup(storage);
+		VisualGroup node2 = new VisualGroup(storage);
+		VisualGroup node3 = new VisualGroup(storage);
+		VisualGroup node4 = new VisualGroup(storage);
+		VisualGroup node5 = new VisualGroup(storage);
 
 		node2.add(node3);
 		node1.add(node2);
@@ -277,8 +281,8 @@ public class VisualModelTests {
 
 		Container root = model.getCurrentLevel();
 
-		VisualGroup node1 = new VisualGroup();
-		VisualGroup node2 = new VisualGroup();
+		VisualGroup node1 = new VisualGroup(new DefaultStorageManager());
+		VisualGroup node2 = new VisualGroup(new DefaultStorageManager());
 
 		root.add(node1);
 		root.add(node2);
@@ -300,15 +304,16 @@ public class VisualModelTests {
 
 		Container root = model.getCurrentLevel();
 
-		VisualGroup node1 = new VisualGroup();
-		VisualGroup node2 = new VisualGroup();
-		VisualGroup node3 = new VisualGroup();
-		VisualGroup node4 = new VisualGroup();
+		DefaultStorageManager storage = new DefaultStorageManager();
+		VisualGroup node1 = new VisualGroup(storage);
+		VisualGroup node2 = new VisualGroup(storage);
+		VisualGroup node3 = new VisualGroup(storage);
+		VisualGroup node4 = new VisualGroup(storage);
 
-		VisualGroup node1c = new VisualGroup();
-		VisualGroup node2c = new VisualGroup();
-		VisualGroup node3c = new VisualGroup();
-		VisualGroup node4c = new VisualGroup();
+		VisualGroup node1c = new VisualGroup(storage);
+		VisualGroup node2c = new VisualGroup(storage);
+		VisualGroup node3c = new VisualGroup(storage);
+		VisualGroup node4c = new VisualGroup(storage);
 
 		root.add(node1);
 		root.add(node2);

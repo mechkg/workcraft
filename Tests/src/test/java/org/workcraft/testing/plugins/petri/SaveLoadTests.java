@@ -50,6 +50,7 @@ import org.workcraft.plugins.petri.PetriNetModelDescriptor;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.petri.VisualPetriNet;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.workspace.ModelEntry;
 
@@ -252,13 +253,13 @@ public class SaveLoadTests {
 	}
 	
 	private VisualPetriNet buildSampleVisualPetri() throws Exception {
-		PetriNet petri = new PetriNet();
+		PetriNet petri = new PetriNet(new DefaultStorageManager());
 		
-		Place place1 = new Place();
+		Place place1 = new Place(new DefaultStorageManager());
 		place1.tokens().setValue(5);
-		Place place2 = new Place();
+		Place place2 = new Place(new DefaultStorageManager());
 		place2.tokens().setValue(3);
-		Place place3 = new Place();
+		Place place3 = new Place(new DefaultStorageManager());
 		place3.tokens().setValue(2);
 		petri.add(place1);
 		petri.setName(place1, "place1");
@@ -267,9 +268,9 @@ public class SaveLoadTests {
 		petri.add(place3);
 		petri.setName(place3, "place3");
 		
-		Transition trans1 = new Transition();
+		Transition trans1 = new Transition(new DefaultStorageManager());
 		petri.setName(trans1, "trans1");
-		Transition trans2 = new Transition(); 
+		Transition trans2 = new Transition(new DefaultStorageManager());
 		petri.setName(trans2, "trans2");
 
 		petri.add(trans1);

@@ -26,6 +26,7 @@ import org.workcraft.PluginProvider;
 import org.workcraft.plugins.layout.RandomLayout;
 import org.workcraft.plugins.serialisation.XMLModelDeserialiser;
 import org.workcraft.plugins.serialisation.XMLModelSerialiser;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.plugins.stg.VisualSTG;
 import org.workcraft.serialisation.DeserialisationResult;
@@ -65,8 +66,8 @@ public class STGSerialisationTests {
 		// deserialise
 		XMLModelDeserialiser deserialiser = new XMLModelDeserialiser(mockPluginManager);
 
-		DeserialisationResult mathResult = deserialiser.deserialise(mathData.getInputStream(), null);
-		DeserialisationResult visualResult = deserialiser.deserialise(visualData.getInputStream(), mathResult.referenceResolver);
+		DeserialisationResult mathResult = deserialiser.deserialise(mathData.getInputStream(), new DefaultStorageManager(), null);
+		DeserialisationResult visualResult = deserialiser.deserialise(visualData.getInputStream(), new DefaultStorageManager(), mathResult.referenceResolver);
 
 		SerialisationTestingUtils.compareNodes(stg.getRoot(), visualResult.model.getRoot());
 	}

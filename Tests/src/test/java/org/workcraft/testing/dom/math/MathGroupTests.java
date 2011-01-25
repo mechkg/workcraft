@@ -31,23 +31,30 @@ import org.junit.Test;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 public class MathGroupTests {
 	class MockNode extends MathNode {
 
+		public MockNode(StorageManager storage) {
+			super(storage);
+			
+		}
+
 	}
 
-	private MockNode n1 = new MockNode();
-	private MockNode n2 = new MockNode();
+	private MockNode n1 = new MockNode(new DefaultStorageManager());
+	private MockNode n2 = new MockNode(new DefaultStorageManager());
 
 	private MathGroup group;
 
 	@Test
 	public void ObservationTest() {
-		group = new MathGroup();
+		group = new MathGroup(new DefaultStorageManager());
 
 		Expression<? extends Collection<Node>> children = identity((Expression<? extends Collection<Node>>) group.children());
 

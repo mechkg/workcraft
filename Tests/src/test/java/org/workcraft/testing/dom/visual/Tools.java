@@ -27,11 +27,12 @@ import org.workcraft.dom.Container;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.dom.visual.connections.VisualConnection;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 class Tools {
 	static VisualGroup createGroup(Container parent)
 	{
-		VisualGroup node = new VisualGroup();
+		VisualGroup node = new VisualGroup(new DefaultStorageManager());
 		if(parent!=null)
 			parent.add(node);
 		return node;
@@ -46,7 +47,7 @@ class Tools {
 
 	static VisualConnection createConnection(VisualComponent c1, VisualComponent c2, VisualGroup parent)
 	{
-		VisualConnection connection = new VisualConnection(null, c1, c2);
+		VisualConnection connection = new VisualConnection(null, c1, c2, new DefaultStorageManager());
 		parent.add(connection);
 		return connection;
 	}

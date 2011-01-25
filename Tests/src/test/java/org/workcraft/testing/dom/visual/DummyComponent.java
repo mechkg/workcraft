@@ -34,6 +34,7 @@ import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 class SquareNode extends VisualComponent
 {
@@ -41,7 +42,7 @@ class SquareNode extends VisualComponent
 	Rectangle2D.Double rectInner;
 	int resultToReturn;
 	public SquareNode(Container parent, Rectangle2D.Double rectOuter, Rectangle2D.Double rectInner) {
-		super(null);
+		super(null, new DefaultStorageManager());
 		this.rectOuter = rectOuter;
 		this.rectInner = rectInner;
 	}

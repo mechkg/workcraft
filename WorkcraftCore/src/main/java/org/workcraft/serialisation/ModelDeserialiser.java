@@ -23,9 +23,10 @@ package org.workcraft.serialisation;
 
 import java.io.InputStream;
 
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.DeserialisationException;
 
 public interface ModelDeserialiser extends SerialFormat {
 		public String getDescription();
-		public DeserialisationResult deserialise (InputStream inputStream, ReferenceResolver externalRefrenceResolver) throws DeserialisationException;
+		public DeserialisationResult deserialise (InputStream inputStream, StorageManager storage, ReferenceResolver externalRefrenceResolver) throws DeserialisationException;
 }

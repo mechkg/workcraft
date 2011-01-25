@@ -30,6 +30,7 @@ import java.util.Collection;
 import org.workcraft.annotations.CustomTools;
 import org.workcraft.annotations.DefaultCreateButtons;
 import org.workcraft.annotations.DisplayName;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
@@ -53,7 +54,7 @@ import org.workcraft.util.Hierarchy;
 @CustomToolButtons ( { STGSimulationTool.class } )  
 public class VisualSTG extends AbstractVisualModel {
 	private STG stg;
-	public HistoryPreservingStorageManager storage;
+	public StorageManager storage;
 
 	@Override
 	public void validateConnection(Node first, Node second)	throws InvalidConnectionException {
@@ -205,7 +206,7 @@ public class VisualSTG extends AbstractVisualModel {
 		this (model, null, model.storage);
 	}
 
-	public VisualSTG(STG model, VisualGroup root, HistoryPreservingStorageManager storage) {
+	public VisualSTG(STG model, VisualGroup root, StorageManager storage) {
 		super(model, root, storage);
 		
 		this.storage = storage;
@@ -246,7 +247,13 @@ public class VisualSTG extends AbstractVisualModel {
 	public VisualSignalTransition createSignalTransition() {
 		SignalTransition transition = stg.createSignalTransition();
 		VisualSignalTransition visualTransition = new VisualSignalTransition(transition, storage);
-		System.out.println("trans: " + transition);
+		add(visualTransition);
+		return visualTransition;
+	}
+
+	public VisualDummyTransition createDummyTransition() {
+		DummyTransition transition = stg.createDummyTransition();
+		VisualDummyTransition visualTransition = new VisualDummyTransition(transition, storage);
 		add(visualTransition);
 		return visualTransition;
 	}

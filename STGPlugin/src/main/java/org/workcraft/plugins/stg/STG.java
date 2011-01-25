@@ -273,10 +273,18 @@ public class STG extends AbstractMathModel implements STGModel {
 		} else if (first instanceof Place && second instanceof Place)
 			throw new InvalidConnectionException ("Connections between places are not valid");
 		else {
-			MathConnection con = new MathConnection((MathNode) first, (MathNode) second, storage);
-			Hierarchy.getNearestContainer(first, second).add(con);
-			return new SimpleResult(con);
+			return new SimpleResult(simpleConnect((MathNode) first, (MathNode) second));
 		}
+	}
+
+	public MathConnection connect(Place first, Transition second) {
+		return simpleConnect(first, second);
+	}
+
+	private MathConnection simpleConnect(MathNode first, MathNode second) {
+		MathConnection con = new MathConnection(first, second, storage);
+		Hierarchy.getNearestContainer(first, second).add(con);
+		return con;
 	}
 
 	@Override

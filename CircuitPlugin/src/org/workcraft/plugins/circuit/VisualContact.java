@@ -42,6 +42,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
@@ -68,8 +69,8 @@ public class VisualContact extends VisualComponent {
 	private HashSet<SignalTransition> referencedTransitions=new HashSet<SignalTransition>();
 	private Place referencedZeroPlace=null;
 	private Place referencedOnePlace=null;
-	public VisualContact(Contact contact) {
-		this(contact, Direction.WEST);
+	public VisualContact(Contact contact, StorageManager storage) {
+		this(contact, Direction.WEST, storage);
 	}
 	
 	static public AffineTransform getDirectionTransform(Direction dir) {
@@ -91,8 +92,8 @@ public class VisualContact extends VisualComponent {
 		return at;
 	}
 	
-	public VisualContact(Contact contact, VisualContact.Direction dir) {
-		super(contact);
+	public VisualContact(Contact contact, VisualContact.Direction dir, StorageManager storage) {
+		super(contact, storage);
 		
 		this.direction = Variable.create(dir);
 		nameGlyphs = createGlyphsExpression(direction, contact.name());

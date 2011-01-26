@@ -21,18 +21,22 @@
 
 package org.workcraft.plugins.cpog;
 
-import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 
-@DisplayName("RhoClause")
-@VisualClass("org.workcraft.plugins.cpog.VisualRhoClause")
+@VisualClass(org.workcraft.plugins.cpog.VisualRhoClause.class)
 public class RhoClause extends MathNode
 {
-	private final ModifiableExpression<BooleanFormula> formula = new org.workcraft.dependencymanager.advanced.user.Variable<BooleanFormula>(BooleanOperations.ONE);
+	public RhoClause(StorageManager storage) {
+		super(storage);
+		formula = storage.create(BooleanOperations.ONE);
+	}
+
+	private final ModifiableExpression<BooleanFormula> formula;
 	
 	public ModifiableExpression<BooleanFormula> formula()
 	{

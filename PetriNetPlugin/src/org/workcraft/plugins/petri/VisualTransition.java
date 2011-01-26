@@ -24,16 +24,12 @@ package org.workcraft.plugins.petri;
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.workcraft.annotations.DisplayName;
-import org.workcraft.annotations.Hotkey;
-import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
@@ -42,9 +38,6 @@ import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
-@Hotkey(KeyEvent.VK_T)
-@DisplayName ("Transition")
-@SVGIcon("images/icons/svg/transition.svg")
 public class VisualTransition extends VisualComponent {
 
 	public VisualTransition(Transition transition, StorageManager storage) {

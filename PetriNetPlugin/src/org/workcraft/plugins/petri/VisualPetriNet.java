@@ -79,4 +79,17 @@ public class VisualPetriNet extends AbstractVisualModel {
 		
 		Hierarchy.getNearestContainer(c1, c2).add(ret);
 	}
+
+	public VisualPlace createPlace() {
+		VisualPlace place = new VisualPlace(net.createPlace(), storage);
+		add(place);
+		return place;
+	}
+	
+	public VisualTransition createTransition() {
+		VisualTransition t = new VisualTransition(net.createTransition(), storage);
+		add(t);
+		return t;
+	}
+	
 }

@@ -23,6 +23,7 @@ package org.workcraft.plugins.cpog;
 
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.math.AbstractMathModel;
 import org.workcraft.dom.math.MathGroup;
@@ -35,34 +36,38 @@ public class CPOG extends AbstractMathModel
 {
 
 	private STGReferenceManager referenceManager;
+	private StorageManager storage;
 
-	public CPOG()
+	public CPOG(StorageManager storage)
 	{
-		this(null, null);
+		this(null, null, storage);
 	}
 
-	public CPOG(Container root)
+	public CPOG(Container root, StorageManager storage)
 	{
-		this(root, null);
+		this(root, null, storage);
 	}
 	
 	static class StartupParameters {
-		public StartupParameters(Container root, References refs) {
-			this.root = root==null?new MathGroup():root;
+		public StartupParameters(Container root, References refs, StorageManager storage) {
+			this.storage = storage;
+			this.root = root==null?new MathGroup(storage):root;
 			this.refs = refs;
 		}
+		StorageManager storage;
 		Container root;
 		References refs;
 	}
 
 	public CPOG(StartupParameters p) {
 		super(p.root, new STGReferenceManager(p.root, p.refs));
+		this.storage = p.storage;
 		referenceManager = (STGReferenceManager) getReferenceManager();
 	}
 	
-	public CPOG(Container root, References refs)
+	public CPOG(Container root, References refs, StorageManager storage)
 	{
-		this(new StartupParameters(root, refs));
+		this(new StartupParameters(root, refs, storage));
 	}
 
 	public String getName(Vertex vertex)
@@ -77,14 +82,14 @@ public class CPOG extends AbstractMathModel
 
 	public Arc connect(Vertex first, Vertex second) throws InvalidConnectionException
 	{
-		Arc con = new Arc(first, second);
+		Arc con = new Arc(first, second, storage);
 		getRoot().add(con);
 		return con;
 	}	
 	
 	public DynamicVariableConnection connect(Vertex first, Variable second) throws InvalidConnectionException
 	{
-		DynamicVariableConnection con = new DynamicVariableConnection(first, second);
+		DynamicVariableConnection con = new DynamicVariableConnection(first, second, storage);
 		getRoot().add(con);
 		return con;
 	}
@@ -92,4 +97,23 @@ public class CPOG extends AbstractMathModel
 	public Collection<Variable> getVariables() {
 		return Hierarchy.getChildrenOfType(getRoot(), Variable.class);
 	}
+
+	public Vertex createVertex() {
+		Vertex vertex = new Vertex(storage);
+		add(vertex);
+		return vertex;
+	}
+
+	public RhoClause createRhoClause() {
+		RhoClause rhoClause = new RhoClause(storage);
+		add(rhoClause);
+		return rhoClause;
+	}
+
+	public Variable createVariable() {
+		Variable variable = new Variable(storage);
+		add(variable);
+		return variable;
+	}
+
 }

@@ -1,6 +1,7 @@
 package org.workcraft.plugins.circuit.serialisation;
 
 import org.w3c.dom.Element;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.plugins.circuit.VisualCircuitConnection;
 import org.workcraft.serialisation.ReferenceResolver;
@@ -15,7 +16,7 @@ public class CircuitConnectionDeserializer implements CustomXMLDeserialiser{
 			ReferenceResolver externalReferenceResolver,
 			Object... constructorParameters) {
 		
-		return new VisualCircuitConnection();
+		return new VisualCircuitConnection((StorageManager)constructorParameters[0]);
 	}
 
 	@Override

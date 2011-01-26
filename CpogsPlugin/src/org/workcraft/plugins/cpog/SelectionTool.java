@@ -7,11 +7,16 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
+import org.workcraft.gui.graph.tools.GraphEditor;
 
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class SelectionTool extends org.workcraft.gui.graph.tools.SelectionTool
 {
+	public SelectionTool(GraphEditor editor) {
+		super(editor);
+	}
+	
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e)
 	{

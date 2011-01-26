@@ -30,7 +30,7 @@ import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
@@ -39,13 +39,20 @@ import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.util.Hierarchy;
 
 @DisplayName("Component")
-@VisualClass("org.workcraft.plugins.circuit.VisualCircuitComponent")
+@VisualClass(org.workcraft.plugins.circuit.VisualCircuitComponent.class)
 
 public class CircuitComponent extends MathNode implements Container {
 	
-	DefaultGroupImpl groupImpl = new DefaultGroupImpl(this);
-	private final Variable<String> name = Variable.create("");
-	private final Variable<Boolean> isEnvironment = Variable.create(false);
+	public CircuitComponent(StorageManager storage) {
+		super(storage);
+		groupImpl = new DefaultGroupImpl(this, storage);
+		name = storage.create("");
+		isEnvironment = storage.create(false);
+	}
+
+	final DefaultGroupImpl groupImpl;
+	private final ModifiableExpression<String> name;
+	private final ModifiableExpression<Boolean> isEnvironment;
 
 	public ModifiableExpression<Boolean> isEnvironment() {
 		return isEnvironment;
@@ -133,10 +140,7 @@ public class CircuitComponent extends MathNode implements Container {
 		}
 	}
 
-	public Variable<String> name() {
+	public ModifiableExpression<String> name() {
 		return name;
 	}
-	
-	
-	
 }

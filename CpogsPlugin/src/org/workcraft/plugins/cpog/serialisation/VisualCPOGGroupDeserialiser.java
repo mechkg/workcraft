@@ -23,6 +23,7 @@ package org.workcraft.plugins.cpog.serialisation;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.plugins.cpog.Encoding;
 import org.workcraft.plugins.cpog.Variable;
@@ -66,7 +67,7 @@ public class VisualCPOGGroupDeserialiser implements CustomXMLDeserialiser
 	public Object createInstance(Element element, ReferenceResolver externalReferenceResolver,
 			Object... constructorParameters)
 	{
-		return new VisualScenario();
+		return new VisualScenario((StorageManager)constructorParameters[0]);
 	}
 
 	@Override

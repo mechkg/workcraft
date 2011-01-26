@@ -20,6 +20,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
@@ -70,8 +71,9 @@ public class VisualScenario extends VisualGroup
 	}
 
 	
-	public VisualScenario()
+	public VisualScenario(StorageManager storage)
 	{
+		super(storage);
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Label", label(), String.class));
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Encoding", encoding(), Encoding.class));
 	}

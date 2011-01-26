@@ -30,6 +30,7 @@ import org.workcraft.dom.math.MathNode;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.util.GUI;
 
+@Deprecated
 public class DefaultNodeGenerator extends AbstractNodeGenerator {
 
 	private Class<?> cls;

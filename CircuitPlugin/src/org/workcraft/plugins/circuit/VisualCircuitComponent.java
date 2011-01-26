@@ -45,6 +45,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
@@ -116,12 +117,13 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 		return renderType;
 	}
 
-	DefaultGroupImpl groupImpl = new DefaultGroupImpl(this);
+	final DefaultGroupImpl groupImpl;
 	
 	private final Expression<Rectangle2D> contactLabelBB = createContactLabelBbExpression();
 	protected final Expression<Rectangle2D> totalBB = createTotalBbExpression();
 	
-	final Label nameLabel; 
+	final Label nameLabel;
+	protected final StorageManager storage; 
 
 	protected void drawNameInLocalSpace(DrawRequest r, EvaluationContext context) {
 
@@ -140,8 +142,11 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 		}
 	}
 	
-	public VisualCircuitComponent(CircuitComponent component) {
-		super(component);
+	public VisualCircuitComponent(CircuitComponent component, StorageManager storage) {
+		super(component, storage);
+		this.storage = storage;
+		
+		groupImpl = new DefaultGroupImpl(this, storage);
 		
 		nameLabel = new Label(nameFont, component.name());
 		addPropertyDeclarations();
@@ -494,7 +499,7 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 
 
 	@Override
-	public ExpressionBase<? extends Collection<Node>> children() {
+	public Expression<? extends Collection<Node>> children() {
 		return groupImpl.children();
 	}
 
@@ -555,9 +560,9 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 		
 		if (dir==null) dir=VisualContact.Direction.WEST;
 		
-		Contact c = new Contact(IoType.INPUT, name);
+		Contact c = new Contact(IoType.INPUT, name, storage);
 		
-		VisualContact vc = new VisualContact(c, dir);
+		VisualContact vc = new VisualContact(c, dir, storage);
 		addContact(vc);
 		
 		return vc;
@@ -566,8 +571,8 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 	public VisualContact addOutput(String name, VisualContact.Direction dir) {
 		if (dir==null) dir=VisualContact.Direction.EAST;
 		
-		Contact c = new Contact(IoType.OUTPUT, name);
-		VisualContact vc = new VisualContact(c, dir);
+		Contact c = new Contact(IoType.OUTPUT, name, storage);
+		VisualContact vc = new VisualContact(c, dir, storage);
 		addContact(vc);
 		return vc;
 	}

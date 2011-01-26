@@ -25,18 +25,15 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 
-import org.workcraft.annotations.DisplayName;
-import org.workcraft.annotations.Hotkey;
-import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
@@ -48,9 +45,6 @@ import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 
-@DisplayName("Input/output port")
-@Hotkey(KeyEvent.VK_P)
-@SVGIcon("images/icons/svg/circuit-port.svg")
 public class VisualFunctionContact extends VisualContact {
 
 	private static Font font;
@@ -78,12 +72,12 @@ public class VisualFunctionContact extends VisualContact {
 	
 	private final FunctionContact function;
 	
-	public VisualFunctionContact(FunctionContact component) {
-		this(component, Direction.WEST);
+	public VisualFunctionContact(FunctionContact component, StorageManager storage) {
+		this(component, Direction.WEST, storage);
 	}
 	
-	public VisualFunctionContact(FunctionContact component, VisualContact.Direction dir) {
-		super(component, dir);
+	public VisualFunctionContact(FunctionContact component, VisualContact.Direction dir, StorageManager storage) {
+		super(component, dir, storage);
 		function = component;
 		renderedSetFormula = createRenderedFormulaExpression(component.setFunction());
 		renderedResetFormula = createRenderedFormulaExpression(component.resetFunction());

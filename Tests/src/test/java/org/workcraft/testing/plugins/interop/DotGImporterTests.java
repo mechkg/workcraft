@@ -35,6 +35,7 @@ import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.plugins.interop.DotGImporter;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.Transition;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.plugins.stg.STGPlace;
@@ -88,7 +89,7 @@ public class DotGImporterTests {
 	public void Test2() throws Throwable
 	{
 		final InputStream test = ClassLoader.getSystemClassLoader().getResourceAsStream("test2.g");
-		STGModel imported = new DotGImporter().importSTG(test);//DotGImporterTests.class.getClassLoader().getResourceAsStream("test2.g"));
+		STGModel imported = new DotGImporter().importSTG(test, new HistoryPreservingStorageManager());//DotGImporterTests.class.getClassLoader().getResourceAsStream("test2.g"));
 		Assert.assertEquals(17, imported.getTransitions().size());
 		Assert.assertEquals(0, imported.getDummies().size());
 		

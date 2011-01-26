@@ -26,19 +26,17 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.workcraft.annotations.Hotkey;
-import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
@@ -52,15 +50,13 @@ import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
 
-@Hotkey(KeyEvent.VK_R)
-@SVGIcon("images/icons/svg/rho.svg")
 public class VisualRhoClause extends VisualComponent
 {
 	private static float strokeWidth = 0.038f;
 
 	// Ideally should be done with a normal expression instead of variable. 
 	// This is a lazy approach to conversion to Expressions, which does not require big modifications to draw() method. 
-	private ModifiableExpression<Rectangle2D> boudingBox = new org.workcraft.dependencymanager.advanced.user.Variable<Rectangle2D>(new Rectangle2D.Float(0, 0, 0, 0));
+	private final ModifiableExpression<Rectangle2D> boundingBox;
 	
 	private static Font font;
 	
@@ -76,9 +72,10 @@ public class VisualRhoClause extends VisualComponent
 		}
 	}
 	
-	public VisualRhoClause(RhoClause rhoClause)
+	public VisualRhoClause(RhoClause rhoClause, StorageManager storage)
 	{
-		super(rhoClause);
+		super(rhoClause, storage);
+		boundingBox = storage.<Rectangle2D>create(new Rectangle2D.Float(0, 0, 0, 0));
 	}
 	
 	@Override
@@ -104,7 +101,7 @@ public class VisualRhoClause extends VisualComponent
 						float height = (float)textBB.getHeight() + 0.2f;		
 						
 						Rectangle2D.Float bb = new Rectangle2D.Float(-width / 2, -height / 2, width, height);
-						boudingBox.setValue(bb);
+						boundingBox.setValue(bb);
 						// careful not to use boundingBox afterwards, or infinite re-evaluation would happen
 
 						g.setStroke(new BasicStroke(strokeWidth));
@@ -188,7 +185,7 @@ public class VisualRhoClause extends VisualComponent
 
 					@Override
 					public Rectangle2D getBoundingBox() {
-						return context.resolve(boudingBox);
+						return context.resolve(boundingBox);
 					}
 
 					@Override

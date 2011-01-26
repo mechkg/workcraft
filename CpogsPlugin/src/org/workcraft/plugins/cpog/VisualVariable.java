@@ -29,7 +29,6 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -37,27 +36,24 @@ import java.awt.geom.Rectangle2D.Double;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
-import org.workcraft.annotations.Hotkey;
-import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
-import org.workcraft.dom.visual.Label;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 import org.workcraft.util.Func;
 
-@Hotkey(KeyEvent.VK_X)
-@SVGIcon("images/icons/svg/variable.svg")
 public class VisualVariable extends VisualComponent
 {
 	private static double size = 1;
@@ -82,11 +78,13 @@ public class VisualVariable extends VisualComponent
 		}
 	}
 	
-	public ModifiableExpression<LabelPositioning> labelPositioning = new org.workcraft.dependencymanager.advanced.user.Variable<LabelPositioning>(LabelPositioning.TOP);
+	public ModifiableExpression<LabelPositioning> labelPositioning;
 	
-	public VisualVariable(Variable variable)
+	public VisualVariable(Variable variable, StorageManager storage)
 	{
-		super(variable);
+		super(variable, storage);
+		
+		labelPositioning = storage.create(LabelPositioning.TOP);
 		
 		LinkedHashMap<String, Object> states = new LinkedHashMap<String, Object>();
 		states.put("[1] true", VariableState.TRUE);

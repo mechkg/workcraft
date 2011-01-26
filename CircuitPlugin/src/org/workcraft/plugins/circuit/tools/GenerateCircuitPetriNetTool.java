@@ -4,6 +4,7 @@ import org.workcraft.Tool;
 import org.workcraft.plugins.circuit.Circuit;
 import org.workcraft.plugins.circuit.VisualCircuit;
 import org.workcraft.plugins.circuit.stg.CircuitPetriNetGenerator;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.plugins.stg.VisualSTG;
 import org.workcraft.workspace.ModelEntry;
@@ -37,9 +38,10 @@ public class GenerateCircuitPetriNetTool implements Tool {
 	@Override
 	public void run(WorkspaceEntry we) {
 		VisualCircuit circuit = (VisualCircuit)we.getModelEntry().getVisualModel();
-		VisualSTG vstg = CircuitPetriNetGenerator.generate(circuit);
+		HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
+		VisualSTG vstg = CircuitPetriNetGenerator.generate(circuit, storage);
 		ws.add(we.getWorkspacePath().getParent(), we.getWorkspacePath().getNode(), 
-				new ModelEntry(new STGModelDescriptor(), vstg),	false);
+				new ModelEntry(new STGModelDescriptor(), vstg, storage), false);
 	}
 
 }

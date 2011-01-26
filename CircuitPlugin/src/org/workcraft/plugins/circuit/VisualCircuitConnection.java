@@ -4,6 +4,7 @@ import java.awt.Stroke;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.connections.VisualConnection;
@@ -14,17 +15,16 @@ public class VisualCircuitConnection extends VisualConnection {
 	private Place referencedZeroPlace=null;
 	private Place referencedOnePlace=null;
 
-	public VisualCircuitConnection() {
-		super();
+	public VisualCircuitConnection(StorageManager storage) {
+		super(storage);
 	}
 	
-	public VisualCircuitConnection(MathConnection c) {
-		super();
+	public VisualCircuitConnection(MathConnection c, StorageManager storage) {
+		super(storage);
 	}
 	
-	public VisualCircuitConnection(MathConnection con, VisualComponent c1,
-			VisualComponent c2) {
-		super(con, c1, c2);
+	public VisualCircuitConnection(MathConnection con, VisualComponent c1, VisualComponent c2, StorageManager storage) {
+		super(con, c1, c2, storage);
 	}
 
 	public void setReferencedZeroPlace(Place referencedPlace) {

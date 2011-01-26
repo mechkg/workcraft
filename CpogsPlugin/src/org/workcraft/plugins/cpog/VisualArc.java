@@ -36,6 +36,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
@@ -117,16 +118,16 @@ public class VisualArc extends VisualConnection
 		});
 	}
 	
-	public VisualArc(Arc mathConnection)
+	public VisualArc(Arc mathConnection, StorageManager storage)
 	{
-		super();
+		super(storage);
 		this.mathConnection = mathConnection;
 		label = makeFormulaLabel();
 	}
 	
-	public VisualArc(Arc mathConnection, VisualVertex first, VisualVertex second)
+	public VisualArc(Arc mathConnection, VisualVertex first, VisualVertex second, StorageManager storage)
 	{
-		super(mathConnection, first, second);
+		super(mathConnection, first, second, storage);
 		this.mathConnection = mathConnection;
 		label = makeFormulaLabel();
 	}

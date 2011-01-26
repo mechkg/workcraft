@@ -21,7 +21,7 @@
 
 package org.workcraft.plugins.graph;
 
-import org.workcraft.annotations.DefaultCreateButtons;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.AbstractVisualModel;
 import org.workcraft.dom.visual.VisualGroup;
@@ -29,15 +29,14 @@ import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
 
-@DefaultCreateButtons ( { Vertex.class } )
 public class VisualGraph extends AbstractVisualModel {
 
-	public VisualGraph(Graph model) throws VisualModelInstantiationException {
-		super(model);
+	public VisualGraph(Graph model, StorageManager storage) throws VisualModelInstantiationException {
+		super(model, storage);
 	}
 	
-	public VisualGraph(Graph model, VisualGroup root) {
-		super(model, root);
+	public VisualGraph(Graph model, VisualGroup root, StorageManager storage) {
+		super(model, root, storage);
 
 		if (root == null)
 			try {

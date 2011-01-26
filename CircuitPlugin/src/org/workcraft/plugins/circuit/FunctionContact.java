@@ -21,27 +21,31 @@
 
 package org.workcraft.plugins.circuit;
 
-import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 
 
-@DisplayName("FunctionContact")
-@VisualClass("org.workcraft.plugins.circuit.VisualFunctionContact")
-
+@VisualClass(org.workcraft.plugins.circuit.VisualFunctionContact.class)
 public class FunctionContact extends Contact {
-	private Variable<BooleanFormula> setFunction = Variable.create(BooleanOperations.ZERO);
-	private Variable<BooleanFormula> resetFunction = Variable.create(null);
+	private ModifiableExpression<BooleanFormula> setFunction;
+	private ModifiableExpression<BooleanFormula> resetFunction;
 	
-	public FunctionContact(IoType ioType, String name) {
-		super(ioType, name);
+	public FunctionContact(IoType ioType, String name, StorageManager storage) {
+		super(ioType, name, storage);
+		init(storage);
+	}
+
+	private void init(StorageManager storage) {
+		setFunction = storage.create(BooleanOperations.ZERO);
+		resetFunction = storage.create(null);
 	}
 	
-	public FunctionContact() {
-		super();
+	public FunctionContact(StorageManager storage) {
+		super(storage);
+		init(storage);
 	}
 	
 	public ModifiableExpression<BooleanFormula> setFunction() {

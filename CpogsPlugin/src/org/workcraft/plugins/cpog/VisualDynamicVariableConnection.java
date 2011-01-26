@@ -23,6 +23,7 @@ package org.workcraft.plugins.cpog;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.dom.visual.connections.VisualConnectionProperties;
 
@@ -30,15 +31,15 @@ public class VisualDynamicVariableConnection extends VisualConnection
 {
 	DynamicVariableConnection mathConnection;
 	
-	public VisualDynamicVariableConnection(DynamicVariableConnection mathConnection)
+	public VisualDynamicVariableConnection(DynamicVariableConnection mathConnection, StorageManager storage)
 	{
-		super();
+		super(storage);
 		this.mathConnection = mathConnection;
 	}
 	
-	public VisualDynamicVariableConnection(DynamicVariableConnection mathConnection, VisualVertex first, VisualVariable second)
+	public VisualDynamicVariableConnection(DynamicVariableConnection mathConnection, VisualVertex first, VisualVariable second, StorageManager storage)
 	{
-		super(mathConnection, first, second);
+		super(mathConnection, first, second, storage);
 		this.mathConnection = mathConnection;
 	}
 	

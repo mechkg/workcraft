@@ -23,24 +23,24 @@ package org.workcraft.plugins.circuit;
 
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
-import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionWriteHandler;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor;
 
-@DisplayName("Contact")
-@VisualClass("org.workcraft.plugins.circuit.VisualContact")
+@VisualClass(org.workcraft.plugins.circuit.VisualContact.class)
 
 public class Contact extends MathNode implements BooleanVariable {
 
 	public enum IoType { INPUT, OUTPUT};
-	private final IoTypeVariable ioType;
+	private final IoTypeFilter ioType;
 	private final ModifiableExpression<String> name;
 	private Variable<Boolean> initOne = Variable.create(false);
 	
@@ -48,15 +48,15 @@ public class Contact extends MathNode implements BooleanVariable {
 		return initOne;
 	}
 
-	public Contact() {
-		this(IoType.OUTPUT, "");
+	public Contact(StorageManager storage) {
+		this(IoType.OUTPUT, "", storage);
 	}
 	
-	public Contact(IoType ioType, String name) {
-		super();
+	public Contact(IoType ioType, String name, StorageManager storage) {
+		super(storage);
 		
-		this.ioType = new IoTypeVariable(ioType);
-		this.name = Variable.create(name);
+		this.ioType = new IoTypeFilter(storage.create(ioType));
+		this.name = storage.create(name);
 	}
 	
 	
@@ -125,14 +125,14 @@ public class Contact extends MathNode implements BooleanVariable {
 		};
 	}
 
-	class IoTypeVariable extends Variable<IoType> {
-		public IoTypeVariable(IoType initialValue) {
-			super(initialValue);
+	class IoTypeFilter extends ModifiableExpressionWriteHandler<IoType> {
+		
+		public IoTypeFilter(ModifiableExpression<IoType> expr) {
+			super(expr);
 		}
 
 		@Override
-		public void setValue(IoType value) {
-			super.setValue(value);
+		protected void afterSet(IoType value) {
 			if (eval(name()).startsWith("input")&&value==IoType.OUTPUT) {
 				name().setValue(getNewName(eval(parent()), "output", Contact.this, false));
 			} else if (eval(name()).startsWith("output")&&value==IoType.INPUT) {

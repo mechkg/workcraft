@@ -8,6 +8,7 @@ import java.awt.geom.Rectangle2D;
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
@@ -17,9 +18,9 @@ import org.workcraft.dom.visual.VisualComponent;
 public class VisualWorkflowNode extends VisualComponent {
 	private Rectangle2D shape = new Rectangle2D.Double(-1,-1,1,1);
 	
-	public VisualWorkflowNode(WorkflowNode node)
+	public VisualWorkflowNode(WorkflowNode node, StorageManager storage)
 	{
-		super(node);
+		super(node, storage);
 	}
 	
 	@Override

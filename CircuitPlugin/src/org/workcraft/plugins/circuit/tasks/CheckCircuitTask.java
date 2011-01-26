@@ -16,6 +16,7 @@ import org.workcraft.plugins.mpsat.tasks.MpsatChainTask;
 import org.workcraft.plugins.mpsat.tasks.MpsatTask;
 import org.workcraft.plugins.mpsat.tasks.PunfTask;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.ProgressMonitor;
@@ -71,7 +72,7 @@ public class CheckCircuitTask extends MpsatChainTask {
 			
 			monitor.progressUpdate(0.05);
 			VisualCircuit circuit = (VisualCircuit) we.getModelEntry().getVisualModel();
-			model = (STGModel) CircuitPetriNetGenerator.generate(circuit).getMathModel();
+			model = (STGModel) CircuitPetriNetGenerator.generate(circuit, new DefaultStorageManager()).getMathModel();
 			monitor.progressUpdate(0.10);
 			
 			Exporter exporter = Export.chooseBestExporter(framework.getPluginManager(), model, Format.STG);

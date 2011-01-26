@@ -36,7 +36,6 @@ import org.workcraft.dom.Node;
 import org.workcraft.util.Null;
 
 import pcollections.HashTreePMap;
-import pcollections.PMap;
 
 public abstract class HierarchySupervisor {
 	

@@ -9,6 +9,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
 import org.workcraft.dom.Node;
+import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.plugins.petri.PetriNetSettings;
 import org.workcraft.plugins.petri.tools.SimulationTool;
 import org.workcraft.plugins.stg.SignalTransition;
@@ -18,8 +19,8 @@ public class STGSimulationTool extends SimulationTool {
 	private static Color outputsColor = Color.BLUE.darker();
 	private static Color internalsColor = Color.GREEN.darker();
 	
-	public STGSimulationTool() {
-		super();
+	public STGSimulationTool(GraphEditor editor) {
+		super(editor);
 		createInterface();
 	}
 	

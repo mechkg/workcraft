@@ -27,7 +27,6 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
@@ -36,15 +35,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import org.workcraft.annotations.Hotkey;
-import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
@@ -57,16 +56,13 @@ import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
 import org.workcraft.plugins.shared.CommonVisualSettings;
-import org.workcraft.dom.visual.Label;
 import org.workcraft.util.Func;
 
-@Hotkey(KeyEvent.VK_V)
-@SVGIcon("images/icons/svg/vertex.svg")
 public class VisualVertex extends VisualComponent
 {
 	private final static double size = 1;
 	private final static float strokeWidth = 0.1f;
-	public ModifiableExpression<LabelPositioning> labelPositioning = new org.workcraft.dependencymanager.advanced.user.Variable<LabelPositioning>(LabelPositioning.TOP);
+	public final ModifiableExpression<LabelPositioning> labelPositioning;
 	
 	final FormulaLabel label;
 	
@@ -85,9 +81,11 @@ public class VisualVertex extends VisualComponent
 	}
 	
 
-	public VisualVertex(Vertex vertex)
+	public VisualVertex(Vertex vertex, StorageManager storage)
 	{
-		super(vertex);
+		super(vertex, storage);
+		
+		labelPositioning = storage.create(LabelPositioning.TOP);
 		
 		LinkedHashMap<String, Object> positions = new LinkedHashMap<String, Object>();
 		

@@ -21,16 +21,18 @@
 
 package org.workcraft.plugins.cpog;
 
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathConnection;
 
 public class DynamicVariableConnection extends MathConnection
 {
-	public DynamicVariableConnection()
-	{	
+	public DynamicVariableConnection(StorageManager storage)
+	{
+		super(storage);
 	}
 	
-	public DynamicVariableConnection(Vertex first, Variable second)
+	public DynamicVariableConnection(Vertex first, Variable second, StorageManager storage)
 	{
-		super(first, second);
+		super(first, second, storage);
 	}
 }

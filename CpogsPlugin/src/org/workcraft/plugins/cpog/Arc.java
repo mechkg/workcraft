@@ -22,6 +22,7 @@
 package org.workcraft.plugins.cpog;
 
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
@@ -30,15 +31,16 @@ public class Arc extends MathConnection
 {
 	private final ModifiableExpression<BooleanFormula> condition;
 
-	public Arc()
-	{	
-		condition = new org.workcraft.dependencymanager.advanced.user.Variable<BooleanFormula>(One.instance());
+	public Arc(StorageManager storage)
+	{
+		super(storage);
+		condition = storage.<BooleanFormula>create(One.instance());
 	}
 	
-	public Arc(Vertex first, Vertex second)
+	public Arc(Vertex first, Vertex second, StorageManager storage)
 	{
-		super(first, second);
-		condition = new org.workcraft.dependencymanager.advanced.user.Variable<BooleanFormula>(One.instance());
+		super(first, second, storage);
+		condition = storage.<BooleanFormula>create(One.instance());
 	}
 
 	public ModifiableExpression<BooleanFormula> condition()

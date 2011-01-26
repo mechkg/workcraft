@@ -1,5 +1,6 @@
 package org.workcraft.plugins.circuit.stg;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 import static org.workcraft.util.Geometry.add;
 import static org.workcraft.util.Geometry.subtract;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.MovableHelper;
@@ -45,8 +47,6 @@ import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.VisualSTG;
 import org.workcraft.plugins.stg.VisualSignalTransition;
 import org.workcraft.util.Hierarchy;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class CircuitPetriNetGenerator {
 	
@@ -136,9 +136,9 @@ public class CircuitPetriNetGenerator {
 		}
 	}
 	
-	public static VisualSTG generate(VisualCircuit circuit) {
+	public static VisualSTG generate(VisualCircuit circuit, StorageManager storage) {
 		try {
-			VisualSTG stg = new VisualSTG(new STG());
+			VisualSTG stg = new VisualSTG(new STG(storage), storage);
 			
 			Map<Contact, VisualContact> targetDrivers = new HashMap<Contact, VisualContact>();
 			Map<VisualContact, ContactSTG> drivers = new HashMap<VisualContact, ContactSTG>(); 

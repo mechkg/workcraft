@@ -25,9 +25,7 @@ import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import java.awt.geom.Point2D;
 
-import org.workcraft.annotations.CustomTools;
-import org.workcraft.annotations.DefaultCreateButtons;
-import org.workcraft.annotations.DisplayName;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
@@ -40,10 +38,6 @@ import org.workcraft.exceptions.VisualModelInstantiationException;
 import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.util.Hierarchy;
-
-@DisplayName("Visual Circuit")
-@CustomTools ( CircuitToolsProvider.class )
-@DefaultCreateButtons ( { Joint.class, FunctionComponent.class } )
 
 public class VisualCircuit extends AbstractVisualModel {
 
@@ -89,15 +83,15 @@ public class VisualCircuit extends AbstractVisualModel {
 	}
 */
 
-	public VisualCircuit(Circuit model, VisualGroup root)
+	public VisualCircuit(Circuit model, VisualGroup root, StorageManager storage)
 	{
-		super(model, root);
+		super(model, root, storage);
 		circuit=model;
 	}
 
-	public VisualCircuit(Circuit model)
+	public VisualCircuit(Circuit model, StorageManager storage)
 	throws VisualModelInstantiationException {
-		super(model);
+		super(model, storage);
 		circuit=model;
 		try {
 			createDefaultFlatStructure();
@@ -117,7 +111,7 @@ public class VisualCircuit extends AbstractVisualModel {
 			VisualComponent c1 = (VisualComponent) first;
 			VisualComponent c2 = (VisualComponent) second;
 			MathConnection con = (MathConnection) circuit.connect(c1.getReferencedComponent(), c2.getReferencedComponent());
-			VisualCircuitConnection ret = new VisualCircuitConnection(con, c1, c2);
+			VisualCircuitConnection ret = new VisualCircuitConnection(con, c1, c2, storage);
 			Hierarchy.getNearestContainer(c1, c2).add(ret);
 		}
 	}
@@ -141,15 +135,42 @@ public class VisualCircuit extends AbstractVisualModel {
 			if(eval(c.name()).equals(name)) return c;
 		}
 		
-		FunctionContact fc = new FunctionContact(IoType.OUTPUT, name);
-		VisualFunctionContact vc = new VisualFunctionContact(fc);
-		Point2D p2d = new Point2D.Double();
-		p2d.setLocation(x,y);
-		vc.position().setValue(p2d);
+		return createFunctionContact(IoType.OUTPUT, new Point2D.Double(x,y));
+		
+	}
+
+	public VisualFunctionContact createFunctionContact(IoType ioType, Point2D point) {
+		return createFunctionContact(ioType, point, "");
+	}
+	
+	public VisualFunctionContact createFunctionContact(IoType ioType, Point2D point, String name) {
+		FunctionContact fc = new FunctionContact(IoType.OUTPUT, name, storage);
+		VisualFunctionContact vc = new VisualFunctionContact(fc, storage);
+		vc.position().setValue(point);
 		circuit.add(fc);
 		this.add(vc);
 		
 		return vc;
+	}
+
+	public VisualJoint createJoint(Point2D where) {
+		Joint joint = new Joint(storage);
+		VisualJoint visualJoint = new VisualJoint(joint, storage);
+		visualJoint.position().setValue(where);
+		circuit.add(joint);
+		this.add(visualJoint);
+		
+		return visualJoint;
+	}
+
+	public VisualFunctionComponent createFunctionComponent(Point2D where) {
+		FunctionComponent functionComponent = new FunctionComponent(storage);
+		VisualFunctionComponent visualFunctionComponent = new VisualFunctionComponent(functionComponent, storage);
+		visualFunctionComponent.position().setValue(where);
+		circuit.add(functionComponent);
+		this.add(visualFunctionComponent);
+		
+		return visualFunctionComponent;
 	}
 
 }

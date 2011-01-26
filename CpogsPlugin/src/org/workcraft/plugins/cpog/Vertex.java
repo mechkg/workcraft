@@ -21,18 +21,22 @@
 
 package org.workcraft.plugins.cpog;
 
-import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 
-@DisplayName("Vertex")
-@VisualClass("org.workcraft.plugins.cpog.VisualVertex")
+@VisualClass(org.workcraft.plugins.cpog.VisualVertex.class)
 public class Vertex extends MathNode
 {
-	private final ModifiableExpression<BooleanFormula> condition = new org.workcraft.dependencymanager.advanced.user.Variable<BooleanFormula>(One.instance());
+	public Vertex(StorageManager storage) {
+		super(storage);
+		condition = storage.<BooleanFormula>create(One.instance());
+	}
+
+	private final ModifiableExpression<BooleanFormula> condition;
 	
 	public ModifiableExpression<BooleanFormula> condition()
 	{

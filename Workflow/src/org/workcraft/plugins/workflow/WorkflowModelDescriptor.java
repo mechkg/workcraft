@@ -1,5 +1,6 @@
 package org.workcraft.plugins.workflow;
 
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
@@ -12,8 +13,8 @@ public class WorkflowModelDescriptor implements ModelDescriptor {
 	}
 
 	@Override
-	public MathModel createMathModel() {
-		return new Workflow();
+	public MathModel createMathModel(StorageManager storage) {
+		return new Workflow(storage);
 	}
 
 	@Override

@@ -27,6 +27,7 @@ import java.awt.geom.Point2D;
 import javax.swing.Icon;
 
 import org.workcraft.NodeFactory;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.MovableHelper;
 import org.workcraft.dom.visual.MovableNew;
@@ -37,6 +38,8 @@ import org.workcraft.exceptions.NodeCreationException;
 
 public abstract class AbstractNodeGenerator implements NodeGenerator {
 
+	private final StorageManager storage;
+
 	public interface MathNodeGenerator
 	{
 		public MathNode createNode();
@@ -44,12 +47,17 @@ public abstract class AbstractNodeGenerator implements NodeGenerator {
 		public int getHotKeyCode();
 	}
 	
+	public AbstractNodeGenerator(StorageManager storageManager)
+	{
+		this.storage = storageManager;
+	}
+	
 	@Override
 	public void generate(VisualModel model, Point2D where) throws NodeCreationException {
 		MathNode mn = createMathNode();
 		model.getMathModel().add(mn);
 
-		VisualNode vc = NodeFactory.createVisualComponent(mn);
+		VisualNode vc = NodeFactory.createVisualComponent(mn, storage);
 		model.getCurrentLevel().add(vc);
 		
 		if (vc instanceof MovableNew)

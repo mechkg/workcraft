@@ -104,6 +104,7 @@ public class TransformHelper {
 		};
 	}	
 	
+	@SuppressWarnings("unchecked")
 	public static Expression<AffineTransform> getTransformExpression(Expression<? extends Node> node1, Expression<? extends Node> node2) {
 		final Expression<? extends Node> parent = Hierarchy.getCommonParent(node1, node2);
 		final Expression<? extends AffineTransform> node1ToParent = getTransformToAncestor(node1, parent);

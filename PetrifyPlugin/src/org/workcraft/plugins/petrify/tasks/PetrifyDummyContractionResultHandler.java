@@ -7,8 +7,6 @@ import javax.swing.SwingUtilities;
 
 import org.workcraft.gui.ExceptionDialog;
 import org.workcraft.gui.workspace.Path;
-import org.workcraft.plugins.stg.STGModel;
-import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.tasks.DummyProgressMonitor;
 import org.workcraft.tasks.Result;
 import org.workcraft.tasks.Result.Outcome;
@@ -37,8 +35,8 @@ public class PetrifyDummyContractionResultHandler extends DummyProgressMonitor<P
 				
 				if (result.getOutcome() == Outcome.FINISHED)
 				{
-					STGModel model = result.getReturnValue().getResult();
-					final WorkspaceEntry resolved = task.getFramework().getWorkspace().add(path.getParent(), fileName + "_contracted", new ModelEntry(new STGModelDescriptor() , model), true);
+					ModelEntry model = result.getReturnValue().getResult();
+					final WorkspaceEntry resolved = task.getFramework().getWorkspace().add(path.getParent(), fileName + "_contracted", model, true);
 					task.getFramework().getMainWindow().createEditorWindow(resolved);
 				} else
 				{

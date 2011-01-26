@@ -1,14 +1,14 @@
 package org.workcraft.plugins.petrify.tasks;
 
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
-import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.tasks.Result;
+import org.workcraft.workspace.ModelEntry;
 
 public class PetrifyDummyContractionResult {
 	private Result<? extends ExternalProcessResult> petrifyResult;
-	private STGModel result;
+	private ModelEntry result;
 	
-	public PetrifyDummyContractionResult(Result<? extends ExternalProcessResult> petrifyResult, STGModel result) {
+	public PetrifyDummyContractionResult(Result<? extends ExternalProcessResult> petrifyResult, ModelEntry result) {
 		this.petrifyResult = petrifyResult;
 		this.result = result;
 	}
@@ -17,7 +17,7 @@ public class PetrifyDummyContractionResult {
 		return petrifyResult;
 	}
 	
-	public STGModel getResult() {
+	public ModelEntry getResult() {
 		return result;
 	}
 }

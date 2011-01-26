@@ -21,6 +21,7 @@ import org.workcraft.plugins.circuit.VisualJoint;
 import org.workcraft.plugins.circuit.stg.CircuitPetriNetGenerator;
 import org.workcraft.plugins.petri.PetriNetModel;
 import org.workcraft.plugins.petri.PetriNetSettings;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.SignalTransition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.tools.STGSimulationTool;
@@ -41,11 +42,10 @@ public class CircuitSimulationTool extends STGSimulationTool {
 	}
 	
 	@Override
-	public void activated(GraphEditor editor) {
-		this.editor = editor;
+	public void activated() {
 		this.circuit = (VisualCircuit)editor.getModel();
 		
-		visualNet = CircuitPetriNetGenerator.generate(circuit);
+		visualNet = CircuitPetriNetGenerator.generate(circuit, new DefaultStorageManager());
 		net = (PetriNetModel)visualNet.getMathModel();
 		
 		initialMarking = readMarking();
@@ -86,8 +86,9 @@ public class CircuitSimulationTool extends STGSimulationTool {
 		return st;
 	}
 	
-	public CircuitSimulationTool() {
-		super();
+	public CircuitSimulationTool(GraphEditor editor) {
+		super(editor);
+		this.editor = editor;
 		createInterface();
 		
 	}

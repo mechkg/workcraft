@@ -6,19 +6,16 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
-import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.workcraft.annotations.DisplayName;
-import org.workcraft.annotations.Hotkey;
-import org.workcraft.annotations.SVGIcon;
 import org.workcraft.dependencymanager.advanced.core.DummyEvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
@@ -30,15 +27,11 @@ import org.workcraft.plugins.circuit.renderers.BufferRenderer;
 import org.workcraft.plugins.circuit.renderers.CElementRenderer;
 import org.workcraft.plugins.circuit.renderers.CElementRenderingResult;
 import org.workcraft.plugins.circuit.renderers.ComponentRenderingResult;
-import org.workcraft.plugins.circuit.renderers.GateRenderer;
 import org.workcraft.plugins.circuit.renderers.ComponentRenderingResult.RenderType;
+import org.workcraft.plugins.circuit.renderers.GateRenderer;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 import org.workcraft.util.Hierarchy;
-
-@DisplayName("Function")
-@Hotkey(KeyEvent.VK_F)
-@SVGIcon("images/icons/svg/circuit-formula.svg")
 
 public class VisualFunctionComponent extends VisualCircuitComponent {
 	
@@ -91,8 +84,8 @@ public class VisualFunctionComponent extends VisualCircuitComponent {
 		renderingResult = null;
 	}
 	
-	public VisualFunctionComponent(CircuitComponent component) {
-		super(component);
+	public VisualFunctionComponent(CircuitComponent component, StorageManager storage) {
+		super(component, storage);
 		
 		if (eval(component.children()).isEmpty()) {
 			this.addFunction("x", null, false);
@@ -144,9 +137,9 @@ public class VisualFunctionComponent extends VisualCircuitComponent {
 		if (ioType==IoType.OUTPUT)
 			dir=VisualContact.Direction.EAST;
 		
-		FunctionContact c = new FunctionContact(ioType, name);
+		FunctionContact c = new FunctionContact(ioType, name, storage);
 		
-		VisualFunctionContact vc = new VisualFunctionContact(c, dir);
+		VisualFunctionContact vc = new VisualFunctionContact(c, dir, storage);
 		
 		addContact(vc);
 		

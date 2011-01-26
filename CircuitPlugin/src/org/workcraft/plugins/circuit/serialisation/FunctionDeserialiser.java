@@ -22,6 +22,7 @@
 package org.workcraft.plugins.circuit.serialisation;
 
 import org.w3c.dom.Element;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.plugins.circuit.FunctionContact;
 import org.workcraft.plugins.cpog.serialisation.BooleanFunctionDeserialiser;
@@ -42,7 +43,7 @@ public class FunctionDeserialiser implements CustomXMLDeserialiser
 	public Object createInstance(Element element, ReferenceResolver externalReferenceResolver,
 			Object... constructorParameters)
 	{
-		return new FunctionContact();
+		return new FunctionContact((StorageManager)constructorParameters[0]);
 	}
 
 	@Override

@@ -1,16 +1,15 @@
 package org.workcraft.plugins.workflow;
 
-import org.workcraft.annotations.DefaultCreateButtons;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.AbstractVisualModel;
 import org.workcraft.exceptions.InvalidConnectionException;
 
-@DefaultCreateButtons(WorkflowNode.class)
 public class VisualWorkflow extends AbstractVisualModel {
 	
-	public VisualWorkflow(Workflow mathModel)
+	public VisualWorkflow(Workflow mathModel, StorageManager storage)
 	{
-		super(mathModel);
+		super(mathModel, storage);
 	}
 
 	@Override

@@ -21,19 +21,18 @@
 
 package org.workcraft.plugins.circuit;
 
-import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 
 
-@DisplayName("Joint")
-@VisualClass("org.workcraft.plugins.circuit.VisualJoint")
+@VisualClass(org.workcraft.plugins.circuit.VisualJoint.class)
 
 public class Joint extends MathNode {
 	
 	
-	public Joint() {
-		
+	public Joint(StorageManager storage) {
+		super(storage);
 	}
 
 }

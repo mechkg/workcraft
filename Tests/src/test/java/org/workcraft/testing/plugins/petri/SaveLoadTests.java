@@ -51,6 +51,7 @@ import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.petri.VisualPetriNet;
 import org.workcraft.plugins.stg.DefaultStorageManager;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.workspace.ModelEntry;
 
@@ -122,7 +123,7 @@ public class SaveLoadTests {
 		Framework f = new Framework();
 		f.getPluginManager().loadManifest();
 		StringWriter writer = new StringWriter();
-		f.save(new ModelEntry(new PetriNetModelDescriptor(), model), new Base16Writer(writer));
+		f.save(new ModelEntry(new PetriNetModelDescriptor(), model, new HistoryPreservingStorageManager()), new Base16Writer(writer));
 		String generatedValue = writer.toString();
 		if(currentValue.equals(generatedValue))
 			return;

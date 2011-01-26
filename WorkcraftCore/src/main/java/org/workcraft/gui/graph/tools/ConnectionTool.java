@@ -52,11 +52,13 @@ public class ConnectionTool extends AbstractTool {
 	private boolean leftFirst = false;
 	private Point2D lastMouseCoords;
 	private String warningMessage = null;
+	private final GraphEditor editor;
 	
 	private static Color highlightColor = new Color(99, 130, 191).brighter();
 
-	public ConnectionTool () {
+	public ConnectionTool (GraphEditor editor) {
 		lastMouseCoords = new Point2D.Double();
+		this.editor = editor;
 	}
 
 	public Ellipse2D getBoundingCircle(Rectangle2D boundingRect) {
@@ -69,7 +71,7 @@ public class ConnectionTool extends AbstractTool {
 	}
 
 	@Override
-	public void drawInUserSpace(GraphEditor editor, Graphics2D g) {
+	public void drawInUserSpace(Graphics2D g) {
 		g.setStroke(new BasicStroke((float)editor.getViewport().pixelSizeInUserSpace().getX()));
 
 		if (first != null) {
@@ -153,7 +155,7 @@ public class ConnectionTool extends AbstractTool {
 	}
 
 	@Override
-	public void drawInScreenSpace(GraphEditor editor, Graphics2D g) {
+	public void drawInScreenSpace(Graphics2D g) {
 		String message;
 
 		if (warningMessage != null)
@@ -178,8 +180,7 @@ public class ConnectionTool extends AbstractTool {
 	}
 
 	@Override
-	public void deactivated(GraphEditor editor) {
-		super.deactivated(editor);
+	public void deactivated() {
 		first = null;
 		mouseOverObject = null;
 	}

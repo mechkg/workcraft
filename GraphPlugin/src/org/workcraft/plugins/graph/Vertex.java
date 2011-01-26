@@ -21,11 +21,14 @@
 
 package org.workcraft.plugins.graph;
 
-import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 
-@DisplayName("Vertex")
-@VisualClass("org.workcraft.plugins.graph.VisualVertex")
+@VisualClass(org.workcraft.plugins.graph.VisualVertex.class)
 public class Vertex extends MathNode {
+
+	public Vertex(StorageManager storage) {
+		super(storage);
+	}
 }

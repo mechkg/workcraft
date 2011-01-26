@@ -29,10 +29,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.workcraft.annotations.CustomTools;
-import org.workcraft.annotations.DefaultCreateButtons;
-import org.workcraft.annotations.DisplayName;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.AbstractVisualModel;
@@ -49,9 +47,6 @@ import org.workcraft.plugins.cpog.optimisation.javacc.BooleanParser;
 import org.workcraft.plugins.cpog.optimisation.javacc.ParseException;
 import org.workcraft.util.Hierarchy;
 
-@DisplayName("Conditional Partial Order Graph")
-@DefaultCreateButtons( { Vertex.class, Variable.class, RhoClause.class })
-@CustomTools ( CustomToolsProvider.class )
 public class VisualCPOG extends AbstractVisualModel
 {
 	private final class BooleanFormulaPropertyDescriptor implements
@@ -115,14 +110,14 @@ public class VisualCPOG extends AbstractVisualModel
 	@SuppressWarnings("unused") // needed to avoid garbage collection
 	private ConsistencyEnforcer consistencyEnforcer;
 
-	public VisualCPOG(CPOG model) throws VisualModelInstantiationException
+	public VisualCPOG(CPOG model, StorageManager storage) throws VisualModelInstantiationException
 	{
-		this(model, null);
+		this(model, null, storage);
 	}
 
-	public VisualCPOG(CPOG model, VisualGroup root)
+	public VisualCPOG(CPOG model, VisualGroup root, StorageManager storage)
 	{
-		super(model, root);
+		super(model, root, storage);
 
 		this.mathModel = model;
 
@@ -167,7 +162,7 @@ public class VisualCPOG extends AbstractVisualModel
 			VisualVertex u = (VisualVertex) second;
 	
 			Arc con = mathModel.connect(v.getMathVertex(), u.getMathVertex());
-			Hierarchy.getNearestContainer(v, u).add(new VisualArc(con, v, u));
+			Hierarchy.getNearestContainer(v, u).add(new VisualArc(con, v, u, storage));
 		}
 		else
 		{
@@ -186,7 +181,7 @@ public class VisualCPOG extends AbstractVisualModel
 			}
 			
 			DynamicVariableConnection con = mathModel.connect(v.getMathVertex(), u.getMathVariable());
-			Hierarchy.getNearestContainer(v, u).add(new VisualDynamicVariableConnection(con, v, u));
+			Hierarchy.getNearestContainer(v, u).add(new VisualDynamicVariableConnection(con, v, u, storage));
 		}
 	}
 
@@ -207,7 +202,7 @@ public class VisualCPOG extends AbstractVisualModel
 		Collection<Node> selected = getGroupableSelection();
 		if (selected.size() < 1) return;
 
-		VisualGroup group = new VisualScenario();
+		VisualGroup group = new VisualScenario(storage);
 
 		Container currentLevel = getCurrentLevel();
 		
@@ -249,5 +244,26 @@ public class VisualCPOG extends AbstractVisualModel
 			properties = Properties.Merge.add(properties, new BooleanFormulaPropertyDescriptor(node));
 		
 		return properties;
+	}
+
+	public VisualVertex createVertex() {
+		Vertex vertex = mathModel.createVertex();
+		VisualVertex visualVertex = new VisualVertex(vertex, storage);
+		add(visualVertex);
+		return visualVertex;
+	}
+
+	public VisualRhoClause createRhoClause() {
+		RhoClause rhoClause = mathModel.createRhoClause();
+		VisualRhoClause visualRhoClause = new VisualRhoClause(rhoClause, storage);
+		add(visualRhoClause);
+		return visualRhoClause;
+	}
+
+	public VisualVariable createVariable() {
+		Variable variable = mathModel.createVariable();
+		VisualVariable visualVariable = new VisualVariable(variable, storage);
+		add(visualVariable);
+		return visualVariable;
 	}
 }

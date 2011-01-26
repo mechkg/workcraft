@@ -17,6 +17,7 @@ import org.workcraft.tasks.Task;
 import org.workcraft.util.Export;
 import org.workcraft.util.Export.ExportTask;
 import org.workcraft.util.WorkspaceUtils;
+import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class PetrifyDummyContractionTask implements Task<PetrifyDummyContractionResult>{
@@ -51,7 +52,7 @@ public class PetrifyDummyContractionTask implements Task<PetrifyDummyContraction
 			if (petrifyResult.getOutcome() == Outcome.FINISHED)
 			{
 				try {
-					final STGModel stg = new DotGImporter().importSTG(new ByteArrayInputStream(petrifyResult.getReturnValue().getOutput()));
+					final ModelEntry stg = new DotGImporter().importFrom(new ByteArrayInputStream(petrifyResult.getReturnValue().getOutput()));
 					return Result.finished(new PetrifyDummyContractionResult(null, stg));
 				} catch (DeserialisationException e) {
 					return Result.exception(e);

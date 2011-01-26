@@ -43,8 +43,6 @@ public class DockableWindow extends AbstractDockable {
 	private MainWindow mainWindow;
 	private boolean inTab = false;
 	private boolean closed = false;
-	private boolean tabEventsEnabled = false;
-	
 	private ArrayList<DockableWindowTabListener> tabListeners = new ArrayList<DockableWindowTabListener>();
 
 	private ChangeListener tabChangeListener = new ChangeListener() {
@@ -160,13 +158,6 @@ public class DockableWindow extends AbstractDockable {
 		return panel.getID();
 	}
 	
-	private static void processTabEvents(DockingPort port) {
-		for (Object d : port.getDockables()) {
-			DockableWindow dockable = (DockableWindow)d;
-			dockable.processTabEvents();
-		}
-	}
-
 	public void processTabEvents()
 	{
 		if (getComponent().getParent() instanceof JTabbedPane) {
@@ -219,6 +210,5 @@ public class DockableWindow extends AbstractDockable {
 	}
 
 	public void setTabEventsEnabled(boolean tabEventsEnabled) {
-		this.tabEventsEnabled = tabEventsEnabled;
 	}
 }

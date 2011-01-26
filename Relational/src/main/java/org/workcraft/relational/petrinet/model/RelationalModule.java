@@ -3,11 +3,13 @@ package org.workcraft.relational.petrinet.model;
 import org.workcraft.Framework;
 import org.workcraft.Initialiser;
 import org.workcraft.Module;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.VisualModelInstantiationException;
+import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.SelectionTool;
 
@@ -32,7 +34,7 @@ public class RelationalModule implements Module {
 					}
 
 					@Override
-					public MathModel createMathModel() {
+					public MathModel createMathModel(StorageManager storage) {
 						return null;
 					}
 
@@ -41,14 +43,14 @@ public class RelationalModule implements Module {
 						return new VisualModelDescriptor(){
 
 							@Override
-							public VisualModel create(MathModel mathModel)
+							public VisualModel create(MathModel mathModel, StorageManager storage)
 									throws VisualModelInstantiationException {
 								return new org.workcraft.relational.petrinet.model.VisualModel();
 							}
 
 							@Override
-							public Iterable<? extends GraphEditorTool> createTools() {
-								return TreePVector.<GraphEditorTool>singleton(new SelectionTool()).plus(new UndoTool());
+							public Iterable<? extends GraphEditorTool> createTools(GraphEditor editor) {
+								return TreePVector.<GraphEditorTool>singleton(new SelectionTool(editor)).plus(new UndoTool());
 							}
 							
 						};

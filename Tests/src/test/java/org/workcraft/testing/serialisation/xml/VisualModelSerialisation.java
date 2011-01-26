@@ -28,6 +28,7 @@ import org.workcraft.plugins.layout.RandomLayout;
 import org.workcraft.plugins.serialisation.XMLModelDeserialiser;
 import org.workcraft.plugins.serialisation.XMLModelSerialiser;
 import org.workcraft.plugins.stg.DefaultStorageManager;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.plugins.stg.VisualSTG;
@@ -44,12 +45,12 @@ public class VisualModelSerialisation {
 	public void SimpleSaveLoad() throws Exception {
 
 		STG stg = XMLSerialisationTestingUtils.createTestSTG1();
-		VisualSTG visualstg = new VisualSTG(stg);
+		VisualSTG visualstg = new VisualSTG(stg, new HistoryPreservingStorageManager());
 
 		RandomLayout layout = new RandomLayout();
 		WorkspaceEntry we = new WorkspaceEntry(null);
 		
-		we.setModelEntry(new ModelEntry(new STGModelDescriptor(), visualstg));
+		we.setModelEntry(new ModelEntry(new STGModelDescriptor(), visualstg, new HistoryPreservingStorageManager()));
 		
 		layout.run(we);
 

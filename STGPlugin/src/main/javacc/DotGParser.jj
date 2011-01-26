@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.SignalTransition.Type;
@@ -32,9 +33,9 @@ public class DotGParser {
 	private Map<Pair<Node, Node>, STGPlace> implicitPlaces;
 	private STG stg;
 
-	private void init() {
+	private void init(StorageManager storage) {
 		signals = new HashMap<String, Type>();
-		stg = new STG(new org.workcraft.plugins.stg.HistoryPreservingStorageManager());
+		stg = new STG(storage);
 		implicitPlaces = new HashMap<Pair<Node, Node>, STGPlace>();
 	}
 	
@@ -167,9 +168,9 @@ TOKEN :
 	| <ANY : ~[]>
 }
 
-STG parse() : { }
+STG parse(StorageManager storage) : { }
 {
-	{ init(); }
+	{ init(storage); }
 	 ( header() <LINEBREAK> )*
 	 graph()
 	 ( footer() <LINEBREAK> )*

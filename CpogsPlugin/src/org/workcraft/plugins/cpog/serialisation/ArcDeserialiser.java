@@ -22,6 +22,7 @@
 package org.workcraft.plugins.cpog.serialisation;
 
 import org.w3c.dom.Element;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.plugins.cpog.Arc;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.serialisation.ReferenceResolver;
@@ -45,7 +46,7 @@ public class ArcDeserialiser extends BooleanFunctionDeserialiser
 			ReferenceResolver externalReferenceResolver,
 			Object... constructorParameters)
 	{
-		return new Arc();
+		return new Arc((StorageManager)constructorParameters[0]);
 	}
 
 	

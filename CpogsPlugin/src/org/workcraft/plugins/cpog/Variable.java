@@ -23,21 +23,25 @@ package org.workcraft.plugins.cpog;
 
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
-import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor;
 
-@DisplayName("Variable")
-@VisualClass("org.workcraft.plugins.cpog.VisualVariable")
+@VisualClass(org.workcraft.plugins.cpog.VisualVariable.class)
 public class Variable extends MathNode implements Comparable<Variable>, BooleanVariable
 {
-	private final ModifiableExpression<VariableState> state = new org.workcraft.dependencymanager.advanced.user.Variable<VariableState>(VariableState.UNDEFINED);
-	
-	private final ModifiableExpression<String> label = new org.workcraft.dependencymanager.advanced.user.Variable<String>("");
+	private final ModifiableExpression<VariableState> state;
+	private final ModifiableExpression<String> label;
 
+	public Variable(StorageManager storage) {
+		super(storage);
+		state = storage.create(VariableState.UNDEFINED);
+		label = storage.create("");
+	}
+	
 	public ModifiableExpression<VariableState> state()
 	{
 		return state;

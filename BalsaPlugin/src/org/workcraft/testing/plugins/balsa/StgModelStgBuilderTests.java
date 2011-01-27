@@ -29,6 +29,7 @@ import org.workcraft.plugins.balsa.stgbuilder.SignalId;
 import org.workcraft.plugins.balsa.stgbuilder.StgBuilder;
 import org.workcraft.plugins.balsa.stgmodelstgbuilder.NameProvider;
 import org.workcraft.plugins.balsa.stgmodelstgbuilder.StgModelStgBuilder;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.SignalTransition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
@@ -39,7 +40,7 @@ public class StgModelStgBuilderTests {
 	@Test
 	public void Test1()
 	{
-		STG stg = new STG();
+		STG stg = new STG(new DefaultStorageManager());
 		
 		Handshake hs1 = new Handshake()
 		{

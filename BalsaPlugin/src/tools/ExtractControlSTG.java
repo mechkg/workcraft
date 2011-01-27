@@ -16,6 +16,7 @@ import org.workcraft.plugins.balsa.io.ExtractControlSTGTask;
 import org.workcraft.plugins.balsa.io.StgExtractionResult;
 import org.workcraft.plugins.shared.presets.PresetManager;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.tasks.DummyProgressMonitor;
@@ -54,7 +55,9 @@ public class ExtractControlSTG implements Tool {
 		
 		if (dialog.getModalResult()==1)
 		{
-			final ExtractControlSTGTask task = new ExtractControlSTGTask(framework, WorkspaceUtils.getAs(we, BalsaCircuit.class), dialog.getSettingsFromControls());
+			final HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
+			
+			final ExtractControlSTGTask task = new ExtractControlSTGTask(framework, WorkspaceUtils.getAs(we, BalsaCircuit.class), dialog.getSettingsFromControls(), storage);
 			framework.getTaskManager().queue(task, "Extracting control STG", new DummyProgressMonitor<StgExtractionResult>()
 					{
 						public void finished(final org.workcraft.tasks.Result<? extends StgExtractionResult> result, String description) {
@@ -70,7 +73,7 @@ public class ExtractControlSTG implements Tool {
 											String fileName = FileUtils.getFileNameWithoutExtension(new File(path.getNode()));
 											
 											STGModel model = result.getReturnValue().getResult();
-											final WorkspaceEntry resolved = framework.getWorkspace().add(path.getParent(), fileName + "_resolved", new ModelEntry (new STGModelDescriptor(), model), true);
+											final WorkspaceEntry resolved = framework.getWorkspace().add(path.getParent(), fileName + "_resolved", new ModelEntry (new STGModelDescriptor(), model, storage), true);
 											framework.getMainWindow().createEditorWindow(resolved);
 										}
 										else

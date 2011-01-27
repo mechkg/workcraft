@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
@@ -43,9 +44,9 @@ public class VisualHandshake extends VisualComponent {
 
 	private final Handshake handshake;
 
-	VisualHandshake(BreezeHandshake handshake)
+	VisualHandshake(BreezeHandshake handshake, StorageManager storage)
 	{
-		super(handshake);
+		super(handshake, storage);
 		this.handshake = handshake.getHandshake();
 	}
 	

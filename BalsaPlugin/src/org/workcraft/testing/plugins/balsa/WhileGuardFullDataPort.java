@@ -15,13 +15,14 @@ import org.workcraft.plugins.balsa.handshakebuilder.FullDataPull;
 import org.workcraft.plugins.balsa.handshakebuilder.Handshake;
 import org.workcraft.plugins.balsa.handshakes.MainHandshakeMaker;
 import org.workcraft.plugins.balsa.io.BalsaSystem;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 public class WhileGuardFullDataPort {
 	@Test
 	public void test() throws Exception
 	{
 		PrimitivePart whilE = new BreezeLibrary(BalsaSystem.DEFAULT()).getPrimitive("While");
-		BalsaCircuit balsa = new BalsaCircuit();
+		BalsaCircuit balsa = new BalsaCircuit(new DefaultStorageManager());
 		BreezeInstance<BreezeHandshake> instance = whilE.instantiate(new DefaultBreezeFactory(balsa), EmptyValueList.instance());
 		
 		Map<String, Handshake> handshakes = MainHandshakeMaker.getHandshakes(instance.ports().get(0).getOwner().getUnderlyingComponent());

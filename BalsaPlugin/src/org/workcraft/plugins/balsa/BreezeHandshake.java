@@ -21,6 +21,7 @@
 
 package org.workcraft.plugins.balsa;
 
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.plugins.balsa.handshakebuilder.Handshake;
 
@@ -28,8 +29,9 @@ public class BreezeHandshake extends MathNode {
 	private BreezeComponent owner;
 	private String handshakeName;
 	
-	public BreezeHandshake(BreezeComponent owner, String handshakeName)
+	public BreezeHandshake(BreezeComponent owner, String handshakeName, StorageManager storage)
 	{
+		super(storage);
 		this.owner = owner;
 		this.handshakeName = handshakeName;
 	}

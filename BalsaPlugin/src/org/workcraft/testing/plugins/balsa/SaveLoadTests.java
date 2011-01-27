@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import org.junit.Assert;
 import org.workcraft.BalsaModelDescriptor;
 import org.workcraft.Framework;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
@@ -52,6 +53,7 @@ import org.workcraft.plugins.balsa.VisualBalsaCircuit;
 import org.workcraft.plugins.balsa.VisualBreezeComponent;
 import org.workcraft.plugins.balsa.VisualHandshake;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.workspace.ModelEntry;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
@@ -178,7 +180,7 @@ public class SaveLoadTests {
 		
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		
-		new Framework().save(new ModelEntry(new BalsaModelDescriptor(), circuit), stream);
+		new Framework().save(new ModelEntry(new BalsaModelDescriptor(), circuit, new DefaultStorageManager()), stream);
 		
 		//testMathModelLoadWhileWhile(new ByteArrayInputStream(stream.toByteArray()));
 	}
@@ -193,7 +195,7 @@ public class SaveLoadTests {
 		//FileOutputStream temp = new FileOutputStream("temp.work");
 		//new Framework().save(circuit, temp);
 		//temp.close();
-		new Framework().save(new ModelEntry(new BalsaModelDescriptor(), circuit), stream);
+		new Framework().save(new ModelEntry(new BalsaModelDescriptor(), circuit, new DefaultStorageManager()), stream);
 		testVisualModelLoopWhile(circuit);
 		/*testVisualModelLoopWhile(
 				Framework.load(
@@ -201,26 +203,27 @@ public class SaveLoadTests {
 	}
 
 	private VisualBalsaCircuit createLoopWhileVisualCircuit() throws VisualModelInstantiationException, InvalidConnectionException {
-		BalsaCircuit math = new BalsaCircuit(); 
+		DefaultStorageManager storage = new DefaultStorageManager();
+		BalsaCircuit math = new BalsaCircuit(storage); 
 		
-		VisualBalsaCircuit visual = new VisualBalsaCircuit(math);
+		VisualBalsaCircuit visual = new VisualBalsaCircuit(math, storage);
 		
-		BreezeComponent wh = new BreezeComponent();
+		BreezeComponent wh = new BreezeComponent(storage);
 		wh.setUnderlyingComponent(createWhile());
-		BreezeComponent loop = new BreezeComponent();
+		BreezeComponent loop = new BreezeComponent(storage);
 		loop.setUnderlyingComponent(createLoop());
 		math.add(wh);
 		math.add(loop);
 		MathConnection con = (MathConnection)math.connect(loop.getHandshakeComponentByName("activateOut"), wh.getHandshakeComponentByName("activate"));
 		
-		VisualBreezeComponent whVis = new VisualBreezeComponent(wh);
+		VisualBreezeComponent whVis = new VisualBreezeComponent(wh, storage);
 		whVis.x().setValue(10.0);
 		visual.getRoot().add(whVis);
-		VisualBreezeComponent loopVis = new VisualBreezeComponent(loop);
+		VisualBreezeComponent loopVis = new VisualBreezeComponent(loop, storage);
 		visual.getRoot().add(loopVis);
 		
 		VisualConnection conVis = new VisualConnection(con, getVisualHandshakeByName(loopVis, "activateOut"),
-				getVisualHandshakeByName(whVis, "activate"));
+				getVisualHandshakeByName(whVis, "activate"), storage);
 		visual.getRoot().add(conVis);
 		
 		return visual;
@@ -241,12 +244,12 @@ public class SaveLoadTests {
 
 	private BalsaCircuit createWhileWhileMathCircuit()
 			throws InvalidConnectionException {
-		BalsaCircuit circuit = new BalsaCircuit();
+		BalsaCircuit circuit = new BalsaCircuit(new DefaultStorageManager());
 		
-		BreezeComponent wh = new BreezeComponent();
+		BreezeComponent wh = new BreezeComponent(new DefaultStorageManager());
 	
 		wh.setUnderlyingComponent(createWhile());
-		BreezeComponent loop = new BreezeComponent();
+		BreezeComponent loop = new BreezeComponent(new DefaultStorageManager());
 		loop.setUnderlyingComponent(createLoop());
 		circuit.add(wh);
 		circuit.add(loop);
@@ -265,13 +268,14 @@ public class SaveLoadTests {
 		
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		
-		f.save(new ModelEntry(new BalsaModelDescriptor(), circuit), stream);
+		StorageManager storage = new DefaultStorageManager();
+		f.save(new ModelEntry(new BalsaModelDescriptor(), circuit, storage ), stream);
 		
 		Model loaded = f.load(new ByteArrayInputStream(stream.toByteArray())).getModel();
 		
 		stream = new ByteArrayOutputStream();
 		
-		f.save(new ModelEntry(new BalsaModelDescriptor(), loaded), stream);
+		f.save(new ModelEntry(new BalsaModelDescriptor(), loaded, storage), stream);
 		
 		testMathModelLoadWhileWhile(new ByteArrayInputStream(stream.toByteArray()));
 	}

@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.stg;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.util.HashSet;
@@ -32,7 +34,6 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
@@ -43,8 +44,6 @@ import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class VisualImplicitPlaceArc extends VisualConnection {
 	
@@ -63,9 +62,9 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 		};
 	}
 	
-	private final Variable<STGPlace> implicitPlace = Variable.create(null);
-	private final Variable<MathConnection> refCon1 = Variable.create(null);
-	private final Variable<MathConnection> refCon2 = Variable.create(null);
+	private final ModifiableExpression<STGPlace> implicitPlace;
+	private final ModifiableExpression<MathConnection> refCon1;
+	private final ModifiableExpression<MathConnection> refCon2;
 	
 	private static double tokenSpaceSize = 0.8;
 	private static double singleTokenSize = tokenSpaceSize / 1.9;
@@ -96,6 +95,10 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 	public VisualImplicitPlaceArc (StorageManager storage) {
 		super(storage);
 		addPropertyDeclarations();
+		implicitPlace = storage.create(null);
+		refCon1 = storage.create(null);
+		refCon2 = storage.create(null);
+		
 	}
 	
 	public void setImplicitPlaceArcDependencies (MathConnection refCon1, MathConnection refCon2, STGPlace implicitPlace) {
@@ -106,9 +109,9 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 
 	public VisualImplicitPlaceArc (VisualComponent first, VisualComponent second, MathConnection refCon1, MathConnection refCon2, STGPlace implicitPlace, StorageManager storage) {
 		super(null, first, second, storage);
-		this.refCon1.setValue(refCon1);
-		this.refCon2.setValue(refCon2);
-		this.implicitPlace.setValue(implicitPlace);
+		this.refCon1 = storage.create(refCon1);
+		this.refCon2 = storage.create(refCon2);
+		this.implicitPlace  = storage.create(implicitPlace);
 		
 		addPropertyDeclarations();
 	}

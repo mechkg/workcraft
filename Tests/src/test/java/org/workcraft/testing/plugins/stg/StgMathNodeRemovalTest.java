@@ -16,8 +16,9 @@ import org.workcraft.plugins.stg.VisualSTG;
 public class StgMathNodeRemovalTest {
 	@Test
 	public void mathNodeRemovalTest() throws InvalidConnectionException {
-		STG stg = new STG(new DefaultStorageManager());
-		VisualSTG visualStg = new VisualSTG(stg);
+		DefaultStorageManager storage = new DefaultStorageManager();
+		STG stg = new STG(storage);
+		VisualSTG visualStg = new VisualSTG(stg, storage);
 		VisualDummyTransition transition = visualStg.createDummyTransition();
 		VisualPlace place = visualStg.createPlace();
 		VisualConnection arc = visualStg.createConnection(place, transition);

@@ -94,7 +94,7 @@ public class STG extends AbstractMathModel implements STGModel {
 
 	private final SignalTypeConsistencySupervisor signalTypeConsistencySupervisor;
 	
-	final public Place createPlace() {
+	final public STGPlace createPlace() {
 		return createPlace(null);
 	}
 

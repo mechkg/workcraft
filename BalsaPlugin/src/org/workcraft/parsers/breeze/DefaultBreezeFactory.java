@@ -50,7 +50,7 @@ public class DefaultBreezeFactory implements BreezeFactory<BreezeHandshake> {
 	@Override
 	public BreezeInstance<BreezeHandshake> create(PrimitivePart declaration, ParameterScope parameters)
 	{
-		BreezeComponent comp = new BreezeComponent();
+		BreezeComponent comp = new BreezeComponent(circuit.storage);
 		comp.setUnderlyingComponent(new DynamicComponent(declaration, parameters));
 		circuit.add(comp);
 		final ArrayList<BreezeHandshake> result = new ArrayList<BreezeHandshake>(); 

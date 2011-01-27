@@ -57,6 +57,7 @@ import org.workcraft.plugins.balsa.stgmodelstgbuilder.NameProvider;
 import org.workcraft.plugins.balsa.stgmodelstgbuilder.StgModelStgBuilder;
 import org.workcraft.plugins.interop.DotGExporter;
 import org.workcraft.plugins.interop.DotGImporter;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.plugins.stg.VisualSTG;
@@ -72,7 +73,7 @@ public class WhileTests {
 	{
 		final DynamicComponent wh = null;//new While();
 		
-		final STG stg = new STG();
+		final STG stg = new STG(new DefaultStorageManager());
 
 		final Map<String, Handshake> handshakes = MainHandshakeMaker.getHandshakes(wh);
 		
@@ -99,17 +100,17 @@ public class WhileTests {
 		
 		//new DeadlockChecker().run(stg);
 		
-		new org.workcraft.Framework().save(new ModelEntry(new STGModelDescriptor(),  new VisualSTG(stg)), "while.stg.work");
+		new org.workcraft.Framework().save(new ModelEntry(new STGModelDescriptor(),  new VisualSTG(stg, new DefaultStorageManager()), new DefaultStorageManager()), "while.stg.work");
 	}
 	
 	@Test
 	public void TestCombine() throws ModelSaveFailedException, VisualModelInstantiationException, InvalidConnectionException, ModelCheckingFailedException, IOException, LayoutFailedException, ModelValidationException, SerialisationException, DeserialisationException
 	{
-		BalsaCircuit balsa = new BalsaCircuit(); 
+		BalsaCircuit balsa = new BalsaCircuit(new DefaultStorageManager()); 
 		
-		BreezeComponent while1 = new BreezeComponent();
+		BreezeComponent while1 = new BreezeComponent(new DefaultStorageManager());
 		while1.setUnderlyingComponent(createWhile());
-		BreezeComponent while2 = new BreezeComponent();
+		BreezeComponent while2 = new BreezeComponent(new DefaultStorageManager());
 		while2.setUnderlyingComponent(createWhile());
 		
 		balsa.add(while1);
@@ -126,14 +127,14 @@ public class WhileTests {
 		framework.initPlugins();
 		
 		final BalsaExportConfig balsaConfig = new BalsaExportConfig(null, CompositionMode.IMPROVED_PCOMP, Protocol.FOUR_PHASE);
-		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(framework, balsa, balsaConfig);
+		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(framework, balsa, balsaConfig, new DefaultStorageManager());
 		Export.exportToFile(new DotGExporter(), stgExtractionTask.getSTG(), stgFile);
 		
 		final STG stg = (STG) Import.importFromFile(new DotGImporter(), stgFile).getModel();
 		
-		VisualSTG visualStg = new VisualSTG(stg);
+		VisualSTG visualStg = new VisualSTG(stg, new DefaultStorageManager());
 		
-		framework.save(new ModelEntry(new STGModelDescriptor(), visualStg), "while_while.stg.work");
+		framework.save(new ModelEntry(new STGModelDescriptor(), visualStg, new DefaultStorageManager()), "while_while.stg.work");
 	}
 
 	private DynamicComponent createWhile() {

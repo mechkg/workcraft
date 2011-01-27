@@ -35,13 +35,14 @@ import org.workcraft.plugins.balsa.BalsaCircuit;
 import org.workcraft.plugins.balsa.BreezeComponent;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
 import org.workcraft.plugins.balsa.io.BalsaSystem;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 public class BalsaToGatesExporterTests {
 	@Test
 	public void test() throws IOException, ModelValidationException, SerialisationException
 	{
-		BalsaCircuit circuit = new BalsaCircuit();
-		BreezeComponent component = new BreezeComponent();
+		BalsaCircuit circuit = new BalsaCircuit(new DefaultStorageManager());
+		BreezeComponent component = new BreezeComponent(new DefaultStorageManager());
 		component.setUnderlyingComponent(new DynamicComponent(new BreezeLibrary(BalsaSystem.DEFAULT()).getPrimitive("While"), EmptyParameterScope.instance()));
 		circuit.add(component);
 		Framework f = new Framework();

@@ -30,6 +30,7 @@ import org.workcraft.plugins.desij.DesiJSettings;
 import org.workcraft.plugins.desij.tasks.DesiJResult;
 import org.workcraft.plugins.desij.tasks.DesiJTask;
 import org.workcraft.plugins.interop.DotGExporter;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.tasks.DefaultTaskManager;
 import org.workcraft.tasks.Result;
@@ -52,7 +53,7 @@ public class SeqMixTest {
 	@Test
 	public void testIndividual() throws IOException, InvalidConnectionException, ModelValidationException, SerialisationException
 	{
-		BalsaCircuit circuit = new BalsaCircuit();
+		BalsaCircuit circuit = new BalsaCircuit(new DefaultStorageManager());
 		DefaultBreezeFactory factory = new DefaultBreezeFactory(circuit);
 		
 		BreezeLibrary lib = new BreezeLibrary(BalsaSystem.DEFAULT());
@@ -72,13 +73,13 @@ public class SeqMixTest {
 		BreezeInstance<BreezeHandshake> callInstance = call.instantiate(factory,  new ParameterValueList.StringList("2"));
 		
 		final BalsaExportConfig config = new BalsaExportConfig(null, CompositionMode.IMPROVED_PCOMP, Protocol.FOUR_PHASE);
-		new DefaultTaskManager().execute(new ExtractControlSTGTask(f, circuit, config), "extraction"); // "export_unconnected_mixer.g"
+		new DefaultTaskManager().execute(new ExtractControlSTGTask(f, circuit, config, new DefaultStorageManager()), "extraction"); // "export_unconnected_mixer.g"
 	}
 	
 	@Test
 	public void test() throws InvalidConnectionException, IOException, ModelValidationException, SerialisationException, PluginInstantiationException
 	{
-		BalsaCircuit circuit = new BalsaCircuit();
+		BalsaCircuit circuit = new BalsaCircuit(new DefaultStorageManager());
 		DefaultBreezeFactory factory = new DefaultBreezeFactory(circuit);
 		
 		BreezeLibrary lib = new BreezeLibrary(BalsaSystem.DEFAULT());
@@ -106,7 +107,7 @@ public class SeqMixTest {
 		circuit.connect(mix2.ports().get(2), passivate2.ports().get(0));
 		
 		
-		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, circuit, new BalsaExportConfig(null, CompositionMode.PCOMP, Protocol.FOUR_PHASE));
+		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, circuit, new BalsaExportConfig(null, CompositionMode.PCOMP, Protocol.FOUR_PHASE), new DefaultStorageManager());
 		Export.exportToFile(new DotGExporter(), stgExtractionTask.getSTG(), "/home/dell/export_standard.g");
 //		Export.exportToFile((Exporter)synthesiser, circuit, "/home/dell/export.eqn");
 	}
@@ -122,7 +123,7 @@ public class SeqMixTest {
 		
 		class GeneratorState
 		{
-			BalsaCircuit circuit = new BalsaCircuit();
+			BalsaCircuit circuit = new BalsaCircuit(new DefaultStorageManager());
 			DefaultBreezeFactory factory = new DefaultBreezeFactory(circuit);
 			
 			BreezeLibrary lib;
@@ -135,7 +136,7 @@ public class SeqMixTest {
 			
 			GeneratorState() throws IOException
 			{
-				circuit = new BalsaCircuit();
+				circuit = new BalsaCircuit(new DefaultStorageManager());
 				factory = new DefaultBreezeFactory(circuit);
 				
 				lib = new BreezeLibrary(BalsaSystem.DEFAULT());
@@ -241,7 +242,7 @@ public class SeqMixTest {
 					File contractedGFile = new File(fileName+".contracted.g");
 
 					final BalsaExportConfig balsaConfig = new BalsaExportConfig(null, 1==(o&1) ? CompositionMode.IMPROVED_PCOMP : CompositionMode.PCOMP, Protocol.FOUR_PHASE);
-					final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, circuit, balsaConfig);
+					final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, circuit, balsaConfig, new DefaultStorageManager());
 					Export.exportToFile(new DotGExporter(), stgExtractionTask.getSTG(), gFile);
 					
 					PrintStream defaultOut = System.out;

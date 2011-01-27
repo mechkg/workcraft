@@ -43,7 +43,6 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
@@ -63,7 +62,7 @@ public class VisualContact extends VisualComponent {
 	private static Font nameFont = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.5f);
 	
 	private double size = 0.5;
-	private final Variable<Direction> direction;
+	private final ModifiableExpression<Direction> direction;
 	
 	
 	private HashSet<SignalTransition> referencedTransitions=new HashSet<SignalTransition>();
@@ -95,7 +94,7 @@ public class VisualContact extends VisualComponent {
 	public VisualContact(Contact contact, VisualContact.Direction dir, StorageManager storage) {
 		super(contact, storage);
 		
-		this.direction = Variable.create(dir);
+		this.direction = storage.create(dir);
 		nameGlyphs = createGlyphsExpression(direction, contact.name());
 
 		addPropertyDeclarations();

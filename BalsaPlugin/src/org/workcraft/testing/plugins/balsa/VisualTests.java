@@ -43,6 +43,7 @@ import org.workcraft.plugins.balsa.VisualBreezeComponent;
 import org.workcraft.plugins.balsa.VisualHandshake;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
 import org.workcraft.plugins.balsa.io.BalsaSystem;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
@@ -50,11 +51,11 @@ public class VisualTests {
 	@Test
 	public void whileHitTest()
 	{
-		BalsaCircuit circuit = new BalsaCircuit();
-		BreezeComponent mathComp = new BreezeComponent();
+		BalsaCircuit circuit = new BalsaCircuit(new DefaultStorageManager());
+		BreezeComponent mathComp = new BreezeComponent(new DefaultStorageManager());
 		mathComp.setUnderlyingComponent(createWhile());
 		circuit.add(mathComp);
-		VisualBreezeComponent visual = new VisualBreezeComponent(mathComp);
+		VisualBreezeComponent visual = new VisualBreezeComponent(mathComp, new DefaultStorageManager());
 		
 		assertTrue(eval(visual.shape()).hitTest(new Point2D.Double(0, 0)));
 		assertTrue(eval(visual.shape()).hitTest(new Point2D.Double(0.4, 0)));
@@ -81,11 +82,11 @@ public class VisualTests {
 	@Test
 	public void concurBoundingBoxTest()
 	{
-		BalsaCircuit circuit = new BalsaCircuit();
-		BreezeComponent mathComp = new BreezeComponent();
+		BalsaCircuit circuit = new BalsaCircuit(new DefaultStorageManager());
+		BreezeComponent mathComp = new BreezeComponent(new DefaultStorageManager());
 		mathComp.setUnderlyingComponent(createConcur());
 		circuit.add(mathComp);
-		VisualBreezeComponent visual = new VisualBreezeComponent(mathComp);
+		VisualBreezeComponent visual = new VisualBreezeComponent(mathComp, new DefaultStorageManager());
 
 		Rectangle2D box = eval(visual.localSpaceTouchable()).getBoundingBox();
 		
@@ -106,18 +107,18 @@ public class VisualTests {
 	@Test
 	public void connectionsTest() throws InvalidConnectionException, VisualModelInstantiationException
 	{
-		BalsaCircuit circuit = new BalsaCircuit();
-		BreezeComponent mathComp1 = new BreezeComponent();
-		BreezeComponent mathComp2 = new BreezeComponent();
+		BalsaCircuit circuit = new BalsaCircuit(new DefaultStorageManager());
+		BreezeComponent mathComp1 = new BreezeComponent(new DefaultStorageManager());
+		BreezeComponent mathComp2 = new BreezeComponent(new DefaultStorageManager());
 		mathComp1.setUnderlyingComponent(createConcur());
 		mathComp2.setUnderlyingComponent(createConcur());
 		circuit.add(mathComp1);
 		circuit.add(mathComp2);
-		VisualBreezeComponent visual1 = new VisualBreezeComponent(mathComp1);
-		VisualBreezeComponent visual2 = new VisualBreezeComponent(mathComp2);
+		VisualBreezeComponent visual1 = new VisualBreezeComponent(mathComp1, new DefaultStorageManager());
+		VisualBreezeComponent visual2 = new VisualBreezeComponent(mathComp2, new DefaultStorageManager());
 		visual1.x().setValue(10.0);
 		
-		VisualBalsaCircuit visualCircuit = new VisualBalsaCircuit(circuit);
+		VisualBalsaCircuit visualCircuit = new VisualBalsaCircuit(circuit, new DefaultStorageManager());
 		
 		Container root = visualCircuit.getRoot();
 		root.add(visual1);

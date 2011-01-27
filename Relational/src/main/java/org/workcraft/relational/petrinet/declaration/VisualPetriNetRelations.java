@@ -2,10 +2,7 @@ package org.workcraft.relational.petrinet.declaration;
 
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.relational.interfaces.DeletionPolicy;
 import org.workcraft.relational.interfaces.Field;
 import org.workcraft.relational.interfaces.ObjectDeclaration;
@@ -14,7 +11,6 @@ import org.workcraft.relational.interfaces.Relation;
 import org.workcraft.relational.interfaces.RelationField;
 import org.workcraft.relational.petrinet.declaration.RelationalPetriNet.PetriNetRelations;
 
-import pcollections.HashTreePBag;
 import pcollections.HashTreePMap;
 import pcollections.PMap;
 import pcollections.PVector;

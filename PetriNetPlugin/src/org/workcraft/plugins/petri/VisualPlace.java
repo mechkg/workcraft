@@ -50,7 +50,7 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 	protected static double singleTokenSize = CommonVisualSettings.getSize() / 1.9;
 	protected static double multipleTokenSeparation = CommonVisualSettings.getStrokeWidth() / 8;
 	
-	private Variable<Color> tokenColor = new Variable<Color>(CommonVisualSettings.getForegroundColor());
+	private final Variable<Color> tokenColor;
 	
 	public Place getPlace() {
 		return (Place)getReferencedComponent();
@@ -62,6 +62,7 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 
 	public VisualPlace(Place place, StorageManager storage) {
 		super(place, storage);
+		tokenColor = new Variable<Color>(CommonVisualSettings.getForegroundColor());
 		addPropertyDeclarations();
 	}
 	

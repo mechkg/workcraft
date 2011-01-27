@@ -69,6 +69,7 @@ import org.workcraft.plugins.balsa.io.ExtractControlSTGTask;
 import org.workcraft.plugins.balsa.io.STGSynthesisTask;
 import org.workcraft.plugins.gates.GateLevelModel;
 import org.workcraft.plugins.interop.DotGExporter;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.serialisation.Format;
 import org.workcraft.testing.plugins.balsa.TestGCD.ChunkSplitter.Result;
@@ -297,7 +298,7 @@ public class TestGCD {
 		init();
 		
 		final BalsaExportConfig config = new BalsaExportConfig(null, CompositionMode.IMPROVED_PCOMP, Protocol.FOUR_PHASE);
-		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, circuit, config);
+		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, circuit, config, new DefaultStorageManager());
 		Export.exportToFile(new DotGExporter(), stgExtractionTask.getSTG(),"export_gcd.g");
 
 		
@@ -375,7 +376,7 @@ public class TestGCD {
 		f.getPluginManager().loadManifest();
 		f.loadConfig("config/config.xml");		
 		
-		circuit = new BalsaCircuit();
+		circuit = new BalsaCircuit(new DefaultStorageManager());
 
 		BreezeLibrary lib = new BreezeLibrary(BalsaSystem.DEFAULT());
 
@@ -683,7 +684,7 @@ public class TestGCD {
 			
 
 			final BalsaExportConfig config = new BalsaExportConfig(null, CompositionMode.IMPROVED_PCOMP, Protocol.FOUR_PHASE);
-			final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(framework, circuit, config)
+			final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(framework, circuit, config, new DefaultStorageManager())
 			{
 				@Override protected Iterable<BreezeComponent> getComponentsToSave(Netlist<BreezeHandshake, BreezeComponent, BreezeConnection> balsa) {
 					return Arrays.asList(components);

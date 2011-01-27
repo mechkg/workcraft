@@ -1,16 +1,13 @@
 package org.workcraft.relational.engine;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.Collection;
-import java.util.Deque;
 import java.util.Stack;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
-import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.relational.interfaces.DeletionPolicy;
 import org.workcraft.relational.interfaces.Field;
@@ -26,8 +23,6 @@ import pcollections.PMap;
 import pcollections.PVector;
 import pcollections.TreePVector;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-
 public class DatabaseEngineImpl implements DatabaseEngine {
 
 	Stack<DatabaseImpl> history = new Stack<DatabaseImpl>();
@@ -40,11 +35,11 @@ public class DatabaseEngineImpl implements DatabaseEngine {
 	}
 	
 	static class DatabaseOperations {
-		private final PVector<? extends Relation> schema;
+//		private final PVector<? extends Relation> schema;
 		private final PMap<String, PMap<String, ? extends Field>> fields;
 
 		public DatabaseOperations(PVector<? extends Relation> schema) {
-			this.schema = schema;
+	//		this.schema = schema;
 			PMap<String, PMap<String, ? extends Field>> fields = HashTreePMap.empty();
 			for(Relation r : schema) {
 				fields = fields.plus(r.getObjectDeclaration().name(), r.getFields());

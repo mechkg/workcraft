@@ -75,6 +75,7 @@ import org.workcraft.plugins.balsa.io.BalsaSystem;
 import org.workcraft.plugins.balsa.io.BreezeImporter;
 import org.workcraft.plugins.balsa.io.ExtractControlSTGTask;
 import org.workcraft.plugins.interop.DotGExporter;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.util.Export;
 
 
@@ -99,14 +100,16 @@ public class TESTS {
 		
 		registerParts(bzrFileName, lib);
 		
-		BalsaCircuit circuit = new BalsaCircuit();
+		DefaultStorageManager storage = new DefaultStorageManager();
+		
+		BalsaCircuit circuit = new BalsaCircuit(storage);
 		
 		DefaultBreezeFactory factory = new DefaultBreezeFactory(circuit);
 		
 		lib.get("BMU").instantiate(lib, factory, EmptyValueList.instance());
 		
 		final BalsaExportConfig balsaConfig = new BalsaExportConfig(null, CompositionMode.IMPROVED_PCOMP, Protocol.FOUR_PHASE);
-		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(framework, circuit, balsaConfig);
+		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(framework, circuit, balsaConfig, storage);
 		Export.exportToFile(new DotGExporter(), stgExtractionTask.getSTG(), "viterbi.g");
 		
 		//new SynthesisWithMpsat(framework).export(circuit, stream);
@@ -223,7 +226,7 @@ public class TESTS {
 		void printContainer(PrintStream printer) throws Throwable, Throwable, Throwable
 		{
 			File inFile = new File(ClassLoader.getSystemResource("org/workcraft/testing/plugins/balsa/tests/BF.breeze").getFile());
-			final BalsaCircuit balsa = new BreezeImporter(/*"C:\\balsa_Testing\\balsa"*/).importFromBreeze(new FileInputStream(inFile), "BF");
+			final BalsaCircuit balsa = new BreezeImporter(/*"C:\\balsa_Testing\\balsa"*/).importFromBreeze(new FileInputStream(inFile), "BF", new DefaultStorageManager());
 	
 			String circuitName = "Circuit";
 	
@@ -410,7 +413,7 @@ public class TESTS {
 			Framework f = new Framework();
 			f.initPlugins();
 			final BalsaExportConfig balsaConfig = new BalsaExportConfig(null, CompositionMode.IMPROVED_PCOMP, Protocol.FOUR_PHASE);
-			final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, control, balsaConfig);
+			final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, control, balsaConfig, new DefaultStorageManager());
 			new DotGExporter().export(stgExtractionTask.getSTG(), out);
 		} catch (Exception e) {
 			throw new RuntimeException(e);

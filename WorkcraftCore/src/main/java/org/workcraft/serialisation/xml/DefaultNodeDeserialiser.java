@@ -90,6 +90,8 @@ class DefaultNodeDeserialiser {
 				// we know that 'setValue' accepts propertyType
 				@SuppressWarnings("unchecked")
 				ModifiableExpression<Object> expr = (ModifiableExpression<Object>) property.invoke(instance);
+				if(expr == null)
+					throw new RuntimeException(property + " returned " + null);
 				expr.setValue(propertyType.cast(value));
 			}
 		} catch (IllegalArgumentException e) {

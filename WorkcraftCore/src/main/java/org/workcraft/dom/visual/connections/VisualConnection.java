@@ -36,9 +36,8 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.RestrictedVariable;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionFilter;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
@@ -129,24 +128,29 @@ public class VisualConnection extends VisualNode implements
 	private VisualComponent second;
 
 	private ConnectionType connectionType = ConnectionType.POLYLINE;
-	private Variable<ScaleMode> scaleMode = new Variable<ScaleMode>(ScaleMode.LOCK_RELATIVELY);
+	private final ModifiableExpression<ScaleMode> scaleMode;
 	
 	private ConnectionGraphic graphic = null;
 
-	static class BoundedVariable extends RestrictedVariable<Double>
+	static class BoundedVariable extends ModifiableExpressionFilter<Double, Double>
 	{	
 		private final double min;
 		private final double max;
 		
-		public BoundedVariable(double min, double max, double value) {
-			super(value);
+		public BoundedVariable(double min, double max, ModifiableExpression<Double> backEnd) {
+			super(backEnd);
 			this.min = min;
 			this.max = max;
 		}
-		
+
 		@Override
-		protected Double correctValue(Double oldValue, Double newValue) {
+		protected Double setFilter(Double newValue) {
 			return newValue < min ? min : newValue > max ? max : newValue;
+		}
+
+		@Override
+		protected Double getFilter(Double value) {
+			return value;
 		}
 	}
 	
@@ -154,12 +158,12 @@ public class VisualConnection extends VisualNode implements
 	private static double defaultArrowWidth = 0.15;
 	private static double defaultArrowLength = 0.4;
 	public static double HIT_THRESHOLD = 0.2;
-	private static Color defaultColor = Color.BLACK;
+	private static final Color defaultColor = Color.BLACK;
 
-	private Variable<Color> color = new Variable<Color>(defaultColor);
-	private ModifiableExpression<Double> lineWidth = new BoundedVariable(0.01, 0.5, defaultLineWidth);
-	private ModifiableExpression<Double> arrowWidth = new BoundedVariable(0.1, 1, defaultArrowWidth);
-	private ModifiableExpression<Double> arrowLength = new BoundedVariable(0.1, 1, defaultArrowLength);
+	private final ModifiableExpression<Color> color;
+	private final ModifiableExpression<Double> lineWidth;
+	private final ModifiableExpression<Double> arrowWidth;
+	private final ModifiableExpression<Double> arrowLength;
 	
 	private CachedHashSet<Node> children;
 	private ExpressionBase<Touchable> transformedShape1;
@@ -167,6 +171,7 @@ public class VisualConnection extends VisualNode implements
 	public final StorageManager storage;
 	
 	protected void initialise() {
+
 		children = new CachedHashSet<Node>(storage);
 
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Line width", lineWidth(), lineWidth(), Double.class));
@@ -205,6 +210,11 @@ public class VisualConnection extends VisualNode implements
 	public VisualConnection(StorageManager storage) {
 		super(storage);
 		this.storage = storage;
+		color = storage.create(defaultColor);
+		scaleMode = storage.create(ScaleMode.LOCK_RELATIVELY);
+		lineWidth = new BoundedVariable(0.01, 0.5, storage.create(defaultLineWidth));
+		arrowWidth = new BoundedVariable(0.1, 1, storage.create(defaultArrowWidth));
+		arrowLength = new BoundedVariable(0.1, 1, storage.create(defaultArrowLength));
 	}
 	
 	public void setVisualConnectionDependencies(VisualComponent first, VisualComponent second, ConnectionGraphic graphic, MathConnection refConnection) {
@@ -229,12 +239,11 @@ public class VisualConnection extends VisualNode implements
 	}
 	
 	public VisualConnection(MathConnection refConnection, VisualComponent first, VisualComponent second, StorageManager storage) {
-		super(storage);
+		this(storage);
 		this.refConnection = refConnection;
 		this.first = first;
 		this.second = second;
 		this.graphic = new Polyline(this, storage);
-		this.storage = storage;
 		
 		initialise();
 	}

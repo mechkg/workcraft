@@ -30,8 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.workcraft.annotations.DisplayName;
-import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.AbstractMathModel;
@@ -49,13 +48,13 @@ import org.workcraft.plugins.balsa.handshakebuilder.PushHandshake;
 import org.workcraft.plugins.balsa.handshakes.MainHandshakeMaker;
 import org.workcraft.util.Hierarchy;
 
-@VisualClass ("org.workcraft.plugins.balsa.VisualBalsaCircuit")
-@DisplayName ("Balsa circuit")
-
 public final class BalsaCircuit extends AbstractMathModel 
 {
-	public BalsaCircuit() {
+	public final StorageManager storage;
+
+	public BalsaCircuit(StorageManager storage) {
 		super(null);
+		this.storage = storage;
 		
 		//TODO: do this somehow
 				//if(e instanceof NodesAddedEvent)
@@ -92,7 +91,7 @@ public final class BalsaCircuit extends AbstractMathModel
 		for(String handshakeName : handshakes.keySet())
 		{
 			Handshake handshake = handshakes.get(handshakeName);
-			BreezeHandshake hcomp = new BreezeHandshake(component, handshakeName);
+			BreezeHandshake hcomp = new BreezeHandshake(component, handshakeName, storage);
 			handshakeComponents.put(handshake, hcomp);
 			add(hcomp);
 		}
@@ -145,7 +144,7 @@ public final class BalsaCircuit extends AbstractMathModel
 	public MathConnection connect (BreezeHandshake first, BreezeHandshake second) throws InvalidConnectionException {
 		validateConnection(first, second);
 		
-		MathConnection con = new MathConnection(first, second);
+		MathConnection con = new MathConnection(first, second, storage);
 		
 		Hierarchy.getNearestContainer(first, second).add(con);
 		
@@ -203,7 +202,7 @@ public final class BalsaCircuit extends AbstractMathModel
 
 	public BreezeComponent addNew(DynamicComponent component) 
 	{
-		BreezeComponent node = new BreezeComponent();
+		BreezeComponent node = new BreezeComponent(storage);
 		node.setUnderlyingComponent(component);
 		add(node);
 		return node;

@@ -21,10 +21,12 @@
 
 package org.workcraft.plugins.balsa;
 
+import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.workcraft.annotations.CustomTools;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
@@ -32,20 +34,22 @@ import org.workcraft.dom.visual.AbstractVisualModel;
 import org.workcraft.dom.visual.connections.Polyline;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.exceptions.InvalidConnectionException;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
+import org.workcraft.plugins.balsa.components.DynamicComponent;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.util.TwoWayMap;
 
 @CustomTools(VisualBalsaTools.class)
 public final class VisualBalsaCircuit extends AbstractVisualModel {
-	public VisualBalsaCircuit(BalsaCircuit model) throws VisualModelInstantiationException {
-		super(model);
+	public VisualBalsaCircuit(BalsaCircuit model, StorageManager storage) throws VisualModelInstantiationException {
+		super(model, storage);
 
 		Map<MathNode, VisualHandshake> visuals = new HashMap<MathNode, VisualHandshake>();
 		
 		for(BreezeComponent component : model.getComponents())
 		{
-			VisualBreezeComponent visual = new VisualBreezeComponent(component);
+			VisualBreezeComponent visual = new VisualBreezeComponent(component, storage);
 			add(visual);
 			
 			for(VisualHandshake hc : visual.visualHandshakes.values())
@@ -54,13 +58,13 @@ public final class VisualBalsaCircuit extends AbstractVisualModel {
 		
 		
 		for(MathConnection connection : model.getConnections()) {
-			VisualConnection visualConnection = new VisualConnection();
+			VisualConnection visualConnection = new VisualConnection(storage);
 			
 			VisualHandshake first = visuals.get(connection.getFirst());
 			VisualHandshake second = visuals.get(connection.getSecond());
 			
 			visualConnection.setVisualConnectionDependencies(first, 
-					second, new Polyline(visualConnection), connection);
+					second, new Polyline(visualConnection, storage), connection);
 			//VisualConnection visualConnection = new VisualConnection(connection, visuals.get(connection.getFirst()), visuals.get(connection.getSecond()));
 			add(visualConnection);
 		}
@@ -104,6 +108,20 @@ public final class VisualBalsaCircuit extends AbstractVisualModel {
 		final MathConnection connect = ((BalsaCircuit)getMathModel()).connect( firstHandshake.getHandshakeComponent(),
 				secondHandshake.getHandshakeComponent() );
 		
-		Hierarchy.getNearestContainer(first, second).add(new VisualConnection(connect, firstHandshake, secondHandshake));
+		Hierarchy.getNearestContainer(first, second).add(new VisualConnection(connect, firstHandshake, secondHandshake, storage));
+	}
+
+	public VisualBreezeComponent createComponent(String componentName, Point2D where) {
+		if(true)throw new NotImplementedException();
+		BreezeComponent comp = new BreezeComponent(storage); 
+		DynamicComponent instance = null;
+		try {
+			//TODO: Instantiate a DynamicComponent
+			//instance = new BreezeLibrary(BalsaSystem.DEFAULT()).get(name) balsaClass.newInstance();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}				
+		comp.setUnderlyingComponent(instance);
+		return null;		
 	}
 }

@@ -1,7 +1,5 @@
 package org.workcraft.relational.engine;
 
-import java.util.Stack;
-
 import org.workcraft.dependencymanager.advanced.core.Expression;
 
 import pcollections.PMap;

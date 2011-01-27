@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.workcraft.Framework;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.parsers.breeze.Netlist;
@@ -58,6 +59,7 @@ import org.workcraft.plugins.interop.DotGImporter;
 import org.workcraft.plugins.pcomp.PCompOutputMode;
 import org.workcraft.plugins.pcomp.tasks.PcompTask;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.serialisation.Format;
@@ -73,13 +75,15 @@ public class ExtractControlSTGTask implements Task<StgExtractionResult> {
 	private final BalsaCircuit balsa;
 	private final BalsaExportConfig settings;
 	private final Framework framework;
+	private final StorageManager storage;
 	
-	public ExtractControlSTGTask(Framework framework, org.workcraft.plugins.balsa.BalsaCircuit balsa, BalsaExportConfig settings)
+	public ExtractControlSTGTask(Framework framework, org.workcraft.plugins.balsa.BalsaCircuit balsa, BalsaExportConfig settings, StorageManager storage)
 	{
-		this(framework, balsa.asNetlist(), settings);
+		this(framework, balsa.asNetlist(), settings, storage);
 	}
 	
-	public ExtractControlSTGTask(Framework framework, Netlist<BreezeHandshake, BreezeComponent, BreezeConnection> circuit, BalsaExportConfig settings) {
+	public ExtractControlSTGTask(Framework framework, Netlist<BreezeHandshake, BreezeComponent, BreezeConnection> circuit, BalsaExportConfig settings, StorageManager storage) {
+		this.storage = storage;
 		this.balsa = new BalsaCircuit(circuit);
 		this.settings = settings;
 		this.framework = framework;
@@ -98,7 +102,7 @@ public class ExtractControlSTGTask implements Task<StgExtractionResult> {
 	}
 
 	private STG buildStgFull(BalsaCircuit balsa, NameProvider<Handshake> names) {
-		STG stg = new STG();
+		STG stg = new STG(storage);
 		
 		Iterable<? extends BreezeComponent> components = getComponentsToSave(balsa);
 		
@@ -174,8 +178,8 @@ public class ExtractControlSTGTask implements Task<StgExtractionResult> {
 
 	public static boolean injectiveLabelling = false;
 
-	private STG buildStg(final BalsaCircuit circuit, final BreezeComponent breezeComponent, NameProvider<Handshake> names) {
-		STG stg = new STG();
+	private static STG buildComponentStg(final BalsaCircuit circuit, final BreezeComponent breezeComponent, final HandshakeProtocol protocol, NameProvider<Handshake> names) {
+		STG stg = new STG(new DefaultStorageManager());
 
 		Map<String, Handshake> fullHandshakes = new HashMap<String, Handshake>(breezeComponent.getHandshakes());
 		
@@ -304,7 +308,7 @@ public class ExtractControlSTGTask implements Task<StgExtractionResult> {
 			ArrayList<File> tempFiles = new ArrayList<File>();
 			for(BreezeComponent component : getComponentsToSave(balsa))
 			{
-				STG stg = buildStg(balsa, component, names);
+				STG stg = buildComponentStg(balsa, component, protocol, names);
 	
 				File tempFile;
 				try {
@@ -354,7 +358,7 @@ public class ExtractControlSTGTask implements Task<StgExtractionResult> {
 					}
 
 					try {
-						final STGModel stg = new DotGImporter().importSTG(new ByteArrayInputStream(result.getReturnValue().getOutput()));
+						final STGModel stg = new DotGImporter().importSTG(new ByteArrayInputStream(result.getReturnValue().getOutput()), storage);
 						return Result.finished(new StgExtractionResult(stg, null));
 					} catch (DeserialisationException e) {
 						return Result.exception(e);
@@ -367,7 +371,7 @@ public class ExtractControlSTGTask implements Task<StgExtractionResult> {
 				}
 			}
 			else
-				return Result.finished(new StgExtractionResult(new STG(), null));
+				return Result.finished(new StgExtractionResult(new STG(storage), null));
 		}
 		
 	}

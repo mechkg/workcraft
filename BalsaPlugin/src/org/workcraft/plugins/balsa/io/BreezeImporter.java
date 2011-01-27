@@ -29,6 +29,7 @@ import java.util.Collection;
 import javax.swing.JOptionPane;
 
 import org.workcraft.BalsaModelDescriptor;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.interop.Importer;
@@ -38,6 +39,7 @@ import org.workcraft.parsers.breeze.DefaultBreezeFactory;
 import org.workcraft.parsers.breeze.EmptyValueList;
 import org.workcraft.parsers.breeze.dom.BreezePart;
 import org.workcraft.plugins.balsa.BalsaCircuit;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.workspace.ModelEntry;
 
 public class BreezeImporter implements Importer 
@@ -63,7 +65,7 @@ public class BreezeImporter implements Importer
 		return "Breeze handshake circuit (.breeze)";
 	}
 
-	public BalsaCircuit importFromBreeze(InputStream in, String breezeName) throws DeserialisationException, IOException, OperationCancelledException 
+	public BalsaCircuit importFromBreeze(InputStream in, String breezeName, StorageManager storage) throws DeserialisationException, IOException, OperationCancelledException 
 	{
 		if (balsa == null)
 			balsa = BalsaSystem.DEFAULT();
@@ -76,7 +78,7 @@ public class BreezeImporter implements Importer
 			throw new DeserialisationException(e);
 		}
 		
-		BalsaCircuit circuit = new BalsaCircuit();
+		BalsaCircuit circuit = new BalsaCircuit(storage);
 		DefaultBreezeFactory factory = new DefaultBreezeFactory(circuit);
 		
 		BreezeDefinition choice;
@@ -107,7 +109,8 @@ public class BreezeImporter implements Importer
 	public ModelEntry importFrom(InputStream in) throws DeserialisationException, IOException 
 	{
 		try {
-			return new ModelEntry (new BalsaModelDescriptor(), importFromBreeze(in, null));
+			DefaultStorageManager storage = new DefaultStorageManager();
+			return new ModelEntry (new BalsaModelDescriptor(), importFromBreeze(in, null, storage), storage);
 		} catch (OperationCancelledException e) {
 			throw new java.lang.RuntimeException(e);
 		}

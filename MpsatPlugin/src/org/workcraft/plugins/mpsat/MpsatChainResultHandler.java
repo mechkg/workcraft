@@ -9,6 +9,7 @@ import javax.swing.SwingUtilities;
 import org.workcraft.plugins.mpsat.tasks.MpsatChainResult;
 import org.workcraft.plugins.mpsat.tasks.MpsatChainTask;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.tasks.DummyProgressMonitor;
 import org.workcraft.tasks.Result;
 import org.workcraft.tasks.Result.Outcome;
@@ -30,7 +31,7 @@ public class MpsatChainResultHandler extends DummyProgressMonitor<MpsatChainResu
 				SwingUtilities.invokeLater(new MpsatDeadlockResultHandler(task, mpsatChainResult));
 				break;
 			case RESOLVE_ENCODING_CONFLICTS:
-				SwingUtilities.invokeLater(new MpsatCscResolutionResultHandler(task, mpsatChainResult));
+				SwingUtilities.invokeLater(new MpsatCscResolutionResultHandler(task, mpsatChainResult, new HistoryPreservingStorageManager()));
 				break;
 			case COMPLEX_GATE_IMPLEMENTATION:
 				SwingUtilities.invokeLater(new MpsatSynthesisResultHandler(task, mpsatChainResult));

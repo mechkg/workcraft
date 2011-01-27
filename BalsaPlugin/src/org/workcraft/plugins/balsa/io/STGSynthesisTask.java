@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 
 import org.workcraft.Framework;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Model;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.NotImplementedException;
@@ -47,6 +48,7 @@ import org.workcraft.plugins.mpsat.tasks.MpsatTask;
 import org.workcraft.plugins.shared.PetrifyUtilitySettings;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
 import org.workcraft.plugins.shared.tasks.ExternalProcessTask;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.serialisation.Format;
@@ -108,7 +110,7 @@ public class STGSynthesisTask implements Task<SynthesisResult> {
 		{
 		case MPSAT:
 		{
-			STGModel cscResolved = resolveCscWithMpsat(framework, stg);
+			STGModel cscResolved = resolveCscWithMpsat(framework, stg, new DefaultStorageManager());
 			
 			return mpsatMakeEqn(framework, cscResolved);
 		}
@@ -120,11 +122,11 @@ public class STGSynthesisTask implements Task<SynthesisResult> {
 		
 	}
 
-	private static STGModel resolveCscWithMpsat(Framework framework, STGModel original) {
+	private static STGModel resolveCscWithMpsat(Framework framework, STGModel original, StorageManager storage) {
 		MpsatSettings settings = new MpsatSettings(MpsatMode.RESOLVE_ENCODING_CONFLICTS, 4, MpsatSettings.SOLVER_MINISAT, SolutionMode.MINIMUM_COST, 1, null);
 		MpsatChainTask mpsatTask = new MpsatChainTask(original, settings, framework);
 		final Result<? extends MpsatChainResult> result = framework.getTaskManager().execute(mpsatTask, "CSC conflict resolution");
-		return new MpsatCscResolutionResultHandler(mpsatTask, result).getResolvedStg();
+		return new MpsatCscResolutionResultHandler(mpsatTask, result, storage).getResolvedStg();
 	}
 
 	private static GateLevelModel petrifyMakeEqn(TaskManager taskManager, STGModel stg) throws IOException {
@@ -241,7 +243,7 @@ public class STGSynthesisTask implements Task<SynthesisResult> {
 			ModelValidationException, SerialisationException {
 
 		final BalsaExportConfig balsaConfig = getConfig();
-		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(framework, balsaModel, balsaConfig);
+		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(framework, balsaModel, balsaConfig, new DefaultStorageManager());
 		return stgExtractionTask.getSTG();
 	}
 

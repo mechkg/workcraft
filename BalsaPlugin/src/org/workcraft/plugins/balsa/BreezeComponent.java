@@ -26,18 +26,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.workcraft.annotations.VisualClass;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.VisualComponentGeneratorAttribute;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.parsers.breeze.Block;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
 import org.workcraft.plugins.balsa.handshakebuilder.Handshake;
 
-@VisualClass("org.workcraft.plugins.balsa.VisualBreezeComponent")
-@VisualComponentGeneratorAttribute(generator="org.workcraft.plugins.balsa.BreezeVisualComponentGenerator")
+@VisualClass(org.workcraft.plugins.balsa.VisualBreezeComponent.class)
 public class BreezeComponent extends MathNode implements Block<BreezeHandshake> {
 	
 	private DynamicComponent underlyingComponent;
-	public BreezeComponent() {
+	public BreezeComponent(StorageManager storage) {
+		super(storage);
 	}
 
 	public void setUnderlyingComponent(DynamicComponent underlyingComponent) {

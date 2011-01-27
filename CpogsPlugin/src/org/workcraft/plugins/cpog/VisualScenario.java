@@ -47,14 +47,14 @@ public class VisualScenario extends VisualGroup
 	private static final float minVariableWidth = 0.7f;
 	private static final float minVariableHeight = 0.85f;
 	
-	private final ModifiableExpression<Rectangle2D> contentsBB = new org.workcraft.dependencymanager.advanced.user.Variable<Rectangle2D>(null);
-	private final ModifiableExpression<Rectangle2D> labelBB = new org.workcraft.dependencymanager.advanced.user.Variable<Rectangle2D>(null);
-	private final ModifiableExpression<Rectangle2D> encodingBB = new org.workcraft.dependencymanager.advanced.user.Variable<Rectangle2D>(null);
+	private final ModifiableExpression<Rectangle2D> contentsBB;
+	private final ModifiableExpression<Rectangle2D> labelBB;
+	private final ModifiableExpression<Rectangle2D> encodingBB;
 	
 	private Map<Rectangle2D, Variable> variableBBs = new HashMap<Rectangle2D, Variable>();
 	
-	private ModifiableExpression<String> label = new org.workcraft.dependencymanager.advanced.user.Variable<String>("");
-	private ModifiableExpression<Encoding> encoding = new org.workcraft.dependencymanager.advanced.user.Variable<Encoding>(new Encoding());
+	private final ModifiableExpression<String> label;
+	private final ModifiableExpression<Encoding> encoding;
 	
 	private static Font labelFont;
 	
@@ -74,6 +74,11 @@ public class VisualScenario extends VisualGroup
 	public VisualScenario(StorageManager storage)
 	{
 		super(storage);
+		contentsBB = storage.create(null);
+		labelBB = storage.create(null);
+		encodingBB = storage.create(null);
+		label = storage.create("");
+		encoding = storage.create(new Encoding());
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Label", label(), String.class));
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Encoding", encoding(), Encoding.class));
 	}

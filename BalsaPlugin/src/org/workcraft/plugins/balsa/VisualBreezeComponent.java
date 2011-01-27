@@ -44,6 +44,7 @@ import java.util.Map;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.BoundingBoxHelper;
@@ -93,9 +94,10 @@ public class VisualBreezeComponent extends VisualComponent
 		//this.applyTransform(AffineTransform.getQuadrantRotateInstance(1));
 	}
 	
-	public VisualBreezeComponent(BreezeComponent refComponent) {
-		super(refComponent);
+	public VisualBreezeComponent(BreezeComponent refComponent, StorageManager storage) {
+		super(refComponent, storage);
 		this.refComponent = refComponent;
+		this.storage = storage;
 		init();
 	}
 
@@ -112,6 +114,7 @@ public class VisualBreezeComponent extends VisualComponent
 	}
 
 	Collection<Node> subNodes;
+	private final StorageManager storage;
 	
 	@Override
 	public Expression<Collection<Node>> children() {
@@ -144,7 +147,7 @@ public class VisualBreezeComponent extends VisualComponent
 			}
 			else
 			{
-				visual = new VisualHandshake(handshakeComponents.get(handshake));
+				visual = new VisualHandshake(handshakeComponents.get(handshake), storage);
 				visual.parent().setValue(this);
 			}
 			

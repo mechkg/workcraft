@@ -11,13 +11,14 @@ import org.workcraft.parsers.breeze.PrimitivePart;
 import org.workcraft.plugins.balsa.BalsaCircuit;
 import org.workcraft.plugins.balsa.BreezeHandshake;
 import org.workcraft.plugins.balsa.io.BalsaSystem;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.testing.plugins.balsa.SeqMixTest.DiamondGenerator;
 
 public class ParArbMixDiamondGenerator implements DiamondGenerator {
 
 	public static class State {
 
-		BalsaCircuit circuit = new BalsaCircuit();
+		BalsaCircuit circuit = new BalsaCircuit(new DefaultStorageManager());
 
 		DefaultBreezeFactory factory = new DefaultBreezeFactory(circuit);
 

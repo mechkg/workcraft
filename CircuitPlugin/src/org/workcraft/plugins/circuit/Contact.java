@@ -29,7 +29,6 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionWriteHandler;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
@@ -42,7 +41,7 @@ public class Contact extends MathNode implements BooleanVariable {
 	public enum IoType { INPUT, OUTPUT};
 	private final IoTypeFilter ioType;
 	private final ModifiableExpression<String> name;
-	private Variable<Boolean> initOne = Variable.create(false);
+	private final ModifiableExpression<Boolean> initOne;
 	
 	public ModifiableExpression<Boolean> initOne() {
 		return initOne;
@@ -57,6 +56,7 @@ public class Contact extends MathNode implements BooleanVariable {
 		
 		this.ioType = new IoTypeFilter(storage.create(ioType));
 		this.name = storage.create(name);
+		this.initOne = storage.create(false);
 	}
 	
 	

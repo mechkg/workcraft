@@ -5,6 +5,7 @@ import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.VisualModel;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 
 public class ModelEntry {
 	private final ModelDescriptor descriptor;

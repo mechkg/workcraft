@@ -21,44 +21,52 @@
 
 package org.workcraft.plugins.balsa;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-import org.workcraft.gui.graph.tools.AbstractNodeGenerator;
+import javax.swing.Icon;
+
+import org.workcraft.dom.visual.VisualModel;
+import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
+import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
+import org.workcraft.gui.graph.tools.NodeGenerator;
 import org.workcraft.gui.graph.tools.NodeGeneratorTool;
 import org.workcraft.gui.graph.tools.SelectionTool;
-import org.workcraft.plugins.balsa.components.DynamicComponent;
 
 public class VisualBalsaTools implements CustomToolsProvider
 {
 	GraphEditorTool getComponentTool(final String componentName)
 	{
-		return new NodeGeneratorTool(new AbstractNodeGenerator(){
-			@Override
-			protected BreezeComponent createMathNode() {
-				BreezeComponent comp = new BreezeComponent(); 
-				DynamicComponent instance = null;
-				try {
-					//TODO: Instantiate a DynamicComponent
-					//instance = new BreezeLibrary(BalsaSystem.DEFAULT()).get(name) balsaClass.newInstance();
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}				
-				comp.setUnderlyingComponent(instance);
-				return comp;
-			}
+		return new NodeGeneratorTool(new NodeGenerator(){
 			
 			@Override
 			public String getLabel() {
 				return componentName;
 			}
+
+			@Override
+			public Icon getIcon() {
+				return null;
+			}
+
+			@Override
+			public void generate(VisualModel model, Point2D where)
+					throws NodeCreationException {
+				((VisualBalsaCircuit)model).createComponent(componentName, where);
+			}
+
+			@Override
+			public int getHotKeyCode() {
+				return -1;
+			}
 		});
 	}
 	
 	@Override
-	public ArrayList<GraphEditorTool> getTools() {
+	public ArrayList<GraphEditorTool> getTools(GraphEditor editor) {
 		ArrayList<GraphEditorTool> tools = new ArrayList<GraphEditorTool>();
 		
 		//TODO
@@ -68,8 +76,8 @@ public class VisualBalsaTools implements CustomToolsProvider
 			{
 			};
 		
-		tools.add(new SelectionTool());
-		tools.add(new ConnectionTool());
+		tools.add(new SelectionTool(editor));
+		tools.add(new ConnectionTool(editor));
 		//for(Class<?> c : balsaClasses)
 		//	tools.add(getComponentTool((Class<? extends org.workcraft.plugins.balsa.components.Component>) c));
 		

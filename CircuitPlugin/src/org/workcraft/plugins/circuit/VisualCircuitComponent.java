@@ -45,8 +45,8 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionWriteHandler;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
@@ -82,13 +82,7 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 	double contactLength = 1;
 	double contactStep = 1;
 	
-	Variable<RenderType> renderType = new Variable<RenderType>(RenderType.BOX){
-		@Override
-		public void setValue(RenderType value) {
-			super.setValue(value);
-			updateStepPosition();
-		}
-	};
+	final ModifiableExpression<RenderType> renderType;
 	
 	private WeakReference<VisualContact> mainContact = null;
 	
@@ -145,6 +139,12 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 	public VisualCircuitComponent(CircuitComponent component, StorageManager storage) {
 		super(component, storage);
 		this.storage = storage;
+		
+		renderType = new ModifiableExpressionWriteHandler<RenderType>(storage.create(RenderType.BOX)) {
+			protected void afterSet(RenderType newValue) {
+				updateStepPosition();
+			};
+		};
 		
 		groupImpl = new DefaultGroupImpl(this, storage);
 		

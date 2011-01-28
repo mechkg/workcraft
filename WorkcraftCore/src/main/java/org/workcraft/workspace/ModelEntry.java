@@ -10,13 +10,13 @@ import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 public class ModelEntry {
 	private final ModelDescriptor descriptor;
 	private Model model;
-	private final StorageManager storage;
+	private final HistoryPreservingStorageManager storage;
 
 	public ModelEntry(ModelDescriptor descriptor, Model model, StorageManager storage)
 	{
 		this.descriptor = descriptor;
 		this.model = model;
-		this.storage = storage;
+		this.storage = storage instanceof HistoryPreservingStorageManager ? (HistoryPreservingStorageManager) storage : null;
 	}
 
 	public ModelDescriptor getDescriptor() {
@@ -49,7 +49,7 @@ public class ModelEntry {
 		return model instanceof VisualModel;
 	}
 	
-	public StorageManager getStorage() {
+	public HistoryPreservingStorageManager getStorage() {
 		return storage;
 	}
 }

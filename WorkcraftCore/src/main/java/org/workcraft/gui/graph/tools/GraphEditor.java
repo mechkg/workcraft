@@ -27,12 +27,14 @@ import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.graph.EditorOverlay;
 import org.workcraft.gui.graph.Viewport;
+import org.workcraft.workspace.ModelEntry;
 
 public interface GraphEditor {
 	public Viewport getViewport();
 	public MainWindow getMainWindow();
 	public EditorOverlay getOverlay();
 	public VisualModel getModel();
+	public ModelEntry getModelEntry();
 	public int getWidth();
 	public int getHeight();
 	public Point2D snap(Point2D pos);

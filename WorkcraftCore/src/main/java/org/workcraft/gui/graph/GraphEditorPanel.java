@@ -56,6 +56,7 @@ import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.gui.propertyeditor.Properties.Mix;
 import org.workcraft.observation.HierarchyEvent;
 import org.workcraft.plugins.shared.CommonVisualSettings;
+import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
 
 
@@ -305,5 +306,10 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 
 	public ToolboxPanel getToolBox() {
 		return toolboxPanel;
+	}
+	
+	@Override
+	public ModelEntry getModelEntry() {
+		return workspaceEntry.getModelEntry();
 	}
 }

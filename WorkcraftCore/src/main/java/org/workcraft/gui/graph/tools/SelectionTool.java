@@ -322,6 +322,15 @@ public class SelectionTool extends AbstractTool {
 				e.getModel().selectNone();
 				//addToSelection(e.getModel(), e.getModel().paste(Toolkit.getDefaultToolkit().getSystemClipboard(), prevPosition));
 				//e.getModel().fireSelectionChanged();
+			case KeyEvent.VK_P:
+				e.getEditor().getModelEntry().getStorage().checkpoint();
+				break;
+			case KeyEvent.VK_Z:
+				e.getEditor().getModelEntry().getStorage().undo();
+				break;
+			case KeyEvent.VK_Y:
+				e.getEditor().getModelEntry().getStorage().redo();
+				break;
 			}
 		}
 	}

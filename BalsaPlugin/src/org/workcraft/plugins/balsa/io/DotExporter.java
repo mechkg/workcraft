@@ -49,8 +49,8 @@ public class DotExporter implements Exporter {
 									if(hs.getHandshake().isActive())
 									{
 										Set<Node> nodes = new HashSet<Node>();
-										nodes.addAll(model.getPostset(hs));
-										nodes.addAll(model.getPreset(hs));
+										nodes.addAll(model.getNodeContext().getPostset(hs));
+										nodes.addAll(model.getNodeContext().getPreset(hs));
 										for(Node target : nodes) {
 											if (target instanceof VisualHandshake) {
 												VisualBreezeComponent targetComp = (VisualBreezeComponent)eval(((VisualHandshake)target).parent());

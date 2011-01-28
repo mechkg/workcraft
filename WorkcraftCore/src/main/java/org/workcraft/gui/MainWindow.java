@@ -259,7 +259,7 @@ public class MainWindow extends JFrame {
 			}
 
 		final GraphEditorPanel editor = new GraphEditorPanel(MainWindow.this, we);
-		String dockableTitle = we.getTitle() + " - " + visualModel.getDisplayName();
+		String dockableTitle = we.getTitle() + " - " + modelEntry.getDescriptor().getDisplayName();
 
 		final DockableWindow editorWindow;
 

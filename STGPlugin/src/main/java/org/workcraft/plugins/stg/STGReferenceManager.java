@@ -3,17 +3,15 @@ package org.workcraft.plugins.stg;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.references.ReferenceManager;
+import org.workcraft.dom.references.AbstractReferenceManager;
 import org.workcraft.dom.references.UniqueNameManager;
 import org.workcraft.exceptions.ArgumentException;
 import org.workcraft.exceptions.DuplicateIDException;
-import org.workcraft.observation.HierarchySupervisor;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.serialisation.References;
@@ -24,7 +22,7 @@ import org.workcraft.util.ListMap;
 import org.workcraft.util.Pair;
 import org.workcraft.util.Triple;
 
-public class STGReferenceManager extends HierarchySupervisor implements ReferenceManager {
+public class STGReferenceManager implements AbstractReferenceManager {
 	private InstanceManager<Node> instancedNameManager;
 	private UniqueNameManager<Node> defaultNameManager;
 
@@ -34,8 +32,6 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 	private int dummyCounter = 0;
 
 	public STGReferenceManager(Node root, References existingReferences) {
-		super(root);
-		
 		this.defaultNameManager = new UniqueNameManager<Node>(new Func<Node, String>() {
 			@Override
 			public String eval(Node arg) {
@@ -68,7 +64,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 			existingReferences = null;
 		}
 		
-		super.start();
+		nodeAdded(root);
 	}
 
 	private void setExistingReference(References existingReferences, Node n) {
@@ -191,20 +187,19 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 		else
 			defaultNameManager.setName(node, s);
 	}
-
-
+	
 	@Override
-	public void handleEvent(List<Node> added, List<Node> removed) {
-		for(Node node : removed) {
-			nodeRemoved(node);
-			for (Node n : Hierarchy.getDescendantsOfType(node, Node.class))
-				nodeRemoved(n);
-		}
-		for(Node node : added) {
-			setDefaultNameIfUnnamed(node);
-			for (Node n : Hierarchy.getDescendantsOfType(node, Node.class))
-				setDefaultNameIfUnnamed(n);
-		}
+	public void nodeAdded(Node node) {
+		setDefaultNameIfUnnamed(node);
+		for (Node n : Hierarchy.getDescendantsOfType(node, Node.class))
+			setDefaultNameIfUnnamed(n);
+	}
+	
+	@Override
+	public void nodeRemoved(Node node) {
+		nodeRemovedInternal(node);
+		for (Node n : Hierarchy.getDescendantsOfType(node, Node.class))
+			nodeRemovedInternal(n);
 	}
 
 	public void setDefaultNameIfUnnamed(Node node) {
@@ -236,7 +231,7 @@ public class STGReferenceManager extends HierarchySupervisor implements Referenc
 			defaultNameManager.setDefaultNameIfUnnamed(node);
 	}
 
-	private void nodeRemoved(Node node) {
+	private void nodeRemovedInternal (Node node) {
 		if (node instanceof SignalTransition) {
 			final SignalTransition st = (SignalTransition)node;
 			transitions.remove(eval(st.signalName()), st);

@@ -163,7 +163,7 @@ public class DotLayout implements Tool {
 					{
 						Node comp1 = model.getNodeByReference(from);
 						Node comp2 = model.getNodeByReference(to);
-						Set<Connection> connections = model.getConnections(comp1);
+						Set<Connection> connections = model.getNodeContext().getConnections(comp1);
 						Connection con = null;
 						for(Connection c : connections)
 						{

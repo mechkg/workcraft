@@ -26,25 +26,21 @@ import java.util.Collection;
 import org.workcraft.gui.propertyeditor.Properties;
 
 
-public interface Model extends NodeContext {
+public interface Model {
 	public void setTitle(String title);
 	public String getTitle();
-	
-	/**
-	 * @return a user-friendly display name for this model, which is either
-	 * read from <type>DisplayName</type> annotation, or, if the annotation
-	 * is missing, taken from the name of the model class.  
-	 */
-	public String getDisplayName();
 	
 	public Node getNodeByReference(String reference);
 	public String getNodeReference(Node node);
 	
-	public Container getRoot();
+	public Node getRoot();
 	
 	public void add (Node node);
+	public void add (Container parent, Node node);
 	public void remove (Node node);
 	public void remove (Collection<Node> nodes);
 	
 	public Properties getProperties(Node node);
+	
+	public NodeContext getNodeContext();
 }

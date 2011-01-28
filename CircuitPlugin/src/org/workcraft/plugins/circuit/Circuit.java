@@ -22,16 +22,17 @@
 package org.workcraft.plugins.circuit;
 
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.math.AbstractMathModel;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathGroup;
+import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.util.Hierarchy;
 
-public class Circuit extends AbstractMathModel {
+public class Circuit extends AbstractModel implements MathModel {
 
 	private final StorageManager storage;
 
@@ -40,7 +41,7 @@ public class Circuit extends AbstractMathModel {
 	}
 	
 	public Circuit(MathGroup root, StorageManager storage) {
-		super(root);
+		super(createDefaultModelSpecification(root));
 		this.storage = storage;
 	}
 

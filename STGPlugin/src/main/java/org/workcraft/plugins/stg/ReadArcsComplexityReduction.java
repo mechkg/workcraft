@@ -34,7 +34,7 @@ public class ReadArcsComplexityReduction {
 				HashMap<SignalTransition, Integer> ins = new HashMap<SignalTransition,Integer>();
 				HashMap<SignalTransition, Integer> outs = new HashMap<SignalTransition,Integer>();
 				
-				for (Connection c: source.getConnections(p)) {
+				for (Connection c: source.getNodeContext().getConnections(p)) {
 					if (p==c.getFirst())  {
 						if (!outs.containsKey(c.getSecond()))
 							outs.put((SignalTransition)c.getSecond(),0);
@@ -67,7 +67,7 @@ public class ReadArcsComplexityReduction {
 				LinkedList<Connection> cons = new LinkedList<Connection>();
 				
 				// find all connections which are not read-arcs
-				for (Connection c: source.getConnections(p)) {
+				for (Connection c: source.getNodeContext().getConnections(p)) {
 					if (!readATrans.contains(c.getFirst())
 						&&!readATrans.contains(c.getSecond()))  {
 						cons.add(c);

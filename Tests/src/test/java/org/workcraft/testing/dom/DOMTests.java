@@ -48,15 +48,15 @@ public class DOMTests {
 		assertSame (p1, pn.getNodeByReference(pn.getNodeReference(p1)));
 		assertSame (p2, pn.getNodeByReference(pn.getNodeReference(p2)));
 		
-		assertTrue (pn.getPreset(p2).contains(t1));
-		assertTrue (pn.getPostset(p1).contains(t1));
+		assertTrue (pn.getNodeContext().getPreset(p2).contains(t1));
+		assertTrue (pn.getNodeContext().getPostset(p1).contains(t1));
 		
-		assertTrue (pn.getConnections(p1).contains(con1));
+		assertTrue (pn.getNodeContext().getConnections(p1).contains(con1));
 		
 		pn.remove(p1);
 		
-		assertTrue (pn.getConnections(t1).contains(con2));
-		assertFalse (pn.getConnections(t1).contains(con1));
+		assertTrue (pn.getNodeContext().getConnections(t1).contains(con2));
+		assertFalse (pn.getNodeContext().getConnections(t1).contains(con1));
 		
 		boolean thrown = true; 
 		try

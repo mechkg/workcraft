@@ -22,19 +22,18 @@
 package org.workcraft.plugins.graph;
 
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
-import org.workcraft.dom.math.AbstractMathModel;
+import org.workcraft.dom.math.MathGroup;
+import org.workcraft.dom.math.MathModel;
 
-public class Graph extends AbstractMathModel {
-	private final StorageManager storage;
+public class Graph extends AbstractModel implements MathModel {
 
 	public Graph(StorageManager storage) {
-		super(null);
-		this.storage = storage;
+		this (new MathGroup(storage), storage);
 	}
 
 	public Graph(Container root, StorageManager storage) {
-		super(root);
-		this.storage = storage;
+		super(createDefaultModelSpecification(root));
 	}
 }

@@ -22,16 +22,14 @@
 package org.workcraft.dom;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
-import org.workcraft.annotations.DisplayName;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dom.references.AbstractReferenceManager;
 import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.propertyeditor.Properties;
+import org.workcraft.util.Func;
 
 /**
  * A base class for all interpreted graph models. 
@@ -39,29 +37,59 @@ import org.workcraft.gui.propertyeditor.Properties;
  *
  */
 public abstract class AbstractModel implements Model {
-	private NodeContextTracker nodeContextTracker;
 	private ReferenceManager referenceManager;
-	private final DefaultReferenceManager defaultRefMan; 
 	
 	private String title = "";
-
 	private Container root;
+	
+	final private HierarchyController hierarchyController;
 
-	public AbstractModel (Container root) {
-		this (root, null);
+	private final NodeContext nodeContext;
+
+	public AbstractModel(ModelSpecification spec) {
+		this.root = spec.root;
+		this.referenceManager = spec.referenceManager;
+		this.hierarchyController = spec.hierarchyController;
+		this.nodeContext = spec.nodeContext;
+	}
+
+	public static class DefaultControllerChain {
+		public DefaultControllerChain(HierarchyController hierarchyController, NodeContextTracker nodeContextTracker) {
+			this.hierarchyController = hierarchyController;
+			this.nodeContextTracker = nodeContextTracker;
+		}
+		public final HierarchyController hierarchyController;
+		public final NodeContextTracker nodeContextTracker;
 	}
 	
-	public AbstractModel(Container root, ReferenceManager referenceManager) {
-		this.root = root;
-		if(referenceManager == null) {
-			defaultRefMan = new DefaultReferenceManager(root);
-			this.referenceManager = defaultRefMan;
-		} else
-		{
-			defaultRefMan = null;
-			this.referenceManager = referenceManager;
-		}
-		nodeContextTracker = new NodeContextTracker(root);
+	public static DefaultControllerChain createDefaultControllerChain(Node root) {
+		final NodeContextTracker nodeContextTracker = new NodeContextTracker(root);
+		return new DefaultControllerChain(new StinkyHierarchyController(
+		new DependantRemovingHierarchyController(
+				new DefaultHierarchyController(), new Func<Node, Collection<Node>>() {
+						@Override
+						public Collection<Node> eval(Node node) {
+							ArrayList<Node> result = new ArrayList<Node>();
+							result.addAll(GlobalCache.eval(node.children()));
+							result.addAll(nodeContextTracker.getConnections(node));
+							return result;
+						}
+					}
+				),
+				nodeContextTracker), nodeContextTracker);
+	}
+	
+	public static ModelSpecification createDefaultModelSpecification(Container root)
+	{
+		DefaultControllerChain c = createDefaultControllerChain(root);
+		DefaultReferenceManager rm = new DefaultReferenceManager(root);
+		return new ModelSpecification(root, rm, new StinkyHierarchyController(c.hierarchyController, rm), c.nodeContextTracker);
+	}
+	
+	public static ModelSpecification createDefaultModelSpecification(Container root, AbstractReferenceManager rm)
+	{
+		DefaultControllerChain c = createDefaultControllerChain(root);
+		return new ModelSpecification(root, rm, new StinkyHierarchyController(c.hierarchyController, rm), c.nodeContextTracker);
 	}
 	
 	public Model getMathModel() {
@@ -72,50 +100,25 @@ public abstract class AbstractModel implements Model {
 		return null;
 	}
 	
-	public void add (Node node) {
-		root.add(node);
+	@Override
+	final public void add (Node node) {
+		add(root, node);
 	}
 
-	public void remove (Node node) {
-		remove(Arrays.asList(new Node[]{node}));
+	@Override
+	final public void add (Container parent, Node node) {
+		hierarchyController.add(parent, node);
 	}
 
-	private void recursiveDelete(LinkedHashSet<Node> deletionList, Node node) {
-		Collection<Node> dependants = getDependants(node);
-		for(Node n : dependants)
-			if(!deletionList.contains(n))
-				recursiveDelete(deletionList, n);
-		
-		deletionList.add(node);
-	}
-	
-	private Collection<Node> getDependants(Node node) {
-		ArrayList<Node> result = new ArrayList<Node>();
-		result.addAll(GlobalCache.eval(node.children()));
-		result.addAll(getConnections(node));
-		return result;
+	@Override
+	final public void remove (Node node) {
+		hierarchyController.remove(node);
 	}
 
-	public void remove (Collection<Node> nodes) {
-		LinkedHashSet<Node> deletionList = new LinkedHashSet<Node>(); 
+	@Override
+	final public void remove (Collection<Node> nodes) {
 		for(Node node : nodes)
-			recursiveDelete(deletionList, node);
-		
-		for(Node n : deletionList) {
-			Node parent = GlobalCache.eval(n.parent());
-			if (parent instanceof Container)
-				((Container)parent).remove(n);
-			else
-				;//throw new RuntimeException ("Cannot remove a child node from a node that is not a Container. The parent is: " + parent);
-		}
-	}
-
-	public String getDisplayName() {
-		DisplayName name = this.getClass().getAnnotation(DisplayName.class);
-		if (name == null)
-			return this.getClass().getSimpleName();
-		else
-			return name.value();
+			remove(node);
 	}
 
 	final public String getTitle() {
@@ -126,26 +129,11 @@ public abstract class AbstractModel implements Model {
 		this.title = title;
 	}
 
-	public final Container getRoot() {
+	public final Node getRoot() {
 		ensureConsistency();
 		return root;	
 	}
 
-	public Set<Connection> getConnections(Node component) {
-		ensureConsistency();
-		return nodeContextTracker.getConnections(component);
-	}
-
-	public Set<Node> getPostset(Node component) {
-		ensureConsistency();
-		return nodeContextTracker.getPostset(component);
-	}
-
-	public Set<Node> getPreset(Node component) {
-		ensureConsistency();
-		return nodeContextTracker.getPreset(component);
-	}
-	
 	@Override
 	public Node getNodeByReference(String reference) {
 		ensureConsistency();
@@ -167,12 +155,15 @@ public abstract class AbstractModel implements Model {
 		return referenceManager;
 	}
 	
+	@Override
+	public NodeContext getNodeContext() {
+		return nodeContext;
+	}
+	
 	/**
 	 * This should be called almost always. Subclasses should call refresh() to their HierarchySupervisors here.
 	 */
 	public void ensureConsistency() {
-		if(defaultRefMan != null)
-			defaultRefMan.refresh();
 		//nodeContextTracker.refresh();
 	}
 }

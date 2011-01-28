@@ -29,10 +29,10 @@ import java.util.Map;
 
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.math.AbstractMathModel;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
@@ -44,7 +44,7 @@ import org.workcraft.serialisation.References;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
 
-public class PetriNet extends AbstractMathModel implements PetriNetModel {
+public class PetriNet extends AbstractModel implements PetriNetModel {
 	
 	
 	final UniqueNameReferenceManager names;
@@ -85,10 +85,9 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		public final UniqueNameReferenceManager referenceManager;
 	}
 	
-	
 	protected PetriNet(ConstructionParameters construction) {
-		super(construction.root, construction.referenceManager);
-		names = construction.referenceManager;
+		super(createDefaultModelSpecification(construction.root, construction.referenceManager));
+		this.names = construction.referenceManager;
 		this.storage = construction.storage;
 	}
 
@@ -107,7 +106,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		Place newPlace = new Place(storage);
 		if (name!=null)
 			setName(newPlace, name);
-		getRoot().add(newPlace);
+		add(newPlace);
 		ensureConsistency();
 		return newPlace;
 	}
@@ -116,7 +115,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		Transition newTransition = new Transition(storage);
 		if (name!=null)
 			setName(newTransition, name);
-		getRoot().add(newTransition);
+		add(newTransition);
 		ensureConsistency();
 		return newTransition;
 	}
@@ -145,7 +144,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		// gather number of connections for each post-place
 		Map<Place, Integer> map = new HashMap<Place, Integer>();
 		
-		for (Connection c: net.getConnections(t)) {
+		for (Connection c: net.getNodeContext().getConnections(t)) {
 			if (c.getFirst()==t) {
 				if (map.containsKey(c.getSecond())) {
 					map.put((Place)c.getSecond(), map.get(c.getSecond())+1);
@@ -155,7 +154,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 			}
 		}
 		
-		for (Node n : net.getPostset(t))
+		for (Node n : net.getNodeContext().getPostset(t))
 			if (eval(((Place)n).tokens()) < map.get((Place)n))
 				return false;
 		return true;
@@ -164,7 +163,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 	final public static boolean isEnabled (PetriNetModel net, Transition t) {
 		// gather number of connections for each pre-place
 		Map<Place, Integer> map = new HashMap<Place, Integer>();
-		for (Connection c: net.getConnections(t)) {
+		for (Connection c: net.getNodeContext().getConnections(t)) {
 			if (c.getSecond()==t) {
 				if (map.containsKey(c.getFirst())) {
 					map.put((Place)c.getFirst(), map.get(c.getFirst())+1);
@@ -174,7 +173,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 			}
 		}
 		
-		for (Node n : net.getPreset(t))
+		for (Node n : net.getNodeContext().getPreset(t))
 			if (GlobalCache.eval(((Place)n).tokens()) < map.get((Place)n))
 				return false;
 		return true;
@@ -193,7 +192,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		// the transition given must be correct
 		// for the transition to be enabled
 		
-		for (Connection c : net.getConnections(t)) {
+		for (Connection c : net.getNodeContext().getConnections(t)) {
 			if (t==c.getFirst()) {
 				Place to = (Place)c.getSecond();
 				to.tokens().setValue(eval(to.tokens())-1);
@@ -208,7 +207,7 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 	final public static void fire (PetriNetModel net, Transition t) {
 		if (net.isEnabled(t))
 		{
-			for (Connection c : net.getConnections(t)) {
+			for (Connection c : net.getNodeContext().getConnections(t)) {
 				if (t==c.getFirst()) {
 					Place to = (Place)c.getSecond();
 					to.tokens().setValue(eval(to.tokens())+1);
@@ -251,11 +250,4 @@ public class PetriNet extends AbstractMathModel implements PetriNetModel {
 		ensureConsistency();
 		return Properties.Mix.from(new NamePropertyDescriptor(this, node));
 	}
-	
-	@Override
-	public void ensureConsistency() {
-		names.refresh();
-		super.ensureConsistency();
-	}
-
 }

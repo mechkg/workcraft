@@ -30,9 +30,9 @@ import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.math.AbstractMathModel;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
@@ -55,7 +55,7 @@ import org.workcraft.util.Pair;
 import org.workcraft.util.SetUtils;
 import org.workcraft.util.Triple;
 
-public class STG extends AbstractMathModel implements STGModel {
+public class STG extends AbstractModel implements STGModel {
 	
 	private final STGReferenceManager referenceManager;
 
@@ -86,7 +86,7 @@ public class STG extends AbstractMathModel implements STGModel {
 	}
 	
 	public STG(ConstructionInfo info) {
-		super(info.root, info.referenceManager);
+		super(createDefaultModelSpecification(info.root, info.referenceManager));
 		storage = info.storage;
 		referenceManager = info.referenceManager;
 		signalTypeConsistencySupervisor = new SignalTypeConsistencySupervisor(this, info.root);
@@ -118,7 +118,7 @@ public class STG extends AbstractMathModel implements STGModel {
 		if (name!=null)
 			setName(newPlace, name);
 
-		getRoot().add(newPlace);
+		add(newPlace);
 
 		return newPlace;
 	}
@@ -128,7 +128,7 @@ public class STG extends AbstractMathModel implements STGModel {
 		DummyTransition newTransition = new DummyTransition(storage);
 		if (name!=null)
 			setName(newTransition, name);
-		getRoot().add(newTransition);
+		add(newTransition);
 		return newTransition;
 	}
 
@@ -138,7 +138,7 @@ public class STG extends AbstractMathModel implements STGModel {
 		SignalTransition ret = new SignalTransition(storage);
 		if (name!=null)
 			setName(ret, name);
-		getRoot().add(ret);
+		add(ret);
 		return ret;
 	}
 
@@ -293,8 +293,8 @@ public class STG extends AbstractMathModel implements STGModel {
 		if(node instanceof STGPlace)
 		{
 			if(eval(((STGPlace) node).implicit())) {
-				Set<Node> preset = getPreset(node);
-				Set<Node> postset = getPostset(node);
+				Set<Node> preset = getNodeContext().getPreset(node);
+				Set<Node> postset = getNodeContext().getPostset(node);
 				
 				if (!(preset.size()==1 && postset.size()==1))
 					throw new RuntimeException ("An implicit place cannot have more that one transition in its preset or postset.");
@@ -315,7 +315,7 @@ public class STG extends AbstractMathModel implements STGModel {
 			Node t1 = referenceManager.getNodeByReference(implicitPlaceTransitions.getFirst());
 			Node t2 = referenceManager.getNodeByReference(implicitPlaceTransitions.getSecond());
 
-			Set<Node> implicitPlaceCandidates = SetUtils.intersection(getPreset(t2), getPostset(t1));
+			Set<Node> implicitPlaceCandidates = SetUtils.intersection(getNodeContext().getPreset(t2), getNodeContext().getPostset(t1));
 
 			for (Node node : implicitPlaceCandidates) {
 				if (node instanceof STGPlace) {
@@ -338,7 +338,6 @@ public class STG extends AbstractMathModel implements STGModel {
 	@Override
 	public void ensureConsistency() {
 		super.ensureConsistency();
-		referenceManager.refresh();
 		signalTypeConsistencySupervisor.refresh();
 	}
 

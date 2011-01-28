@@ -9,13 +9,12 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dom.Connection;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.NodeContext;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.HierarchicalGraphicalContent;
@@ -191,11 +190,6 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 	}
 
 	@Override
-	public String getDisplayName() {
-		return "some shit. will this ever be displayed?";
-	}
-
-	@Override
 	public Node getNodeByReference(String reference) {
 		throw new NotSupportedException("new serialisation should be used!");
 	}
@@ -240,25 +234,18 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 	}
 
 	@Override
-	public Set<Connection> getConnections(Node node) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Node> getPostset(Node node) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<Node> getPreset(Node node) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void ensureConsistency() {
+	}
+
+	@Override
+	public void add(Container parent, Node node) {
+		add(node);
+	}
+
+	@Override
+	public NodeContext getNodeContext() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

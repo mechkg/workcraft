@@ -27,8 +27,10 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import org.junit.Test;
+import org.workcraft.dom.DefaultHierarchyController;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.NodeContextTracker;
+import org.workcraft.dom.StinkyHierarchyController;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
@@ -95,6 +97,7 @@ public class NodeContextTrackerTests {
 		
 		NodeContextTracker nct = new NodeContextTracker(group);
 		
+		StinkyHierarchyController hierarchyController = new StinkyHierarchyController(new DefaultHierarchyController(), nct);
 
 		MockNode n1 = new MockNode();
 		MockNode n2 = new MockNode();
@@ -105,41 +108,36 @@ public class NodeContextTrackerTests {
 		MathConnection con2 = new MathConnection(n2, n3, new DefaultStorageManager());
 		MathConnection con3 = new MathConnection(n3, n4, new DefaultStorageManager());
 
-		group.add(con1);
-		group.add(con2);
-		group.add(con3);
+		hierarchyController.add(group, con1);
+		hierarchyController.add(group, con2);
+		hierarchyController.add(group, con3);
 
-		group.add(n1);
-		group.add(n2);
-		group.add(n3);
-		group.add(n4);
+		hierarchyController.add(group, n1);
+		hierarchyController.add(group, n2);
+		hierarchyController.add(group, n3);
+		hierarchyController.add(group, n4);
 
-		nct.refresh();
 		Set<Node> n4pre = nct.getPreset(n4);
 		assertEquals (n4pre.size(), 1);
 		assertTrue (n4pre.contains(n3));
 		
-		nct.refresh();
 		Set<Node> n3pre = nct.getPreset(n3);
 		assertEquals (n3pre.size(), 2);
 		assertTrue (n3pre.contains(n1));
 		assertTrue (n3pre.contains(n2));
 		
-		nct.refresh();
 		Set<Node> n3post = nct.getPostset(n3);
 		assertEquals (n3post.size(), 1);
 		assertTrue (n3post.contains(n4));
 		
-		nct.refresh();
 		Set<Node> n4post = nct.getPostset(n4);
 		assertTrue (n4post.isEmpty());
 		
-		nct.refresh();
 		Set<Node> n1pre = nct.getPreset(n1);
 		assertTrue (n1pre.isEmpty());
 		
-		group.remove(n3);
-		nct.refresh();
+		hierarchyController.remove(n3);
+
 		assertTrue (nct.getPreset(n1).isEmpty());
 		assertTrue (nct.getPreset(n2).isEmpty());
 		assertTrue (nct.getPreset(n4).isEmpty());
@@ -148,8 +146,7 @@ public class NodeContextTrackerTests {
 		assertTrue (nct.getPostset(n2).isEmpty());
 		assertTrue (nct.getPostset(n4).isEmpty());
 		
-		group.remove(con1);
-		nct.refresh();
+		hierarchyController.remove(con1);
 
 		assertTrue (nct.getPreset(n1).isEmpty());
 		assertTrue (nct.getPreset(n2).isEmpty());
@@ -165,7 +162,8 @@ public class NodeContextTrackerTests {
 		MathGroup group = new MathGroup(new DefaultStorageManager());
 		
 		NodeContextTracker nct = new NodeContextTracker(group);
-		
+		StinkyHierarchyController hierarchyController = new StinkyHierarchyController(new DefaultHierarchyController(), nct);
+
 
 		MockNode n1 = new MockNode();
 		MockNode n2 = new MockNode();
@@ -176,55 +174,47 @@ public class NodeContextTrackerTests {
 		MathConnection con2 = new MathConnection(n2, n3, new DefaultStorageManager());
 		MathConnection con3 = new MathConnection(n3, n4, new DefaultStorageManager());
 
-		group.add(con1);
-		group.add(con2);
-		group.add(con3);
+		hierarchyController.add(group, con1);
+		hierarchyController.add(group, con2);
+		hierarchyController.add(group, con3);
 
-		group.add(n1);
-		group.add(n2);
-		group.add(n3);
-		group.add(n4);
+		hierarchyController.add(group, n1);
+		hierarchyController.add(group, n2);
+		hierarchyController.add(group, n3);
+		hierarchyController.add(group, n4);
 
-		nct.refresh();
 		Set<Node> n4pre = nct.getPreset(n4);
 		assertEquals (n4pre.size(), 1);
 		assertTrue (n4pre.contains(n3));
 		
-		nct.refresh();
 		Set<Node> n3pre = nct.getPreset(n3);
 		assertEquals (n3pre.size(), 2);
 		assertTrue (n3pre.contains(n1));
 		assertTrue (n3pre.contains(n2));
 		
-		nct.refresh();
 		Set<Node> n3post = nct.getPostset(n3);
 		assertEquals (n3post.size(), 1);
 		assertTrue (n3post.contains(n4));
 		
-		nct.refresh();
 		Set<Node> n4post = nct.getPostset(n4);
 		assertTrue (n4post.isEmpty());
 		
-		nct.refresh();
 		Set<Node> n1pre = nct.getPreset(n1);
 		assertTrue (n1pre.isEmpty());
 		
-		group.remove(con1);
+		hierarchyController.remove(con1);
 
-		nct.refresh();
 		assertTrue (nct.getPostset(n1).isEmpty());
 		assertEquals (nct.getPreset(n3).size(), 1 );
 		
-		group.remove(con2);
-		nct.refresh();
+		hierarchyController.remove(con2);
 		assertTrue (nct.getPostset(n2).isEmpty());
 		assertTrue (nct.getPreset(n3).isEmpty());
 		
 		assertTrue (nct.getPostset(n3).contains(n4));
 		
-		group.remove(n4);
+		hierarchyController.remove(n4);
 		
-		nct.refresh();
 		assertTrue(nct.getPostset(n3).isEmpty());
 	}
 }

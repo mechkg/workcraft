@@ -31,10 +31,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.math.AbstractMathModel;
 import org.workcraft.dom.math.MathConnection;
+import org.workcraft.dom.math.MathModel;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.parsers.breeze.Netlist;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
@@ -48,7 +49,7 @@ import org.workcraft.plugins.balsa.handshakebuilder.PushHandshake;
 import org.workcraft.plugins.balsa.handshakes.MainHandshakeMaker;
 import org.workcraft.util.Hierarchy;
 
-public final class BalsaCircuit extends AbstractMathModel 
+public final class BalsaCircuit extends AbstractModel implements MathModel 
 {
 	public final StorageManager storage;
 
@@ -102,8 +103,8 @@ public final class BalsaCircuit extends AbstractMathModel
 	public void validateConnection(BreezeHandshake first, BreezeHandshake second)
 			throws InvalidConnectionException {
 		
-		if(getPostset(first).size() > 0 || getPreset(first).size() > 0 ||
-				getPostset(second).size() > 0 || getPreset(second).size() > 0)
+		if(getNodeContext().getPostset(first).size() > 0 || getNodeContext().getPreset(first).size() > 0 ||
+				getNodeContext().getPostset(second).size() > 0 || getNodeContext().getPreset(second).size() > 0)
 			throw new InvalidConnectionException("Cannot connect already connected handshakes");
 			
 		Handshake h1 = first.getHandshake();
@@ -171,7 +172,7 @@ public final class BalsaCircuit extends AbstractMathModel
 	}
 
 	public Connection getConnection(BreezeHandshake handshake) {
-		Set<Connection> connections = getConnections(handshake);
+		Set<Connection> connections = getNodeContext().getConnections(handshake);
 		if(connections.size() > 1)
 			throw new RuntimeException("Handshake can't have more than 1 connection!");
 		if(connections.size() == 0)

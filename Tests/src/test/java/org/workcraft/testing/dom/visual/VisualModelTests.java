@@ -53,7 +53,7 @@ public class VisualModelTests {
 
 	private class MockMathModel extends AbstractModel implements MathModel{
 		public MockMathModel() {
-			super(new MathGroup(new DefaultStorageManager()));
+			super(createDefaultModelSpecification(new MathGroup(new DefaultStorageManager())));
 		}
 	}
 	

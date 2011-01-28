@@ -23,6 +23,7 @@ package org.workcraft.testing.plugins.balsa;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -30,7 +31,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.workcraft.dom.Container;
+import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
@@ -44,8 +45,6 @@ import org.workcraft.plugins.balsa.VisualHandshake;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
 import org.workcraft.plugins.balsa.io.BalsaSystem;
 import org.workcraft.plugins.stg.DefaultStorageManager;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class VisualTests {
 	@Test
@@ -120,9 +119,9 @@ public class VisualTests {
 		
 		VisualBalsaCircuit visualCircuit = new VisualBalsaCircuit(circuit, new DefaultStorageManager());
 		
-		Container root = visualCircuit.getRoot();
-		root.add(visual1);
-		root.add(visual2);
+		Node root = visualCircuit.getRoot();
+		visualCircuit.add(visual1);
+		visualCircuit.add(visual2);
 		
 		VisualHandshake hs1 = visual1.getHandshake("activate");
 		VisualHandshake hs2 = visual2.getHandshake("activateOut1");

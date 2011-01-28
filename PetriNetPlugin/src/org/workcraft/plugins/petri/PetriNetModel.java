@@ -2,9 +2,9 @@ package org.workcraft.plugins.petri;
 
 import java.util.Collection;
 
-import org.workcraft.dom.Model;
+import org.workcraft.dom.math.MathModel;
 
-public interface PetriNetModel extends Model {
+public interface PetriNetModel extends MathModel {
 	public Collection<Transition> getTransitions();
 	public Collection<Place> getPlaces();
 	

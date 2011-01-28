@@ -24,16 +24,14 @@ package org.workcraft.dom;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.observation.HierarchySupervisor;
+import org.workcraft.observation.HierarchyObserver;
 
-public class NodeContextTracker extends HierarchySupervisor implements NodeContext {
+public class NodeContextTracker implements NodeContext, HierarchyObserver {
 	public NodeContextTracker(Node root) {
-		super(root);
-		start();
+		nodeAdded(root);
 	}
 
 	HashMap<Node, LinkedHashSet<Node>> presets = new HashMap<Node, LinkedHashSet<Node>>();
@@ -55,7 +53,8 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 		connections.remove(n);
 	}
 
-	private void nodeAdded (Node n) {
+	@Override
+	public void nodeAdded (Node n) {
 		//System.out.println ("(NCT) node added " + n);
 		initHashes(n);
 		
@@ -77,7 +76,9 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 			nodeAdded(nn);
 	}
 
-	private void nodeRemoved(Node n) {
+	
+	@Override
+	public void nodeRemoved(Node n) {
 		//System.out.println ("(NCT) node removed " + n);
 		
 		for (Node postsetNodes: postsets.get(n))
@@ -114,28 +115,17 @@ public class NodeContextTracker extends HierarchySupervisor implements NodeConte
 	}
 
 	public Set<Node> getPreset(Node node) {
-		refresh();
 		return Collections.unmodifiableSet(presets.get(node));
 	}
 
 	public Set<Node> getPostset(Node node) {
-		refresh();
 		return Collections.unmodifiableSet(postsets.get(node));
 	}
 
 	public Set<Connection> getConnections (Node node) {
-		refresh();
 		LinkedHashSet<Connection> result = connections.get(node);
 		if(result == null)
 			throw new RuntimeException("unknown node: " + node);
 		return Collections.unmodifiableSet(result);		
-	}
-
-	@Override
-	public void handleEvent(List<Node> added, List<Node> removed) {
-		for (Node n : added)
-			nodeAdded(n);
-		for (Node n : removed)
-			nodeRemoved(n);
 	}
 }

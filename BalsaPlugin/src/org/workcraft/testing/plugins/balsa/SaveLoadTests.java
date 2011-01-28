@@ -218,13 +218,13 @@ public class SaveLoadTests {
 		
 		VisualBreezeComponent whVis = new VisualBreezeComponent(wh, storage);
 		whVis.x().setValue(10.0);
-		visual.getRoot().add(whVis);
+		visual.add(whVis);
 		VisualBreezeComponent loopVis = new VisualBreezeComponent(loop, storage);
-		visual.getRoot().add(loopVis);
+		visual.add(loopVis);
 		
 		VisualConnection conVis = new VisualConnection(con, getVisualHandshakeByName(loopVis, "activateOut"),
 				getVisualHandshakeByName(whVis, "activate"), storage);
-		visual.getRoot().add(conVis);
+		visual.add(conVis);
 		
 		return visual;
 	}

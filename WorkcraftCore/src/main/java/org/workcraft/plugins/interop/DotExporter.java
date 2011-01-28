@@ -64,7 +64,7 @@ public class DotExporter implements Exporter {
 						final List<String> destinations = new ArrayList<String>();
 						
 							
-						Set<Node> postset = model.getPostset(comp);
+						Set<Node> postset = model.getNodeContext().getPostset(comp);
 						
 						for(Node target : postset) {
 							String targetId = model.getNodeReference(target);

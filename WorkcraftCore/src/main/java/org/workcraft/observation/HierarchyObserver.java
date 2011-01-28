@@ -20,7 +20,9 @@
 */
 
 package org.workcraft.observation;
+import org.workcraft.dom.Node;
 
 public interface HierarchyObserver {
-	public void notify (HierarchyEvent e);
+	public void nodeAdded(Node node);
+	public void nodeRemoved(Node node);
 }

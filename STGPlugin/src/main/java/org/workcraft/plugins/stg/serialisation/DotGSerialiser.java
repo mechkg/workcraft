@@ -91,13 +91,13 @@ public class DotGSerialiser implements ModelSerialiser {
 			if (eval(((STGPlace)node).implicit()))
 				return;
 		
-		if (model.getPostset(node).size()>0) {
+		if (model.getNodeContext().getPostset(node).size()>0) {
 			out.write(model.getNodeReference(node));
 
-			for (Node n : sortNodes (model.getPostset(node), model)  ) {
+			for (Node n : sortNodes (model.getNodeContext().getPostset(node), model)  ) {
 				if (n instanceof STGPlace) {
 					if (eval(((STGPlace)n).implicit())) {
-						Collection<Node> postset = model.getPostset(n);
+						Collection<Node> postset = model.getNodeContext().getPostset(n);
 						if (postset.size() > 1)
 							throw new FormatException("Implicit place cannot have more than one node in postset");
 						out.write(" " + model.getNodeReference(postset.iterator().next()));						
@@ -167,8 +167,8 @@ public class DotGSerialiser implements ModelSerialiser {
 			
 			if (p instanceof STGPlace) {
 				if ( eval(((STGPlace)p).implicit()) ) {
-					reference = "<" + model.getNodeReference(model.getPreset(p).iterator().next()) + "," +
-										model.getNodeReference(model.getPostset(p).iterator().next()) + ">";
+					reference = "<" + model.getNodeReference(model.getNodeContext().getPreset(p).iterator().next()) + "," +
+										model.getNodeReference(model.getNodeContext().getPostset(p).iterator().next()) + ">";
 				} else
 					reference = model.getNodeReference(p);
 			} else {

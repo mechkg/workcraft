@@ -91,7 +91,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	}
 	
 	public AbstractVisualModel(ConstructionInfo param) {
-		super(param.root);
+		super(createDefaultModelSpecification(param.root));
 		this.mathModel = param.mathModel;
 		this.storage = param.storage;
 		selection = new CachedHashSet<Node>(storage);
@@ -120,7 +120,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 				VisualComponent visualComponent = (VisualComponent)NodeFactory.createVisualComponent(node, storage);
 
 				if (visualComponent != null) {
-					getRoot().add(visualComponent);
+					add(visualComponent);
 					createdNodes.put(node, visualComponent);
 				}
 			}
@@ -130,7 +130,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 			MathConnection mc = createdConnections.get(vc);
 			vc.setVisualConnectionDependencies(createdNodes.get(mc.getFirst()), 
 					createdNodes.get(mc.getSecond()), new Polyline(vc, storage), mc);
-			getRoot().add(vc);
+			add(vc);
 		}
 	}
 

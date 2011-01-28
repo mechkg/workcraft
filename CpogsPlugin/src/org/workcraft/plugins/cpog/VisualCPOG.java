@@ -141,8 +141,8 @@ public class VisualCPOG extends AbstractVisualModel
 	{
 		if (first == second) throw new InvalidConnectionException("Self loops are not allowed");
 		
-		if (first instanceof VisualVariable && !getPreset(first).isEmpty()) throw new InvalidConnectionException("Variables do not support multiple connections");
-		if (second instanceof VisualVariable && !getPreset(second).isEmpty()) throw new InvalidConnectionException("Variables do not support multiple connections");
+		if (first instanceof VisualVariable && !getNodeContext().getPreset(first).isEmpty()) throw new InvalidConnectionException("Variables do not support multiple connections");
+		if (second instanceof VisualVariable && !getNodeContext().getPreset(second).isEmpty()) throw new InvalidConnectionException("Variables do not support multiple connections");
 		
 		if (first instanceof VisualVertex && second instanceof VisualVertex) return;
 		if (first instanceof VisualVertex && second instanceof VisualVariable) return;

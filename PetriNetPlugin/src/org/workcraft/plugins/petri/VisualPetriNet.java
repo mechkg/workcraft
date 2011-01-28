@@ -24,6 +24,7 @@ package org.workcraft.plugins.petri;
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.NodeContext;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.visual.AbstractVisualModel;
 import org.workcraft.dom.visual.VisualComponent;
@@ -34,7 +35,6 @@ import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
 import org.workcraft.util.Hierarchy;
 
-@DisplayName ("Petri Net")
 public class VisualPetriNet extends AbstractVisualModel {
 	private PetriNet net;
 	
@@ -90,6 +90,11 @@ public class VisualPetriNet extends AbstractVisualModel {
 		VisualTransition t = new VisualTransition(net.createTransition(), storage);
 		add(t);
 		return t;
+	}
+
+	@Override
+	public NodeContext getNodeContext() {
+		return null;
 	}
 	
 }

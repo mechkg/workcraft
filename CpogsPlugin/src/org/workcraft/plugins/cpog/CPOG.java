@@ -24,15 +24,16 @@ package org.workcraft.plugins.cpog;
 import java.util.Collection;
 
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
-import org.workcraft.dom.math.AbstractMathModel;
 import org.workcraft.dom.math.MathGroup;
+import org.workcraft.dom.math.MathModel;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.plugins.stg.STGReferenceManager;
 import org.workcraft.serialisation.References;
 import org.workcraft.util.Hierarchy;
 
-public class CPOG extends AbstractMathModel
+public class CPOG extends AbstractModel implements MathModel
 {
 
 	private STGReferenceManager referenceManager;
@@ -60,7 +61,7 @@ public class CPOG extends AbstractMathModel
 	}
 
 	public CPOG(StartupParameters p) {
-		super(p.root, new STGReferenceManager(p.root, p.refs));
+		super(createDefaultModelSpecification(p.root, new STGReferenceManager(p.root, p.refs)));
 		this.storage = p.storage;
 		referenceManager = (STGReferenceManager) getReferenceManager();
 	}
@@ -83,14 +84,14 @@ public class CPOG extends AbstractMathModel
 	public Arc connect(Vertex first, Vertex second) throws InvalidConnectionException
 	{
 		Arc con = new Arc(first, second, storage);
-		getRoot().add(con);
+		add(con);
 		return con;
 	}	
 	
 	public DynamicVariableConnection connect(Vertex first, Variable second) throws InvalidConnectionException
 	{
 		DynamicVariableConnection con = new DynamicVariableConnection(first, second, storage);
-		getRoot().add(con);
+		add(con);
 		return con;
 	}
 

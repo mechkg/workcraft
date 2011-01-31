@@ -108,7 +108,7 @@ public final class VisualBalsaCircuit extends AbstractVisualModel {
 		final MathConnection connect = ((BalsaCircuit)getMathModel()).connect( firstHandshake.getHandshakeComponent(),
 				secondHandshake.getHandshakeComponent() );
 		
-		Hierarchy.getNearestContainer(first, second).add(new VisualConnection(connect, firstHandshake, secondHandshake, storage));
+		add(Hierarchy.getNearestContainer(first, second), new VisualConnection(connect, firstHandshake, secondHandshake, storage));
 	}
 
 	public VisualBreezeComponent createComponent(String componentName, Point2D where) {

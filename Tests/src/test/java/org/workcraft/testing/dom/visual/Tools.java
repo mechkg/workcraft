@@ -24,6 +24,7 @@ package org.workcraft.testing.dom.visual;
 import java.awt.geom.Rectangle2D;
 
 import org.workcraft.dom.Container;
+import org.workcraft.dom.Model;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.dom.visual.connections.VisualConnection;
@@ -45,10 +46,11 @@ class Tools {
 		return node;
 	}
 
-	static VisualConnection createConnection(VisualComponent c1, VisualComponent c2, VisualGroup parent)
+	static VisualConnection createConnection(Model model, VisualComponent c1, VisualComponent c2, VisualGroup parent)
 	{
 		VisualConnection connection = new VisualConnection(null, c1, c2, new DefaultStorageManager());
-		parent.add(connection);
+		if(model==null)parent.add(connection);
+		model.add(connection);
 		return connection;
 	}
 

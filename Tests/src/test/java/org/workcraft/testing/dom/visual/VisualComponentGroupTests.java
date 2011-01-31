@@ -66,13 +66,13 @@ public class VisualComponentGroupTests {
 		SquareNode sqr2 = new SquareNode(root, new Rectangle2D.Double(3, 3, 1, 1));
 		root.add(sqr1);
 		root.add(sqr2);
-		VisualConnectionProperties connectionR = GlobalCache.eval(Tools.createConnection(sqr1, sqr2, root).properties());
+		VisualConnectionProperties connectionR = GlobalCache.eval(Tools.createConnection(null, sqr1, sqr2, root).properties());
 		
 		SquareNode sqg1 = new SquareNode(group, new Rectangle2D.Double(1, 1, 1, 1));
 		SquareNode sqg2 = new SquareNode(group, new Rectangle2D.Double(3, 3, 1, 1));
 		group.add(sqg1);
 		group.add(sqg2);
-		Tools.createConnection(sqg1, sqg2, group);
+		Tools.createConnection(null, sqg1, sqg2, group);
 		
 		Assert.assertEquals(connectionR, HitMan.hitTestForSelection(new Point2D.Double(2.5, 1.5), root));
 		Assert.assertEquals(group, HitMan.hitTestForSelection(new Point2D.Double(7.5, 1.5), root));

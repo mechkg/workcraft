@@ -352,7 +352,7 @@ public class VisualModelTests {
 		VisualGroup root = (VisualGroup)model.getRoot();
 		VisualComponent c1 = createComponent(root);
 		VisualComponent c2 = createComponent(root);
-		VisualConnection con = createConnection(c1, c2, root);
+		VisualConnection con = createConnection(model, c1, c2, root);
 
 		model.addToSelection(c1);
 		model.addToSelection(c2);
@@ -370,7 +370,7 @@ public class VisualModelTests {
 		VisualGroup root = (VisualGroup)model.getRoot();
 		VisualComponent c1 = createComponent(root);
 		VisualComponent c2 = createComponent(root);
-		VisualConnection con = createConnection(c1, c2, root);
+		VisualConnection con = createConnection(model, c1, c2, root);
 
 		model.addToSelection(con);
 		model.addToSelection(c1);
@@ -387,8 +387,8 @@ public class VisualModelTests {
 		VisualGroup root = (VisualGroup)model.getRoot();
 		VisualComponent c1 = createComponent(root);
 		VisualComponent c2 = createComponent(root);
-		VisualConnection con1 = createConnection(c1, c2, root);
-		VisualConnection con2 = createConnection(c1, c2, root);
+		VisualConnection con1 = createConnection(model, c1, c2, root);
+		VisualConnection con2 = createConnection(model, c1, c2, root);
 
 		model.addToSelection(con1);
 		model.addToSelection(c2);
@@ -408,7 +408,7 @@ public class VisualModelTests {
 		VisualGroup node1 = createGroup(root);
 		VisualComponent c1 = createComponent(node1);
 		VisualComponent c2 = createComponent(root);
-		VisualConnection con = createConnection(c1, c2, root);
+		VisualConnection con = createConnection(model, c1, c2, root);
 
 		model.addToSelection(node1);
 		model.addToSelection(c2);
@@ -426,8 +426,8 @@ public class VisualModelTests {
 		VisualComponent c1 = createComponent(root);
 		VisualComponent c2 = createComponent(root);
 		VisualComponent c3 = createComponent(root);
-		VisualConnection con1 = createConnection(c1, c2, root);
-		VisualConnection con2 = createConnection(c2, c3, root);
+		VisualConnection con1 = createConnection(model, c1, c2, root);
+		VisualConnection con2 = createConnection(model, c2, c3, root);
 
 		model.addToSelection(con1);
 		model.addToSelection(con2);
@@ -467,7 +467,7 @@ public class VisualModelTests {
 		VisualComponent c1 = createComponent(root);
 		VisualComponent c2 = createComponent(root);
 		VisualComponent c3 = createComponent(root);
-		VisualConnection con1 = createConnection(c1, c2, root);
+		VisualConnection con1 = createConnection(model, c1, c2, root);
 
 		model.addToSelection(con1);
 		model.addToSelection(c2);
@@ -486,7 +486,7 @@ public class VisualModelTests {
 		VisualGroup root = (VisualGroup)model.getRoot();
 		VisualComponent c1 = createComponent(root);
 		VisualComponent c2 = createComponent(root);
-		VisualConnection con = createConnection(c1, c2, root);
+		VisualConnection con = createConnection(model, c1, c2, root);
 
 		model.addToSelection(c1);
 		model.addToSelection(con);

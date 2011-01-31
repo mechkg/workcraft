@@ -104,10 +104,8 @@ public class SaveLoadTests {
 		assertVisualPetriEquals(petriVisual, sample);
 	}
 
-	private void assertVisualPetriEquals(VisualPetriNet petriVisual,
-			VisualPetriNet sample) {
+	private void assertVisualPetriEquals(VisualPetriNet petriVisual, VisualPetriNet sample) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Test

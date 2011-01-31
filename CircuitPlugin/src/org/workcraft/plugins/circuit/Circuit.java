@@ -52,7 +52,7 @@ public class Circuit extends AbstractModel implements MathModel {
 		
 		MathConnection con = new MathConnection((MathNode)first, (MathNode)second, storage);
 		
-		Hierarchy.getNearestContainer(first, second).add(con);
+		add(Hierarchy.getNearestContainer(first, second), con);
 		
 		return con;
 	}

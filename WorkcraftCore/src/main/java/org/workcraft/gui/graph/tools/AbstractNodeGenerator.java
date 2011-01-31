@@ -58,7 +58,7 @@ public abstract class AbstractNodeGenerator implements NodeGenerator {
 		model.getMathModel().add(mn);
 
 		VisualNode vc = NodeFactory.createVisualComponent(mn, storage);
-		model.getCurrentLevel().add(vc);
+		model.add(model.getCurrentLevel(), vc);
 		
 		if (vc instanceof MovableNew)
 		{

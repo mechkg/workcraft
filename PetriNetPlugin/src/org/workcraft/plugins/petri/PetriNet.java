@@ -229,8 +229,7 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 		
 		MathConnection con = new MathConnection((MathNode)first, (MathNode)second, storage);
 		
-		Hierarchy.getNearestContainer(first, second).add(con);
-		ensureConsistency();
+		add(Hierarchy.getNearestContainer(first, second), con);
 		
 		return con;
 	}

@@ -147,7 +147,7 @@ public final class BalsaCircuit extends AbstractModel implements MathModel
 		
 		MathConnection con = new MathConnection(first, second, storage);
 		
-		Hierarchy.getNearestContainer(first, second).add(con);
+		add(Hierarchy.getNearestContainer(first, second), con);
 		
 		return con;
 	}

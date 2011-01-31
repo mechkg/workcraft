@@ -21,7 +21,6 @@
 
 package org.workcraft.plugins.petri;
 
-import org.workcraft.annotations.DisplayName;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.NodeContext;
@@ -77,7 +76,7 @@ public class VisualPetriNet extends AbstractVisualModel {
 
 		VisualConnection ret = new VisualConnection(con, c1, c2, storage);
 		
-		Hierarchy.getNearestContainer(c1, c2).add(ret);
+		add(Hierarchy.getNearestContainer(c1, c2), ret);
 	}
 
 	public VisualPlace createPlace() {

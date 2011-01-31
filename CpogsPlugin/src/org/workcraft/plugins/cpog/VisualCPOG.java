@@ -162,7 +162,7 @@ public class VisualCPOG extends AbstractVisualModel
 			VisualVertex u = (VisualVertex) second;
 	
 			Arc con = mathModel.connect(v.getMathVertex(), u.getMathVertex());
-			Hierarchy.getNearestContainer(v, u).add(new VisualArc(con, v, u, storage));
+			add(Hierarchy.getNearestContainer(v, u), new VisualArc(con, v, u, storage));
 		}
 		else
 		{
@@ -181,7 +181,7 @@ public class VisualCPOG extends AbstractVisualModel
 			}
 			
 			DynamicVariableConnection con = mathModel.connect(v.getMathVertex(), u.getMathVariable());
-			Hierarchy.getNearestContainer(v, u).add(new VisualDynamicVariableConnection(con, v, u, storage));
+			add(Hierarchy.getNearestContainer(v, u), new VisualDynamicVariableConnection(con, v, u, storage));
 		}
 	}
 

@@ -132,7 +132,7 @@ public class VisualSTG extends AbstractVisualModel {
 			throw new NullPointerException();
 
 		VisualImplicitPlaceArc result = new VisualImplicitPlaceArc(t1, t2, con1, con2, implicitPlace, storage);
-		Hierarchy.getNearestContainer(t1, t2).add(result);
+		add(Hierarchy.getNearestContainer(t1, t2), result);
 		return result;
 	}
 
@@ -148,7 +148,7 @@ public class VisualSTG extends AbstractVisualModel {
 			throw new NullPointerException();
 
 		VisualConnection result = new VisualConnection(con, firstComponent, secondComponent, storage);
-		Hierarchy.getNearestContainer(firstComponent, secondComponent).add(result);
+		add(Hierarchy.getNearestContainer(firstComponent, secondComponent), result);
 		return result;
 	}
 

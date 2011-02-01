@@ -139,7 +139,8 @@ public class VisualSTG extends AbstractVisualModel {
 	private VisualConnection createSimpleConnection(final VisualComponent firstComponent,
 			final VisualComponent secondComponent)
 	throws InvalidConnectionException {
-		ConnectionResult mathConnection = stg.connect( firstComponent.getReferencedComponent(), 
+		ConnectionResult mathConnection = stg.connect(
+				firstComponent.getReferencedComponent(), 
 				secondComponent.getReferencedComponent());
 
 		MathConnection con = mathConnection.getSimpleResult();

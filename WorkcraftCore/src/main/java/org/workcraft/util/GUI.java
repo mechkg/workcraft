@@ -32,7 +32,8 @@ import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.Document;
-import org.workcraft.gui.graph.tools.GraphEditor;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.gui.graph.Viewport;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
 public class GUI {
@@ -86,11 +87,11 @@ public class GUI {
 		return new ImageIcon(res);
 	}
 
-	public static void drawEditorMessage(GraphEditor editor, Graphics2D g, Color color, String message) {
+	public static void drawEditorMessage(Viewport viewport, Graphics2D g, Color color, String message, EvaluationContext context) {
 		g.setFont(UIManager.getFont("Button.font"));
 		Rectangle r = g.getFont().getStringBounds(message, g.getFontRenderContext()).getBounds();
-		r.x = editor.getWidth()/2 - r.width/2;
-		r.y = editor.getHeight() - 20 - r.height;
+		r.x = context.resolve(viewport.shape()).width/2 - r.width/2;
+		r.y = context.resolve(viewport.shape()).height - 20 - r.height;
 		g.setColor(new Color(240, 240, 240, 192));
 		g.fillRoundRect(r.x-10, r.y-10, r.width+20, r.height+20, 5, 5);
 		g.setColor(new Color(224, 224, 224));

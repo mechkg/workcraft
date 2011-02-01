@@ -36,6 +36,8 @@ import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.NodeCreationException;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public abstract class AbstractNodeGenerator implements NodeGenerator {
 
 	private final StorageManager storage;
@@ -58,7 +60,7 @@ public abstract class AbstractNodeGenerator implements NodeGenerator {
 		model.getMathModel().add(mn);
 
 		VisualNode vc = NodeFactory.createVisualComponent(mn, storage);
-		model.add(model.getCurrentLevel(), vc);
+		model.add(eval(model.currentLevel()), vc);
 		
 		if (vc instanceof MovableNew)
 		{

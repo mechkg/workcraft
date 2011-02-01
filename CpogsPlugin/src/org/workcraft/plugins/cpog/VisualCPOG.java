@@ -47,6 +47,8 @@ import org.workcraft.plugins.cpog.optimisation.javacc.BooleanParser;
 import org.workcraft.plugins.cpog.optimisation.javacc.ParseException;
 import org.workcraft.util.Hierarchy;
 
+import pcollections.HashTreePSet;
+
 public class VisualCPOG extends AbstractVisualModel
 {
 	private final class BooleanFormulaPropertyDescriptor implements
@@ -204,7 +206,7 @@ public class VisualCPOG extends AbstractVisualModel
 
 		VisualGroup group = new VisualScenario(storage);
 
-		Container currentLevel = getCurrentLevel();
+		Container currentLevel = eval(currentLevel());
 		
 		currentLevel.add(group);
 
@@ -223,7 +225,7 @@ public class VisualCPOG extends AbstractVisualModel
 
 		currentLevel.reparent(connectionsToGroup, group);
 
-		select(group);
+		selection().setValue(HashTreePSet.<Node>singleton(group));
 	}
 
 	public Collection<VisualScenario> getGroups()

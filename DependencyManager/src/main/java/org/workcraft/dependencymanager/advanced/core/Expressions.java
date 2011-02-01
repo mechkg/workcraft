@@ -2,6 +2,8 @@ package org.workcraft.dependencymanager.advanced.core;
 
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.Unfold;
 
 public class Expressions {
@@ -34,5 +36,22 @@ public class Expressions {
 	
 	public static <T> Expression<T> unfold(Expression<? extends Expression<? extends T>> indirect) {
 		return new Unfold<T>(indirect);
+	}
+
+	public static <T2, T1  extends T2>ModifiableExpression<T2> cast(
+			final ModifiableExpression<T1> expr,
+			final Class<T1> cls) {
+		return new ModifiableExpressionImpl<T2>() {
+
+			@Override
+			protected void simpleSetValue(T2 newValue) {
+				expr.setValue(cls.cast(newValue));
+			}
+
+			@Override
+			protected T2 evaluate(EvaluationContext context) {
+				return context.resolve(expr);
+			}
+		};
 	}
 }

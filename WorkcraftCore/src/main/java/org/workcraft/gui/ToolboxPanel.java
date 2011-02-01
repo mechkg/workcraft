@@ -36,6 +36,9 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
 import org.workcraft.annotations.Annotations;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
@@ -46,11 +49,12 @@ import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.SelectionTool;
-import org.workcraft.gui.graph.tools.ToolProvider;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 @SuppressWarnings("serial")
-public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKeyListener {
+public class ToolboxPanel extends JPanel implements GraphEditorKeyListener {
 	
 	
 	class ToolTracker {
@@ -82,16 +86,11 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 			setNext(tools.indexOf(tool)+1);
 		}
 	}
-	
-	private SelectionTool selectionTool;
-	private ConnectionTool connectionTool;
 
-	private GraphEditorTool selectedTool;
+	private final ModifiableExpression<GraphEditorTool> selectedTool = Variable.<GraphEditorTool>create(null);
 
 	private HashMap<GraphEditorTool, JToggleButton> buttons = new HashMap<GraphEditorTool, JToggleButton>();
 	private HashMap<Integer, ToolTracker> hotkeyMap = new HashMap<Integer, ToolTracker>();
-
-	private final GraphEditorPanel editor;
 
 	public void addTool (final GraphEditorTool tool, boolean selected) {
 		JToggleButton button = new JToggleButton();
@@ -158,13 +157,13 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 	}
 	
 	public void selectTool(GraphEditorTool tool) {
-		if (selectedTool != null) {
-			ToolTracker oldTracker = hotkeyMap.get(selectedTool.getHotKeyCode());
+		if (eval(selectedTool) != null) {
+			ToolTracker oldTracker = hotkeyMap.get(eval(selectedTool).getHotKeyCode());
 			if(oldTracker!=null)
 				oldTracker.reset();
 			
-			selectedTool.deactivated();
-			buttons.get(selectedTool).setSelected(false);
+			eval(selectedTool).deactivated();
+			buttons.get(eval(selectedTool)).setSelected(false);
 		}
 
 		ToolTracker tracker = hotkeyMap.get(tool.getHotKeyCode());
@@ -174,13 +173,12 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 		tool.activated();
 		controlPanel.setTool(tool);
 		buttons.get(tool).setSelected(true);
-		selectedTool = tool;
-		editor.repaint();
+		selectedTool.setValue(tool);
 	}
 
-	public void addCommonTools() {
-		addTool(selectionTool, true);
-		addTool(connectionTool, false);
+	public void addCommonTools(GraphEditor editor) {
+		addTool(new SelectionTool(editor), true);
+		addTool(new ConnectionTool(editor), false);
 	}
 
 	private void setToolsForModel (VisualModelDescriptor modelDescriptor, GraphEditor editor) {
@@ -215,7 +213,7 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 		}
 		else
 		{
-			addCommonTools();
+			addCommonTools(editor);
 		}
 		
 		for (Class<? extends GraphEditorTool>  tool : Annotations.getCustomTools(editor.getModel().getClass()))
@@ -232,17 +230,14 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 	}
 
 	public ToolboxPanel(GraphEditorPanel editor, VisualModelDescriptor descriptor) {
-		this.editor = editor;
 		this.setFocusable(false);
 
-		selectionTool = new SelectionTool(editor);
-		connectionTool = new ConnectionTool(editor);
-		selectedTool = null;
+		selectedTool.setValue(null);
 
 		setToolsForModel(descriptor, editor);
 	}
 
-	public GraphEditorTool getTool() {
+	public Expression<GraphEditorTool> selectedTool() {
 		return selectedTool;
 	}
 
@@ -253,18 +248,18 @@ public class ToolboxPanel extends JPanel implements ToolProvider, GraphEditorKey
 			if (tracker != null)
 				selectTool(tracker.getNextTool());
 			else
-				selectedTool.keyPressed(event);
+				eval(selectedTool).keyPressed(event);
 		} else
-			selectedTool.keyPressed(event);
+			eval(selectedTool).keyPressed(event);
 	}
 
 	public void keyReleased(GraphEditorKeyEvent event) {
-		selectedTool.keyReleased(event);
+		eval(selectedTool).keyReleased(event);
 		
 	}
 
 	public void keyTyped(GraphEditorKeyEvent event) {
-		selectedTool.keyTyped(event);
+		eval(selectedTool).keyTyped(event);
 	}
 
 	ToolInterfaceWindow controlPanel = new ToolInterfaceWindow();

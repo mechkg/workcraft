@@ -58,12 +58,18 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import org.workcraft.Trace;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
+import org.workcraft.dom.visual.SimpleGraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.SimpleFlowLayout;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
+import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.AbstractTool;
 import org.workcraft.gui.graph.tools.Decoration;
 import org.workcraft.gui.graph.tools.Decorator;
@@ -661,8 +667,20 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 	}
 	
 	@Override
-	public void drawInScreenSpace(Graphics2D g) {
-		GUI.drawEditorMessage(editor, g, Color.BLACK, "Simulation: click on the highlighted transitions to fire them");
+	public Expression<? extends SimpleGraphicalContent> screenSpaceContent(final Viewport view) {
+		return new ExpressionBase<SimpleGraphicalContent>(){
+
+			@Override
+			protected SimpleGraphicalContent evaluate(final EvaluationContext context) {
+				return new SimpleGraphicalContent() {
+					
+					@Override
+					public void draw(Graphics2D g) {
+						GUI.drawEditorMessage(view, g, Color.BLACK, "Simulation: click on the highlighted transitions to fire them", context);
+					}
+				};
+			}
+		};
 	}
 
 	public String getLabel() {
@@ -691,66 +709,75 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 	}
 
 	@Override
-	public Decorator getDecorator() {
-		return new Decorator() {
+	public Expression<? extends Decorator> getDecorator() {
+		return new ExpressionBase<Decorator>(){ // TODO: make it dependent on the enabledness
 
 			@Override
-			public Decoration getDecoration(Node node) {
-				if(node instanceof VisualTransition) {
-					Transition transition = ((VisualTransition)node).getReferencedTransition();
-					
-					
-					String transitionId = null;
-					Node transition2 = null;
-					
-					if (branchTrace!=null&&branchStep<branchTrace.size()) {
-						transitionId = branchTrace.get(branchStep);
-						transition2 = net.getNodeByReference(transitionId);
-					} else if (branchTrace==null&&trace!=null&&traceStep<trace.size()) {
-						transitionId = trace.get(traceStep);
-						transition2 = net.getNodeByReference(transitionId);
+			protected Decorator evaluate(EvaluationContext context) {
+				return new Decorator() { 
+
+					@Override
+					public Decoration getDecoration(Node node) {
+						if(node instanceof VisualTransition) {
+							Transition transition = ((VisualTransition)node).getReferencedTransition();
+							
+							String transitionId = null;
+							Node transition2 = null;
+							
+							if (branchTrace!=null&&branchStep<branchTrace.size()) {
+								transitionId = branchTrace.get(branchStep);
+								transition2 = net.getNodeByReference(transitionId);
+							} else if (branchTrace==null&&trace!=null&&traceStep<trace.size()) {
+								transitionId = trace.get(traceStep);
+								transition2 = net.getNodeByReference(transitionId);
+							}
+							
+							if (transition==transition2) {
+								return new Decoration(){
+
+									@Override
+									public Color getColorisation() {
+										return PetriNetSettings.getEnabledBackgroundColor();
+									}
+
+									@Override
+									public Color getBackground() {
+										return PetriNetSettings.getEnabledForegroundColor();
+									}
+								};
+								
+							}
+							
+							if (net.isEnabled(transition))
+								return new Decoration(){
+
+									@Override
+									public Color getColorisation() {
+										return PetriNetSettings.getEnabledForegroundColor();
+									}
+
+									@Override
+									public Color getBackground() {
+										return PetriNetSettings.getEnabledBackgroundColor();
+									}
+								};
+						}
+						return null;
 					}
 					
-					if (transition==transition2) {
-						return new Decoration(){
-
-							@Override
-							public Color getColorisation() {
-								return PetriNetSettings.getEnabledBackgroundColor();
-							}
-
-							@Override
-							public Color getBackground() {
-								return PetriNetSettings.getEnabledForegroundColor();
-							}
-						};
-						
-					}
-					
-					if (net.isEnabled(transition))
-						return new Decoration(){
-
-							@Override
-							public Color getColorisation() {
-								return PetriNetSettings.getEnabledForegroundColor();
-							}
-
-							@Override
-							public Color getBackground() {
-								return PetriNetSettings.getEnabledBackgroundColor();
-							}
-						};
-				}
-				return null;
+				};
 			}
 			
 		};
+		
 	}
 
 	@Override
 	public void lostOwnership(Clipboard clip, Transferable arg) {
 	}
 
-	
-	
+	@Override
+	public Expression<? extends SimpleGraphicalContent> userSpaceContent() {
+		return Expressions.constant(SimpleGraphicalContent.Empty.INSTANCE);
+	}
 }

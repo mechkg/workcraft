@@ -26,6 +26,8 @@ import java.util.List;
 import org.workcraft.dom.Node;
 import org.workcraft.observation.HierarchySupervisor;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class RemovedNodeDeselector extends HierarchySupervisor {
 	private final VisualModel visualModel;
 	
@@ -37,6 +39,6 @@ public class RemovedNodeDeselector extends HierarchySupervisor {
 
 	@Override
 	public void handleEvent(List<Node> added, List<Node> removed) {
-		visualModel.removeFromSelection(removed);
+		visualModel.selection().setValue(eval(visualModel.selection()).minus(removed));
 	}
 }

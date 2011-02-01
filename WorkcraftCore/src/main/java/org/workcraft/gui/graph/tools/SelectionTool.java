@@ -1,261 +1,168 @@
-/*
-*
-* Copyright 2008,2009 Newcastle University
-*
-* This file is part of Workcraft.
-* 
-* Workcraft is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-* 
-* Workcraft is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-* 
-* You should have received a copy of the GNU General Public License
-* along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
-*
-*/
-
 package org.workcraft.gui.graph.tools;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 
 import javax.swing.Icon;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.MovableHelper;
 import org.workcraft.dom.visual.MovableNew;
+import org.workcraft.dom.visual.SimpleGraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualModelTransformer;
 import org.workcraft.dom.visual.connections.DefaultAnchorGenerator;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
+import org.workcraft.gui.graph.Viewport;
+import org.workcraft.gui.graph.tools.GenericSelectionTool.DragHandler;
 import org.workcraft.util.GUI;
 import org.workcraft.util.Hierarchy;
 
+import pcollections.HashTreePSet;
+import pcollections.PSet;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class SelectionTool extends AbstractTool {
-	private static final int DRAG_NONE = 0;
-	private static final int DRAG_MOVE = 1;
-	private static final int DRAG_SELECT = 2;
 
-	private static final int SELECTION_NONE = 0;
-	private static final int SELECTION_ADD = 1;
-	private static final int SELECTION_REMOVE = 2;
-	private static final int SELECTION_REPLACE = 3;
-
-	protected Color selectionBorderColor = new Color(200, 200, 200);
-	protected Color selectionFillColor = new Color(99, 130, 191, 32);
-	protected Color grayOutColor = Color.LIGHT_GRAY; 
-
-	private int drag = DRAG_NONE;
-	private boolean notClick1 = false;
-	private boolean notClick3 = false;
-	
-	private Point2D snapOffset;
-	
-	private LinkedHashSet<Node> selected = new LinkedHashSet<Node>();
-	private int selectionMode;
-	
-	private Rectangle2D selectionBox = null;
-	
+	private final GenericSelectionTool<Node> selectionTool;
+	private DefaultAnchorGenerator anchorGenerator = new DefaultAnchorGenerator();
 	private final GraphEditor editor;
 	
-	DefaultAnchorGenerator anchorGenerator = new DefaultAnchorGenerator();
-	
-	public SelectionTool(GraphEditor editor) {
-		this.editor = editor;
-	}
-	
-	@Override
-	public boolean isDragging() {
-		return drag!=DRAG_NONE;
-	}
-		
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e) {
-
-		if(notClick1 && e.getButton() == MouseEvent.BUTTON1)
-			return;
-		if(notClick3 && e.getButton() == MouseEvent.BUTTON3)
-			return;
-		
-		VisualModel model = e.getEditor().getModel();
-
-		if(e.getButton()==MouseEvent.BUTTON1) {
-			Node node = HitMan.hitTestForSelection(e.getPosition(), model);
-			if (node != null)
-			{
-				switch(e.getKeyModifiers()) {
-					case 0:
-						e.getModel().select(node);
-						break;
-					case MouseEvent.SHIFT_DOWN_MASK:
-						e.getModel().addToSelection(node);
-						break;
-					case MouseEvent.CTRL_DOWN_MASK:
-						e.getModel().removeFromSelection(node);
-						break;
-				}
-			} else {
-				if (e.getKeyModifiers()==0)
-					e.getModel().selectNone();
-			}
-		}
-		
+		selectionTool.mouseClicked(e);
 		anchorGenerator.mouseClicked(e);
 	}
-
-	@Override
-	public void mouseMoved(GraphEditorMouseEvent e) {
-		VisualModel model = e.getEditor().getModel();
-		
-		if(drag==DRAG_MOVE) {
-			Point2D prevPosition = e.getPrevPosition();
-			Point2D p1 = e.getEditor().snap(
-					new Point2D.Double(prevPosition.getX()+
-							snapOffset.getX(), 
-							prevPosition.getY()+
-							snapOffset.getY()));
-			Point2D p2 = e.getEditor().snap(new Point2D.Double(e.getX()+snapOffset.getX(), e.getY()+snapOffset.getY()));
-			offsetSelection(e, p2.getX()-p1.getX(), p2.getY()-p1.getY());
-		}
-		else if(drag==DRAG_SELECT) {
-			selected.clear();
-			selected.addAll(model.boxHitTest(e.getStartPosition(), e.getPosition()));
-
-			selectionBox = selectionRect(e.getStartPosition(), e.getPosition());
-		}
-	}
-
-	@Override
-	public void startDrag(GraphEditorMouseEvent e) {
-		VisualModel model = e.getEditor().getModel();
-
-		if(e.getButtonModifiers()==MouseEvent.BUTTON1_DOWN_MASK) {
-			Node hitNode = HitMan.hitTestForSelection(e.getStartPosition(), model);
-
-			if (hitNode == null) {
-				// hit nothing, so start select-drag
-				
-				switch(e.getKeyModifiers()) {
-					case 0:
-						selectionMode = SELECTION_REPLACE;
-						break;
-					case MouseEvent.CTRL_DOWN_MASK:
-						selectionMode = SELECTION_REMOVE;
-						break;
-					case MouseEvent.SHIFT_DOWN_MASK:
-						selectionMode = SELECTION_ADD;
-						break;
-					default:
-						selectionMode = SELECTION_NONE;
-				}
-				
-				if(selectionMode!=SELECTION_NONE) {
-					// selection will not actually be changed until drag completes
-					drag = DRAG_SELECT;
-					selected.clear();
-					
-					if(selectionMode==SELECTION_REPLACE)
-						model.selectNone();
-					else
-						selected.addAll(GlobalCache.eval(model.selection()));
-				}
-
-			} else {
-				// hit something
-				
-				if(e.getKeyModifiers()==0 && hitNode instanceof MovableNew) {
-					// mouse down without modifiers, begin move-drag
-					drag = DRAG_MOVE;
-					
-					if(hitNode!=null && !model.getSelection().contains(hitNode))
-						e.getModel().select(hitNode);
-
-					MovableNew node = (MovableNew) hitNode;
-					AffineTransform nodeTransform = GlobalCache.eval(node.transform());
-					Point2D pos = new Point2D.Double(nodeTransform.getTranslateX(), nodeTransform.getTranslateY());
-					Point2D pSnap = e.getEditor().snap(pos);
-					offsetSelection(e, pSnap.getX()-pos.getX(), pSnap.getY()-pos.getY());
-					snapOffset = new Point2D.Double(pSnap.getX()-e.getStartPosition().getX(), pSnap.getY()-e.getStartPosition().getY());
-					
-				}
-				// do nothing if pressed on a node with modifiers
-				
+	
+	public SelectionTool(final GraphEditor editor) {
+		this.editor = editor;
+		selectionTool = new GenericSelectionTool<Node>(
+				editor.getModel().selection(),
+				new GenericSelectionTool.HitTester<Node>() {
+			@Override
+			public Node hitTest(Point2D point) {
+				return HitMan.hitTestForSelection(point, editor.getModel());
 			}
-		}
-	}
 
-	@Override
-	public void mousePressed(GraphEditorMouseEvent e) {
-		if(e.getButton()==MouseEvent.BUTTON1)
-			notClick1 = false;
-		
-		if(e.getButton()==MouseEvent.BUTTON3) {
-			
-			if(isDragging()) {
-				cancelDrag(e);
-				notClick1 = true;
-				notClick3 = true;
+			@Override
+			public PSet<Node> boxHitTest(Point2D boxStart, Point2D boxEnd) {
+				return HashTreePSet.from(editor.getModel().boxHitTest(boxStart, boxEnd));
 			}
-			else {
-				notClick3 = false;
+		}, new DragHandler() {
+
+			@Override
+			public void drag(double dx, double dy) {
+				offsetSelection(dx, dy);
 			}
-		}
+		});
 	}
 	
-	@Override
-	public void finishDrag(GraphEditorMouseEvent e) {
-		if (drag == DRAG_SELECT)
+	protected void currentLevelDown(VisualModel model) {
+		Collection<? extends Node> selection = eval(model.selection());
+		if(selection.size() == 1)
 		{
-			if (selectionMode == SELECTION_REPLACE)
-				e.getModel().select(selected);
-			else if (selectionMode == SELECTION_ADD)
-				e.getModel().addToSelection(selected);
-			else if (selectionMode == SELECTION_REMOVE)
-				e.getModel().removeFromSelection(selected);
-			selectionBox = null;
+			Node selectedNode = selection.iterator().next();
+			if(selectedNode instanceof Container)
+				model.currentLevel().setValue((Container)selectedNode);
 		}
-		drag = DRAG_NONE;
-		
-		selected.clear();
 	}
+
+	protected void currentLevelUp(VisualModel model) {
+		Container level = eval(model.currentLevel());
+		Container parent = Hierarchy.getNearestAncestor(GlobalCache.eval(level.parent()), Container.class);
+		if(parent!=null)
+		{
+			model.currentLevel().setValue(parent);
+			model.selection().setValue(HashTreePSet.<Node>singleton(level));
+		}
+	}
+
+	private void offsetSelection(double dx, double dy) {
+		
+		for(Node node : GlobalCache.eval(selectionTool.selection)) {
+			if(node instanceof MovableNew) {
+				MovableHelper.translate((MovableNew) node, dx, dy);
+			}
+		}
+	}
+
+	protected Color grayOutColor = Color.LIGHT_GRAY; 
 	
+	@Override
+	public Expression<Decorator> getDecorator() {
+		return new ExpressionBase<Decorator>(){
 
-	private void cancelDrag(GraphEditorMouseEvent e) {
+			@Override
+			protected Decorator evaluate(final EvaluationContext context) {
+				return new Decorator(){
 
-		if(drag==DRAG_MOVE) {
-			Point2D p1 = e.getEditor().snap(new Point2D.Double(e.getStartPosition().getX()+snapOffset.getX(), e.getStartPosition().getY()+snapOffset.getY()));
-			Point2D p2 = e.getEditor().snap(new Point2D.Double(e.getX()+snapOffset.getX(), e.getY()+snapOffset.getY()));
-			offsetSelection(e, p1.getX()-p2.getX(), p1.getY()-p2.getY());
-		}
-		else if(drag == DRAG_SELECT) {
-			selected.clear();
-			selectionBox = null;
-		}
-		drag = DRAG_NONE;
+					@Override
+					public Decoration getDecoration(Node node) {
+						
+						if(node == context.resolve(editor.getModel().currentLevel()))
+							return Decoration.Empty.INSTANCE;
+						
+						if(node == editor.getModel().getRoot())
+							return new Decoration(){
+
+								@Override
+								public Color getColorisation() {
+									return grayOutColor;
+								}
+
+								@Override
+								public Color getBackground() {
+									return null;
+								}
+							};
+							
+						
+						Decoration selectedDecoration = new Decoration() {
+
+							@Override
+							public Color getColorisation() {
+								return selectionColor;
+							}
+
+							@Override
+							public Color getBackground() {
+								return null;
+							}
+						};
+						
+						if(context.resolve(selectionTool.effectiveSelection).contains(node))
+							return selectedDecoration;
+						else
+							return null;
+					}
+					
+				};
+			}
+			
+		};
 	}
 	
 	@Override
-	public void mouseReleased(GraphEditorMouseEvent e) {
-		// do nothing
+	public String getLabel() {
+		return "Select";
 	}
-
+	
+	@Override
+	public int getHotKeyCode() {
+		return KeyEvent.VK_S;
+	}
+	
 	@Override
 	public void keyPressed(GraphEditorKeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_DELETE) {
@@ -319,7 +226,7 @@ public class SelectionTool extends AbstractTool {
 			case KeyEvent.VK_X: 
 				break;
 			case KeyEvent.VK_V:
-				e.getModel().selectNone();
+				e.getModel().selection().setValue(HashTreePSet.<Node>empty());
 				//addToSelection(e.getModel(), e.getModel().paste(Toolkit.getDefaultToolkit().getSystemClipboard(), prevPosition));
 				//e.getModel().fireSelectionChanged();
 			case KeyEvent.VK_P:
@@ -334,125 +241,47 @@ public class SelectionTool extends AbstractTool {
 			}
 		}
 	}
-
-	protected void currentLevelDown(VisualModel model) {
-		Collection<Node> selection = model.getSelection();
-		if(selection.size() == 1)
-		{
-			Node selectedNode = selection.iterator().next();
-			if(selectedNode instanceof Container)
-				model.setCurrentLevel((Container)selectedNode);
-		}
-	}
-
-	protected void currentLevelUp(VisualModel model) {
-		Container level = model.getCurrentLevel();
-		Container parent = Hierarchy.getNearestAncestor(GlobalCache.eval(level.parent()), Container.class);
-		if(parent!=null)
-		{
-			model.setCurrentLevel(parent);
-			model.addToSelection(level);
-		}
-	}
-
-	private void offsetSelection(GraphEditorMouseEvent e, double dx, double dy) {
-		VisualModel model = e.getEditor().getModel();
-		//System.out.println (model.getSelection().size());
-		
-		for(Node node : GlobalCache.eval(model.selection())) {
-			if(node instanceof MovableNew) {
-				MovableHelper.translate((MovableNew) node, dx, dy);
-			}
-		}
-	}
-
-	private Rectangle2D selectionRect(Point2D startPosition, Point2D currentPosition) {
-		return new Rectangle2D.Double(
-				Math.min(startPosition.getX(), currentPosition.getX()),
-				Math.min(startPosition.getY(), currentPosition.getY()),
-				Math.abs(startPosition.getX()-currentPosition.getX()),
-				Math.abs(startPosition.getY()-currentPosition.getY())
-		);
-	}
-
-	@Override
-	public void drawInUserSpace(Graphics2D g) {
-		if(drag==DRAG_SELECT && selectionBox!=null) {
-			g.setStroke(new BasicStroke((float) editor.getViewport().pixelSizeInUserSpace().getX()));
-			
-			g.setColor(selectionFillColor);
-			g.fill(selectionBox);
-			g.setColor(selectionBorderColor);
-			g.draw(selectionBox);
-		}
-	}
-
-	public String getLabel() {
-		return "Select";
-	}
-
-	public int getHotKeyCode() {
-		return KeyEvent.VK_S;
-	}
-
+	
 	@Override
 	public Icon getIcon() {
 		return GUI.createIconFromSVG("images/icons/svg/select.svg");
 	}
 
 	protected static Color selectionColor = new Color(99, 130, 191).brighter();
+
+	@Override
+	public void finishDrag(GraphEditorMouseEvent e) {
+		selectionTool.finishDrag(e);
+	}
 	
 	@Override
-	public Decorator getDecorator() {
-		return new Decorator(){
+	public boolean isDragging() {
+		return selectionTool.isDragging();
+	}
+	
+	@Override
+	public void mousePressed(GraphEditorMouseEvent e) {
+		selectionTool.mousePressed(e);
+	}
+	
+	@Override
+	public void mouseMoved(GraphEditorMouseEvent e) {
+		selectionTool.mouseMoved(e);
+	}
+	
+	@Override
+	public void startDrag(GraphEditorMouseEvent e) {
+		selectionTool.startDrag(e);
+	}
 
-			@Override
-			public Decoration getDecoration(Node node) {
-				
-				if(node == editor.getModel().getCurrentLevel())
-					return Decoration.Empty.INSTANCE;
-				
-				if(node == editor.getModel().getRoot())
-					return new Decoration(){
+	@Override
+	public Expression<SimpleGraphicalContent> userSpaceContent() {
+		return selectionTool.userSpaceContent(editor.getViewport());
+	}
 
-						@Override
-						public Color getColorisation() {
-							return grayOutColor;
-						}
-
-						@Override
-						public Color getBackground() {
-							return null;
-						}
-					};
-					
-				
-				Decoration selectedDecoration = new Decoration() {
-
-					@Override
-					public Color getColorisation() {
-						return selectionColor;
-					}
-
-					@Override
-					public Color getBackground() {
-						return null;
-					}
-				};
-				
-				if(selected.contains(node)) {
-					if (selectionMode == SELECTION_REMOVE)
-						return null;
-					return selectedDecoration;
-				}
-				
-				if(editor.getModel().getSelection().contains(node)) {
-					return selectedDecoration;
-				} else
-					return null;
-			}
-			
-		};
+	@Override
+	public Expression<? extends SimpleGraphicalContent> screenSpaceContent(Viewport viewport) {
+		return Expressions.constant(SimpleGraphicalContent.Empty.INSTANCE);
 	}
 
 }

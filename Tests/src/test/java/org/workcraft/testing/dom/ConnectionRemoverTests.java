@@ -34,6 +34,8 @@ import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.SignalTransition;
 import org.workcraft.plugins.stg.VisualSTG;
 
+import pcollections.HashTreePSet;
+
 public class ConnectionRemoverTests {
 	@Test
 	public void removeMany() throws InvalidConnectionException {
@@ -68,12 +70,12 @@ public class ConnectionRemoverTests {
 				toDeleteThen.add(n);
 		}
 		
-		vstg.select(toDelete);
+		vstg.selection().setValue(HashTreePSet.from(toDelete));
 		vstg.deleteSelection();
 		
 		//System.out.println ("O_O");
 		
-		vstg.select(toDeleteThen);
+		vstg.selection().setValue(HashTreePSet.from(toDeleteThen));
 		vstg.deleteSelection();
 	}
 }

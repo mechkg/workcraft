@@ -26,8 +26,14 @@ import java.awt.Graphics2D;
 
 import javax.swing.Icon;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dom.visual.SimpleGraphicalContent;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
+import org.workcraft.gui.graph.Viewport;
 import org.workcraft.util.GUI;
 
 public class NodeGeneratorTool extends AbstractTool {
@@ -54,8 +60,24 @@ public class NodeGeneratorTool extends AbstractTool {
 		}
 	}
 
-	public void drawInScreenSpace(GraphEditor editor, Graphics2D g) {
-		GUI.drawEditorMessage(editor, g, Color.BLACK, "Click to create a " + generator.getLabel());	
+	@Override
+	public Expression<? extends SimpleGraphicalContent> userSpaceContent() {
+		return Expressions.constant(SimpleGraphicalContent.Empty.INSTANCE);
+	}
+
+	@Override
+	public Expression<? extends SimpleGraphicalContent> screenSpaceContent(final Viewport viewport) {
+		return new ExpressionBase<SimpleGraphicalContent>(){
+			@Override
+			protected SimpleGraphicalContent evaluate(final EvaluationContext context) {
+				return new SimpleGraphicalContent(){
+					@Override
+					public void draw(Graphics2D g) {
+						GUI.drawEditorMessage(viewport, g, Color.BLACK, "Click to create a " + generator.getLabel(), context);	
+					}
+				};
+			}
+		};
 	}
 	
 	public int getHotKeyCode() {
@@ -63,7 +85,8 @@ public class NodeGeneratorTool extends AbstractTool {
 	}
 
 	@Override
-	public Decorator getDecorator() {
-		return Decorator.Empty.INSTANCE;
+	public Expression<? extends Decorator> getDecorator() {
+		return Expressions.constant(Decorator.Empty.INSTANCE);
 	}
+
 }

@@ -24,8 +24,6 @@ package org.workcraft.dom;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.references.AbstractReferenceManager;
 import org.workcraft.dom.references.IDGenerator;
-import org.workcraft.dom.references.ReferenceManager;
-import org.workcraft.observation.HierarchyObserver;
 import org.workcraft.util.TwoWayMap;
 
 public class DefaultReferenceManager implements AbstractReferenceManager {

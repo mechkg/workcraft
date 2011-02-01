@@ -37,6 +37,8 @@ import org.workcraft.util.Func;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Hierarchy;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class HitMan
 {
 	private static <T extends Node> Iterable<T> filterByBB(Iterable<T> nodes, final Point2D pointInLocalSpace) {
@@ -260,17 +262,17 @@ public class HitMan
 	}
 
 	public static Node hitTestForConnection (Point2D point, VisualModel model) {
-		AffineTransform t = TransformHelper.getTransform(model.getRoot(), model.getCurrentLevel());
+		AffineTransform t = TransformHelper.getTransform(model.getRoot(), eval(model.currentLevel()));
 		Point2D pt = new Point2D.Double();
 		t.transform(point, pt);
-		return hitTestForConnection(pt, model.getCurrentLevel());	
+		return hitTestForConnection(pt, eval(model.currentLevel()));	
 	}
 
 	public static Node hitTestForSelection (Point2D point, VisualModel model) {
-		AffineTransform t = TransformHelper.getTransform(model.getRoot(), model.getCurrentLevel());
+		AffineTransform t = TransformHelper.getTransform(model.getRoot(), eval(model.currentLevel()));
 		Point2D pt = new Point2D.Double();
 		t.transform(point, pt);
-		return hitTestForSelection(pt, model.getCurrentLevel());	
+		return hitTestForSelection(pt, eval(model.currentLevel()));	
 	}
 
 

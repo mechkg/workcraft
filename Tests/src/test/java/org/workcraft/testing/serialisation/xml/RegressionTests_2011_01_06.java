@@ -39,6 +39,8 @@ import org.workcraft.plugins.stg.VisualDummyTransition;
 import org.workcraft.plugins.stg.VisualSTG;
 import org.workcraft.util.XmlUtil;
 
+import pcollections.HashTreePSet;
+
 public class RegressionTests_2011_01_06 {
 	@Test
 	public void bezierDeserialisationInitTest() throws DeserialisationException {
@@ -113,13 +115,13 @@ public class RegressionTests_2011_01_06 {
 		Assert.assertEquals(2, cpoints.length);
 		Assert.assertTrue(eval(cpoints[0].hidden()));
 		Assert.assertTrue(eval(cpoints[1].hidden()));
-		visual.select(cpoints[0]);
+		visual.selection().setValue(HashTreePSet.<Node>singleton(cpoints[0]));
 		Assert.assertFalse(eval(cpoints[0].hidden()));
 		Assert.assertFalse(eval(cpoints[1].hidden()));
-		visual.selectNone();
+		visual.selection().setValue(HashTreePSet.<Node>empty());
 		Assert.assertTrue(eval(cpoints[0].hidden()));
 		Assert.assertTrue(eval(cpoints[1].hidden()));
-		visual.select(vConn);
+		visual.selection().setValue(HashTreePSet.<Node>singleton(vConn));
 		Assert.assertFalse(eval(cpoints[0].hidden()));
 		Assert.assertFalse(eval(cpoints[1].hidden()));
 	}

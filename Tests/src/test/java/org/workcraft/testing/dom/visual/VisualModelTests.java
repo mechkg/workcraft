@@ -29,6 +29,7 @@ import static org.workcraft.testing.dom.visual.Tools.createGroup;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Assert;
@@ -48,6 +49,8 @@ import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
 import org.workcraft.plugins.stg.DefaultStorageManager;
+
+import pcollections.HashTreePSet;
 
 public class VisualModelTests {
 
@@ -79,12 +82,12 @@ public class VisualModelTests {
 			throws VisualModelInstantiationException {
 		VisualModel model = new MockConcreteVisualModel();
 
-		model.getCurrentLevel().add(new VisualGroup(new DefaultStorageManager()));
+		eval(model.currentLevel()).add(new VisualGroup(new DefaultStorageManager()));
 
-		VisualNode[] old = eval(model.getCurrentLevel().children()).toArray(new VisualNode[0]);
+		VisualNode[] old = eval(eval(model.currentLevel()).children()).toArray(new VisualNode[0]);
 		Assert.assertEquals(1, old.length);
 		model.groupSelection();
-		VisualNode[] _new = eval(model.getCurrentLevel().children()).toArray(new VisualNode[0]);
+		VisualNode[] _new = eval(eval(model.currentLevel()).children()).toArray(new VisualNode[0]);
 		Assert.assertEquals(1, _new.length);
 		Assert.assertEquals(old[0], _new[0]);
 	}
@@ -107,16 +110,13 @@ public class VisualModelTests {
 	}
 
 	public void TestGroup(VisualModel model, VisualNode[] toGroup) {
-		model.selectNone();
-		for (VisualNode node : toGroup) {
-			model.addToSelection(node);
-		}
+		model.selection().setValue(HashTreePSet.<Node>from(Arrays.asList(toGroup)));
 
-		VisualNode[] old = eval(model.getCurrentLevel().children()).toArray(new VisualNode[0]);
+		VisualNode[] old = eval(eval(model.currentLevel()).children()).toArray(new VisualNode[0]);
 
 		model.groupSelection();
 
-		VisualNode[] _new = eval(model.getCurrentLevel().children()).toArray(new VisualNode[0]);
+		VisualNode[] _new = eval(eval(model.currentLevel()).children()).toArray(new VisualNode[0]);
 
 		VisualNode[] diff = findMissing(old, _new);
 
@@ -150,7 +150,7 @@ public class VisualModelTests {
 	public void TestGroup2Items() throws VisualModelInstantiationException {
 		VisualModel model = new MockConcreteVisualModel();
 
-		Container root = model.getCurrentLevel();
+		Container root = eval(model.currentLevel());
 		VisualGroup node1 = createGroup(root);
 		VisualGroup node2 = createGroup(root);
 
@@ -161,10 +161,10 @@ public class VisualModelTests {
 	public void TestGroup1Item() throws VisualModelInstantiationException {
 		VisualModel model = createModel();
 
-		Container root = model.getCurrentLevel();
+		Container root = eval(model.currentLevel());
 		VisualGroup node1 = createGroup(root);
 
-		model.addToSelection(node1);
+		model.selection().setValue(HashTreePSet.<Node>singleton(node1));
 		model.groupSelection();
 		Assert.assertEquals(1, eval(root.children()).toArray(new VisualNode[0]).length);
 		Assert.assertEquals(node1, eval(root.children()).toArray(new VisualNode[0])[0]);
@@ -175,7 +175,7 @@ public class VisualModelTests {
 	public void TestGroup5Items() throws VisualModelInstantiationException {
 		VisualModel model = createModel();
 
-		Container root = model.getCurrentLevel();
+		Container root = eval(model.currentLevel());
 		DefaultStorageManager storage = new DefaultStorageManager();
 		VisualGroup node1 = new VisualGroup(storage);
 		VisualGroup node2 = new VisualGroup(storage);
@@ -209,7 +209,7 @@ public class VisualModelTests {
 	public void TestUngroupRoot() throws VisualModelInstantiationException {
 		VisualModel model = new MockConcreteVisualModel();
 
-		Container root = model.getCurrentLevel();
+		Container root = eval(model.currentLevel());
 
 		DefaultStorageManager storage = new DefaultStorageManager();
 		VisualGroup node1 = new VisualGroup(storage);
@@ -224,7 +224,7 @@ public class VisualModelTests {
 		root.add(node1);
 		root.add(node5);
 
-		model.addToSelection(node1);
+		model.selection().setValue(HashTreePSet.<Node>singleton(node1));
 		model.ungroupSelection();
 
 		VisualNode[] newList = eval(root.children()).toArray(new VisualNode[0]);
@@ -243,7 +243,7 @@ public class VisualModelTests {
 	public void TestUngroupNonRoot() throws VisualModelInstantiationException {
 		VisualModel model = new MockConcreteVisualModel();
 
-		Container root = model.getCurrentLevel();
+		Container root = eval(model.currentLevel());
 
 		DefaultStorageManager storage = new DefaultStorageManager();
 		VisualGroup node1 = new VisualGroup(storage);
@@ -258,9 +258,9 @@ public class VisualModelTests {
 		root.add(node1);
 		root.add(node5);
 
-		model.setCurrentLevel(node1);
+		model.currentLevel().setValue(node1);
 
-		model.addToSelection(node2);
+		model.selection().setValue(HashTreePSet.<Node>singleton(node2));
 		model.ungroupSelection();
 
 		VisualNode[] newList = eval(root.children()).toArray(new VisualNode[0]);
@@ -279,7 +279,7 @@ public class VisualModelTests {
 	public void TestUngroupEmpty() throws VisualModelInstantiationException {
 		VisualModel model = new MockConcreteVisualModel();
 
-		Container root = model.getCurrentLevel();
+		Container root = eval(model.currentLevel());
 
 		VisualGroup node1 = new VisualGroup(new DefaultStorageManager());
 		VisualGroup node2 = new VisualGroup(new DefaultStorageManager());
@@ -287,7 +287,7 @@ public class VisualModelTests {
 		root.add(node1);
 		root.add(node2);
 
-		model.addToSelection(node2);
+		model.selection().setValue(HashTreePSet.<Node>singleton(node2));
 		model.ungroupSelection();
 
 		VisualNode[] newList = eval(root.children()).toArray(new VisualNode[0]);
@@ -302,7 +302,7 @@ public class VisualModelTests {
 	public void TestUngroupTwoGroups() throws VisualModelInstantiationException {
 		VisualModel model = new MockConcreteVisualModel();
 
-		Container root = model.getCurrentLevel();
+		Container root = eval(model.currentLevel());
 
 		DefaultStorageManager storage = new DefaultStorageManager();
 		VisualGroup node1 = new VisualGroup(storage);
@@ -325,10 +325,12 @@ public class VisualModelTests {
 		node3.add(node3c);
 		node4.add(node4c);
 
-		model.addToSelection(node4);
-		model.addToSelection(node3);
-		model.addToSelection(node1);
-		model.addToSelection(node2);
+		model.selection().setValue(HashTreePSet.<Node>empty().
+				plus(node4).
+				plus(node3).
+				plus(node1).
+				plus(node2));
+		
 		model.ungroupSelection();
 
 		VisualNode[] newList = eval(root.children()).toArray(new VisualNode[0]);
@@ -354,8 +356,10 @@ public class VisualModelTests {
 		VisualComponent c2 = createComponent(root);
 		VisualConnection con = createConnection(model, c1, c2, root);
 
-		model.addToSelection(c1);
-		model.addToSelection(c2);
+		model.selection().setValue(HashTreePSet.<Node>empty().
+				plus(c1).
+				plus(c2));
+
 		model.groupSelection();
 		
 		Assert.assertArrayEquals(
@@ -372,9 +376,11 @@ public class VisualModelTests {
 		VisualComponent c2 = createComponent(root);
 		VisualConnection con = createConnection(model, c1, c2, root);
 
-		model.addToSelection(con);
-		model.addToSelection(c1);
-		model.addToSelection(c2);
+		model.selection().setValue(HashTreePSet.<Node>empty().
+				plus(con).
+				plus(c1).
+				plus(c2));
+		
 		model.groupSelection();
 		Assert.assertArrayEquals(
 				new Object[] { new GroupNodeEqualityTest(new VisualNode[] {c1, c2, con}) }, 
@@ -390,10 +396,11 @@ public class VisualModelTests {
 		VisualConnection con1 = createConnection(model, c1, c2, root);
 		VisualConnection con2 = createConnection(model, c1, c2, root);
 
-		model.addToSelection(con1);
-		model.addToSelection(c2);
-		model.addToSelection(c1);
-		model.addToSelection(con2);
+		model.selection().setValue(HashTreePSet.<Node>empty().
+				plus(con1).
+				plus(c2).
+				plus(c1).
+				plus(con2));
 		model.groupSelection();
 		Assert.assertArrayEquals(
 				new Object[] { new GroupNodeEqualityTest(new VisualNode[] {c1, c2, con1, con2}) }, 
@@ -410,8 +417,9 @@ public class VisualModelTests {
 		VisualComponent c2 = createComponent(root);
 		VisualConnection con = createConnection(model, c1, c2, root);
 
-		model.addToSelection(node1);
-		model.addToSelection(c2);
+		model.selection().setValue(HashTreePSet.<Node>empty().
+				plus(node1).
+				plus(c2));
 		model.groupSelection();
 		Assert.assertArrayEquals(
 				new Object[] { new GroupNodeEqualityTest(new VisualNode[] {node1, c2, con}) }, 
@@ -429,8 +437,9 @@ public class VisualModelTests {
 		VisualConnection con1 = createConnection(model, c1, c2, root);
 		VisualConnection con2 = createConnection(model, c2, c3, root);
 
-		model.addToSelection(con1);
-		model.addToSelection(con2);
+		model.selection().setValue(HashTreePSet.<Node>empty().
+				plus(con1).
+				plus(con2));
 		model.groupSelection();
 
 		Assert.assertArrayEquals(new VisualNode[] { c1, c2, c3, con1, con2 },
@@ -469,9 +478,11 @@ public class VisualModelTests {
 		VisualComponent c3 = createComponent(root);
 		VisualConnection con1 = createConnection(model, c1, c2, root);
 
-		model.addToSelection(con1);
-		model.addToSelection(c2);
-		model.addToSelection(c3);
+		model.selection().setValue(HashTreePSet.<Node>empty().
+				plus(con1).
+				plus(c2).
+				plus(c3));
+
 		model.groupSelection();
 
 		Assert.assertArrayEquals(new Object[] { c1, con1, 
@@ -488,8 +499,9 @@ public class VisualModelTests {
 		VisualComponent c2 = createComponent(root);
 		VisualConnection con = createConnection(model, c1, c2, root);
 
-		model.addToSelection(c1);
-		model.addToSelection(con);
+		model.selection().setValue(HashTreePSet.<Node>empty().
+				plus(c1).
+				plus(con));
 		model.groupSelection();
 		Assert.assertArrayEquals(new VisualNode[] { c1, c2, con }, eval(root
 				.children()).toArray(new VisualNode[0]));
@@ -512,7 +524,7 @@ public class VisualModelTests {
 		
 		Assert.assertNull(HitMan.hitTestForSelection(new Point2D.Double(0.5, 0.5), model));
 		Assert.assertEquals(group1, HitMan.hitTestForSelection(new Point2D.Double(101.5, 0.5), model));
-		model.setCurrentLevel(group1);
+		model.currentLevel().setValue(group1);
 		Assert.assertNull(HitMan.hitTestForSelection(new Point2D.Double(0.5, 0.5), model));
 		Assert.assertEquals(sq, HitMan.hitTestForSelection(new Point2D.Double(101.5, 0.5), model));
 	}
@@ -536,7 +548,7 @@ public class VisualModelTests {
 		Assert.assertEquals(group1, boxHitTest(model,new Rectangle2D.Double(100.99, -0.01, 1.02, 1.02)).iterator().next());
 		Assert.assertEquals(1, boxHitTest(model,new Rectangle2D.Double(-0.01, 4.99, 1.02, 1.02)).size());
 		Assert.assertEquals(sq2, boxHitTest(model,new Rectangle2D.Double(-0.01, 4.99, 1.02, 1.02)).iterator().next());
-		model.setCurrentLevel(group1);
+		model.currentLevel().setValue(group1);
 		Assert.assertEquals(0, boxHitTest(model,new Rectangle2D.Double(-0.01, -0.01, 1.02, 1.02)).size());
 		Assert.assertEquals(1, boxHitTest(model,new Rectangle2D.Double(100.99, -0.01, 1.02, 1.02)).size());
 		Assert.assertEquals(sq, boxHitTest(model,new Rectangle2D.Double(100.99, -0.01, 1.02, 1.02)).iterator().next());

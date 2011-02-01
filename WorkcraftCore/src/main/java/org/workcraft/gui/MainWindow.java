@@ -1000,11 +1000,6 @@ public class MainWindow extends JFrame {
 		return editorInFocus;
 	}
 
-	public void repaintCurrentEditor() {
-		if (editorInFocus != null)
-			editorInFocus.repaint();
-	}
-
 	public void togglePropertyEditor() {
 
 	}

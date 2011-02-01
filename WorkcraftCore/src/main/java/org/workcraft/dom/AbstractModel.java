@@ -116,7 +116,7 @@ public abstract class AbstractModel implements Model {
 	}
 
 	@Override
-	final public void remove (Collection<Node> nodes) {
+	final public void remove (Collection<? extends Node> nodes) {
 		for(Node node : nodes)
 			remove(node);
 	}

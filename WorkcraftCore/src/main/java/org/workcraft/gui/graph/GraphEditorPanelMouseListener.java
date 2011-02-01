@@ -21,7 +21,9 @@
 
 package org.workcraft.gui.graph;
 
+import java.awt.Color;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -29,23 +31,25 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
-import org.workcraft.gui.graph.tools.ToolProvider;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListener, MouseWheelListener {
 	protected GraphEditor editor;
 	protected boolean panDrag = false;
-	private ToolProvider toolProvider;
+	private Expression<GraphEditorTool> tool;
 
 	protected Point lastMouseCoords = new Point();
 	private Point2D prevPosition = new Point2D.Double(0, 0);
 	private Point2D startPosition = null;
 	
-	public GraphEditorPanelMouseListener(GraphEditor editor, ToolProvider toolProvider) {
+	public GraphEditorPanelMouseListener(GraphEditor editor, Expression<GraphEditorTool> tool) {
 		this.editor = editor;
-		this.toolProvider = toolProvider;
+		this.tool = tool;
 	}
 
 	private GraphEditorMouseEvent adaptEvent(MouseEvent e) {
@@ -59,11 +63,9 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 	public void mouseMoved(MouseEvent e) {
 		Point currentMouseCoords = e.getPoint();
 		if (panDrag) {
-			editor.getViewport().pan(currentMouseCoords.x - lastMouseCoords.x,
-					currentMouseCoords.y - lastMouseCoords.y);
-			editor.repaint();
+			editor.getViewport().pan(currentMouseCoords.x - lastMouseCoords.x, currentMouseCoords.y - lastMouseCoords.y);
 		} else {
-			GraphEditorTool tool = toolProvider.getTool();
+			GraphEditorTool tool = eval(this.tool);
 			if (tool != null) {
 				if(!tool.isDragging() && startPosition!=null) {
 					tool.startDrag(adaptEvent(e));
@@ -80,12 +82,12 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 			editor.getMainWindow().requestFocus((GraphEditorPanel)editor);
 		 
 		if (e.getButton() != MouseEvent.BUTTON2)
-			toolProvider.getTool().mouseClicked(adaptEvent(e));
+			eval(tool).mouseClicked(adaptEvent(e));
 	}
 
 	public void mouseEntered(MouseEvent e) {
 		if (editor.hasFocus()) {
-			GraphEditorTool tool = toolProvider.getTool();
+			GraphEditorTool tool = eval(this.tool);
 			if (tool != null)
 				tool.mouseEntered(adaptEvent(e));
 		}
@@ -93,7 +95,7 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 
 	public void mouseExited(MouseEvent e) {
 		if (editor.hasFocus())
-			toolProvider.getTool().mouseExited(adaptEvent(e));
+			eval(this.tool).mouseExited(adaptEvent(e));
 	}
 
 	public void mousePressed(MouseEvent e) {
@@ -103,7 +105,7 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 		if (e.getButton() == MouseEvent.BUTTON2)
 			panDrag = true;
 		else {
-			GraphEditorTool tool = toolProvider.getTool();
+			GraphEditorTool tool = eval(this.tool);
 			if (tool != null) {
 				if(!tool.isDragging())
 					startPosition = editor.getViewport().screenToUser(e.getPoint());
@@ -119,7 +121,7 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 		if (e.getButton() == MouseEvent.BUTTON2)
 			panDrag = false;
 		else {
-			GraphEditorTool tool = toolProvider.getTool();
+			GraphEditorTool tool = eval(this.tool);
 			if (tool != null) {
 				if(tool.isDragging())
 					tool.finishDrag(adaptEvent(e));
@@ -129,10 +131,19 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 		}
 	}
 
+	public String getLabel() {
+		return "Select";
+	}
+
+	public int getHotKeyCode() {
+		return KeyEvent.VK_S;
+	}
+
+	protected static Color selectionColor = new Color(99, 130, 191).brighter();
+
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		if (editor.hasFocus()) {
 			editor.getViewport().zoom(-e.getWheelRotation(), e.getPoint());
-			editor.repaint();
 		}
 	}
 }

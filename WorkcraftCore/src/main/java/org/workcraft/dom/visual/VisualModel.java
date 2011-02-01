@@ -25,40 +25,32 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.exceptions.InvalidConnectionException;
 
+import pcollections.PSet;
+
 
 public interface VisualModel extends Model {
-	public Container getCurrentLevel();
+	public ModifiableExpression<Container> currentLevel();
 	public MathModel getMathModel();
 	
 	public void connect(Node first, Node second) throws InvalidConnectionException;
 	public void validateConnection(Node first, Node second) throws InvalidConnectionException;
 	
-	public void selectAll();
-	public void selectNone();
-	public void select(Node node);
-	public void select(Collection<Node> node);
-	public void addToSelection (Collection<Node> node);
-	public void addToSelection (Node node);
-	public void removeFromSelection (Node node);
-	public void removeFromSelection (Collection<Node> nodes);
 	public void deleteSelection();
 	public void groupSelection();
 	public void ungroupSelection();
-	
-	public void setCurrentLevel (Container group);	
 	
 	public Collection<Node> boxHitTest(Point2D p1, Point2D p2);
 
 	public Expression<HierarchicalGraphicalContent> graphicalContent();
 
-	public Expression<? extends Collection<? extends Node>> selection();
+	public ModifiableExpression<PSet<Node>> selection();
 
-	public Collection<Node> getSelection();
 	public void ensureConsistency();
 }

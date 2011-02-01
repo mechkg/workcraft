@@ -37,8 +37,9 @@ import org.workcraft.NodeFactory;
 import org.workcraft.annotations.MouseListeners;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultMathNodeRemover;
@@ -55,11 +56,22 @@ import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.util.XmlUtil;
 
+import pcollections.HashTreePSet;
+import pcollections.PSet;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 @MouseListeners ({ DefaultAnchorGenerator.class })
 public abstract class AbstractVisualModel extends AbstractModel implements VisualModel {
 	private MathModel mathModel;
-	private Container currentLevel;
-	private final CachedHashSet<Node> selection;
+	private ModifiableExpression<Container> currentLevel = new Variable<Container>(null){
+		@Override
+		public void setValue(Container value) {
+			selection.setValue(HashTreePSet.<Node>empty());
+			super.setValue(value);
+		};
+	};
+	private final ModifiableExpression<PSet<Node>> selection;
 	private final ExpressionBase<HierarchicalGraphicalContent> graphicalContent;
 	private SelectionEventPropagator selectionEventPropagator;
 
@@ -94,9 +106,9 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		super(createDefaultModelSpecification(param.root));
 		this.mathModel = param.mathModel;
 		this.storage = param.storage;
-		selection = new CachedHashSet<Node>(storage);
+		selection = storage.<PSet<Node>>create(HashTreePSet.<Node>empty());
 		
-		currentLevel =  param.root;
+		currentLevel.setValue(param.root);
 		selectionEventPropagator = new SelectionEventPropagator(param.root, this);
 		new RemovedNodeDeselector(this);
 		new DefaultMathNodeRemover(this, getRoot());
@@ -134,6 +146,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		}
 	}
 
+	@Override
 	public ExpressionBase<HierarchicalGraphicalContent> graphicalContent() {
 		return graphicalContent;
 	}
@@ -142,13 +155,15 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		return new DrawMan(this).graphicalContent(getRoot());
 	}
 
-	public ExpressionBase<? extends Collection<? extends Node>> selection() {
+	@Override
+	public ModifiableExpression<PSet<Node>> selection() {
 		return selection;
 	}
 
 	/**
 	 * Select all components, connections and groups from the <code>root</code> group.
 	 */
+/*	@Override
 	public void selectAll() {
 		Collection<? extends Node> children = GlobalCache.eval(getRoot().children());
 		if(GlobalCache.eval(selection).size()==children.size())
@@ -156,94 +171,30 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		
 		selection.clear();
 		selection.addAll(children);
-	}
-
-	/**
-	 * Clear selection.
-	 */
-	public void selectNone() {
-		selection.clear();
-	}
+	}*/
 
 	private void validateSelection (Node node) {
-		if (!Hierarchy.isDescendant(node, getCurrentLevel()))
+		if (!Hierarchy.isDescendant(node, eval(currentLevel())))
 			throw new RuntimeException ("Cannot select a node that is not in the current editing level (" + node + "), parent (" + GlobalCache.eval(node.parent()) +")");
-	}
-
-	private void validateSelection (Collection<Node> nodes) {
-		for (Node node : nodes)
-			validateSelection(node);
 	}
 
 	public boolean isSelected(Node node) {
 		return GlobalCache.eval(selection).contains(node);
 	}
 
-	public void select(Collection<Node> nodes) {
-		if (nodes.isEmpty()) {
-			selectNone();
-			return;
-		}
-		
-		validateSelection(nodes);
-
-		selection.clear();
-		selection.addAll(nodes);
-	}
-
-	public void select(Node node) {
-		if (selection.getValue().size() == 1 && selection.getValue().contains(node))
-			return;
-
-		validateSelection(node);
-
-		selection.clear();
-		selection.add(node);
-	}
-
-	public void addToSelection(Node node) {
-		if (selection.getValue().contains(node))
-			return;
-
-		validateSelection(node);
-		
-		selection.add(node);
-	}
-
-	public void addToSelection(Collection<Node> nodes) {
-		validateSelection(nodes);
-
-		selection.addAll(nodes);
-	}
-
-	public void removeFromSelection(Node node) {
-		if (selection.getValue().contains(node)) {
-			selection.remove(node);
-		}
-	}
-
-	public void removeFromSelection(Collection<Node> nodes) {
-		selection.removeAll(nodes);
-	}
-
+	@Override
 	public MathModel getMathModel() {
 		return mathModel;
 	}
 
+	@Override
 	public VisualModel getVisualModel() {
 		return this;
-	}
-
-	/**
-	 * @return Returns selection ordered the same way as the objects are ordered in the currently active group.
-	 */
-	public Collection<Node> getSelection() {
-		return GlobalCache.eval(selection);
 	}
 	
 	public Collection<Node> getOrderedCurrentLevelSelection() {
 		List<Node> result = new ArrayList<Node>();
-		for(Node node : GlobalCache.eval(currentLevel.children()))
+		for(Node node : GlobalCache.eval(eval(currentLevel).children()))
 		{
 			if(GlobalCache.eval(selection).contains(node) && node instanceof VisualNode)
 				result.add((VisualNode)node);
@@ -251,13 +202,8 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		return result;
 	}
 
-	public Container getCurrentLevel() {
+	public ModifiableExpression<Container> currentLevel() {
 		return currentLevel;
-	}
-
-	public void setCurrentLevel(Container newCurrentLevel) {
-		selection.clear();
-		currentLevel = newCurrentLevel;
 	}
 
 	private Collection<Node> getGroupableSelection()
@@ -274,10 +220,11 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	 * Groups the selection, and selects the newly created group.
 	 * @author Arseniy Alekseyev
 	 */
+	@Override
 	public void groupSelection() {
 		Collection<Node> selected = getGroupableSelection();
 		VisualGroup vg = groupCollection(selected);
-		if (vg!=null) select(vg);
+		if (vg!=null) selection.setValue(HashTreePSet.<Node>singleton(vg));
 	}
 	
 	protected final StorageManager storage;
@@ -288,6 +235,8 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 			return null;
 		
 		VisualGroup group = new VisualGroup(storage);
+		
+		Container currentLevel = eval(this.currentLevel);
 
 		currentLevel.add(group);
 
@@ -313,6 +262,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	 * Ungroups all groups in the current selection and adds the ungrouped components to the selection.
 	 * @author Arseniy Alekseyev
 	 */
+	@Override
 	public void ungroupSelection() {
 		ArrayList<Node> toSelect = new ArrayList<Node>();
 		
@@ -323,17 +273,18 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 				VisualGroup group = (VisualGroup)node;
 				for(Node subNode : group.unGroup())
 					toSelect.add(subNode);
-				currentLevel.remove(group);
+				eval(currentLevel).remove(group);
 			}
 			else
 				toSelect.add(node);
 		}
 		
-		select(toSelect);
+		selection.setValue(HashTreePSet.from(toSelect));
 	}
 
+	@Override
 	public void deleteSelection() {
-		remove(getSelection());
+		remove(eval(selection()));
 	}
 
 	/**
@@ -389,14 +340,15 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	private Point2D transformToCurrentSpace(Point2D pointInRootSpace)
 	{
 		Point2D newPoint = new Point2D.Double();
-		TransformHelper.getTransform(getRoot(), currentLevel).transform(pointInRootSpace, newPoint);
+		TransformHelper.getTransform(getRoot(), eval(currentLevel)).transform(pointInRootSpace, newPoint);
 		return newPoint;
 	}
 
+	@Override
 	public Collection<Node> boxHitTest(Point2D p1, Point2D p2) {
 		p1 = transformToCurrentSpace(p1);
 		p2 = transformToCurrentSpace(p2);
-		return HitMan.boxHitTest(currentLevel, p1, p2);
+		return HitMan.boxHitTest(eval(currentLevel), p1, p2);
 	}
 
 	@Override public Properties getProperties(Node node) {

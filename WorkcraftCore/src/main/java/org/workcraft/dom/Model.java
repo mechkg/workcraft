@@ -38,7 +38,7 @@ public interface Model {
 	public void add (Node node);
 	public void add (Container parent, Node node);
 	public void remove (Node node);
-	public void remove (Collection<Node> nodes);
+	public void remove (Collection<? extends Node> nodes);
 	
 	public Properties getProperties(Node node);
 	

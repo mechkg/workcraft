@@ -21,8 +21,6 @@
 
 package org.workcraft.gui.graph.tools;
 
-import java.awt.Graphics2D;
-
 import javax.swing.Icon;
 import javax.swing.JPanel;
 
@@ -36,14 +34,6 @@ public abstract class AbstractTool implements GraphEditorTool {
 	
 	@Override
 	public void deactivated () {
-	}
-	
-	@Override
-	public void drawInScreenSpace(Graphics2D g) {
-	}
-
-	@Override
-	public void drawInUserSpace(Graphics2D g) {
 	}
 
 	@Override

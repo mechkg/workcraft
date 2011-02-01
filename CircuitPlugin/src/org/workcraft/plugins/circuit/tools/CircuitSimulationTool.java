@@ -6,6 +6,9 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
@@ -135,155 +138,159 @@ public class CircuitSimulationTool extends STGSimulationTool {
 	}
 	
 	@Override
-	public Decorator getDecorator() {
-		return new Decorator() {
+	public Expression<? extends Decorator> getDecorator() { // TODO: make it dependent on the enabledness
+		return new ExpressionBase<Decorator>(){
 
 			@Override
-			public Decoration getDecoration(Node node) {
-				if(node instanceof VisualContact) {
-					
-					VisualContact contact = (VisualContact)node;
-					
-					String transitionId = null;
-					Node transition2 = null;
-					
-					if (branchTrace!=null&&branchStep<branchTrace.size()) {
-						transitionId = branchTrace.get(branchStep);
-						transition2 = net.getNodeByReference(transitionId);
-					} else if (branchTrace==null&&trace!=null&&traceStep<trace.size()) {
-						transitionId = trace.get(traceStep);
-						transition2 = net.getNodeByReference(transitionId);
-					}
-					
-					if (contact.getReferencedTransitions().contains(transition2)) {
-						return new Decoration(){
+			protected Decorator evaluate(EvaluationContext context) {
+				return new Decorator() {
 
-							@Override
-							public Color getColorisation() {
-								return PetriNetSettings.getEnabledBackgroundColor();
-							}
-
-							@Override
-							public Color getBackground() {
-								return PetriNetSettings.getEnabledForegroundColor();
-							}
-						};
-						
-					}
-					
-						
-					if (isContactExcited((VisualContact)node, net)!=null)
-						return new Decoration(){
-							@Override
-							public Color getColorisation() {
-								return PetriNetSettings.getEnabledForegroundColor();
-							}
-
-							@Override
-							public Color getBackground() {
-								return PetriNetSettings.getEnabledBackgroundColor();
-							}
-						};
-					
-					if (!contact.getReferencedTransitions().isEmpty()) return null;
-						
-					if (contact.getReferencedOnePlace()==null||contact.getReferencedZeroPlace()==null) return null;
-					
-					boolean isOne = eval(contact.getReferencedOnePlace().tokens())==1;
-					boolean isZero = eval(contact.getReferencedZeroPlace().tokens())==1;
-					
-					
-					if (isOne&&!isZero)
-						return new Decoration(){
-							@Override
-							public Color getColorisation() {
-								return null;
+					@Override
+					public Decoration getDecoration(Node node) {
+						if(node instanceof VisualContact) {
+							
+							VisualContact contact = (VisualContact)node;
+							
+							String transitionId = null;
+							Node transition2 = null;
+							
+							if (branchTrace!=null&&branchStep<branchTrace.size()) {
+								transitionId = branchTrace.get(branchStep);
+								transition2 = net.getNodeByReference(transitionId);
+							} else if (branchTrace==null&&trace!=null&&traceStep<trace.size()) {
+								transitionId = trace.get(traceStep);
+								transition2 = net.getNodeByReference(transitionId);
 							}
 							
-							@Override
-							public Color getBackground() {
-								return CircuitSettings.getActiveWireColor();
-							}
-						};
-					
-					if (!isOne&&isZero)
-						return new Decoration(){
-							@Override
-							public Color getColorisation() {
-								return null;
-							}
-							@Override
-							public Color getBackground() {
-								return CircuitSettings.getInactiveWireColor();
-							}
-						};
-					
-				} else if (node instanceof VisualJoint) {
-					VisualJoint vj = (VisualJoint)node;
-					
-					if (vj.getReferencedOnePlace()==null||vj.getReferencedZeroPlace()==null) return null;
-					
-					boolean isOne = eval(vj.getReferencedOnePlace().tokens())==1;
-					boolean isZero = eval(vj.getReferencedZeroPlace().tokens())==1;
-					
-					if (isOne&&!isZero)
-						return new Decoration(){
-							@Override
-							public Color getColorisation() {
-								return CircuitSettings.getActiveWireColor();
-							}
-							@Override
-							public Color getBackground() {
-								return null;
-							}
-						};
-					if (!isOne&&isZero)
-						return new Decoration(){
-							@Override
-							public Color getColorisation() {
-								return CircuitSettings.getInactiveWireColor();
-							}
-							@Override
-							public Color getBackground() {
-								return null;
-							}
-						};
-				} else if (node instanceof VisualCircuitConnection) {
-					VisualCircuitConnection vc = (VisualCircuitConnection)node;
-					
-					if (vc.getReferencedOnePlace()==null||vc.getReferencedZeroPlace()==null) return null;
-					
-					boolean isOne = eval(vc.getReferencedOnePlace().tokens())==1;
-					boolean isZero = eval(vc.getReferencedZeroPlace().tokens())==1;
-					
-					if (isOne&&!isZero)
-						return new Decoration(){
-							@Override
-							public Color getColorisation() {
-								return CircuitSettings.getActiveWireColor();
-							}
-							@Override
-							public Color getBackground() {
-								return null;
-							}
-						};
-					if (!isOne&&isZero)
-						return new Decoration(){
-							@Override
-							public Color getColorisation() {
-								return CircuitSettings.getInactiveWireColor();
-							}
-							@Override
-							public Color getBackground() {
-								return null;
-							}
-						};
-					
-				}
-				return null;
-			} 
+							if (contact.getReferencedTransitions().contains(transition2)) {
+								return new Decoration(){
 
-			
+									@Override
+									public Color getColorisation() {
+										return PetriNetSettings.getEnabledBackgroundColor();
+									}
+
+									@Override
+									public Color getBackground() {
+										return PetriNetSettings.getEnabledForegroundColor();
+									}
+								};
+								
+							}
+							
+								
+							if (isContactExcited((VisualContact)node, net)!=null)
+								return new Decoration(){
+									@Override
+									public Color getColorisation() {
+										return PetriNetSettings.getEnabledForegroundColor();
+									}
+
+									@Override
+									public Color getBackground() {
+										return PetriNetSettings.getEnabledBackgroundColor();
+									}
+								};
+							
+							if (!contact.getReferencedTransitions().isEmpty()) return null;
+								
+							if (contact.getReferencedOnePlace()==null||contact.getReferencedZeroPlace()==null) return null;
+							
+							boolean isOne = eval(contact.getReferencedOnePlace().tokens())==1;
+							boolean isZero = eval(contact.getReferencedZeroPlace().tokens())==1;
+							
+							
+							if (isOne&&!isZero)
+								return new Decoration(){
+									@Override
+									public Color getColorisation() {
+										return null;
+									}
+									
+									@Override
+									public Color getBackground() {
+										return CircuitSettings.getActiveWireColor();
+									}
+								};
+							
+							if (!isOne&&isZero)
+								return new Decoration(){
+									@Override
+									public Color getColorisation() {
+										return null;
+									}
+									@Override
+									public Color getBackground() {
+										return CircuitSettings.getInactiveWireColor();
+									}
+								};
+							
+						} else if (node instanceof VisualJoint) {
+							VisualJoint vj = (VisualJoint)node;
+							
+							if (vj.getReferencedOnePlace()==null||vj.getReferencedZeroPlace()==null) return null;
+							
+							boolean isOne = eval(vj.getReferencedOnePlace().tokens())==1;
+							boolean isZero = eval(vj.getReferencedZeroPlace().tokens())==1;
+							
+							if (isOne&&!isZero)
+								return new Decoration(){
+									@Override
+									public Color getColorisation() {
+										return CircuitSettings.getActiveWireColor();
+									}
+									@Override
+									public Color getBackground() {
+										return null;
+									}
+								};
+							if (!isOne&&isZero)
+								return new Decoration(){
+									@Override
+									public Color getColorisation() {
+										return CircuitSettings.getInactiveWireColor();
+									}
+									@Override
+									public Color getBackground() {
+										return null;
+									}
+								};
+						} else if (node instanceof VisualCircuitConnection) {
+							VisualCircuitConnection vc = (VisualCircuitConnection)node;
+							
+							if (vc.getReferencedOnePlace()==null||vc.getReferencedZeroPlace()==null) return null;
+							
+							boolean isOne = eval(vc.getReferencedOnePlace().tokens())==1;
+							boolean isZero = eval(vc.getReferencedZeroPlace().tokens())==1;
+							
+							if (isOne&&!isZero)
+								return new Decoration(){
+									@Override
+									public Color getColorisation() {
+										return CircuitSettings.getActiveWireColor();
+									}
+									@Override
+									public Color getBackground() {
+										return null;
+									}
+								};
+							if (!isOne&&isZero)
+								return new Decoration(){
+									@Override
+									public Color getColorisation() {
+										return CircuitSettings.getInactiveWireColor();
+									}
+									@Override
+									public Color getBackground() {
+										return null;
+									}
+								};
+							
+						}
+						return null;
+					} 
+				};
+			}
 		};
 	}
 }

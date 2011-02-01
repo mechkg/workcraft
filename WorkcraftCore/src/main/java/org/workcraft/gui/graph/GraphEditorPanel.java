@@ -43,18 +43,22 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DependentNode;
+import org.workcraft.dom.visual.SimpleGraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.Overlay;
 import org.workcraft.gui.PropertyEditorWindow;
 import org.workcraft.gui.ToolboxPanel;
 import org.workcraft.gui.graph.tools.GraphEditor;
+import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.gui.propertyeditor.Properties.Mix;
-import org.workcraft.observation.HierarchyEvent;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
@@ -82,8 +86,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		@Override
 		public ImageModel evaluate(EvaluationContext resolver) {
 			model.ensureConsistency();
-			resolver.resolve(model.graphicalContent());
-			resolver.resolve(model.selection());
+			resolver.resolve(graphicalContent);
 			repaint();
 			{
 				// WTF this code is here?
@@ -107,7 +110,6 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		@Override
 		public void componentResized(ComponentEvent e) {
 			reshape();
-			repaint();
 		}
 
 		@Override
@@ -115,18 +117,28 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		}
 	}
 
-	public class GraphEditorFocusListener implements FocusListener {
+	public class GraphEditorFocusListener extends ExpressionBase<Boolean> implements FocusListener {
+		
+		Variable<Boolean> value = Variable.create(false);
+		
 		@Override
 		public void focusGained(FocusEvent e) {
-			repaint();
+			value.setValue(true);
 		}
 
 		@Override
 		public void focusLost(FocusEvent e) {
-			repaint();
+			value.setValue(false);
+		}
+
+		@Override
+		protected Boolean evaluate(EvaluationContext context) {
+			return context.resolve(value);
 		}
 	}
 
+	private final Expression<Boolean> hasFocus;
+	
 	private static final long serialVersionUID = 1L;
 
 	protected VisualModel visualModel;
@@ -155,21 +167,22 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		new Repainter(visualModel);
 		
 		view = new Viewport(0, 0, getWidth(), getHeight());
-		grid = new Grid();
-
-		ruler = new Ruler();
-		view.addListener(grid);
-		grid.addListener(ruler);
+		grid = new Grid(view);
+		ruler = new Ruler(grid);
 
 		toolboxPanel = new ToolboxPanel(this, workspaceEntry.getModelEntry().getDescriptor().getVisualModelDescriptor());
 		
-		GraphEditorPanelMouseListener mouseListener = new GraphEditorPanelMouseListener(this, toolboxPanel);
+		GraphEditorPanelMouseListener mouseListener = new GraphEditorPanelMouseListener(this, toolboxPanel.selectedTool());
 		GraphEditorPanelKeyListener keyListener = new GraphEditorPanelKeyListener(this, toolboxPanel);
 
 		addMouseMotionListener(mouseListener);
 		addMouseListener(mouseListener);
 		addMouseWheelListener(mouseListener);
-		addFocusListener(new GraphEditorFocusListener());
+		
+		GraphEditorFocusListener focusListener = new GraphEditorFocusListener();
+		addFocusListener(focusListener);
+		hasFocus = focusListener;
+		
 		addComponentListener(new Resizer());
 
 		addKeyListener(keyListener);
@@ -184,51 +197,70 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		ruler.setShape(0, 0, getWidth(), getHeight());
 	}
 
+	final Expression<SimpleGraphicalContent> graphicalContent = new ExpressionBase<SimpleGraphicalContent>(){
+
+		@Override
+		protected SimpleGraphicalContent evaluate(final EvaluationContext context) {
+			
+			final GraphEditorTool tool = context.resolve(toolboxPanel.selectedTool());
+			
+			return new SimpleGraphicalContent() {
+				
+				@Override
+				public void draw(Graphics2D g2d) {
+					AffineTransform screenTransform = new AffineTransform(g2d.getTransform());
+
+					if (firstPaint) {
+						reshape();
+						firstPaint = false;
+					}
+
+					g2d.setBackground(CommonVisualSettings.getBackgroundColor());
+					g2d.clearRect(0, 0, getWidth(), getHeight());
+					context.resolve(grid.graphicalContent()).draw(g2d);
+					g2d.setTransform(screenTransform);
+
+					
+					g2d.transform(context.resolve(view.transform()));
+					
+					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+					g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+					g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//					g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+				
+					g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
+					visualModel.ensureConsistency();
+					context.resolve(visualModel.graphicalContent()).draw(g2d, context.resolve(tool.getDecorator()));
+
+					if (context.resolve(hasFocus))
+						context.resolve(tool.userSpaceContent()).draw(g2d);
+
+					g2d.setTransform(screenTransform);
+
+					context.resolve(ruler.graphicalContent()).draw(g2d);
+
+					if (context.resolve(hasFocus)) {
+						context.resolve(tool.screenSpaceContent(view)).draw(g2d);
+						g2d.setTransform(screenTransform);
+
+						g2d.setStroke(borderStroke);
+						g2d.setColor(CommonVisualSettings.getForegroundColor());
+						g2d.drawRect(0, 0, getWidth()-1, getHeight()-1);
+					}
+					
+				}
+			};
+		}
+		
+	};
+	
 	@Override
 	public void paint(Graphics g) {
 		Graphics2D g2d = (Graphics2D)g;
 		
-		AffineTransform screenTransform = (AffineTransform)g2d.getTransform().clone();
-
-		g2d.setBackground(CommonVisualSettings.getBackgroundColor());
-		g2d.clearRect(0, 0, getWidth(), getHeight());
-
-		grid.draw(g2d);
-		g2d.setTransform(screenTransform);
-
-		if (firstPaint) {
-			reshape();
-			firstPaint = false;
-		}
-
-		g2d.transform(view.getTransform());
-		
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-		g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-//		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-	
-		g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-
-		visualModel.ensureConsistency();
-		eval(visualModel.graphicalContent()).draw(g2d, toolboxPanel.getTool().getDecorator());
-
-		if (hasFocus())
-			toolboxPanel.getTool().drawInUserSpace(g2d);
-
-		g2d.setTransform(screenTransform);
-
-		ruler.draw(g2d);
-
-		if (hasFocus()) {
-			toolboxPanel.getTool().drawInScreenSpace(g2d);
-			g2d.setTransform(screenTransform);
-
-			g2d.setStroke(borderStroke);
-			g2d.setColor(CommonVisualSettings.getForegroundColor());
-			g2d.drawRect(0, 0, getWidth()-1, getHeight()-1);
-		}
+		GlobalCache.eval(graphicalContent).draw(g2d);
 		
 		paintChildren(g2d);
 	}
@@ -251,11 +283,6 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 
 	public MainWindow getMainWindow() {
 		return mainWindow;
-	}
-
-	public void notify(HierarchyEvent e) {
-		repaint();
-		workspaceEntry.setChanged(true);
 	}
 	
 	private void updatePropertyView() {

@@ -16,7 +16,7 @@ public class VisualModelTransformer {
 	 * @author Stanislav Golubtsov
 	 *   
 	 **/
-	public static void transformNodePosition(Collection<Node> nodes, AffineTransform t) {
+	public static void transformNodePosition(Collection<? extends Node> nodes, AffineTransform t) {
 		assert nodes!=null;
 		for (Node node: nodes) {
 			// do transformation group children
@@ -42,18 +42,18 @@ public class VisualModelTransformer {
 		}
 //			TransformHelper.applyTransform(node, t);
 	}
-	public static void translateNodes(Collection<Node> nodes, double tx, double ty) {
+	public static void translateNodes(Collection<? extends Node> nodes, double tx, double ty) {
 		AffineTransform t = AffineTransform.getTranslateInstance(tx, ty);
 
 		transformNodePosition(nodes, t);
 	}
 	
 	public static void translateSelection(VisualModel vm, double tx, double ty) {
-		translateNodes(vm.getSelection(), tx, ty);
+		translateNodes(eval(vm.selection()), tx, ty);
 	}
 
 	public static void scaleSelection(VisualModel vm, double sx, double sy) {
-		Rectangle2D selectionBB = getNodesCoordinateBox(vm.getSelection());
+		Rectangle2D selectionBB = getNodesCoordinateBox(eval(vm.selection()));
 		
 		AffineTransform t = new AffineTransform();
 
@@ -61,11 +61,11 @@ public class VisualModelTransformer {
 		t.scale(sx, sy);
 		t.translate(-selectionBB.getCenterX(), -selectionBB.getCenterY());
 
-		transformNodePosition(vm.getSelection(), t);
+		transformNodePosition(eval(vm.selection()), t);
 	}
 
 	public static void rotateSelection(GraphEditor ge, VisualModel vm, double theta) {
-		Rectangle2D selectionBB = getNodesCoordinateBox(vm.getSelection());
+		Rectangle2D selectionBB = getNodesCoordinateBox(eval(vm.selection()));
 
 		AffineTransform t = new AffineTransform();
 		
@@ -76,7 +76,7 @@ public class VisualModelTransformer {
 		t.rotate(theta);
 		t.translate(-cp.getX(), -cp.getY());
 
-		transformNodePosition(vm.getSelection(), t);
+		transformNodePosition(eval(vm.selection()), t);
 	}
 
 	private static Rectangle2D bbUnion(Rectangle2D bb1, Point2D bb2)
@@ -93,7 +93,7 @@ public class VisualModelTransformer {
 		return bb1;
 	}
 	
-	public static Rectangle2D getNodesCoordinateBox(Collection<Node> nodes) {
+	public static Rectangle2D getNodesCoordinateBox(Collection<? extends Node> nodes) {
 		Rectangle2D selectionBB = null;
 
 

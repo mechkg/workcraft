@@ -21,17 +21,19 @@
 
 package org.workcraft.gui.graph.tools;
 
-import java.awt.Graphics2D;
-
 import javax.swing.Icon;
 import javax.swing.JPanel;
+
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.visual.SimpleGraphicalContent;
+import org.workcraft.gui.graph.Viewport;
 
 public interface GraphEditorTool extends GraphEditorKeyListener, GraphEditorMouseListener {
 	public void activated();
 	public void deactivated();
 	
-	public void drawInUserSpace(Graphics2D g);
-	public void drawInScreenSpace(Graphics2D g);
+	public Expression<? extends SimpleGraphicalContent> userSpaceContent();
+	public Expression<? extends SimpleGraphicalContent> screenSpaceContent(Viewport viewport);
 	
 	public JPanel getInterfacePanel();
 
@@ -39,5 +41,5 @@ public interface GraphEditorTool extends GraphEditorKeyListener, GraphEditorMous
 	public Icon getIcon();
 	public int getHotKeyCode();
 	
-	public Decorator getDecorator();
+	public Expression<? extends Decorator> getDecorator();
 }

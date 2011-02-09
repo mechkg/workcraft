@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.AbstractModel;
@@ -36,10 +37,12 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
+import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.references.UniqueNameReferenceManager;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.gui.propertyeditor.Properties;
+import org.workcraft.observation.HierarchySupervisor;
 import org.workcraft.serialisation.References;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
@@ -47,8 +50,8 @@ import org.workcraft.util.Hierarchy;
 public class PetriNet extends AbstractModel implements PetriNetModel {
 	
 	
-	final UniqueNameReferenceManager names;
 	public final StorageManager storage;
+	private UniqueNameReferenceManager names;
 
 	public PetriNet(StorageManager storage) {
 		this(null, null, storage);
@@ -66,7 +69,7 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 		public ConstructionParameters(Container root, References refs, StorageManager storage) {
 			this.storage = storage;
 			this.root = (root == null) ? new MathGroup(storage) : root;
-			this.referenceManager = new UniqueNameReferenceManager(this.root, refs, new Func<Node, String>() {
+			this.names = new UniqueNameReferenceManager(this.root, refs, new Func<Node, String>() {
 				@Override
 				public String eval(Node arg) {
 					if (arg instanceof Place)
@@ -78,16 +81,18 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 					return "node";
 				}
 			});
+			this.referenceManager = new HierarchySupervisor<ReferenceManager>(this.root, names);
 		}
 		
 		public final StorageManager storage;
 		public final Container root;
-		public final UniqueNameReferenceManager referenceManager;
+		public final Expression<? extends ReferenceManager> referenceManager;
+		public final UniqueNameReferenceManager names;
 	}
 	
 	protected PetriNet(ConstructionParameters construction) {
 		super(createDefaultModelSpecification(construction.root, construction.referenceManager));
-		this.names = construction.referenceManager;
+		this.names = construction.names;
 		this.storage = construction.storage;
 	}
 
@@ -144,7 +149,7 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 		// gather number of connections for each post-place
 		Map<Place, Integer> map = new HashMap<Place, Integer>();
 		
-		for (Connection c: net.getNodeContext().getConnections(t)) {
+		for (Connection c: eval(net.nodeContext()).getConnections(t)) {
 			if (c.getFirst()==t) {
 				if (map.containsKey(c.getSecond())) {
 					map.put((Place)c.getSecond(), map.get(c.getSecond())+1);
@@ -154,7 +159,7 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 			}
 		}
 		
-		for (Node n : net.getNodeContext().getPostset(t))
+		for (Node n : eval(net.nodeContext()).getPostset(t))
 			if (eval(((Place)n).tokens()) < map.get((Place)n))
 				return false;
 		return true;
@@ -163,7 +168,7 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 	final public static boolean isEnabled (PetriNetModel net, Transition t) {
 		// gather number of connections for each pre-place
 		Map<Place, Integer> map = new HashMap<Place, Integer>();
-		for (Connection c: net.getNodeContext().getConnections(t)) {
+		for (Connection c: eval(net.nodeContext()).getConnections(t)) {
 			if (c.getSecond()==t) {
 				if (map.containsKey(c.getFirst())) {
 					map.put((Place)c.getFirst(), map.get(c.getFirst())+1);
@@ -173,7 +178,7 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 			}
 		}
 		
-		for (Node n : net.getNodeContext().getPreset(t))
+		for (Node n : eval(net.nodeContext()).getPreset(t))
 			if (GlobalCache.eval(((Place)n).tokens()) < map.get((Place)n))
 				return false;
 		return true;
@@ -192,7 +197,7 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 		// the transition given must be correct
 		// for the transition to be enabled
 		
-		for (Connection c : net.getNodeContext().getConnections(t)) {
+		for (Connection c : eval(net.nodeContext()).getConnections(t)) {
 			if (t==c.getFirst()) {
 				Place to = (Place)c.getSecond();
 				to.tokens().setValue(eval(to.tokens())-1);
@@ -207,7 +212,7 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 	final public static void fire (PetriNetModel net, Transition t) {
 		if (net.isEnabled(t))
 		{
-			for (Connection c : net.getNodeContext().getConnections(t)) {
+			for (Connection c : eval(net.nodeContext()).getConnections(t)) {
 				if (t==c.getFirst()) {
 					Place to = (Place)c.getSecond();
 					to.tokens().setValue(eval(to.tokens())+1);
@@ -235,13 +240,11 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 	}
 
 	public String getName(Node n) {
-		ensureConsistency();
-		return this.names.getNodeReference(n);
+		return eval(referenceManager()).getNodeReference(n);
 	}
 
 	public void setName(Node n, String name) {
 		this.names.setName(n, name);
-		ensureConsistency();
 	}
 
 	@Override

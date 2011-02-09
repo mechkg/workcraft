@@ -49,7 +49,7 @@ public class STGSelectionTool extends SelectionTool
 		if (initialText != null)
 			text.setText(initialText);
 		else
-			text.setText(editor.getModel().getMathModel().getNodeReference(t.getReferencedComponent()));
+			text.setText(eval(editor.getModel().getMathModel().referenceManager()).getNodeReference(t.getReferencedComponent()));
 
 		text.setFont(text.getFont().deriveFont( Math.max(12.0f, (float)r.getHeight()*0.7f)));
 		text.selectAll();

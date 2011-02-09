@@ -70,7 +70,7 @@ public class CircuitPetriNetGenerator {
 	
 	public static VisualContact findDriver(VisualCircuit circuit, VisualContact target) {
 		
-		Set<Node> neighbours = new HashSet<Node>(circuit.getNodeContext().getPreset(target));
+		Set<Node> neighbours = new HashSet<Node>(eval(circuit.nodeContext()).getPreset(target));
 		
 		while (neighbours.size()>=1) {
 			
@@ -84,7 +84,7 @@ public class CircuitPetriNetGenerator {
 			}
 			
 			// continue searching otherwise
-			neighbours = new HashSet<Node>(circuit.getNodeContext().getPreset(node));
+			neighbours = new HashSet<Node>(eval(circuit.nodeContext()).getPreset(node));
 		}
 		
 		return null;
@@ -114,7 +114,7 @@ public class CircuitPetriNetGenerator {
 			vc.setReferencedZeroPlace(cstg.p0.getReferencedPlace());
 		}
 		
-		for (Connection c: circuit.getNodeContext().getConnections(component)) {
+		for (Connection c: eval(circuit.nodeContext()).getConnections(component)) {
 			if (c.getFirst()==component&&c instanceof VisualCircuitConnection) {
 				
 				((VisualCircuitConnection)c).setReferencedOnePlace(cstg.p1.getReferencedPlace());

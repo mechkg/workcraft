@@ -23,6 +23,8 @@ package org.workcraft.dom;
 
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.gui.propertyeditor.Properties;
 
 
@@ -30,8 +32,7 @@ public interface Model {
 	public void setTitle(String title);
 	public String getTitle();
 	
-	public Node getNodeByReference(String reference);
-	public String getNodeReference(Node node);
+	public Expression<? extends ReferenceManager> referenceManager();
 	
 	public Node getRoot();
 	
@@ -42,5 +43,5 @@ public interface Model {
 	
 	public Properties getProperties(Node node);
 	
-	public NodeContext getNodeContext();
+	public Expression<? extends NodeContext> nodeContext();
 }

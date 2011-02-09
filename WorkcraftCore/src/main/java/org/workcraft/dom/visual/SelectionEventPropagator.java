@@ -22,27 +22,41 @@
 package org.workcraft.dom.visual;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dom.Container;
+import org.workcraft.dom.HierarchyController;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.connections.SelectionObserver;
-import org.workcraft.observation.HierarchySupervisor;
 
-public class SelectionEventPropagator extends HierarchySupervisor {
+import pcollections.PSet;
+
+public class SelectionEventPropagator implements HierarchyController {
 	private Expression<? extends Collection<? extends Node>> selection;
+	private final HierarchyController next;
 	
-	public SelectionEventPropagator (VisualGroup root, VisualModel model) {
-		super(root);
-		selection = model.selection();
-		start();
+	public SelectionEventPropagator (ModifiableExpression<PSet<Node>> selection, HierarchyController next) {
+		this.next = next;
+		this.selection = selection;
 	}
 	
 	@Override
-	public void handleEvent(List<Node> added, List<Node> removed) {
-		for(Node node : added) {
-			if(node instanceof SelectionObserver)
-				((SelectionObserver) node).setSelection(selection);
-		}
+	public void add(Container parent, Node node) {
+		adding(node);
+		next.add(parent, node);
+	}
+
+	private void adding(Node node) {
+		if(node instanceof SelectionObserver)
+			((SelectionObserver) node).setSelection(selection);
+		for(Node n : GlobalCache.eval(node.children()))
+			adding(n);
+	}
+
+	@Override
+	public void remove(Node node) {
+		next.remove(node);
 	}
 }

@@ -51,8 +51,8 @@ import pcollections.HashTreePSet;
 
 public class VisualCPOG extends AbstractVisualModel
 {
-	private final class BooleanFormulaPropertyDescriptor implements
-			PropertyDescriptor {
+	private final class BooleanFormulaPropertyDescriptor implements PropertyDescriptor 
+	{
 		private final Node node;
 
 		private BooleanFormulaPropertyDescriptor(Node node)
@@ -108,9 +108,8 @@ public class VisualCPOG extends AbstractVisualModel
 		}
 	}
 
-	private CPOG mathModel;
-	@SuppressWarnings("unused") // needed to avoid garbage collection
-	private ConsistencyEnforcer consistencyEnforcer;
+	private final CPOG mathModel;
+	private final NameGenerator nameGenerator = new NameGenerator();
 
 	public VisualCPOG(CPOG model, StorageManager storage) throws VisualModelInstantiationException
 	{
@@ -134,8 +133,6 @@ public class VisualCPOG extends AbstractVisualModel
 				throw new RuntimeException(e);
 			}
 		}
-		
-		consistencyEnforcer = new ConsistencyEnforcer(this);
 	}
 
 	@Override
@@ -143,8 +140,8 @@ public class VisualCPOG extends AbstractVisualModel
 	{
 		if (first == second) throw new InvalidConnectionException("Self loops are not allowed");
 		
-		if (first instanceof VisualVariable && !getNodeContext().getPreset(first).isEmpty()) throw new InvalidConnectionException("Variables do not support multiple connections");
-		if (second instanceof VisualVariable && !getNodeContext().getPreset(second).isEmpty()) throw new InvalidConnectionException("Variables do not support multiple connections");
+		if (first instanceof VisualVariable && !eval(nodeContext()).getPreset(first).isEmpty()) throw new InvalidConnectionException("Variables do not support multiple connections");
+		if (second instanceof VisualVariable && !eval(nodeContext()).getPreset(second).isEmpty()) throw new InvalidConnectionException("Variables do not support multiple connections");
 		
 		if (first instanceof VisualVertex && second instanceof VisualVertex) return;
 		if (first instanceof VisualVertex && second instanceof VisualVariable) return;
@@ -251,6 +248,7 @@ public class VisualCPOG extends AbstractVisualModel
 	public VisualVertex createVertex() {
 		Vertex vertex = mathModel.createVertex();
 		VisualVertex visualVertex = new VisualVertex(vertex, storage);
+		nameGenerator.assignDefaultLabel(visualVertex);
 		add(visualVertex);
 		return visualVertex;
 	}
@@ -265,7 +263,37 @@ public class VisualCPOG extends AbstractVisualModel
 	public VisualVariable createVariable() {
 		Variable variable = mathModel.createVariable();
 		VisualVariable visualVariable = new VisualVariable(variable, storage);
+		nameGenerator.assignDefaultLabel(visualVariable);
 		add(visualVariable);
 		return visualVariable;
+	}
+	
+	private void updateEncoding()
+	{
+		for(VisualScenario group : getGroups())
+		{
+			Encoding oldEncoding = eval(group.encoding());
+			Encoding newEncoding = new Encoding();
+		
+			for(VisualVariable var : getVariables())
+			{
+				Variable mathVariable = var.getMathVariable();
+				newEncoding.setState(mathVariable, oldEncoding.getState(mathVariable));
+			}
+		
+			group.encoding().setValue(newEncoding);
+		}
+	}
+	
+	@Override
+	public final void remove(Node node) {
+		updateEncoding();
+		super.remove(node);
+	}
+	
+	@Override
+	public final void remove(Collection<? extends Node> nodes) {
+		super.remove(nodes);
+		updateEncoding();
 	}
 }

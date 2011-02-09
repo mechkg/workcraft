@@ -2,11 +2,13 @@ package org.workcraft.dom;
 
 import org.workcraft.observation.HierarchyObserver;
 
-public class StinkyHierarchyController implements HierarchyController {
+import static java.util.Arrays.*;
+
+public class TeeHierarchyController implements HierarchyController {
 	private final HierarchyObserver[] observers;
 	private final HierarchyController next;
 
-	public StinkyHierarchyController(HierarchyController next, HierarchyObserver ... observers) {
+	public TeeHierarchyController(HierarchyController next, HierarchyObserver ... observers) {
 		this.next = next;
 		this.observers = observers;
 	}
@@ -15,13 +17,13 @@ public class StinkyHierarchyController implements HierarchyController {
 	public void add(Container parent, Node node) {
 		next.add(parent, node);
 		for (HierarchyObserver obs : observers)
-			obs.nodeAdded(node);
+			obs.handleEvent(asList(node), asList(new Node[]{}));
 	}
 
 	@Override
 	public void remove(Node node) {
 		next.remove(node);
 		for (HierarchyObserver obs : observers)
-			obs.nodeRemoved(node);
+			obs.handleEvent(asList(new Node[]{}), asList(node));
 	}
 }

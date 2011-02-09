@@ -27,7 +27,6 @@ import org.workcraft.plugins.layout.RandomLayout;
 import org.workcraft.plugins.serialisation.XMLModelDeserialiser;
 import org.workcraft.plugins.serialisation.XMLModelSerialiser;
 import org.workcraft.plugins.stg.DefaultStorageManager;
-import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.plugins.stg.VisualSTG;
 import org.workcraft.serialisation.DeserialisationResult;
@@ -46,7 +45,7 @@ public class STGSerialisationTests {
 
 		RandomLayout layout = new RandomLayout();
 		WorkspaceEntry we = new WorkspaceEntry(null);
-		we.setModelEntry(new ModelEntry(new STGModelDescriptor(), stg, new HistoryPreservingStorageManager()));
+		we.setModelEntry(new ModelEntry(new STGModelDescriptor(), stg, null));
 		layout.run(we);
 
 		// serialise

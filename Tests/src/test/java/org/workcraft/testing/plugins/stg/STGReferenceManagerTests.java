@@ -4,11 +4,14 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STGReferenceManager;
 import org.workcraft.plugins.stg.SignalTransition;
+
+import static java.util.Arrays.*;
 
 public class STGReferenceManagerTests {
 
@@ -16,7 +19,7 @@ public class STGReferenceManagerTests {
 	public void testGenerateSignalName() {
 		SignalTransition transition = new SignalTransition(new DefaultStorageManager());
 		STGReferenceManager refMan = new STGReferenceManager(new MathNode(new DefaultStorageManager()){}, null);
-		refMan.nodeAdded(transition);
+		refMan.handleEvent(asList(transition), asList(new Node[]{}));
 		Assert.assertEquals("signal0", GlobalCache.eval(transition.signalName()));
 	}
 	@Test
@@ -24,7 +27,7 @@ public class STGReferenceManagerTests {
 		SignalTransition transition = new SignalTransition(new DefaultStorageManager());
 		transition.signalName().setValue(null);
 		STGReferenceManager refMan = new STGReferenceManager(new MathGroup(new DefaultStorageManager()), null);
-		refMan.nodeAdded(transition);
+		refMan.handleEvent(asList(transition), asList(new Node[]{}));
 		Assert.assertEquals("signal0", GlobalCache.eval(transition.signalName()));
 	}
 	@Test
@@ -32,7 +35,7 @@ public class STGReferenceManagerTests {
 		SignalTransition transition = new SignalTransition(new DefaultStorageManager());
 		transition.signalName().setValue("");
 		STGReferenceManager refMan = new STGReferenceManager(new MathNode(new DefaultStorageManager()){}, null);
-		refMan.nodeAdded(transition);
+		refMan.handleEvent(asList(transition), asList(new Node[]{}));
 		Assert.assertEquals("signal0", GlobalCache.eval(transition.signalName()));
 	}
 	@Test
@@ -40,8 +43,8 @@ public class STGReferenceManagerTests {
 		SignalTransition transition1 = new SignalTransition(new DefaultStorageManager());
 		SignalTransition transition2 = new SignalTransition(new DefaultStorageManager());
 		STGReferenceManager refMan = new STGReferenceManager(new MathGroup(new DefaultStorageManager()), null);
-		refMan.nodeAdded(transition1);
-		refMan.nodeAdded(transition2);
+		refMan.handleEvent(asList(transition1), asList(new Node[]{}));
+		refMan.handleEvent(asList(transition2), asList(new Node[]{}));
 		Assert.assertEquals("signal0", GlobalCache.eval(transition1.signalName()));
 		Assert.assertEquals("signal1", GlobalCache.eval(transition2.signalName()));
 	}

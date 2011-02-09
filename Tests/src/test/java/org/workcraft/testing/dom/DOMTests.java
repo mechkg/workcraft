@@ -31,6 +31,8 @@ import org.workcraft.plugins.stg.DefaultStorageManager;
 
 import static org.junit.Assert.*;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class DOMTests {
 	
 	@Test
@@ -45,23 +47,24 @@ public class DOMTests {
 		Connection con1 = pn.connect(p1, t1);
 		Connection con2 = pn.connect(t1, p2);
 		
-		assertSame (p1, pn.getNodeByReference(pn.getNodeReference(p1)));
-		assertSame (p2, pn.getNodeByReference(pn.getNodeReference(p2)));
+		assertSame (p1, eval(pn.referenceManager()).getNodeByReference(eval(pn.referenceManager()).getNodeReference(p1)));
+		assertSame (p2, eval(pn.referenceManager()).getNodeByReference(eval(pn.referenceManager()).getNodeReference(p2)));
 		
-		assertTrue (pn.getNodeContext().getPreset(p2).contains(t1));
-		assertTrue (pn.getNodeContext().getPostset(p1).contains(t1));
 		
-		assertTrue (pn.getNodeContext().getConnections(p1).contains(con1));
+		assertTrue (eval(pn.nodeContext()).getPreset(p2).contains(t1));
+		assertTrue (eval(pn.nodeContext()).getPostset(p1).contains(t1));
+		
+		assertTrue (eval(pn.nodeContext()).getConnections(p1).contains(con1));
 		
 		pn.remove(p1);
 		
-		assertTrue (pn.getNodeContext().getConnections(t1).contains(con2));
-		assertFalse (pn.getNodeContext().getConnections(t1).contains(con1));
+		assertTrue (eval(pn.nodeContext()).getConnections(t1).contains(con2));
+		assertFalse (eval(pn.nodeContext()).getConnections(t1).contains(con1));
 		
 		boolean thrown = true; 
 		try
 		{
-			pn.getNodeReference(p1);
+			eval(pn.referenceManager()).getNodeReference(p1);
 			thrown = false;
 		}catch(Throwable th) {}
 		

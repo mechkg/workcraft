@@ -28,6 +28,8 @@ import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.FormatException;
 import org.workcraft.exceptions.NotFoundException;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class DotGParser {
 	private Map<String, Type> signals;
 	private Map<Pair<Node, Node>, STGPlace> implicitPlaces;
@@ -43,10 +45,10 @@ public class DotGParser {
 
 		Type t = signals.get (name);
 		
-		Node existing = stg.getNodeByReference(name);
+		Node existing = eval(stg.referenceManager()).getNodeByReference(name);
 		
 		if (existing == null)
-			existing = stg.getNodeByReference(name+"/0");
+			existing = eval(stg.referenceManager()).getNodeByReference(name+"/0");
 			
 		if (existing == null)
 		{
@@ -66,7 +68,7 @@ public class DotGParser {
 	{
 		String reference = stg.makeReference(ref);
 		String name = ref.getFirst();
-		Node existing = stg.getNodeByReference(reference);
+		Node existing = eval(stg.referenceManager()).getNodeByReference(reference);
 		
 		if (existing == null)
 		{
@@ -89,7 +91,7 @@ public class DotGParser {
 	private Node getOrCreate (Triple<String, Direction, Integer> ref) {
 		String reference = stg.makeReference(ref);
 		String name = ref.getFirst(); 
-		Node existing = stg.getNodeByReference (reference);
+		Node existing = eval(stg.referenceManager()).getNodeByReference (reference);
 		
 		if (existing == null)
 		{
@@ -118,8 +120,8 @@ public class DotGParser {
 				
 		} catch (InvalidConnectionException e)
 		{
-			throw new FormatException ("Cannot create arc from " + stg.getNodeReference(first) +
-			 " to " + stg.getNodeReference(second) + ".", e);
+			throw new FormatException ("Cannot create arc from " + eval(stg.referenceManager()).getNodeReference(first) +
+			 " to " + eval(stg.referenceManager()).getNodeReference(second) + ".", e);
 		}
 	}
 	
@@ -262,7 +264,7 @@ STGPlace explicitPlaceReference() :
 {
 	( t = <NAME> { name = t.image; } )
 	{
-		return (STGPlace) stg.getNodeByReference (name);
+		return (STGPlace) eval(stg.referenceManager()).getNodeByReference (name);
 	}
 }
 

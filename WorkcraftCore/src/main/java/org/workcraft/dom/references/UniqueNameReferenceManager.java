@@ -1,12 +1,15 @@
 package org.workcraft.dom.references;
 
 
+import java.util.Collection;
+
 import org.workcraft.dom.Node;
+import org.workcraft.observation.HierarchyObservingState;
 import org.workcraft.serialisation.References;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
 
-public class UniqueNameReferenceManager implements AbstractReferenceManager
+public class UniqueNameReferenceManager implements HierarchyObservingState<ReferenceManager>, ReferenceManager
 {
 	final private UniqueNameManager<Node> manager;
 	private References existing;
@@ -50,17 +53,27 @@ public class UniqueNameReferenceManager implements AbstractReferenceManager
 		manager.setName(node, label);
 	}
 	
-	@Override
-	public void nodeAdded(Node node) {
+	private void nodeAdded(Node node) {
 		manager.setDefaultNameIfUnnamed(node);
 		for (Node node2 : Hierarchy.getDescendantsOfType(node, Node.class))
 			manager.setDefaultNameIfUnnamed(node2);
 	}
 	
-	@Override
-	public void nodeRemoved(Node node) {
+	private void nodeRemoved(Node node) {
 		manager.remove(node);
 		for (Node node2 : Hierarchy.getDescendantsOfType(node, Node.class))
 			manager.remove(node2);
+	}
+	@Override
+	public void handleEvent(Collection<? extends Node> added, Collection<? extends Node> removed) {
+		for(Node node : removed)
+			nodeRemoved(node);
+		for(Node node : added)
+			nodeAdded(node);
+		
+	}
+	@Override
+	public ReferenceManager getState() {
+		return this;
 	}
 }

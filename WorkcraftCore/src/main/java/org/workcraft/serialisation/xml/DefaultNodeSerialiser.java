@@ -53,13 +53,17 @@ public class DefaultNodeSerialiser {
 	static Collection<Method> getProperties(Class<?> type, boolean auto) {
 		ArrayList<Method> result = new ArrayList<Method>();
 		for(Method method : type.getMethods()) {
+			boolean hasZeroArguments = method.getParameterTypes().length == 0;
 			boolean isModifiableExpression = ModifiableExpression.class.isAssignableFrom(method.getReturnType()); 
 			boolean markedAsAuto = Annotations.doAutoSerialisation(method);
 			boolean markedAsSuppress = Annotations.suppressAutoSerialisation(method);
 			if (markedAsAuto && !isModifiableExpression) {
-				System.err.println("Warning! The method " + method + " is marked as auto-serialised, but does not return a ModifiableExpression.");
+				System.err.println("Warning! The method " + type.getName() + "." +  method + " is marked as auto-serialised, but does not return a ModifiableExpression.");
 			}
-			if(!markedAsSuppress && (markedAsAuto || (auto && isModifiableExpression))) {
+			if (markedAsAuto && !hasZeroArguments) {
+				System.err.println("Warning! The method " + type.getName() + "." + method + " is marked as auto-serialised, but does have some parameters. Auto-serialisation of parameterised expressions is not supported.");
+			}
+			if(!markedAsSuppress && (markedAsAuto || (auto && isModifiableExpression && hasZeroArguments))) {
 				result.add(method);
 			}
 		}
@@ -68,7 +72,7 @@ public class DefaultNodeSerialiser {
 		return result;
 	}
  	
-	private void autoSerialiseProperties(Element element, Object object, Class<?> type) throws IntrospectionException, InstantiationException, IllegalAccessException, IllegalArgumentException, SerialisationException, InvocationTargetException {
+	private void autoSerialiseProperties(Element element, Object object, Class<?> type) throws IntrospectionException, InstantiationException, IllegalAccessException, SerialisationException, InvocationTargetException {
 		// type explicitly requested to be auto-serialised
 		boolean autoSerialisedClass = Annotations.doAutoSerialisation(type); 
 		
@@ -100,7 +104,16 @@ public class DefaultNodeSerialiser {
 			propertyElement.setAttribute("class", propertyType.getName());
 			propertyElement.setAttribute("name", property.getName());
 			
-			((BasicXMLSerialiser)serialiser).serialise(propertyElement, eval((ModifiableExpression<?>)property.invoke(object)));
+			final ModifiableExpression<?> expr;
+			try {
+				expr = (ModifiableExpression<?>)property.invoke(object);
+			}
+			catch(IllegalArgumentException e){
+				System.err.println(String.format("property %s %s of %s can not be acquired: ", propertyType.getName(), property.getName(), type.getName()));
+				e.printStackTrace();
+				continue ;
+			}
+			((BasicXMLSerialiser)serialiser).serialise(propertyElement, eval(expr));
 		}
 	}
 	

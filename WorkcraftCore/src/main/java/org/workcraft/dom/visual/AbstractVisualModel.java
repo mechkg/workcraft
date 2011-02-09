@@ -21,6 +21,8 @@
 
 package org.workcraft.dom.visual;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.geom.Point2D;
@@ -36,6 +38,7 @@ import org.w3c.dom.Element;
 import org.workcraft.NodeFactory;
 import org.workcraft.annotations.MouseListeners;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
@@ -43,7 +46,9 @@ import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultMathNodeRemover;
+import org.workcraft.dom.ModelSpecification;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.TeeHierarchyController;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.math.MathNode;
@@ -59,8 +64,6 @@ import org.workcraft.util.XmlUtil;
 import pcollections.HashTreePSet;
 import pcollections.PSet;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-
 @MouseListeners ({ DefaultAnchorGenerator.class })
 public abstract class AbstractVisualModel extends AbstractModel implements VisualModel {
 	private MathModel mathModel;
@@ -73,7 +76,6 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	};
 	private final ModifiableExpression<PSet<Node>> selection;
 	private final ExpressionBase<HierarchicalGraphicalContent> graphicalContent;
-	private SelectionEventPropagator selectionEventPropagator;
 
 	public AbstractVisualModel(VisualGroup root, StorageManager storage) {
 		this (null, root, storage);
@@ -92,10 +94,22 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 			this.mathModel = mathModel;
 			this.storage = storage;
 			this.root = root == null ? new VisualGroup(storage) : root;
+			ModelSpecification defaultSpec = createDefaultModelSpecification(this.root);
+			ModifiableExpression<PSet<Node>> rawSelection = storage.<PSet<Node>>create(HashTreePSet.<Node>empty());
+			
+			selection = Expressions.modifiableExpression(new RemovedNodeDeselector(this.root, rawSelection), rawSelection);
+			this.spec = new ModelSpecification(defaultSpec.root, defaultSpec.referenceManager, 
+					new SelectionEventPropagator(selection,
+							new TeeHierarchyController(defaultSpec.hierarchyController,
+							new DefaultMathNodeRemover(this.root, mathModel))
+					), defaultSpec.nodeContext);
 		}
-		MathModel mathModel; 
-		VisualGroup root;
-		StorageManager storage;
+		final ModelSpecification spec;
+		final ModifiableExpression<PSet<Node>> selection;
+		
+		final MathModel mathModel; 
+		final VisualGroup root;
+		final StorageManager storage;
 	}
 
 	public AbstractVisualModel(MathModel mathModel, VisualGroup root, StorageManager storage) {
@@ -103,15 +117,12 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	}
 	
 	public AbstractVisualModel(ConstructionInfo param) {
-		super(createDefaultModelSpecification(param.root));
+		super(param.spec);
 		this.mathModel = param.mathModel;
 		this.storage = param.storage;
 		selection = storage.<PSet<Node>>create(HashTreePSet.<Node>empty());
 		
 		currentLevel.setValue(param.root);
-		selectionEventPropagator = new SelectionEventPropagator(param.root, this);
-		new RemovedNodeDeselector(this);
-		new DefaultMathNodeRemover(this, getRoot());
 		graphicalContent = makeGraphicalContent();
 	}
 
@@ -355,10 +366,4 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		return null;
 	}
 	
-	@Override
-	public void ensureConsistency() {
-		super.ensureConsistency();
-		((AbstractModel)mathModel).ensureConsistency();
-		selectionEventPropagator.refresh();
-	}
 }

@@ -4,5 +4,5 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleT
 import org.workcraft.dependencymanager.util.listeners.Listener;
 
 public interface Expression<T> {
-	public ValueHandleTuple<T> getValue(Listener subscriber);
+	public ValueHandleTuple<? extends T> getValue(Listener subscriber);
 }

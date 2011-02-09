@@ -218,7 +218,7 @@ public class VisualContact extends VisualComponent {
 	
 	private void draw(DrawRequest r, EvaluationContext context) {
 		
-		connections = r.getModel().getNodeContext().getConnections(this).size();
+		connections = eval(r.getModel().nodeContext()).getConnections(this).size();
 		
 		Graphics2D g = r.getGraphics();
 		Color colorisation = r.getDecoration().getColorisation();

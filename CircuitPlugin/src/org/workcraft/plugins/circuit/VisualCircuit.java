@@ -55,7 +55,7 @@ public class VisualCircuit extends AbstractVisualModel {
 		if (first instanceof VisualComponent && second instanceof VisualComponent) {
 			
 			
-			for (Connection c: this.getNodeContext().getConnections(second)) {
+			for (Connection c: eval(nodeContext()).getConnections(second)) {
 				if (c.getSecond()==second)
 					throw new InvalidConnectionException ("Only one connection is allowed as a driver");
 			}

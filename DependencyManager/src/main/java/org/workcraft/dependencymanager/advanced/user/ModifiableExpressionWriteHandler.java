@@ -12,7 +12,7 @@ public abstract class ModifiableExpressionWriteHandler<T> implements ModifiableE
 	}
 
 	@Override
-	public ValueHandleTuple<T> getValue(Listener subscriber) {
+	public ValueHandleTuple<? extends T> getValue(Listener subscriber) {
 		return expr.getValue(subscriber);
 	}
 

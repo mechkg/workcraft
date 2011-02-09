@@ -1,16 +1,17 @@
 package org.workcraft.dom;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.references.ReferenceManager;
 
 public class ModelSpecification {
 	public final Container root;
-	public final ReferenceManager referenceManager;
+	public final Expression<? extends ReferenceManager> referenceManager;
 	public final HierarchyController hierarchyController;
-	public final NodeContext nodeContext;
+	public final Expression<? extends NodeContext> nodeContext;
 	
-	public ModelSpecification(Container root, ReferenceManager referenceManager, HierarchyController hierarchyController, NodeContext nodeContext) {
+	public ModelSpecification(Container root, Expression<? extends ReferenceManager> rm, HierarchyController hierarchyController, Expression<? extends NodeContext> nodeContext) {
 		this.root = root;
-		this.referenceManager = referenceManager;
+		this.referenceManager = rm;
 		this.hierarchyController = hierarchyController;
 		this.nodeContext = nodeContext;
 	}

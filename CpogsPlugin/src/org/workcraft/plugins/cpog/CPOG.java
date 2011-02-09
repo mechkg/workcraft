@@ -23,12 +23,15 @@ package org.workcraft.plugins.cpog;
 
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathModel;
+import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.exceptions.InvalidConnectionException;
+import org.workcraft.observation.HierarchySupervisor;
 import org.workcraft.plugins.stg.STGReferenceManager;
 import org.workcraft.serialisation.References;
 import org.workcraft.util.Hierarchy;
@@ -36,8 +39,8 @@ import org.workcraft.util.Hierarchy;
 public class CPOG extends AbstractModel implements MathModel
 {
 
-	private STGReferenceManager referenceManager;
-	private StorageManager storage;
+	private final StorageManager storage;
+	private final STGReferenceManager names;
 
 	public CPOG(StorageManager storage)
 	{
@@ -49,21 +52,25 @@ public class CPOG extends AbstractModel implements MathModel
 		this(root, null, storage);
 	}
 	
-	static class StartupParameters {
+	static class StartupParameters 
+	{
 		public StartupParameters(Container root, References refs, StorageManager storage) {
 			this.storage = storage;
 			this.root = root==null?new MathGroup(storage):root;
-			this.refs = refs;
+			this.names = new STGReferenceManager(this.root, refs);
+			this.refMan = new HierarchySupervisor<ReferenceManager>(this.root, names);
 		}
 		StorageManager storage;
 		Container root;
-		References refs;
+		Expression<? extends ReferenceManager> refMan;
+		STGReferenceManager names;
 	}
 
-	public CPOG(StartupParameters p) {
-		super(createDefaultModelSpecification(p.root, new STGReferenceManager(p.root, p.refs)));
+	public CPOG(StartupParameters p) 
+	{
+		super(createDefaultModelSpecification(p.root, p.refMan));
+		this.names = p.names;
 		this.storage = p.storage;
-		referenceManager = (STGReferenceManager) getReferenceManager();
 	}
 	
 	public CPOG(Container root, References refs, StorageManager storage)
@@ -73,12 +80,19 @@ public class CPOG extends AbstractModel implements MathModel
 
 	public String getName(Vertex vertex)
 	{
-		return referenceManager.getName(vertex);
+		return names.getName(vertex);
 	}
 
 	public void setName(Vertex vertex, String name)
 	{
-		referenceManager.setName(vertex, name);
+		names.setName(vertex, name);
+	}
+	
+	public Variable addVariable() 
+	{
+		Variable var = new Variable(storage);
+		add(var);
+		return var;
 	}
 
 	public Arc connect(Vertex first, Vertex second) throws InvalidConnectionException
@@ -86,7 +100,7 @@ public class CPOG extends AbstractModel implements MathModel
 		Arc con = new Arc(first, second, storage);
 		add(con);
 		return con;
-	}	
+	}
 	
 	public DynamicVariableConnection connect(Vertex first, Variable second) throws InvalidConnectionException
 	{

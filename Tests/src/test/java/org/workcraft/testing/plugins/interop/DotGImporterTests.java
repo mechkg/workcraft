@@ -105,8 +105,8 @@ public class DotGImporterTests {
 		
 		for(Transition t : imported.getTransitions())
 		{
-			Assert.assertTrue(imported.getNodeContext().getPreset(t).size()>0);
-			Assert.assertTrue(imported.getNodeContext().getPostset(t).size()>0);
+			Assert.assertTrue(eval(imported.nodeContext()).getPreset(t).size()>0);
+			Assert.assertTrue(eval(imported.nodeContext()).getPostset(t).size()>0);
 		}
 	}
 }

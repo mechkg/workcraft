@@ -71,10 +71,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	
 	class Repainter extends ExpressionBase<ImageModel> {
 		
-		private final VisualModel model;
-
-		public Repainter(VisualModel model) {
-			this.model = model;
+		public Repainter() {
 			new Timer(20, new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -85,7 +82,6 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 
 		@Override
 		public ImageModel evaluate(EvaluationContext resolver) {
-			model.ensureConsistency();
 			resolver.resolve(graphicalContent);
 			repaint();
 			{
@@ -164,7 +160,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		
 		visualModel = workspaceEntry.getModelEntry().getVisualModel();
 		
-		new Repainter(visualModel);
+		new Repainter();
 		
 		view = new Viewport(0, 0, getWidth(), getHeight());
 		grid = new Grid(view);
@@ -231,7 +227,6 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 				
 					g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-					visualModel.ensureConsistency();
 					context.resolve(visualModel.graphicalContent()).draw(g2d, context.resolve(tool.getDecorator()));
 
 					if (context.resolve(hasFocus))

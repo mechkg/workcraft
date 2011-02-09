@@ -181,10 +181,10 @@ public class VisualSTG extends AbstractVisualModel {
 
 			MathConnection refCon1 = null, refCon2 = null;
 
-			VisualComponent first = (VisualComponent) getNodeContext().getPreset(place).iterator().next();
-			VisualComponent second = (VisualComponent) getNodeContext().getPostset(place).iterator().next();
+			VisualComponent first = (VisualComponent) eval(nodeContext()).getPreset(place).iterator().next();
+			VisualComponent second = (VisualComponent) eval(nodeContext()).getPostset(place).iterator().next();
 
-			Collection<Connection> connections = new ArrayList<Connection> (getNodeContext().getConnections(place));
+			Collection<Connection> connections = new ArrayList<Connection> (eval(nodeContext()).getConnections(place));
 			for (Connection con: connections)
 				if (con.getFirst() == place)
 					refCon2 = ((VisualConnection)con).getReferencedConnection();

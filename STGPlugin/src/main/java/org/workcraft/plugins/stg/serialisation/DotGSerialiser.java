@@ -36,6 +36,8 @@ import java.util.UUID;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.NodeContext;
+import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.exceptions.ArgumentException;
 import org.workcraft.exceptions.FormatException;
 import org.workcraft.plugins.petri.PetriNetModel;
@@ -79,7 +81,7 @@ public class DotGSerialiser implements ModelSerialiser {
 		
 		Collections.sort(list, new Comparator<Node>() {
 			public int compare(Node o1, Node o2) {
-				return model.getNodeReference(o1).compareTo(model.getNodeReference(o2));
+				return eval(model.referenceManager()).getNodeReference(o1).compareTo(eval(model.referenceManager()).getNodeReference(o2));
 			}
 		});
 		
@@ -91,20 +93,21 @@ public class DotGSerialiser implements ModelSerialiser {
 			if (eval(((STGPlace)node).implicit()))
 				return;
 		
-		if (model.getNodeContext().getPostset(node).size()>0) {
-			out.write(model.getNodeReference(node));
+		if (eval(model.nodeContext()).getPostset(node).size()>0) {
+			ReferenceManager refMan = eval(model.referenceManager());
+			out.write(refMan.getNodeReference(node));
 
-			for (Node n : sortNodes (model.getNodeContext().getPostset(node), model)  ) {
+			for (Node n : sortNodes (eval(model.nodeContext()).getPostset(node), model)  ) {
 				if (n instanceof STGPlace) {
 					if (eval(((STGPlace)n).implicit())) {
-						Collection<Node> postset = model.getNodeContext().getPostset(n);
+						Collection<Node> postset = eval(model.nodeContext()).getPostset(n);
 						if (postset.size() > 1)
 							throw new FormatException("Implicit place cannot have more than one node in postset");
-						out.write(" " + model.getNodeReference(postset.iterator().next()));						
+						out.write(" " + refMan.getNodeReference(postset.iterator().next()));						
 					} else
-						out.write(" " + model.getNodeReference(n));	
+						out.write(" " + refMan.getNodeReference(n));	
 				} else {
-					out.write(" " + model.getNodeReference(n));
+					out.write(" " + refMan.getNodeReference(n));
 				}
 			}
 			
@@ -164,15 +167,17 @@ public class DotGSerialiser implements ModelSerialiser {
 		for (Place p: places) {
 			final int tokens = eval(p.tokens());
 			final String reference;
+			ReferenceManager refMan = eval(model.referenceManager());
+			NodeContext nodeContext = eval(model.nodeContext());
 			
 			if (p instanceof STGPlace) {
 				if ( eval(((STGPlace)p).implicit()) ) {
-					reference = "<" + model.getNodeReference(model.getNodeContext().getPreset(p).iterator().next()) + "," +
-										model.getNodeReference(model.getNodeContext().getPostset(p).iterator().next()) + ">";
+					reference = "<" + refMan.getNodeReference(nodeContext.getPreset(p).iterator().next()) + "," +
+										refMan.getNodeReference(nodeContext.getPostset(p).iterator().next()) + ">";
 				} else
-					reference = model.getNodeReference(p);
+					reference = refMan.getNodeReference(p);
 			} else {
-				reference = model.getNodeReference(p);
+				reference = refMan.getNodeReference(p);
 			}
 			
 			if (tokens == 1)
@@ -204,7 +209,7 @@ public class DotGSerialiser implements ModelSerialiser {
 			if (p instanceof STGPlace) {
 				Integer cpty = GlobalCache.eval(((STGPlace)p).capacity());
 				if (cpty != 1)
-					capacity.append(" " + model.getNodeReference(p) + "=" + cpty);
+					capacity.append(" " + eval(model.referenceManager()).getNodeReference(p) + "=" + cpty);
 			}
 		}
 		
@@ -216,7 +221,7 @@ public class DotGSerialiser implements ModelSerialiser {
 		LinkedList<String> transitions = new LinkedList<String>(); 
 		
 		for (Transition t : net.getTransitions())
-			transitions.add(net.getNodeReference(t));
+			transitions.add(eval(net.referenceManager()).getNodeReference(t));
 		
 		writeSignalsHeader(out, transitions, ".dummy");
 		

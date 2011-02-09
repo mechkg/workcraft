@@ -156,10 +156,10 @@ public class CircuitSimulationTool extends STGSimulationTool {
 							
 							if (branchTrace!=null&&branchStep<branchTrace.size()) {
 								transitionId = branchTrace.get(branchStep);
-								transition2 = net.getNodeByReference(transitionId);
+								transition2 = eval(net.referenceManager()).getNodeByReference(transitionId);
 							} else if (branchTrace==null&&trace!=null&&traceStep<trace.size()) {
 								transitionId = trace.get(traceStep);
-								transition2 = net.getNodeByReference(transitionId);
+								transition2 = eval(net.referenceManager()).getNodeByReference(transitionId);
 							}
 							
 							if (contact.getReferencedTransitions().contains(transition2)) {

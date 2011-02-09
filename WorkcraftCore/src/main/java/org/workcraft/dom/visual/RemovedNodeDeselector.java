@@ -21,24 +21,37 @@
 
 package org.workcraft.dom.visual;
 
-import java.util.List;
-
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Node;
-import org.workcraft.observation.HierarchySupervisor;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import pcollections.PSet;
 
-public class RemovedNodeDeselector extends HierarchySupervisor {
-	private final VisualModel visualModel;
+public class RemovedNodeDeselector extends ExpressionBase<PSet<Node>> {
+	private final Expression<PSet<Node>> selection;
+	private final Node root;
 	
-	public RemovedNodeDeselector(VisualModel visualModel) {
-		super(visualModel.getRoot());
-		this.visualModel = visualModel;	
-		start();
+	public RemovedNodeDeselector(Node root, Expression<PSet<Node>> selection) {
+		this.root = root;
+		this.selection = selection;
 	}
 
 	@Override
-	public void handleEvent(List<Node> added, List<Node> removed) {
-		visualModel.selection().setValue(eval(visualModel.selection()).minus(removed));
+	protected PSet<Node> evaluate(EvaluationContext context) {
+		PSet<Node> result = context.resolve(selection);
+		for(Node node : result) {
+			if(isRemoved(node, context))
+				result = result.minus(node);
+		}
+		return result;
+	}
+
+	private boolean isRemoved(Node node, EvaluationContext context) {
+		if(node==null)
+			return true;
+		if(node == root)
+			return false;
+		return isRemoved(context.resolve(node.parent()), context);
 	}
 }

@@ -132,7 +132,7 @@ public class DotLayout implements Tool {
 			{
 				@Override
 				public void node(String id, Map<String, String> properties) {
-					Node comp = model.getNodeByReference(id);
+					Node comp = eval(model.referenceManager()).getNodeByReference(id);
 					
 					if(comp!=null && comp instanceof MovableNew)
 					{
@@ -161,9 +161,9 @@ public class DotLayout implements Tool {
 					
 					if(DotLayoutSettings.getImportConnectionsShape())
 					{
-						Node comp1 = model.getNodeByReference(from);
-						Node comp2 = model.getNodeByReference(to);
-						Set<Connection> connections = model.getNodeContext().getConnections(comp1);
+						Node comp1 = eval(model.referenceManager()).getNodeByReference(from);
+						Node comp2 = eval(model.referenceManager()).getNodeByReference(to);
+						Set<Connection> connections = eval(model.nodeContext()).getConnections(comp1);
 						Connection con = null;
 						for(Connection c : connections)
 						{

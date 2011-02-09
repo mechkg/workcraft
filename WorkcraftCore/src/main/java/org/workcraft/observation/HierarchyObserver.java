@@ -20,9 +20,10 @@
 */
 
 package org.workcraft.observation;
+import java.util.Collection;
+
 import org.workcraft.dom.Node;
 
 public interface HierarchyObserver {
-	public void nodeAdded(Node node);
-	public void nodeRemoved(Node node);
+	public void handleEvent(Collection<? extends Node> added, Collection<? extends Node> removed);
 }

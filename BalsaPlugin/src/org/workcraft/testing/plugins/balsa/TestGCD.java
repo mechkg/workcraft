@@ -76,6 +76,8 @@ import org.workcraft.testing.plugins.balsa.TestGCD.ChunkSplitter.Result;
 import org.workcraft.util.Export;
 import org.workcraft.util.Hierarchy;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class TestGCD {
 	BalsaCircuit circuit;
 	Queue<Chunk> queue = new ArrayBlockingQueue<Chunk>(50000);
@@ -235,7 +237,7 @@ public class TestGCD {
 	}
 
 	private String getId(BreezeComponent comp) {
-		return circuit.getNodeReference(comp);
+		return eval(circuit.referenceManager()).getNodeReference(comp);
 	}
 
 	class BcComparator implements Comparator<BreezeComponent> {

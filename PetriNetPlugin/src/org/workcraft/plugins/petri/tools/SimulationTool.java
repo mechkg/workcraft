@@ -167,7 +167,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 		if (branchTrace!=null&&branchStep>0) {
 			String transitionId = branchTrace.get(branchStep-1);
 			
-			final Node transition = net.getNodeByReference(transitionId);
+			final Node transition = eval(net.referenceManager()).getNodeByReference(transitionId);
 			if (transition==null||!(transition instanceof Transition)) return false;
 			if (!net.isUnfireEnabled((Transition)transition)) return false;
 			branchStep--;
@@ -182,7 +182,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 		
 		String transitionId = trace.get(traceStep-1);
 		
-		final Node transition = net.getNodeByReference(transitionId);
+		final Node transition = eval(net.referenceManager()).getNodeByReference(transitionId);
 		if (transition==null||!(transition instanceof Transition)) return false;
 		if (!net.isUnfireEnabled((Transition)transition)) return false;
 		traceStep--;
@@ -200,7 +200,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 	private boolean quietStep() {
 		if (branchTrace!=null&&branchStep<branchTrace.size()) {
 			String transitionId = branchTrace.get(branchStep);
-			final Node transition = net.getNodeByReference(transitionId);
+			final Node transition = eval(net.referenceManager()).getNodeByReference(transitionId);
 			
 			if (transition==null||!(transition instanceof Transition)) return false;
 			if (!net.isEnabled((Transition)transition)) return false;
@@ -215,7 +215,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 		if (traceStep>=trace.size()) return false;
 		
 		String transitionId = trace.get(traceStep);
-		final Node transition = net.getNodeByReference(transitionId);
+		final Node transition = eval(net.referenceManager()).getNodeByReference(transitionId);
 		if (transition==null||!(transition instanceof Transition)) return false;
 		if (!net.isEnabled((Transition)transition)) return false;
 		
@@ -625,7 +625,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 		// if clicked on the trace event, do the step forward
 		if (branchTrace==null&&trace!=null&&traceStep<trace.size()) {
 			String transitionId = trace.get(traceStep);
-			Node transition = net.getNodeByReference(transitionId);
+			Node transition = eval(net.referenceManager()).getNodeByReference(transitionId);
 			if (transition!=null&&transition==t) {
 				step();
 				return;
@@ -634,7 +634,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 		// otherwise form/use the branch trace
 		if (branchTrace!=null&&branchStep<branchTrace.size()) {
 			String transitionId = branchTrace.get(branchStep);
-			Node transition = net.getNodeByReference(transitionId);
+			Node transition = eval(net.referenceManager()).getNodeByReference(transitionId);
 			if (transition!=null&&transition==t) {
 				step();
 				return;
@@ -646,7 +646,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 		while (branchStep<branchTrace.size())
 			branchTrace.remove(branchStep);
 		
-		branchTrace.add(net.getNodeReference(t));
+		branchTrace.add(eval(net.referenceManager()).getNodeReference(t));
 		step();
 		update();
 		return;
@@ -726,10 +726,10 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 							
 							if (branchTrace!=null&&branchStep<branchTrace.size()) {
 								transitionId = branchTrace.get(branchStep);
-								transition2 = net.getNodeByReference(transitionId);
+								transition2 = eval(net.referenceManager()).getNodeByReference(transitionId);
 							} else if (branchTrace==null&&trace!=null&&traceStep<trace.size()) {
 								transitionId = trace.get(traceStep);
-								transition2 = net.getNodeByReference(transitionId);
+								transition2 = eval(net.referenceManager()).getNodeByReference(transitionId);
 							}
 							
 							if (transition==transition2) {

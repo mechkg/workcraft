@@ -147,11 +147,11 @@ public class SaveLoadTests {
 	private void assertPetriEquals(PetriNet expected, PetriNet actual) {
 		Assert.assertEquals(getComponents(expected).size(), getComponents(actual).size());
 		for(MathNode component : getComponents(expected))
-			assertComponentEquals(component,(MathNode) actual.getNodeByReference(expected.getNodeReference(component)));
+			assertComponentEquals(component,(MathNode) eval(actual.referenceManager()).getNodeByReference(eval(expected.referenceManager()).getNodeReference(component)));
 
 		Assert.assertEquals(getConnections(expected).size(), getConnections(actual).size());
 		for(MathConnection connection : getConnections(expected))
-			assertConnectionEquals(connection, (MathConnection) actual.getNodeByReference(expected.getNodeReference(connection)));
+			assertConnectionEquals(connection, (MathConnection) eval(actual.referenceManager()).getNodeByReference(eval(expected.referenceManager()).getNodeReference(connection)));
 	}
 
 	private void assertConnectionEquals(MathConnection expected, MathConnection actual) {

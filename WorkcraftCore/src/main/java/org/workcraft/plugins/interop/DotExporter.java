@@ -54,7 +54,7 @@ public class DotExporter implements Exporter {
 		for (Node n : eval(model.getRoot().children())) {
 			if (n instanceof VisualComponent) {
 				VisualComponent comp = (VisualComponent) n;
-				final String id = model.getNodeReference(comp);
+				final String id = eval(model.referenceManager()).getNodeReference(comp);
 				
 				if(id!=null) {
 					final Rectangle2D bb = eval(comp.localSpaceTouchable()).getBoundingBox();
@@ -64,10 +64,10 @@ public class DotExporter implements Exporter {
 						final List<String> destinations = new ArrayList<String>();
 						
 							
-						Set<Node> postset = model.getNodeContext().getPostset(comp);
+						Set<Node> postset = eval(model.nodeContext()).getPostset(comp);
 						
 						for(Node target : postset) {
-							String targetId = model.getNodeReference(target);
+							String targetId = eval(model.referenceManager()).getNodeReference(target);
 							if(targetId!=null)
 								destinations.add(targetId);
 						}

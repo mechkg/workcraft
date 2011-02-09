@@ -60,19 +60,13 @@ public class VisualSignalTransition extends VisualTransition {
 	}
 
 	private void addPropertyDeclarations() {
-		LinkedHashMap<String, Object> types = new LinkedHashMap<String, Object>();
-		types.put("Input", SignalTransition.Type.INPUT);
-		types.put("Output", SignalTransition.Type.OUTPUT);
-		types.put("Internal", SignalTransition.Type.INTERNAL);
 		
 		LinkedHashMap<String, Object> directions = new LinkedHashMap<String, Object>();
 		directions.put("+", SignalTransition.Direction.PLUS);
 		directions.put("-", SignalTransition.Direction.MINUS);
 		directions.put("", SignalTransition.Direction.TOGGLE);
 		
-		//addPropertyDeclaration(new PropertyDeclaration(this, "Signal name", "getSignalName", "setSignalName", String.class));
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Transition", direction(), direction(), SignalTransition.Direction.class, directions));
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Signal type", signalType(), signalType(), SignalTransition.Type.class, types));
 	}
 	
 	@Override

@@ -64,7 +64,7 @@ public class STGSimulationTool extends SimulationTool {
 					Color fore = PetriNetSettings.getEnabledForegroundColor();
 					Color back = PetriNetSettings.getEnabledBackgroundColor();
 					
-					Node n = net.getNodeByReference((String)value);
+					Node n = eval(net.referenceManager()).getNodeByReference((String)value);
 					if (n instanceof SignalTransition) {
 						SignalTransition st = (SignalTransition)n;
 						switch (eval(st.signalType())) {

@@ -40,6 +40,8 @@ import org.workcraft.serialisation.ReferenceProducer;
 import org.workcraft.serialisation.xml.XMLSerialisationManager;
 import org.workcraft.util.XmlUtil;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class XMLModelSerialiser implements ModelSerialiser {
 	XMLSerialisationManager serialisation = new XMLSerialisationManager();
 	
@@ -74,7 +76,7 @@ public class XMLModelSerialiser implements ModelSerialiser {
 			ReferenceProducer internalReferences = new ReferenceProducer() {
 				public String getReference(Object obj) {
 					if (obj instanceof Node)
-						return model.getNodeReference((Node)obj);
+						return eval(model.referenceManager()).getNodeReference((Node)obj);
 					else
 						return null;
 				}

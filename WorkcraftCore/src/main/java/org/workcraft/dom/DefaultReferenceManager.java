@@ -21,20 +21,21 @@
 
 package org.workcraft.dom;
 
+import java.util.Collection;
+
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dom.references.AbstractReferenceManager;
 import org.workcraft.dom.references.IDGenerator;
+import org.workcraft.dom.references.ReferenceManager;
+import org.workcraft.observation.HierarchyObservingState;
 import org.workcraft.util.TwoWayMap;
 
-public class DefaultReferenceManager implements AbstractReferenceManager {
-	public DefaultReferenceManager(Node root) {
-		nodeAdded(root);
+public class DefaultReferenceManager implements ReferenceManager, HierarchyObservingState<ReferenceManager> {
+	public DefaultReferenceManager() {
 	}
 
 	private IDGenerator idGenerator = new IDGenerator();
 	private TwoWayMap<String, Node> nodes = new TwoWayMap<String, Node>();
 
-	@Override
 	public void nodeRemoved(Node n) {
 		nodes.removeValue(n);
 
@@ -42,7 +43,6 @@ public class DefaultReferenceManager implements AbstractReferenceManager {
 			nodeRemoved(nn);
 	}
 
-	@Override
 	public void nodeAdded(Node n) {
 		String id = Integer.toString(idGenerator.getNextID());
 		nodes.put(id, n);
@@ -59,6 +59,19 @@ public class DefaultReferenceManager implements AbstractReferenceManager {
 	@Override
 	public String getNodeReference(Node node) {
 		return nodes.getKey(node);
+	}
+
+	@Override
+	public void handleEvent(Collection<? extends Node> added, Collection<? extends Node> removed) {
+		for(Node node : added)
+			nodeAdded(node);
+		for(Node node : removed)
+			nodeRemoved(node);
+	}
+
+	@Override
+	public ReferenceManager getState() {
+		return this;
 	}
 
 }

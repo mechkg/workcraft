@@ -21,6 +21,7 @@
 
 package org.workcraft.dom;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -28,10 +29,10 @@ import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.observation.HierarchyObserver;
+import org.workcraft.observation.HierarchyObservingState;
 
-public class NodeContextTracker implements NodeContext, HierarchyObserver {
-	public NodeContextTracker(Node root) {
-		nodeAdded(root);
+public class NodeContextTracker implements NodeContext, HierarchyObserver, HierarchyObservingState<NodeContext> {
+	public NodeContextTracker() {
 	}
 
 	HashMap<Node, LinkedHashSet<Node>> presets = new HashMap<Node, LinkedHashSet<Node>>();
@@ -53,8 +54,7 @@ public class NodeContextTracker implements NodeContext, HierarchyObserver {
 		connections.remove(n);
 	}
 
-	@Override
-	public void nodeAdded (Node n) {
+	private void nodeAdded (Node n) {
 		//System.out.println ("(NCT) node added " + n);
 		initHashes(n);
 		
@@ -77,9 +77,8 @@ public class NodeContextTracker implements NodeContext, HierarchyObserver {
 	}
 
 	
-	@Override
-	public void nodeRemoved(Node n) {
-		//System.out.println ("(NCT) node removed " + n);
+	private void nodeRemoved(Node n) {
+		//System.out.println (String.format("(NCT) node removed " + n + ": %d connections, preset size %d , postset size %d ", connections.get(n).size(), presets.get(n).size(), postsets.get(n).size()));
 		
 		for (Node postsetNodes: postsets.get(n))
 			presets.get(postsetNodes).remove(n);
@@ -127,5 +126,18 @@ public class NodeContextTracker implements NodeContext, HierarchyObserver {
 		if(result == null)
 			throw new RuntimeException("unknown node: " + node);
 		return Collections.unmodifiableSet(result);		
+	}
+
+	@Override
+	public void handleEvent(Collection<? extends Node> added, Collection<? extends Node> removed) {
+		for(Node node : removed)
+			nodeRemoved(node);
+		for(Node node : added)
+			nodeAdded(node);
+	}
+
+	@Override
+	public NodeContext getState() {
+		return this;
 	}
 }

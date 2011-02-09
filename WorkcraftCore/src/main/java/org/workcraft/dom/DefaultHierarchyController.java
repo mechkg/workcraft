@@ -9,7 +9,14 @@ public class DefaultHierarchyController implements HierarchyController {
 
 	@Override
 	public void remove(Node node) {
-		Container parent = (Container)eval(node.parent());
-		parent.remove(node);
+		Node parent = eval(node.parent());
+		if(parent instanceof Container)
+		{
+			Container parentContainer = (Container)parent;
+			parentContainer.remove(node);
+		}
+		else 
+			// dangerous?
+			;
 	}
 }

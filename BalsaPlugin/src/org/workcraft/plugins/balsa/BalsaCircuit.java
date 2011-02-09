@@ -49,8 +49,10 @@ import org.workcraft.plugins.balsa.handshakebuilder.PushHandshake;
 import org.workcraft.plugins.balsa.handshakes.MainHandshakeMaker;
 import org.workcraft.util.Hierarchy;
 
-public final class BalsaCircuit extends AbstractModel implements MathModel 
-{
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
+public final class BalsaCircuit extends AbstractModel implements MathModel {
+
 	public final StorageManager storage;
 
 	public BalsaCircuit(StorageManager storage) {
@@ -103,8 +105,8 @@ public final class BalsaCircuit extends AbstractModel implements MathModel
 	public void validateConnection(BreezeHandshake first, BreezeHandshake second)
 			throws InvalidConnectionException {
 		
-		if(getNodeContext().getPostset(first).size() > 0 || getNodeContext().getPreset(first).size() > 0 ||
-				getNodeContext().getPostset(second).size() > 0 || getNodeContext().getPreset(second).size() > 0)
+		if(eval(nodeContext()).getPostset(first).size() > 0 || eval(nodeContext()).getPreset(first).size() > 0 ||
+				eval(nodeContext()).getPostset(second).size() > 0 || eval(nodeContext()).getPreset(second).size() > 0)
 			throw new InvalidConnectionException("Cannot connect already connected handshakes");
 			
 		Handshake h1 = first.getHandshake();
@@ -172,7 +174,7 @@ public final class BalsaCircuit extends AbstractModel implements MathModel
 	}
 
 	public Connection getConnection(BreezeHandshake handshake) {
-		Set<Connection> connections = getNodeContext().getConnections(handshake);
+		Set<Connection> connections = eval(nodeContext()).getConnections(handshake);
 		if(connections.size() > 1)
 			throw new RuntimeException("Handshake can't have more than 1 connection!");
 		if(connections.size() == 0)
@@ -244,15 +246,5 @@ public final class BalsaCircuit extends AbstractModel implements MathModel
 				return new ArrayList<BreezeHandshake>(handshakes);
 			}
 		};
-	}
-
-	@Override
-	public Node getNodeByReference(String reference) {
-		throw new org.workcraft.exceptions.NotImplementedException();
-	}
-
-	@Override
-	public String getNodeReference(Node node) {
-		throw new org.workcraft.exceptions.NotImplementedException();
 	}
 }

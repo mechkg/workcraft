@@ -7,6 +7,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
@@ -15,6 +16,7 @@ import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.NodeContext;
 import org.workcraft.dom.math.MathModel;
+import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.HierarchicalGraphicalContent;
 import org.workcraft.dom.visual.HitMan;
@@ -140,16 +142,6 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 	}
 
 	@Override
-	public Node getNodeByReference(String reference) {
-		throw new NotSupportedException("new serialisation should be used!");
-	}
-
-	@Override
-	public String getNodeReference(Node node) {
-		throw new NotSupportedException("new serialisation should be used!");
-	}
-
-	@Override
 	public Properties getProperties(Node node) {
 		// TODO Auto-generated method stub
 		return null;
@@ -184,18 +176,17 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 	}
 
 	@Override
-	public void ensureConsistency() {
-	}
-
-	@Override
 	public void add(Container parent, Node node) {
 		add(node);
 	}
 
 	@Override
-	public NodeContext getNodeContext() {
-		// TODO Auto-generated method stub
-		return null;
+	public Expression<? extends ReferenceManager> referenceManager() {
+		throw new NotSupportedException();
 	}
 
+	@Override
+	public Expression<? extends NodeContext> nodeContext() {
+		throw new NotSupportedException();
+	}
 }

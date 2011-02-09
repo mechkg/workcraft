@@ -12,6 +12,7 @@ import org.workcraft.dom.references.AbstractReferenceManager;
 import org.workcraft.dom.references.UniqueNameManager;
 import org.workcraft.exceptions.ArgumentException;
 import org.workcraft.exceptions.DuplicateIDException;
+import org.workcraft.observation.HierarchyObservingState;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.serialisation.References;
@@ -22,7 +23,7 @@ import org.workcraft.util.ListMap;
 import org.workcraft.util.Pair;
 import org.workcraft.util.Triple;
 
-public class STGReferenceManager implements AbstractReferenceManager {
+public class STGReferenceManager implements AbstractReferenceManager, HierarchyObservingState<STGReferenceManager> {
 	private InstanceManager<Node> instancedNameManager;
 	private UniqueNameManager<Node> defaultNameManager;
 
@@ -63,8 +64,6 @@ public class STGReferenceManager implements AbstractReferenceManager {
 				setExistingReference(existingReferences, n);
 			existingReferences = null;
 		}
-		
-		nodeAdded(root);
 	}
 
 	private void setExistingReference(References existingReferences, Node n) {
@@ -188,15 +187,13 @@ public class STGReferenceManager implements AbstractReferenceManager {
 			defaultNameManager.setName(node, s);
 	}
 	
-	@Override
-	public void nodeAdded(Node node) {
+	private void nodeAdded(Node node) {
 		setDefaultNameIfUnnamed(node);
 		for (Node n : Hierarchy.getDescendantsOfType(node, Node.class))
 			setDefaultNameIfUnnamed(n);
 	}
 	
-	@Override
-	public void nodeRemoved(Node node) {
+	private void nodeRemoved(Node node) {
 		nodeRemovedInternal(node);
 		for (Node n : Hierarchy.getDescendantsOfType(node, Node.class))
 			nodeRemovedInternal(n);
@@ -242,5 +239,18 @@ public class STGReferenceManager implements AbstractReferenceManager {
 			instancedNameManager.remove(dt);
 		} else
 			defaultNameManager.remove(node);
+	}
+
+	@Override
+	public void handleEvent(Collection<? extends Node> added, Collection<? extends Node> removed) {
+		for(Node node : removed)
+			nodeRemoved(node);
+		for(Node node : added)
+			nodeAdded(node);
+	}
+
+	@Override
+	public STGReferenceManager getState() {
+		return this;
 	}
 }

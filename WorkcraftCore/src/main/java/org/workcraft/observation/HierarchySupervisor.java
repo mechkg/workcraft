@@ -30,32 +30,23 @@ import java.util.Map;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dependencymanager.advanced.user.AutoRefreshExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.util.Null;
 
 import pcollections.HashTreePMap;
 
-public abstract class HierarchySupervisor {
+public class HierarchySupervisor<STATE> extends ExpressionBase<STATE> {
 	
-	public HierarchySupervisor(Node root) {
+	private final HierarchyObservingState<? extends STATE> observer;
+
+	public HierarchySupervisor(Node root, HierarchyObservingState<? extends STATE> observer) {
+		this.observer = observer;
 		if(root == null)
 			throw new NullPointerException();
 		rootSupervisor = new SupervisingNode(root);
-	}
-	
-	public void start() {
 		registerChange(Arrays.asList(new Node[]{rootSupervisor.node}), Arrays.asList(new Node[]{}));
-		//autoRefresh = GlobalCache.autoRefresh(rootSupervisor);
 	}
 	
-	public void refresh() {
-		GlobalCache.eval(rootSupervisor);
-	}
-	
-	@SuppressWarnings("unused") // need so that autoRefresh does not get garbage collected
-	private AutoRefreshExpression autoRefresh;
 	private SupervisingNode rootSupervisor;
 	
 	class SupervisingNode extends ExpressionBase<Null> {
@@ -93,8 +84,12 @@ public abstract class HierarchySupervisor {
 	}
 	
 	private void registerChange(List<Node> added, List<Node> removed) {
-		handleEvent(added, removed);
+		observer.handleEvent(added, removed);
 	}
 	
-	public abstract void handleEvent (List<Node> added, List<Node> removed);
+	@Override
+	protected STATE evaluate(EvaluationContext context) {
+		context.resolve(rootSupervisor);
+		return observer.getState();
+	}
 }

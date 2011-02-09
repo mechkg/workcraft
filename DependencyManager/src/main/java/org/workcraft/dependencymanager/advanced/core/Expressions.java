@@ -2,9 +2,11 @@ package org.workcraft.dependencymanager.advanced.core;
 
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleTuple;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.Unfold;
+import org.workcraft.dependencymanager.util.listeners.Listener;
 
 public class Expressions {
 	public static <T> Expression<T> constant(final T value) {
@@ -51,6 +53,21 @@ public class Expressions {
 			@Override
 			protected T2 evaluate(EvaluationContext context) {
 				return context.resolve(expr);
+			}
+		};
+	}
+
+	public static <T> ModifiableExpression<T> modifiableExpression(final Expression<? extends T> getter, final ModifiableExpression<T> setter) {
+		return new ModifiableExpression<T>() {
+
+			@Override
+			public ValueHandleTuple<? extends T> getValue(Listener subscriber) {
+				return getter.getValue(subscriber);
+			}
+
+			@Override
+			public void setValue(T newValue) {
+				setter.setValue(newValue);
 			}
 		};
 	}

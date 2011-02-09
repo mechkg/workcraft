@@ -21,66 +21,95 @@
 
 package org.workcraft.dom;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DependentNode;
+import org.workcraft.observation.HierarchyObserver;
+import org.workcraft.observation.HierarchyObservingState;
 import org.workcraft.observation.HierarchySupervisor;
+import org.workcraft.util.Hierarchy;
 
-public class DefaultMathNodeRemover extends HierarchySupervisor {
+public class DefaultMathNodeRemover implements HierarchyObserver {
+	
+	static class ReferenceCounter implements HierarchyObservingState<List<MathNode>>
+	{
+		private HashMap<MathNode, Integer> refCount = new HashMap<MathNode, Integer>();
+		public void incRef (MathNode node) {
+			if (refCount.get(node) == null)
+				refCount.put(node, 1);
+			else
+				refCount.put(node, refCount.get(node)+1);
+		}
+
+		public void decRef (MathNode node) {
+			Integer refs = refCount.get(node)-1;
+			if (refs == 0) {
+				// System.out.println ( "Math node " + node + " is no longer referenced to, deleting");
+				toRemove.add(node);
+				refCount.remove(node);
+			} else
+				refCount.put(node, refs);
+		}
+		
+		private void nodeAdded(Node node) {
+			System.out.println("math node remover: node added: " + node);
+			if (node instanceof DependentNode)
+				for (MathNode mn : ((DependentNode)node).getMathReferences())
+					incRef(mn);
+			
+			for (Node n : GlobalCache.eval(node.children()))
+				nodeAdded(n);
+		}
+
+		private void nodeRemoved(Node node) {
+			System.out.println("math node remover: node removed: " + node);
+			if (node instanceof DependentNode)
+				for (MathNode mn : ((DependentNode)node).getMathReferences())
+					decRef(mn);
+			
+			for (Node n : GlobalCache.eval(node.children()))
+				nodeRemoved(n);
+		}
+
+		@Override
+		public void handleEvent(Collection<? extends Node> added,Collection<? extends Node> removed) {
+			for(Node node : added)
+				nodeAdded(node);
+			for(Node node : removed)
+				nodeRemoved(node);
+		}
+		
+		List<MathNode> toRemove = new ArrayList<MathNode>();
+
+		@Override
+		public List<MathNode> getState() {
+			return toRemove;
+		}
+	}
+	
 	private final Model model;
-	public DefaultMathNodeRemover(Model model, Node root) {
-		super(root);
-		this.model = model;
-		start();
-	}
-
-	private HashMap<MathNode, Integer> refCount = new HashMap<MathNode, Integer>();
-	private void incRef (MathNode node) {
-		if (refCount.get(node) == null)
-			refCount.put(node, 1);
-		else
-			refCount.put(node, refCount.get(node)+1);
-	}
-
-	private void decRef (MathNode node) {
-		Integer refs = refCount.get(node)-1;
-		if (refs == 0) {
-			// System.out.println ( "Math node " + node + " is no longer referenced to, deleting");
-			refCount.remove(node);
-			if (GlobalCache.eval(node.parent()) instanceof Container)
-				model.remove(node);		
-		} else
-			refCount.put(node, refs);
+	final ReferenceCounter refCounter;
+	final Expression<List<MathNode>> staleNodes;
+	
+	public DefaultMathNodeRemover(Node root, Model mathModel) {
+		this.refCounter = new ReferenceCounter();
+		this.staleNodes = new HierarchySupervisor<List<MathNode>>(root, refCounter);
+		this.model = mathModel;
 	}
 
 	@Override
-	public void handleEvent(List<Node> added, List<Node> removed) {
-		for (Node node : removed)
-			nodeRemoved(node);
-	
-		for (Node node : added)
-			nodeAdded(node);
-	}
-
-	private void nodeAdded(Node node) {
-		if (node instanceof DependentNode)
-			for (MathNode mn : ((DependentNode)node).getMathReferences())
-				incRef(mn);
-		
-		for (Node n : GlobalCache.eval(node.children()))
-			nodeAdded(n);
-	}
-
-	private void nodeRemoved(Node node) {
-		if (node instanceof DependentNode)
-			for (MathNode mn : ((DependentNode)node).getMathReferences())
-				decRef(mn);
-		
-		for (Node n : GlobalCache.eval(node.children()))
-			nodeRemoved(n);
+	public void handleEvent(Collection<? extends Node> added, Collection<? extends Node> removed) {
+		List<MathNode> stale = GlobalCache.eval(staleNodes);
+		for(MathNode node : stale)
+			if(Hierarchy.isDescendant(node, model.getRoot()))
+				model.remove(node);
+		stale.clear(); // clears the internal list of the ReferenceCounter
 	}
 
 }

@@ -33,7 +33,7 @@ public class DependantRemovingHierarchyController implements HierarchyController
 	public void remove(Node node) {
 		LinkedHashSet<Node> deletionList = new LinkedHashSet<Node>(); 
 		recursiveDelete(deletionList, node);
-		
+			
 		for(Node n : deletionList)
 			next.remove(n);
 	}

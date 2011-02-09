@@ -23,7 +23,6 @@ package org.workcraft.plugins.petri;
 
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.NodeContext;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.visual.AbstractVisualModel;
 import org.workcraft.dom.visual.VisualComponent;
@@ -89,11 +88,6 @@ public class VisualPetriNet extends AbstractVisualModel {
 		VisualTransition t = new VisualTransition(net.createTransition(), storage);
 		add(t);
 		return t;
-	}
-
-	@Override
-	public NodeContext getNodeContext() {
-		return null;
 	}
 	
 }

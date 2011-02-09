@@ -20,7 +20,7 @@ public abstract class NonCachedExpression<T> implements Expression<T> {
 
 			@Override
 			public <T2> T2 resolve(Expression<T2> dependency) {
-				ValueHandleTuple<T2> valueHandle = dependency.getValue(subscriber);
+				ValueHandleTuple<? extends T2> valueHandle = dependency.getValue(subscriber);
 				handle.add(valueHandle.handle);
 				return valueHandle.value;
 			}

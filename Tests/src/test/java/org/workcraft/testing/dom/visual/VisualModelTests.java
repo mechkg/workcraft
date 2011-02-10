@@ -75,6 +75,7 @@ public class VisualModelTests {
 		public void connect(Node first, Node second)
 				throws InvalidConnectionException {
 		}
+
 	}
 
 	@Test

@@ -112,7 +112,6 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 		if (name!=null)
 			setName(newPlace, name);
 		add(newPlace);
-		ensureConsistency();
 		return newPlace;
 	}
 
@@ -121,17 +120,14 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 		if (name!=null)
 			setName(newTransition, name);
 		add(newTransition);
-		ensureConsistency();
 		return newTransition;
 	}
 
 	final public Collection<Place> getPlaces() {
-		ensureConsistency();
 		return Hierarchy.getDescendantsOfType(getRoot(), Place.class);
 	}
 
 	final public Collection<Transition> getTransitions() {
-		ensureConsistency();
 		return Hierarchy.getDescendantsOfType(getRoot(), Transition.class);
 	}
 
@@ -141,7 +137,6 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 	}
 	
 	final public boolean isEnabled (Transition t) {
-		ensureConsistency();
 		return isEnabled (this, t);
 	}
 
@@ -249,7 +244,6 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 
 	@Override
 	public Properties getProperties(Node node) {
-		ensureConsistency();
 		return Properties.Mix.from(new NamePropertyDescriptor(this, node));
 	}
 }

@@ -246,7 +246,6 @@ public class STG extends AbstractModel implements STGModel {
 	}
 
 	public String getName(Node node) {
-		ensureConsistency();
 		return eval(referenceManager).getName(node);
 	}
 

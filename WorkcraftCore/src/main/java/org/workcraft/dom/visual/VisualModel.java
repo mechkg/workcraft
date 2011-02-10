@@ -51,6 +51,4 @@ public interface VisualModel extends Model {
 	public Expression<HierarchicalGraphicalContent> graphicalContent();
 
 	public ModifiableExpression<PSet<Node>> selection();
-
-	public void ensureConsistency();
 }

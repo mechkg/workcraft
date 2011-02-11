@@ -43,7 +43,7 @@ public class MathModelSerialisationTests {
 
 	public static void compareMathModels(Model model1, Model model2) {
 		Assert.assertTrue(model1.getTitle().equals(model2.getTitle()));
-		SerialisationTestingUtils.compareNodes (model1.getRoot(), model2.getRoot());
+		SerialisationTestingUtils.compareNodes (model1, model1.getRoot(), model2, model2.getRoot());
 	}
 
 	public void runTest (STG stg) {

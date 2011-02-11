@@ -140,7 +140,14 @@ public class VisualContact extends VisualComponent {
 
 			@Override
 			protected AffineTransform evaluate(EvaluationContext context) {
-				return context.resolve(superTransform);
+				AffineTransform result = context.resolve(superTransform);
+				Node parent = context.resolve(parent());
+				if(parent instanceof ContactPositioner) {
+					Point2D position = ((ContactPositioner)parent).position(VisualContact.this, new Point2D.Double(result.getTranslateX(), result.getTranslateY()), context);
+					return AffineTransform.getTranslateInstance(position.getX(), position.getY()); 
+				}
+				else
+					return result;
 			}
 		};
 	}

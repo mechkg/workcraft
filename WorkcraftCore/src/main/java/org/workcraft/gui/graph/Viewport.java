@@ -288,7 +288,7 @@ public class Viewport {
 		Point2D anchorInNewSpace = screenToUser(anchor);
 
 		tx.setValue(eval(tx) + anchorInNewSpace.getX() - anchorInUserSpace.getX());
-		tx.setValue(eval(ty) + anchorInNewSpace.getY() - anchorInUserSpace.getY());
+		ty.setValue(eval(ty) + anchorInNewSpace.getY() - anchorInUserSpace.getY());
 	}
 
 	/**

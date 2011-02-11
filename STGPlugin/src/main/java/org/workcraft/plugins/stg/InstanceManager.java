@@ -18,20 +18,24 @@ import org.workcraft.util.TwoWayMap;
  *
  * @param <T>
  */
-public class InstanceManager<T>
+public class InstanceManager<K,T>
 {
-	private GeneralTwoWayMap<T, Pair<String,Integer>> instances = new TwoWayMap<T, Pair<String, Integer>>();
+	private GeneralTwoWayMap<T, Pair<K,Integer>> instances = new TwoWayMap<T, Pair<K, Integer>>();
 
-	private Map<String, IDGenerator> generators = new HashMap<String, IDGenerator>();
-	private final Func<T, String> labelGetter;
+	private Map<K, IDGenerator> generators = new HashMap<K, IDGenerator>();
+	private final Func<T, K> labelGetter;
 
-	public InstanceManager (Func<T, String> labelGetter) {
+	public static <K,T> InstanceManager<K,T> create(Func<T, K> labelGetter) {
+		return new InstanceManager<K, T>(labelGetter);
+	}
+	
+	public InstanceManager (Func<T, K> labelGetter) {
 		if(labelGetter == null)
 			throw new NullPointerException();
 		this.labelGetter = labelGetter;
 	}
 
-	private IDGenerator getGenerator(String label)
+	private IDGenerator getGenerator(K label)
 	{
 		IDGenerator result = generators.get(label);
 		if(result == null)
@@ -51,19 +55,19 @@ public class InstanceManager<T>
 	 * Automatically assign a new name to <i>t</i>, taking the name from label getter and auto-generating instance number.
 	 */
 	public void assign (T t) {
-		final Pair<String, Integer> assigned = instances.getValue(t);
+		final Pair<K, Integer> assigned = instances.getValue(t);
 		final Integer instance;
 		if (assigned != null)
 			throw new ArgumentException ("Instance already assigned to \"" + labelGetter.eval(t) + "/" + assigned.getSecond() +"\"");
-		final String label = labelGetter.eval(t);
+		final K label = labelGetter.eval(t);
 		instance = getGenerator(label).getNextID();
-		instances.put(t, new Pair<String, Integer>(label, instance));
+		instances.put(t, new Pair<K, Integer>(label, instance));
 	}
 
 	/**
 	 * Manually assign a new name to <i>t</i>, auto-generating instance number. 
 	 */
-	public void assign (T t, String name) {
+	public void assign (T t, K name) {
 		assign (t, Pair.of(name, (Integer)null));
 	}
 	
@@ -71,14 +75,20 @@ public class InstanceManager<T>
 	 * Manually assign an instance number to <i>t</i>. 
 	 */
 	public void assign (T t, int instance) {
-		assign (t, Pair.of(labelGetter.eval(t), instance));
+		Pair<K, Integer> existing = getInstance(t);
+		final K label;
+		if(existing != null)
+			label = existing.getFirst();
+		else
+			label = labelGetter.eval(t);
+		assign (t, Pair.of(label, instance));
 	}
 
 	/**
 	 * Manually assign a full reference to <i>t</i>, forcing instance number. 
 	 */
-	public void assign (T t, Pair<String, Integer> reference) {
-		final Pair<String, Integer> assigned = instances.getValue(t);
+	public void assign (T t, Pair<K, Integer> reference) {
+		final Pair<K, Integer> assigned = instances.getValue(t);
 		
 		if (reference.getSecond() == null) {
 			if (assigned != null) {
@@ -111,16 +121,16 @@ public class InstanceManager<T>
 		}
 	}
 
-	public Pair<String, Integer> getInstance (T t) {
+	public Pair<K, Integer> getInstance (T t) {
 		return instances.getValue(t);
 	}
 
-	public T getObject(Pair<String, Integer> ref) {
+	public T getObject(Pair<K, Integer> ref) {
 		return instances.getKey(ref);
 	}
 
 	public void remove(T T) {
-		final Pair<String, Integer> assignment = instances.getValue(T);
+		final Pair<K, Integer> assignment = instances.getValue(T);
 		if(assignment == null)
 			throw new NotFoundException("Instance not assigned");
 		generators.get(assignment.getFirst()).releaseID(assignment.getSecond());

@@ -25,8 +25,11 @@ import org.workcraft.plugins.circuit.stg.CircuitPetriNetGenerator;
 import org.workcraft.plugins.petri.PetriNetModel;
 import org.workcraft.plugins.petri.PetriNetSettings;
 import org.workcraft.plugins.stg.DefaultStorageManager;
+import org.workcraft.plugins.stg.STG;
+import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.plugins.stg.SignalTransition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
+import org.workcraft.plugins.stg.VisualSTG;
 import org.workcraft.plugins.stg.tools.STGSimulationTool;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
@@ -44,12 +47,16 @@ public class CircuitSimulationTool extends STGSimulationTool {
 		return "Simulation";
 	}
 	
+	STG stg;
+	
 	@Override
 	public void activated() {
 		this.circuit = (VisualCircuit)editor.getModel();
 		
-		visualNet = CircuitPetriNetGenerator.generate(circuit, new DefaultStorageManager());
-		net = (PetriNetModel)visualNet.getMathModel();
+		VisualSTG visualSTG = CircuitPetriNetGenerator.generate(circuit, new DefaultStorageManager());
+		visualNet = visualSTG;
+		stg = visualSTG.stg;
+		net = stg;
 		
 		initialMarking = readMarking();
 		traceStep = 0;
@@ -67,7 +74,7 @@ public class CircuitSimulationTool extends STGSimulationTool {
 	}
 
 	// return first enabled transition
-	public static SignalTransition isContactExcited(VisualContact c, PetriNetModel net) {
+	public static SignalTransition isContactExcited(VisualContact c, STGModel net) {
 		boolean up=false;
 		boolean down=false;
 		
@@ -77,9 +84,9 @@ public class CircuitSimulationTool extends STGSimulationTool {
 		for (SignalTransition tr: c.getReferencedTransitions()) {
 			if (net.isEnabled(tr)) {
 				if (st==null) st = tr;
-				if (eval(tr.direction())==Direction.MINUS)
+				if (eval(net.direction(tr))==Direction.MINUS)
 					down = true;
-				if (eval(tr.direction())==Direction.PLUS)
+				if (eval(net.direction(tr))==Direction.PLUS)
 					up=true;
 				if (up&&down) break;
 			}
@@ -130,7 +137,7 @@ public class CircuitSimulationTool extends STGSimulationTool {
 				});
 		
 		if (node==null) return;
-		SignalTransition st = isContactExcited((VisualContact)node, net);
+		SignalTransition st = isContactExcited((VisualContact)node, stg);
 		if (st!=null) {
 			executeTransition(st);
 			update();
@@ -179,7 +186,7 @@ public class CircuitSimulationTool extends STGSimulationTool {
 							}
 							
 								
-							if (isContactExcited((VisualContact)node, net)!=null)
+							if (isContactExcited((VisualContact)node, stg)!=null)
 								return new Decoration(){
 									@Override
 									public Color getColorisation() {

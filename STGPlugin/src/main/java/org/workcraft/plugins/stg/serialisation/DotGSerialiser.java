@@ -161,7 +161,7 @@ public class DotGSerialiser implements ModelSerialiser {
 		writeMarking(stg, stg.getPlaces(), out);
 	}
 
-	private void writeMarking(Model model, Collection<Place> places, PrintWriter out) {
+	private void writeMarking(Model model, Collection<? extends Place> places, PrintWriter out) {
 		ArrayList<String> markingEntries = new ArrayList<String>();
 		
 		for (Place p: places) {

@@ -33,7 +33,7 @@ import org.workcraft.plugins.cpog.optimisation.expressions.One;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 import org.workcraft.util.Hierarchy;
 
-public class VisualFunctionComponent extends VisualCircuitComponent {
+public class VisualFunctionComponent extends VisualCircuitComponent implements ContactPositioner {
 	
 	ComponentRenderingResult renderingResult = null;
 	
@@ -414,5 +414,27 @@ public class VisualFunctionComponent extends VisualCircuitComponent {
 				};
 			}
 		};
+	}
+
+	@Override
+	public Point2D position(VisualContact contact, Point2D wantedPosition, EvaluationContext context) {
+		double x = wantedPosition.getX();
+		double y = wantedPosition.getY();
+		Rectangle2D bb = context.resolve(contactLabelBB);
+		switch (context.resolve(contact.direction())) {
+		case EAST:
+			x = snapP5(bb.getMaxX() + contactLength);
+			break;
+		case WEST:
+			x = snapP5(bb.getMinX() - contactLength);
+			break;
+		case NORTH:
+			y = snapP5(bb.getMinY() - contactLength);
+			break;
+		case SOUTH:
+			y = snapP5(bb.getMaxY() + contactLength);
+			break;
+		}
+		return new Point2D.Double(x, y);
 	}
 }

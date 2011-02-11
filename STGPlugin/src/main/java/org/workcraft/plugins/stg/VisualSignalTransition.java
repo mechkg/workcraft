@@ -26,22 +26,20 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.LinkedHashMap;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.petri.VisualTransition;
-import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.SignalTransition.Type;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
@@ -53,6 +51,7 @@ public class VisualSignalTransition extends VisualTransition {
 	private static Font font = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.75f);
 	
 	private Label nameLabel = new Label(font, text());
+	Variable<STG> stg = Variable.<STG>create(null);
 	
 	public VisualSignalTransition(Transition transition, StorageManager storage) {
 		super(transition, storage);
@@ -61,12 +60,6 @@ public class VisualSignalTransition extends VisualTransition {
 
 	private void addPropertyDeclarations() {
 		
-		LinkedHashMap<String, Object> directions = new LinkedHashMap<String, Object>();
-		directions.put("+", SignalTransition.Direction.PLUS);
-		directions.put("-", SignalTransition.Direction.MINUS);
-		directions.put("", SignalTransition.Direction.TOGGLE);
-		
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Transition", direction(), direction(), SignalTransition.Direction.class, directions));
 	}
 	
 	@Override
@@ -74,14 +67,16 @@ public class VisualSignalTransition extends VisualTransition {
 		return new ExpressionBase<GraphicalContent>() {
 			@Override
 			protected GraphicalContent evaluate(final EvaluationContext context) {
-				final GraphicalContent labelGraphics = context.resolve(labelGraphics());
-				final GraphicalContent nameLabelGraphics = context.resolve(nameLabel.graphics);
-				final Color color = context.resolve(color());
-				final Touchable shape = context.resolve(localSpaceTouchable());
-				
 				return new GraphicalContent() {
 					@Override
 					public void draw(DrawRequest r) {
+						
+						stg.setValue(((VisualSTG)r.getModel()).stg);
+						
+						final GraphicalContent labelGraphics = context.resolve(labelGraphics());
+						final GraphicalContent nameLabelGraphics = context.resolve(nameLabel.graphics);
+						final Color color = context.resolve(color());
+						final Touchable shape = context.resolve(localSpaceTouchable());
 						
 						labelGraphics.draw(r);
 						
@@ -133,8 +128,9 @@ public class VisualSignalTransition extends VisualTransition {
 			@Override
 			protected String evaluate(EvaluationContext context) {
 				SignalTransition t = getReferencedTransition();
-				final StringBuffer result = new StringBuffer(context.resolve(t.signalName()));
-				switch (context.resolve(t.direction())) {
+				STG stg = context.resolve(VisualSignalTransition.this.stg);
+				final StringBuffer result = new StringBuffer(context.resolve(stg.signalName(t)));
+				switch (context.resolve(stg.direction(t))) {
 				case PLUS:
 					result.append("+"); break;
 				case MINUS:
@@ -171,15 +167,5 @@ public class VisualSignalTransition extends VisualTransition {
 	@NoAutoSerialisation
 	public ModifiableExpression<Type> signalType() {
 		return getReferencedTransition().signalType();
-	}
-	
-	@NoAutoSerialisation
-	public ModifiableExpression<Direction> direction() {
-		return getReferencedTransition().direction();
-	}
-	
-	@NoAutoSerialisation
-	public ModifiableExpression<String> signalName() {
-		return getReferencedTransition().signalName();
 	}
 }

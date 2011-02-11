@@ -27,20 +27,23 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
+import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.references.ReferenceManager;
+import org.workcraft.dom.references.UniqueNameReferenceManager;
 import org.workcraft.exceptions.InvalidConnectionException;
+import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.observation.HierarchySupervisor;
-import org.workcraft.plugins.stg.STGReferenceManager;
 import org.workcraft.serialisation.References;
+import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
 
 public class CPOG extends AbstractModel implements MathModel
 {
 
 	private final StorageManager storage;
-	private final STGReferenceManager names;
+	private final UniqueNameReferenceManager names;
 
 	public CPOG(StorageManager storage)
 	{
@@ -57,13 +60,18 @@ public class CPOG extends AbstractModel implements MathModel
 		public StartupParameters(Container root, References refs, StorageManager storage) {
 			this.storage = storage;
 			this.root = root==null?new MathGroup(storage):root;
-			this.names = new STGReferenceManager(this.root, refs);
+			this.names = new UniqueNameReferenceManager(this.root, refs, new Func<Node, String>(){
+				@Override
+				public String eval(Node arg) {
+					return "badName";
+				}
+			});
 			this.refMan = new HierarchySupervisor<ReferenceManager>(this.root, names);
 		}
 		StorageManager storage;
 		Container root;
 		Expression<? extends ReferenceManager> refMan;
-		STGReferenceManager names;
+		UniqueNameReferenceManager names;
 	}
 
 	public CPOG(StartupParameters p) 
@@ -80,7 +88,7 @@ public class CPOG extends AbstractModel implements MathModel
 
 	public String getName(Vertex vertex)
 	{
-		return names.getName(vertex);
+		return names.getNodeReference(vertex);
 	}
 
 	public void setName(Vertex vertex, String name)

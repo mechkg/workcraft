@@ -22,9 +22,9 @@ public class ReadArcsComplexityReduction {
 
 			for(SignalTransition t : source.getSignalTransitions())
 			{
-				SignalTransition newt = net.createSignalTransition(eval(t.signalName()));
-				assign(newt.direction(), t.direction());
-				assign(newt.signalType(), t.signalType());
+				SignalTransition newt = net.createSignalTransition(eval(source.signalName(t)));
+				assign(net.direction(newt), net.direction(t));
+				assign(net.signalType(newt), net.signalType(t));
 				oldNewTran.put(t, newt);
 			}
 			

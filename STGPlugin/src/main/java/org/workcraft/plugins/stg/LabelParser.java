@@ -3,7 +3,6 @@ package org.workcraft.plugins.stg;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.workcraft.exceptions.ArgumentException;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.util.Pair;
 import org.workcraft.util.Triple;
@@ -28,27 +27,26 @@ public class LabelParser {
 		final Matcher matcher = fullPattern.matcher(s);
 		
 		if (!matcher.find())
-			throw new ArgumentException("\"" + s
-					+ "\" is not a valid STG label.");
+			return null;
  
 		if (! (matcher.end() == s.length()))
-			throw new ArgumentException("\"" + s
-					+ "\" is not a valid STG label.");
-			
-		final String instanceGroup = matcher.group(4);
+			return null;
+		
+		final String instanceText = matcher.group(4);
+		final String directionText = matcher.group(2);
 		
 		final Direction second;
 		
-		if (matcher.group(2).equals("+"))
+		if (directionText.equals("+"))
 			second = SignalTransition.Direction.PLUS;
-		else if (matcher.group(2).equals("-"))
+		else if (directionText.equals("-"))
 			second = SignalTransition.Direction.MINUS;
 		else
 			second = SignalTransition.Direction.TOGGLE;
 		
 		return Triple.of(matcher.group(1),
-				second, instanceGroup == null? null : Integer
-						.parseInt(instanceGroup));
+				second, instanceText == null? null : Integer
+						.parseInt(instanceText));
 	}
 	
 	public static Pair<String, Integer> parse(String s) {

@@ -69,6 +69,6 @@ public class STGSerialisationTests {
 		DeserialisationResult mathResult = deserialiser.deserialise(mathData.getInputStream(), new DefaultStorageManager(), null);
 		DeserialisationResult visualResult = deserialiser.deserialise(visualData.getInputStream(), new DefaultStorageManager(), mathResult.referenceResolver);
 
-		SerialisationTestingUtils.compareNodes(stg.getRoot(), visualResult.model.getRoot());
+		SerialisationTestingUtils.compareNodes(stg, stg.getRoot(), visualResult.model, visualResult.model.getRoot());
 	}
 }

@@ -65,23 +65,23 @@ public class StgModelStgBuilderTests {
 		builder.buildSignal(new SignalId(hs1, "s1"), true);
 		SignalTransition [] transitions = stg.getTransitions().toArray(new SignalTransition[0]);
 		
-		findSignal(transitions, "hs1_s1", Type.OUTPUT);
+		findSignal(stg, transitions, "hs1_s1", Type.OUTPUT);
 	}
 
-	private void findSignal(SignalTransition[] transitions, String signalName, Type type) {
+	private void findSignal(STG stg, SignalTransition[] transitions, String signalName, Type type) {
 
 		boolean plusFound = false;
 		boolean minusFound = false;
 		
 		for(SignalTransition t : transitions)
 		{
-			if(!eval(t.signalName()).equals(signalName))
+			if(!eval(stg.signalName(t)).equals(signalName))
 				continue;
 			if(!eval(t.signalType()).equals(type))
 				continue;
-			if(!eval(t.direction()).equals(Direction.MINUS))
+			if(!eval(stg.direction(t)).equals(Direction.MINUS))
 				minusFound = true;
-			if(!eval(t.direction()).equals(Direction.PLUS))
+			if(!eval(stg.direction(t)).equals(Direction.PLUS))
 				plusFound = true;
 		}
 		Assert.assertTrue(plusFound && minusFound);

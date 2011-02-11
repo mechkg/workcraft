@@ -18,13 +18,13 @@ public class InstanceManagerTests
 	@Test(expected=NullPointerException.class)
 	public void testConstructorNull()
 	{
-		new InstanceManager<Object>(null);
+		new InstanceManager<String, Object>(null);
 	}
 	
 	@Test
 	public void testConstructor()
 	{
-		new InstanceManager<Object>(new Func<Object, String>()
+		InstanceManager.create(new Func<Object, String>()
 				{
 					@Override public String eval(Object arg) {
 						throw new RuntimeException("this method should not be called");
@@ -32,9 +32,9 @@ public class InstanceManagerTests
 				});
 	}
 	
-	InstanceManager<Object> make(final Map<Object, String> expectedRequests)
+	InstanceManager<String, Object> make(final Map<Object, String> expectedRequests)
 	{
-		return new InstanceManager<Object>(new Func<Object, String>()
+		return InstanceManager.create(new Func<Object, String>()
 				{
 			@Override public String eval(Object arg) {
 				final String label = expectedRequests.get(arg);
@@ -49,7 +49,7 @@ public class InstanceManagerTests
 	public void testGetReferenceUnknown()
 	{
 		Map<Object, String> expectedRequests = new HashMap<Object, String>();
-		final InstanceManager<Object> mgr = make(expectedRequests);
+		final InstanceManager<String, Object> mgr = make(expectedRequests);
 		assertNull(mgr.getInstance(new Object()));
 	}
 	
@@ -63,7 +63,7 @@ public class InstanceManagerTests
 		expectedRequests.put(o1, "abc");
 		expectedRequests.put(o2, "abc");
 		expectedRequests.put(o3, "qwe");
-		final InstanceManager<Object> mgr = make(expectedRequests);
+		final InstanceManager<String, Object> mgr = make(expectedRequests);
 		mgr.assign(o1);
 		mgr.assign(o2);
 		mgr.assign(o3);
@@ -84,7 +84,7 @@ public class InstanceManagerTests
 		expectedRequests.put(o2, "abc");
 		expectedRequests.put(o3, "qwe");
 		expectedRequests.put(o4, "abc");
-		final InstanceManager<Object> mgr = make(expectedRequests);
+		final InstanceManager<String, Object> mgr = make(expectedRequests);
 		mgr.assign(o1);
 		mgr.assign(o2);
 		mgr.assign(o3);
@@ -107,7 +107,7 @@ public class InstanceManagerTests
 		Object o2 = new Object();
 		expectedRequests.put(o1, "abc");
 		expectedRequests.put(o2, "abc");
-		final InstanceManager<Object> mgr = make(expectedRequests);
+		final InstanceManager<String, Object> mgr = make(expectedRequests);
 		mgr.assign(o1);
 		mgr.remove(o1);
 		mgr.assign(o2);
@@ -122,7 +122,7 @@ public class InstanceManagerTests
 		Map<Object, String> expectedRequests = new HashMap<Object, String>();
 		Object o1 = new Object();
 		expectedRequests.put(o1, "abc");
-		final InstanceManager<Object> mgr = make(expectedRequests);
+		final InstanceManager<String, Object> mgr = make(expectedRequests);
 		mgr.assign(o1);
 		mgr.assign(o1);
 	}
@@ -133,7 +133,7 @@ public class InstanceManagerTests
 		Map<Object, String> expectedRequests = new HashMap<Object, String>();
 		Object o1 = new Object();
 		expectedRequests.put(o1, "abc");
-		final InstanceManager<Object> mgr = make(expectedRequests);
+		final InstanceManager<String, Object> mgr = make(expectedRequests);
 		mgr.assign(o1, 8);
 		assertEquals(Pair.of("abc",8), mgr.getInstance(o1));
 	}
@@ -146,7 +146,7 @@ public class InstanceManagerTests
 		Object o2 = new Object();
 		expectedRequests.put(o1, "abc");
 		expectedRequests.put(o2, "abc");
-		final InstanceManager<Object> mgr = make(expectedRequests);
+		final InstanceManager<String, Object> mgr = make(expectedRequests);
 		mgr.assign(o1, 8);
 		mgr.assign(o2, 8);
 	}
@@ -154,7 +154,7 @@ public class InstanceManagerTests
 	@Test
 	public void testNotFound() 
 	{
-		InstanceManager<Object> mgr = new InstanceManager<Object>(new Func<Object, String>() {
+		InstanceManager<String, Object> mgr = new InstanceManager<String, Object>(new Func<Object, String>() {
 			@Override
 			public String eval(Object arg) {
 				return "O_O";

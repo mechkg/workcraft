@@ -64,34 +64,37 @@ public abstract class AbstractModel implements Model {
 		public final Expression<? extends NodeContext> nodeContextTracker;
 	}
 	
-	public static DefaultControllerChain createDefaultControllerChain(Node root) {
-		;
-		final Expression<NodeContext> nodeContext = new HierarchySupervisor<NodeContext>(root, new NodeContextTracker());
-		return new DefaultControllerChain(
-		new DependantRemovingHierarchyController(
+	public static HierarchyController createDefaultControllerChain(Node root, final Expression<? extends NodeContext> context) {
+		return new DependantRemovingHierarchyController(
 				new DefaultHierarchyController(), new Func<Node, Collection<Node>>() {
 					@Override
 					public Collection<Node> eval(Node node) {
 						ArrayList<Node> result = new ArrayList<Node>();
 						result.addAll(GlobalCache.eval(node.children()));
-						result.addAll(GlobalCache.eval(nodeContext).getConnections(node));
+						result.addAll(GlobalCache.eval(context).getConnections(node));
 						return result;
 					}
 				}
-			), nodeContext);
+			);
 	}
 	
 	public static ModelSpecification createDefaultModelSpecification(Container root)
 	{
-		DefaultControllerChain c = createDefaultControllerChain(root);
+		final Expression<NodeContext> nodeContext = createDefaultNodeContext(root);
+		HierarchyController c = createDefaultControllerChain(root, nodeContext);
 		Expression<ReferenceManager> rm = new HierarchySupervisor<ReferenceManager>(root, new DefaultReferenceManager());
-		return new ModelSpecification(root, rm, c.hierarchyController, c.nodeContextTracker);
+		return new ModelSpecification(root, rm, c, nodeContext);
+	}
+
+	protected static HierarchySupervisor<NodeContext> createDefaultNodeContext(Container root) {
+		return new HierarchySupervisor<NodeContext>(root, new NodeContextTracker());
 	}
 	
 	public static ModelSpecification createDefaultModelSpecification(Container root, Expression<? extends ReferenceManager> rm)
 	{
-		DefaultControllerChain c = createDefaultControllerChain(root);
-		return new ModelSpecification(root, rm, c.hierarchyController, c.nodeContextTracker);
+		final Expression<NodeContext> nodeContext = createDefaultNodeContext(root);
+		HierarchyController c = createDefaultControllerChain(root, nodeContext);
+		return new ModelSpecification(root, rm, c, nodeContext);
 	}
 	
 	public Model getMathModel() {

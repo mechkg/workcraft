@@ -27,7 +27,6 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.ArgumentException;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.plugins.petri.Transition;
-import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
 @VisualClass(VisualSignalTransition.class)
 public class SignalTransition extends Transition implements StgTransition 
@@ -74,25 +73,12 @@ public class SignalTransition extends Transition implements StgTransition
 	public SignalTransition(StorageManager storage) {
 		super(storage);
 		type = storage.create(Type.INTERNAL);
-		direction = storage.create(Direction.TOGGLE);
-		signalName = storage.create(null);
 	}
 	
 	private final ModifiableExpression<Type> type;
-	private final ModifiableExpression<Direction> direction;
-	private final ModifiableExpression<String> signalName;
 
 	public ModifiableExpression<Type> signalType() {
 		return type;
-	}
-
-	public ModifiableExpression<Direction> direction() {
-		return direction;
-	}
-	
-	@NoAutoSerialisation
-	public ModifiableExpression<String> signalName() {
-		return signalName;
 	}
 
 	@Override

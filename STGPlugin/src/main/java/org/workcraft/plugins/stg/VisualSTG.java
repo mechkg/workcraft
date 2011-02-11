@@ -53,7 +53,7 @@ import org.workcraft.util.Hierarchy;
 @DefaultCreateButtons ( { STGPlace.class,  SignalTransition.class, DummyTransition.class } )
 @CustomToolButtons ( { STGSimulationTool.class } )  
 public class VisualSTG extends AbstractVisualModel {
-	private STG stg;
+	public final STG stg;
 	public StorageManager storage;
 
 	@Override
@@ -237,9 +237,8 @@ public class VisualSTG extends AbstractVisualModel {
 	}
 
 	public VisualSignalTransition createSignalTransition(String signalName, SignalTransition.Type type, Direction direction) {
-		SignalTransition transition = stg.createSignalTransition(signalName);
-		transition.signalType().setValue(type);
-		transition.direction().setValue(direction);
+		SignalTransition transition = stg.createSignalTransition(signalName, direction);
+		stg.signalType(transition).setValue(type);
 		VisualSignalTransition visualTransition = new VisualSignalTransition(transition, storage);
 		add(visualTransition);
 		return visualTransition;

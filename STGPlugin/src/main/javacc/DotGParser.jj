@@ -31,112 +31,7 @@ import org.workcraft.exceptions.NotFoundException;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class DotGParser {
-	private Map<String, Type> signals;
-	private Map<Pair<Node, Node>, STGPlace> implicitPlaces;
-	private STG stg;
-
-	private void init(StorageManager storage) {
-		signals = new HashMap<String, Type>();
-		stg = new STG(storage);
-		implicitPlaces = new HashMap<Pair<Node, Node>, STGPlace>();
-	}
-	
-	private Node getOrCreate (String name) {
-
-		Type t = signals.get (name);
-		
-		Node existing = eval(stg.referenceManager()).getNodeByReference(name);
-		
-		if (existing == null)
-			existing = eval(stg.referenceManager()).getNodeByReference(name+"/0");
-			
-		if (existing == null)
-		{
-			if (t==null)
-				existing = stg.createPlace(name);
-			else if (t.equals(Type.DUMMY))
-				existing = stg.createDummyTransition(name);
-			else
-				return getOrCreate(Triple.of(name, Direction.TOGGLE, 0));
-				//throw new FormatException (name + " was declared as " + t + ", but is referenced as DUMMY. Transition direction tag (+,-,~) expected.");
-		}
-		
-		return existing;
-	}
-	
-	private Node getOrCreate (Pair<String, Integer> ref)
-	{
-		String reference = stg.makeReference(ref);
-		String name = ref.getFirst();
-		Node existing = eval(stg.referenceManager()).getNodeByReference(reference);
-		
-		if (existing == null)
-		{
-			Type t = signals.get (name);
-			if (t == null || !t.equals(Type.DUMMY))
-				return getOrCreate(Triple.of(name, Direction.TOGGLE, ref.getSecond()));
-				//throw new FormatException (name + " is referenced as DUMMY but was not declared as such.");
-			else
-			{
-				DummyTransition dt = stg.createDummyTransition(null);
-				stg.setName(dt, reference);
-				dt.name().setValue(name);
-				existing = dt;
-			}
-		}
-		
-		return existing;
-	}
-	
-	private Node getOrCreate (Triple<String, Direction, Integer> ref) {
-		String reference = stg.makeReference(ref);
-		String name = ref.getFirst(); 
-		Node existing = eval(stg.referenceManager()).getNodeByReference (reference);
-		
-		if (existing == null)
-		{
-		
-			SignalTransition st = stg.createSignalTransition();
-			stg.setName (st, reference);
-			Type t = signals.get(name);
-			if (t==null)
-				throw new FormatException ("Undeclared signal encountered: " + name + 
-				" ("+reference+"). Possibly malformed header.");
-			st.signalType().setValue(t);
-			existing = st;
-		}
-		
-		return existing;
-	}
-	
-	private void createArc (Node first, Node second) {
-
-		try {
-			ConnectionResult result = stg.connect(first, second);
-			STGPlace implicitPlace = result.getImplicitPlace();
-			
-			if (implicitPlace != null)
-				implicitPlaces.put (Pair.of (first, second), implicitPlace);
-				
-		} catch (InvalidConnectionException e)
-		{
-			throw new FormatException ("Cannot create arc from " + eval(stg.referenceManager()).getNodeReference(first) +
-			 " to " + eval(stg.referenceManager()).getNodeReference(second) + ".", e);
-		}
-	}
-	
-	private void setSignalsType (List<String> list, Type type) {
-		for (String signal : list) {
-			if (signals.containsKey(signal))
-			{
-				Type prevType = signals.get(signal);
-				if (prevType != null && prevType.equals(type))
-					throw new FormatException (type + " signal \"" + signal + "\" was already listed as " + prevType);
-			}
-			else
-				signals.put(signal, type);
-		}
-	}
+  DotGParserHelper helper;
 }
 PARSER_END(DotGParser)
 
@@ -172,22 +67,22 @@ TOKEN :
 
 STG parse(StorageManager storage) : { }
 {
-	{ init(storage); }
+	{ helper = new DotGParserHelper(this, storage); }
 	 ( header() <LINEBREAK> )*
 	 graph()
 	 ( footer() <LINEBREAK> )*
 	 <EOF>
-	 {return stg;}
+	 {return helper.stg;}
 }
 
 void header() : { List<String> list; }
 {
   	(<LINEBREAK>)?
 	(
-	  	<INPUT_HEADER> list = signalList() { setSignalsType (list, Type.INPUT); }
-		|<OUTPUT_HEADER> list = signalList() { setSignalsType (list, Type.OUTPUT); }
-		|<INTERNAL_HEADER> list = signalList() { setSignalsType (list, Type.INTERNAL); }
-		|<DUMMY_HEADER> list = signalList() { setSignalsType (list, Type.DUMMY); }
+	  	<INPUT_HEADER> list = signalList() { helper.setSignalsType (list, Type.INPUT); }
+		|<OUTPUT_HEADER> list = signalList() { helper.setSignalsType (list, Type.OUTPUT); }
+		|<INTERNAL_HEADER> list = signalList() { helper.setSignalsType (list, Type.INTERNAL); }
+		|<DUMMY_HEADER> list = signalList() { helper.setSignalsType (list, Type.DUMMY); }
 		|<UNSUPPORTED_HEADER> <REST>
 	)
 }
@@ -251,7 +146,7 @@ STGPlace implicitPlaceReference() :
 {
 	("<" t1 = anyTransition() "," t2 = anyTransition() ">")
 	{
-		return implicitPlaces.get(Pair.of(t1,t2));
+		return helper.getImplicitPlace(t1,t2);
 	}
 }
 
@@ -264,7 +159,7 @@ STGPlace explicitPlaceReference() :
 {
 	( t = <NAME> { name = t.image; } )
 	{
-		return (STGPlace) eval(stg.referenceManager()).getNodeByReference (name);
+		return helper.getPlace(name);
 	}
 }
 
@@ -315,8 +210,8 @@ Node anyTransition() :
 {
 	(
 	  LOOKAHEAD(signalTransition())
-	  r = signalTransition() { t = getOrCreate(r); }
-	| r2 = dummyTransition() { t = getOrCreate(r2); }
+	  r = signalTransition() { t = helper.getOrCreate(r); }
+	| r2 = dummyTransition() { t = helper.getOrCreate(r2); }
 )
 	{
 		return t;
@@ -332,14 +227,14 @@ void graphLine() :
 	(
 	  LOOKAHEAD(<NAME>(<DIRECTION>|"/"))
 	  from = anyTransition()
-	| t = <NAME> { from = getOrCreate(t.image); }
+	| t = <NAME> { from = helper.getOrCreate(t.image); }
 	)
 
 	(
 		(
 	  LOOKAHEAD(<NAME>(<DIRECTION>|"/"))
 		to = anyTransition()
-		| t = <NAME> { to = getOrCreate(t.image); }
-		) { createArc(from, to); } 
+		| t = <NAME> { to = helper.getOrCreate(t.image); }
+		) { helper.createArc(from, to); } 
 	)* 	
 }

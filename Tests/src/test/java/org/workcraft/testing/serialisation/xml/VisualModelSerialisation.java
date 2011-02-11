@@ -77,6 +77,6 @@ public class VisualModelSerialisation {
 		DeserialisationResult mathResult = deserialiser.deserialise(mathData.getInputStream(), storage, null);
 		DeserialisationResult visualResult = deserialiser.deserialise(visualData.getInputStream(), storage, mathResult.referenceResolver);
 
-		SerialisationTestingUtils.compareNodes(visualstg.getRoot(), visualResult.model.getRoot());
+		SerialisationTestingUtils.compareNodes(visualstg, visualstg.getRoot(), visualResult.model, visualResult.model.getRoot());
 	}
 }

@@ -113,7 +113,7 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 
 	final DefaultGroupImpl groupImpl;
 	
-	private final Expression<Rectangle2D> contactLabelBB = createContactLabelBbExpression();
+	protected final Expression<Rectangle2D> contactLabelBB = createContactLabelBbExpression();
 	protected final Expression<Rectangle2D> totalBB = createTotalBbExpression();
 	
 	final Label nameLabel;
@@ -219,34 +219,6 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 		return (double)(Math.round((x)*2))/2;
 	}
 	
-	private void updateSidePosition(Rectangle2D labelBB, VisualContact contact) {
-		
-		double side_pos_w = snapP5(labelBB.getMinX()-contactLength);
-		double side_pos_e = snapP5(labelBB.getMaxX()+contactLength);
-		double side_pos_s = snapP5(labelBB.getMaxY()+contactLength);
-		double side_pos_n = snapP5(labelBB.getMinY()-contactLength);
-		
-		for (Node vn: eval(groupImpl.children())) {
-			if (vn instanceof VisualContact) {
-				VisualContact vc = (VisualContact)vn;
-				switch (eval(vc.direction())) {
-				case EAST:
-					vc.x().setValue(side_pos_e);
-					break;
-				case WEST:
-					vc.x().setValue(side_pos_w);
-					break;
-				case NORTH:
-					vc.y().setValue(side_pos_n);
-					break;
-				case SOUTH:
-					vc.y().setValue(side_pos_s);
-					break;
-				}
-			}
-		}
-	}
-	
 	public void addContact(VisualContact vc) {
 		if (!eval(children()).contains(vc)) {
 			((CircuitComponent)this.getReferencedComponent()).add(vc.getReferencedComponent());
@@ -260,8 +232,9 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 		return new ExpressionBase<Rectangle2D>(){
 			@Override
 			protected Rectangle2D evaluate(EvaluationContext context) {
-				Rectangle2D result = BoundingBoxHelper.mergeBoundingBoxes(Hierarchy.getChildrenOfType(VisualCircuitComponent.this, Touchable.class));
-				result = BoundingBoxHelper.union(result, context.resolve(contactLabelBB));
+				Rectangle2D result = context.resolve(contactLabelBB);
+				for(Node child : VisualCircuitComponent.this.getContacts(context))
+					result = BoundingBoxHelper.union(result, context.resolve(child.shape()).getBoundingBox());
 				return result;
 			}
 		};

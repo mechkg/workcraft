@@ -31,19 +31,16 @@ public class LabelParserTests {
 		
 	}
 	
-	@Test(expected = ArgumentException.class)
 	public void testWrongFormat1() {
-		LabelParser.parseFull("x/");
+		assertNull(LabelParser.parseFull("x/"));
 	}
 
-	@Test(expected = ArgumentException.class)
 	public void testWrongFormat2() {
-		LabelParser.parseFull("x@/3");
+		assertNull(LabelParser.parseFull("x@/3"));
 	}
 	
-	@Test(expected = ArgumentException.class)
 	public void testWrongFormat3() {
-		LabelParser.parseFull("x-/fifty");
+		assertNull(LabelParser.parseFull("x-/fifty"));
 	}
 	
 }

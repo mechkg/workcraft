@@ -23,6 +23,7 @@ package org.workcraft.plugins.stg;
 
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -31,7 +32,6 @@ import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleTuple;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
@@ -40,33 +40,32 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.util.listeners.Listener;
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
+import org.workcraft.dom.ModelSpecification;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.NodeContext;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.exceptions.InvalidConnectionException;
-import org.workcraft.exceptions.NotFoundException;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.gui.propertyeditor.Properties;
-import org.workcraft.observation.HierarchySupervisor;
 import org.workcraft.plugins.petri.PetriNet;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.SignalTransition.Type;
 import org.workcraft.plugins.stg.propertydescriptors.DummyNamePropertyDescriptor;
-import org.workcraft.plugins.stg.propertydescriptors.NamePropertyDescriptor;
 import org.workcraft.serialisation.References;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.util.Pair;
-import org.workcraft.util.SetUtils;
 import org.workcraft.util.Triple;
 
 public class STG extends AbstractModel implements STGModel {
 	
-	private final Expression<? extends STGReferenceManager> referenceManager;
+	private final Expression<? extends StgRefMan> referenceManager;
+	private final Expression<? extends StgTextRefMan> textReferenceManager;
 
 	private static class ConstructionInfo {
 		private final StorageManager storage;
@@ -76,9 +75,14 @@ public class STG extends AbstractModel implements STGModel {
 				this.root = new MathGroup(storage);
 			else
 				this.root = root;
-			this.referenceManager = new HierarchySupervisor<STGReferenceManager>(this.root, new STGReferenceManager(this.root, refs));
+			this.nodeContext = createDefaultNodeContext(this.root);
+			Pair<? extends Expression<? extends StgTextRefMan>, ? extends Expression<? extends StgRefMan>> p = STGReferenceManager.create(this.root, nodeContext, refs);
+			this.referenceManager = p.getSecond();
+			this.textReferenceManager = p.getFirst();
 		}
-		public final Expression<? extends STGReferenceManager>  referenceManager; 
+		public final Expression<? extends StgTextRefMan> textReferenceManager;
+		public final Expression<? extends StgRefMan>  referenceManager; 
+		public final Expression<? extends NodeContext>  nodeContext; 
 		public final Container root; 
 	}
 	
@@ -95,9 +99,10 @@ public class STG extends AbstractModel implements STGModel {
 	}
 	
 	public STG(ConstructionInfo info) {
-		super(createDefaultModelSpecification(info.root, info.referenceManager));
+		super(new ModelSpecification(info.root, info.textReferenceManager, createDefaultControllerChain(info.root, info.nodeContext), info.nodeContext));
 		storage = info.storage;
 		referenceManager = info.referenceManager;
+		textReferenceManager = info.textReferenceManager;
 		signalTypeConsistencySupervisor = new SignalTypeConsistencySupervisor(this);
 	}
 
@@ -125,7 +130,7 @@ public class STG extends AbstractModel implements STGModel {
 		newPlace.implicit().setValue(markAsImplicit);
 
 		if (name!=null)
-			setName(newPlace, name);
+			eval(referenceManager).setName(newPlace, name);
 
 		add(newPlace);
 
@@ -136,7 +141,7 @@ public class STG extends AbstractModel implements STGModel {
 	final public DummyTransition createDummyTransition(String name) {
 		DummyTransition newTransition = new DummyTransition(storage);
 		if (name!=null)
-			setName(newTransition, name);
+			eval(referenceManager).setInstance(newTransition, Pair.of(name, (Integer)null));
 		add(newTransition);
 		return newTransition;
 	}
@@ -144,11 +149,7 @@ public class STG extends AbstractModel implements STGModel {
 	public final StorageManager storage;
 	
 	final public SignalTransition createSignalTransition(String name) {
-		SignalTransition ret = new SignalTransition(storage);
-		if (name!=null)
-			setName(ret, name);
-		add(ret);
-		return ret;
+		return createSignalTransition(name, Direction.TOGGLE);
 	}
 
 	public boolean isEnabled(Transition t) {
@@ -171,8 +172,8 @@ public class STG extends AbstractModel implements STGModel {
 		return Hierarchy.getDescendantsOfType(getRoot(), SignalTransition.class);
 	}
 
-	final public Collection<Place> getPlaces() {
-		return Hierarchy.getDescendantsOfType(getRoot(), Place.class);
+	final public Collection<STGPlace> getPlaces() {
+		return Hierarchy.getDescendantsOfType(getRoot(), STGPlace.class);
 	}
 
 	final public Collection<Transition> getTransitions() {
@@ -180,15 +181,8 @@ public class STG extends AbstractModel implements STGModel {
 	}
 
 	@Override
-	public Collection<Transition> getDummies() {
-		return Hierarchy.getDescendantsOfType(getRoot(), Transition.class, new Func<Transition, Boolean>(){
-			@Override
-			public Boolean eval(Transition arg) {
-				if (arg instanceof SignalTransition)
-					return false;
-				return true;
-			}
-		});
+	public Collection<DummyTransition> getDummies() {
+		return Hierarchy.getDescendantsOfType(getRoot(), DummyTransition.class);
 	}
 
 	public Collection<SignalTransition> getSignalTransitions(final Type t) {
@@ -206,31 +200,52 @@ public class STG extends AbstractModel implements STGModel {
 
 	public Set<String> getDummyNames() {
 		Set<String> result = new HashSet<String>();
-		for (Transition t : getDummies())
-			result.add(eval(referenceManager).getNamePair(t).getFirst());
+		for (DummyTransition t : getDummies())
+			result.add(eval(referenceManager).getInstance(t).getFirst());
 		return result;
 	}
 
 	private Set<String> getUniqueNames(Collection<SignalTransition> transitions) {
 		Set<String> result = new HashSet<String>();
 		for (SignalTransition st : transitions)
-			result.add(GlobalCache.eval(st.signalName()));
+			result.add(GlobalCache.eval(signalName(st)));
 		return result;
 	}
 
-	public ModifiableExpression<Integer> instanceNumber (final Node st) {
-		return new ModifiableExpressionBase<Integer>() {
-			@Override
-			public void setValue(Integer newValue) {
-				eval(referenceManager).setInstanceNumber(st, newValue);
-			}
+	public ModifiableExpression<Integer> instanceNumber (final Transition t) {
+		if(t instanceof SignalTransition) {
+			final SignalTransition st = (SignalTransition)t;
+			
+			return new ModifiableExpressionBase<Integer>() {
+				@Override
+				public void setValue(Integer newValue) {
+					StgRefMan refMan = eval(referenceManager);
+					refMan.setInstance(st, Pair.of(refMan.getInstance(st).getFirst(), newValue));
+				}
 
-			@Override
-			protected Integer evaluate(EvaluationContext context) {
-				return context.resolve(referenceManager).getInstanceNumber(st);
-			}
+				@Override
+				protected Integer evaluate(EvaluationContext context) {
+					return context.resolve(referenceManager).getInstance(st).getSecond();
+				}
+			};
+		}
+		else {
+			final DummyTransition dt = (DummyTransition)t;
+			
+			return new ModifiableExpressionBase<Integer>() {
+				@Override
+				public void setValue(Integer newValue) {
+					StgRefMan refMan = eval(referenceManager);
+					refMan.setInstance(dt, Pair.of(refMan.getInstance(dt).getFirst(), newValue));
+				}
 
-		};
+				@Override
+				protected Integer evaluate(EvaluationContext context) {
+					return context.resolve(referenceManager).getInstance(dt).getSecond();
+				}
+			};
+			
+		}
 	}
 	
 	public String makeReference (Pair<String, Integer> label) {
@@ -245,12 +260,19 @@ public class STG extends AbstractModel implements STGModel {
 		return name+label.getSecond()+"/"+((instance==null)?0:instance);
 	}
 
-	public String getName(Node node) {
-		return eval(referenceManager).getName(node);
-	}
+	public ModifiableExpression<String> name(final STGPlace node) {
+		return new ModifiableExpressionBase<String>() {
 
-	public void setName(Node node, String name) {
-		eval(referenceManager).setName(node, name);
+			@Override
+			public void setValue(String newValue) {
+				eval(referenceManager).setName(node, newValue);
+			}
+
+			@Override
+			protected String evaluate(EvaluationContext context) {
+				return context.resolve(referenceManager).getName(node);
+			}
+		};
 	}
 
 	@Override
@@ -258,11 +280,19 @@ public class STG extends AbstractModel implements STGModel {
 		Properties.Mix result = new Properties.Mix();
 		if (node instanceof STGPlace) {
 			if (!eval(((STGPlace) node).implicit()))
-				result.add (new NamePropertyDescriptor(this, node));
+				result.add (ExpressionPropertyDeclaration.create("Name", name((STGPlace)node), String.class));
 		}
 		if (node instanceof SignalTransition) {
 			SignalTransition transition = (SignalTransition)node;
 			result.add(ExpressionPropertyDeclaration.create("Signal name", signalName(transition), String.class));
+
+			LinkedHashMap<String, Object> directions = new LinkedHashMap<String, Object>();
+			directions.put("+", SignalTransition.Direction.PLUS);
+			directions.put("-", SignalTransition.Direction.MINUS);
+			directions.put("", SignalTransition.Direction.TOGGLE);
+			
+			result.add(ExpressionPropertyDeclaration.create("Transition direction", direction(transition), direction(transition), SignalTransition.Direction.class, directions));
+			
 			result.add(ExpressionPropertyDeclaration.create("Instance", instanceNumber(transition), Integer.class));
 					
 			LinkedHashMap<String, Object> types = new LinkedHashMap<String, Object>();
@@ -274,24 +304,27 @@ public class STG extends AbstractModel implements STGModel {
 			result.add(ExpressionPropertyDeclaration.create("Signal type", signalType, signalType, SignalTransition.Type.class, types));
 		} if (node instanceof DummyTransition) {
 			result.add(new DummyNamePropertyDescriptor(this, (DummyTransition) node));
-			result.add(ExpressionPropertyDeclaration.create("Instance", instanceNumber(node), Integer.class));
+			result.add(ExpressionPropertyDeclaration.create("Instance", instanceNumber((DummyTransition)node), Integer.class));
 		}
 		return result;
 	}
 
 	public ModifiableExpression<String> signalName(final SignalTransition transition) {
-		return new ModifiableExpression<String>() {
+		return new ModifiableExpressionBase<String>() {
 
 			@Override
-			public ValueHandleTuple<? extends String> getValue(Listener subscriber) {
-				return transition.signalName().getValue(subscriber);
+			protected String evaluate(EvaluationContext context) {
+				Pair<Pair<String, Direction>, Integer> instance = context.resolve(referenceManager).getInstance(transition);
+				Pair<String, Direction> signalEdge = instance.getFirst();
+				return signalEdge.getFirst();
 			}
 
 			@Override
 			public void setValue(String newValue) {
-				String oldValue = eval(this);
-				STG.this.setName(transition, newValue);
-				signalTypeConsistencySupervisor.nameChanged(transition, oldValue, newValue);
+				StgRefMan refMan = eval(referenceManager);
+				Pair<Pair<String, Direction>, Integer> oldInstance = refMan.getInstance(transition);
+				refMan.setInstance(transition, Pair.of(Pair.of(newValue, oldInstance.getFirst().getSecond()), (Integer)null));
+				signalTypeConsistencySupervisor.nameChanged(transition, oldInstance.getFirst().getFirst(), newValue);
 			}
 		};
 	}
@@ -314,7 +347,13 @@ public class STG extends AbstractModel implements STGModel {
 	}
 
 	public Collection<SignalTransition> getSignalTransitions(String signalName) {
-		return eval(referenceManager).getSignalTransitions(signalName);
+		Collection<SignalTransition> allTransitions = getSignalTransitions();
+		ArrayList<SignalTransition> result = new ArrayList<SignalTransition>();
+		for(SignalTransition signal : allTransitions) {
+			if(eval(signalName(signal)).equals(signalName))
+				result.add(signal);
+		}
+		return result;
 	}
 
 	public ConnectionResult connect(Node first, Node second) throws InvalidConnectionException {
@@ -345,62 +384,9 @@ public class STG extends AbstractModel implements STGModel {
 		return con;
 	}
 	
-	ExpressionBase<ReferenceManager> completeReferenceManager = new ExpressionBase<ReferenceManager>(){
-
-		@Override
-		protected ReferenceManager evaluate(final EvaluationContext context) {
-			return new ReferenceManager(){
-
-				@Override
-				public String getNodeReference(Node node) {
-					if(node instanceof STGPlace)
-					{
-						if(context.resolve(((STGPlace) node).implicit())) {
-							Set<Node> preset = context.resolve(nodeContext()).getPreset(node);
-							Set<Node> postset = context.resolve(nodeContext()).getPostset(node);
-							
-							if (!(preset.size()==1 && postset.size()==1))
-								throw new RuntimeException ("An implicit place cannot have more that one transition in its preset or postset.");
-
-							return "<"+context.resolve(referenceManager).getNodeReference(preset.iterator().next()) 
-										+ "," + context.resolve(referenceManager).getNodeReference(postset.iterator().next()) + ">";
-						} else
-							return context.resolve(referenceManager).getNodeReference(node);
-					} else
-						return context.resolve(referenceManager).getNodeReference(node);
-				}
-
-				@Override
-				public Node getNodeByReference(String reference) {
-					Pair<String, String> implicitPlaceTransitions = LabelParser.parseImplicitPlaceReference(reference);
-					if (implicitPlaceTransitions!=null) {
-
-						Node t1 = context.resolve(referenceManager).getNodeByReference(implicitPlaceTransitions.getFirst());
-						Node t2 = context.resolve(referenceManager).getNodeByReference(implicitPlaceTransitions.getSecond());
-
-						Set<Node> implicitPlaceCandidates = SetUtils.intersection(context.resolve(nodeContext()).getPreset(t2), context.resolve(nodeContext()).getPostset(t1));
-
-						for (Node node : implicitPlaceCandidates) {
-							if (node instanceof STGPlace) {
-								if (context.resolve(((STGPlace) node).implicit()))
-									return node;
-							}
-						}
-
-						throw new NotFoundException("Implicit place between " + implicitPlaceTransitions.getFirst() +
-								" and " + implicitPlaceTransitions.getSecond() + " does not exist.");
-					}	else
-						return context.resolve(referenceManager).getNodeByReference(reference); 			
-				}
-				
-			};
-		}
-		
-	};
-
 	public void makeExplicit(STGPlace implicitPlace) {
 		implicitPlace.implicit().setValue(false);
-		eval(referenceManager).setDefaultNameIfUnnamed(implicitPlace);
+		eval(referenceManager).setName(implicitPlace, null);
 	}
 
 	public DummyTransition createDummyTransition() {
@@ -409,7 +395,37 @@ public class STG extends AbstractModel implements STGModel {
 
 	@Override
 	public Expression<? extends ReferenceManager> referenceManager() {
-		return completeReferenceManager;
+		return textReferenceManager;
+	}
+
+	public ModifiableExpression<Direction> direction(final SignalTransition transition) {
+		return new ModifiableExpressionBase<SignalTransition.Direction>() {
+
+			@Override
+			public void setValue(Direction newValue) {
+				StgRefMan refMan = eval(referenceManager);
+				Pair<Pair<String, Direction>, Integer> oldInstance = refMan.getInstance(transition);
+				refMan.setInstance(transition, Pair.of(Pair.of(oldInstance.getFirst().getFirst(), newValue), (Integer)null));
+			}
+
+			@Override
+			protected Direction evaluate(EvaluationContext context) {
+				return context.resolve(referenceManager).getInstance(transition).getFirst().getSecond();
+			}
+		};
+		
+	}
+
+	public void setName(MathNode node, String newName) {
+		eval(textReferenceManager).setName(node, newName);
+	}
+
+	public SignalTransition createSignalTransition(String name, Direction direction) {
+		SignalTransition ret = new SignalTransition(storage);
+		if (name!=null)
+			eval(referenceManager).setInstance(ret, Pair.of(Pair.of(name, direction), (Integer)null));
+		add(ret);
+		return ret;
 	}
 
 }

@@ -94,9 +94,8 @@ public class StgModelStgBuilder implements StgBuilder {
 	public StgModelStgTransition buildSignalTransition(Type type, String name, Direction direction)
 	{
 		
-		SignalTransition transition = model.createSignalTransition(name);
-		transition.signalType().setValue(type);
-		transition.direction().setValue(direction);
+		SignalTransition transition = model.createSignalTransition(name, direction);
+		model.signalType(transition).setValue(type);
 		return new StgModelStgTransition(transition);
 	}
 

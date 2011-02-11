@@ -29,6 +29,7 @@ import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathGroup;
@@ -40,8 +41,10 @@ import org.workcraft.dom.visual.connections.Polyline;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.VisualPlace;
+import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.VisualImplicitPlaceArc;
 import org.workcraft.plugins.stg.SignalTransition;
+import org.workcraft.plugins.stg.VisualSTG;
 import org.workcraft.plugins.stg.VisualSignalTransition;
 
 public class SerialisationTestingUtils {
@@ -50,14 +53,14 @@ public class SerialisationTestingUtils {
 		//assertEquals(p1.getCapacity(), p2.getCapacity());
 	}
 	
-	public static void compareTransitions (SignalTransition t1, SignalTransition t2) {
-		assertEquals(eval(t1.signalName()), eval(t2.signalName()));
-		assertEquals(eval(t1.direction()), eval(t2.direction()));
+	public static void compareTransitions (STG stg1, SignalTransition t1, STG stg2, SignalTransition t2) {
+		assertEquals(eval(stg1.signalName(t1)), eval(stg2.signalName(t2)));
+		assertEquals(eval(stg1.direction(t1)), eval(stg2.direction(t2)));
 	}
 	
-	public static void compareConnections (MathConnection con1, MathConnection con2) {
-		compareNodes (con1.getFirst(), con2.getFirst());
-		compareNodes (con1.getSecond(), con2.getSecond());
+	public static void compareConnections (Model model1, MathConnection con1, Model model2, MathConnection con2) {
+		compareNodes (model1, con1.getFirst(), model2, con2.getFirst());
+		compareNodes (model1, con1.getSecond(), model2, con2.getSecond());
 	}
 	
 	public static void comparePreAndPostSets(VisualComponent c1, VisualComponent c2) {
@@ -117,26 +120,26 @@ public class SerialisationTestingUtils {
 		comparePlaces (p1.getReferencedPlace(), p2.getReferencedPlace());
 	}
 	
-	public static void compareVisualSignalTransitions (VisualSignalTransition t1, VisualSignalTransition t2) {
+	public static void compareVisualSignalTransitions (VisualSTG stg1, VisualSignalTransition t1, VisualSTG stg2, VisualSignalTransition t2) {
 		//assertEquals(t1.getID(), t2.getID());
 		assertEquals(eval(t1.transform()), eval(t2.transform()));
 		
-		compareTransitions (t1.getReferencedTransition(), t2.getReferencedTransition());
+		compareTransitions (stg1.stg, t1.getReferencedTransition(), stg2.stg, t2.getReferencedTransition());
 	}
 	
-	public static void compareVisualConnections (VisualConnection vc1, VisualConnection vc2) {
-		compareNodes (vc1.getFirst(), vc2.getFirst());
-		compareNodes (vc1.getSecond(), vc2.getSecond());
+	public static void compareVisualConnections (VisualSTG stg1, VisualConnection vc1, VisualSTG stg2, VisualConnection vc2) {
+		compareNodes (stg1, vc1.getFirst(), stg2, vc2.getFirst());
+		compareNodes (stg1, vc1.getSecond(), stg2, vc2.getSecond());
 		
-		compareConnections (vc1.getReferencedConnection(), vc2.getReferencedConnection());
+		compareConnections (stg1.stg, vc1.getReferencedConnection(), stg2.stg, vc2.getReferencedConnection());
 	}
 	
-	public static void compareImplicitPlaceArcs (VisualImplicitPlaceArc vc1, VisualImplicitPlaceArc vc2) {
-		compareNodes (vc1.getFirst(), vc2.getFirst());
-		compareNodes (vc1.getSecond(), vc2.getSecond());
+	public static void compareImplicitPlaceArcs (VisualSTG stg1, VisualImplicitPlaceArc vc1, VisualSTG stg2, VisualImplicitPlaceArc vc2) {
+		compareNodes (stg1, vc1.getFirst(), stg2, vc2.getFirst());
+		compareNodes (stg1, vc1.getSecond(), stg2, vc2.getSecond());
 		comparePlaces (vc1.getImplicitPlace(), vc2.getImplicitPlace());
-		compareConnections (vc1.getRefCon1(), vc2.getRefCon1());
-		compareConnections (vc1.getRefCon2(), vc2.getRefCon2());
+		compareConnections (stg1.stg, vc1.getRefCon1(), stg2.stg, vc2.getRefCon1());
+		compareConnections (stg1.stg, vc1.getRefCon2(), stg2.stg, vc2.getRefCon2());
 	}
 	
 	public static void comparePolylines(Polyline p1, Polyline p2) {
@@ -155,7 +158,7 @@ public class SerialisationTestingUtils {
 		}
 	}
 	
-	public static void compareNodes (Node node1, Node node2) {
+	public static void compareNodes (Model model1, Node node1, Model model2, Node node2) {
 		assertEquals(node1.getClass(), node2.getClass());
 		
 		if (node1 instanceof MathNode)
@@ -166,17 +169,17 @@ public class SerialisationTestingUtils {
 		if (node1 instanceof Place)
 			comparePlaces ((Place)node1, (Place)node2);
 		else if (node1 instanceof MathConnection)
-			compareConnections ( (MathConnection)node1, (MathConnection)node2 );
+			compareConnections (model1, (MathConnection)node1, model2, (MathConnection)node2 );
 		else if (node1 instanceof SignalTransition)
-			compareTransitions ( (SignalTransition)node1, (SignalTransition)node2 );
+			compareTransitions ((STG)model1, (SignalTransition)node1, (STG)model2, (SignalTransition)node2 );
 		else if (node1 instanceof VisualPlace)
 			compareVisualPlaces ( (VisualPlace)node1, (VisualPlace)node2 );
 		else if (node1 instanceof VisualSignalTransition)
-			compareVisualSignalTransitions ( (VisualSignalTransition)node1, (VisualSignalTransition)node2 );
+			compareVisualSignalTransitions ((VisualSTG)model1, (VisualSignalTransition)node1, (VisualSTG)model2, (VisualSignalTransition)node2 );
 		else if (node1 instanceof VisualImplicitPlaceArc)
-			compareImplicitPlaceArcs ( (VisualImplicitPlaceArc)node1, (VisualImplicitPlaceArc)node2 );
+			compareImplicitPlaceArcs ((VisualSTG)model1, (VisualImplicitPlaceArc)node1, (VisualSTG)model2, (VisualImplicitPlaceArc)node2 );
 		else if (node1 instanceof VisualConnection)
-			compareVisualConnections ( (VisualConnection)node1, (VisualConnection)node2 );
+			compareVisualConnections ((VisualSTG)model1, (VisualConnection)node1, (VisualSTG)model2, (VisualConnection)node2 );
 		else if (node1 instanceof Polyline)
 			comparePolylines((Polyline)node1, (Polyline)node2);
 		else if (node1 instanceof MathGroup);
@@ -196,7 +199,7 @@ public class SerialisationTestingUtils {
 			Node n1 = i1.next();
 			Node n2 = i2.next();
 			
-			compareNodes (n1, n2);
+			compareNodes (model1, n1, model2, n2);
 		}
 	}
 	

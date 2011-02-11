@@ -5,8 +5,8 @@ import java.util.Collection;
 import org.workcraft.dom.math.MathModel;
 
 public interface PetriNetModel extends MathModel {
-	public Collection<Transition> getTransitions();
-	public Collection<Place> getPlaces();
+	public Collection<? extends Transition> getTransitions();
+	public Collection<? extends Place> getPlaces();
 	
 	public Place createPlace(String name);
 	public Place createPlace();

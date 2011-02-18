@@ -42,7 +42,8 @@ public class Expressions {
 
 	public static <T2, T1  extends T2>ModifiableExpression<T2> cast(
 			final ModifiableExpression<T1> expr,
-			final Class<T1> cls) {
+			final Class<T1> cls,
+			final Class<T2> cls2) {
 		return new ModifiableExpressionImpl<T2>() {
 
 			@Override

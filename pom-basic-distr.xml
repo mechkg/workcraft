@@ -59,6 +59,7 @@
   <plugin>
    <groupId>com.keyboardsamurais.maven</groupId>
    <artifactId>maven-timestamp-plugin</artifactId>
+   <version>0.1</version>
    <configuration>
     <propertyName>timestamp</propertyName>
     <timestampPattern>dd-MM-yyyy-HH-mm</timestampPattern>

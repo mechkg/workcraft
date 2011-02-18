@@ -48,9 +48,7 @@ public class VisualModelSerialisation {
 		VisualSTG visualstg = new VisualSTG(stg, new HistoryPreservingStorageManager());
 
 		RandomLayout layout = new RandomLayout();
-		WorkspaceEntry we = new WorkspaceEntry(null);
-		
-		we.setModelEntry(new ModelEntry(new STGModelDescriptor(), visualstg, new HistoryPreservingStorageManager()));
+		WorkspaceEntry we = new WorkspaceEntry(null, new ModelEntry(new STGModelDescriptor(), visualstg, new HistoryPreservingStorageManager()));
 		
 		layout.run(we);
 

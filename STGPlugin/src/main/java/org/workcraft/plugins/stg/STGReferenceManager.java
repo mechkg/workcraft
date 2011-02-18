@@ -206,7 +206,8 @@ public class STGReferenceManager implements StgRefMan, HierarchyObservingState<S
 
 	public static Pair<? extends StgTextRefMan, ? extends StgRefMan> create(Node root, Expression<? extends NodeContext> nodeContext, References refs) {
 		final STGReferenceManager rm = new STGReferenceManager();
+		Pair<StgTextReferenceManager, STGReferenceManager> result = Pair.of(new StgTextReferenceManager(root, nodeContext, rm, refs), rm);
 		rm.startHierarchySupervision(root);
-		return Pair.of(new StgTextReferenceManager(root, nodeContext, rm, refs), rm);
+		return result;
 	}
 }

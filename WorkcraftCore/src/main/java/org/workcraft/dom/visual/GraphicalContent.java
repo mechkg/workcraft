@@ -1,5 +1,15 @@
 package org.workcraft.dom.visual;
 
+import java.awt.Graphics2D;
+
 public interface GraphicalContent {
-	public void draw(DrawRequest request);
+	class Empty implements GraphicalContent {
+		@Override
+		public void draw(Graphics2D graphics) {
+		}
+	}
+
+	public final static Empty empty = new Empty();
+	
+	public void draw(Graphics2D graphics);
 }

@@ -33,6 +33,9 @@ import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.Document;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
@@ -171,5 +174,33 @@ public class GUI {
 		int minSize = iconSize+Math.max(insets.left+insets.right, insets.top+insets.bottom);
 		result.setPreferredSize(new Dimension(minSize, minSize));
 		return result;
+	}
+	
+	public static Graphics2D cloneGraphics(Graphics2D g) {
+		return (Graphics2D)g.create();
+	}
+	
+	public static Expression<? extends GraphicalContent> statePreserving(final Expression<? extends GraphicalContent> content) {
+		return new ExpressionBase<GraphicalContent>(){
+
+			@Override
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent(){
+
+					@Override
+					public void draw(Graphics2D graphics) {
+						final Graphics2D g = cloneGraphics(graphics);
+						try {
+							context.resolve(content).draw(g);
+						}
+						finally {
+							g.dispose();
+						}
+					}
+					
+				};
+			}
+			
+		};
 	}
 }

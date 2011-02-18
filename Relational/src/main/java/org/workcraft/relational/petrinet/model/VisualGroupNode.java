@@ -16,7 +16,7 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TransformHelper;
@@ -124,15 +124,15 @@ public class VisualGroupNode implements DrawableNew, MovableNew, Container{
 	}
 
 	@Override
-	public ExpressionBase<GraphicalContent> graphicalContent() {
-		return new ExpressionBase<GraphicalContent>() {
+	public ExpressionBase<DeprecatedGraphicalContent> graphicalContent() {
+		return new ExpressionBase<DeprecatedGraphicalContent>() {
 
 			@Override
-			public GraphicalContent evaluate(EvaluationContext resolver) {
+			public DeprecatedGraphicalContent evaluate(EvaluationContext resolver) {
 				final Rectangle2D bb = resolver.resolve(localSpaceShape).getBoundingBox();
 				final Node parent = resolver.resolve(parent());
 				
-				return new GraphicalContent() {
+				return new DeprecatedGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest r) {

@@ -30,7 +30,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dom.visual.SimpleGraphicalContent;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
@@ -61,16 +61,16 @@ public class NodeGeneratorTool extends AbstractTool {
 	}
 
 	@Override
-	public Expression<? extends SimpleGraphicalContent> userSpaceContent() {
-		return Expressions.constant(SimpleGraphicalContent.Empty.INSTANCE);
+	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus) {
+		return Expressions.constant(GraphicalContent.empty);
 	}
 
 	@Override
-	public Expression<? extends SimpleGraphicalContent> screenSpaceContent(final Viewport viewport) {
-		return new ExpressionBase<SimpleGraphicalContent>(){
+	public Expression<? extends GraphicalContent> screenSpaceContent(final Viewport viewport, Expression<Boolean> hasFocus) {
+		return new ExpressionBase<GraphicalContent>(){
 			@Override
-			protected SimpleGraphicalContent evaluate(final EvaluationContext context) {
-				return new SimpleGraphicalContent(){
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent(){
 					@Override
 					public void draw(Graphics2D g) {
 						GUI.drawEditorMessage(viewport, g, Color.BLACK, "Click to create a " + generator.getLabel(), context);	
@@ -83,10 +83,4 @@ public class NodeGeneratorTool extends AbstractTool {
 	public int getHotKeyCode() {
 		return generator.getHotKeyCode();
 	}
-
-	@Override
-	public Expression<? extends Decorator> getDecorator() {
-		return Expressions.constant(Decorator.Empty.INSTANCE);
-	}
-
 }

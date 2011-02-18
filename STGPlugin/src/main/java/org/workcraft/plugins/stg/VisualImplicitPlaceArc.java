@@ -37,7 +37,7 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.gui.Coloriser;
@@ -117,16 +117,16 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 	}
 
 	@Override
-	public Expression<? extends GraphicalContent> graphicalContent() {
+	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
 		
-		final Expression<? extends GraphicalContent> superGraphicalContent = super.graphicalContent();
-		return new ExpressionBase<GraphicalContent>() {
+		final Expression<? extends DeprecatedGraphicalContent> superGraphicalContent = super.graphicalContent();
+		return new ExpressionBase<DeprecatedGraphicalContent>() {
 
 			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
+			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
 				final int tokens = context.resolve(tokens());
 				
-				return new GraphicalContent() {
+				return new DeprecatedGraphicalContent() {
 
 					@Override
 					public void draw(DrawRequest r) {

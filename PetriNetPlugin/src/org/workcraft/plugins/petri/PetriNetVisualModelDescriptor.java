@@ -49,7 +49,7 @@ public class PetriNetVisualModelDescriptor implements VisualModelDescriptor {
 	}
 
 	private final static class TransitionGenerator implements NodeGenerator {
-		Icon icon = GUI.createIconFromSVG("images/icons/svg/signal-transition.svg");
+		Icon icon = GUI.createIconFromSVG("images/icons/svg/transition.svg");
 
 		@Override
 		public Icon getIcon() {
@@ -58,7 +58,7 @@ public class PetriNetVisualModelDescriptor implements VisualModelDescriptor {
 
 		@Override
 		public String getLabel() {
-			return "Signal Transition";
+			return "Transition";
 		}
 
 		@Override

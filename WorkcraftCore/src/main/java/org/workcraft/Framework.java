@@ -83,6 +83,9 @@ import org.xml.sax.SAXException;
 
 
 public class Framework {
+
+	
+	
 	public static final String FRAMEWORK_VERSION_MAJOR = "2";
 	public static final String FRAMEWORK_VERSION_MINOR = "dev";
 	
@@ -466,6 +469,7 @@ public class Framework {
 	public PluginManager getPluginManager() {
 		return pluginManager;
 	}
+	
 
 	public TaskManager getTaskManager() {
 		return taskManager;
@@ -700,4 +704,10 @@ public class Framework {
 	public Config getConfig() {
 		return config;
 	}
+	
+	public void gavno(int x)
+	{
+		
+	}
+
 }

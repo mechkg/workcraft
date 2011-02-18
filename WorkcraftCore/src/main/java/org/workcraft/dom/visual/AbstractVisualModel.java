@@ -37,7 +37,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.workcraft.NodeFactory;
 import org.workcraft.annotations.MouseListeners;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
@@ -75,7 +74,6 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		};
 	};
 	private final ModifiableExpression<PSet<Node>> selection;
-	private final ExpressionBase<HierarchicalGraphicalContent> graphicalContent;
 
 	public AbstractVisualModel(VisualGroup root, StorageManager storage) {
 		this (null, root, storage);
@@ -123,7 +121,6 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		selection = storage.<PSet<Node>>create(HashTreePSet.<Node>empty());
 		
 		currentLevel.setValue(param.root);
-		graphicalContent = makeGraphicalContent();
 	}
 
 	protected final void createDefaultFlatStructure() throws NodeCreationException {
@@ -156,16 +153,7 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 			add(vc);
 		}
 	}
-
-	@Override
-	public ExpressionBase<HierarchicalGraphicalContent> graphicalContent() {
-		return graphicalContent;
-	}
 	
-	private ExpressionBase<HierarchicalGraphicalContent> makeGraphicalContent() {
-		return new DrawMan(this).graphicalContent(getRoot());
-	}
-
 	@Override
 	public ModifiableExpression<PSet<Node>> selection() {
 		return selection;

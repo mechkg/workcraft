@@ -33,7 +33,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.dom.visual.SimpleGraphicalContent;
+import org.workcraft.dom.visual.GraphicalContent;
 
 /**
  * The <code>Ruler</code> is used to displays a ruler-style header for the
@@ -108,7 +108,7 @@ public class Ruler {
 		return size;
 	}
 
-	class RulerState implements SimpleGraphicalContent {
+	class RulerState implements GraphicalContent {
 		
 		private final Rectangle shape;
 
@@ -226,7 +226,7 @@ public class Ruler {
 		setShape(shape.x, shape.y, shape.width, shape.height);
 	}
 	
-	public Expression<? extends SimpleGraphicalContent> graphicalContent(){
+	public Expression<? extends GraphicalContent> graphicalContent(){
 		return state;
 	}
 

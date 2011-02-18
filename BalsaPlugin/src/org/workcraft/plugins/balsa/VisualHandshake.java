@@ -35,7 +35,7 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.plugins.balsa.handshakebuilder.Handshake;
@@ -60,9 +60,9 @@ public class VisualHandshake extends VisualComponent {
 	}
 
 	@Override
-	public Expression<? extends GraphicalContent> graphicalContent() {
+	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
 		// TODO Auto-generated method stub
-		return Expressions.constant(new GraphicalContent(){
+		return Expressions.constant(new DeprecatedGraphicalContent(){
 			
 			@Override
 			public void draw(DrawRequest r) {

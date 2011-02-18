@@ -18,7 +18,6 @@ import org.workcraft.dom.NodeContext;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.visual.DrawMan;
-import org.workcraft.dom.visual.HierarchicalGraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.exceptions.InvalidConnectionException;
@@ -105,11 +104,6 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 	@Override
 	public MathModel getMathModel() {
 		return null;
-	}
-
-	@Override
-	public ExpressionBase<HierarchicalGraphicalContent> graphicalContent() {
-		return new DrawMan(this).graphicalContent(getRoot());
 	}
 
 	@Override

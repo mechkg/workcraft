@@ -19,7 +19,7 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.circuit.Contact.IoType;
@@ -261,13 +261,13 @@ public class VisualFunctionComponent extends VisualCircuitComponent implements C
 	}*/
 	
 	@Override
-	public Expression<? extends GraphicalContent> graphicalContent() {
-		final Expression<? extends GraphicalContent> superGraphicalContent = super.graphicalContent();
-		return new ExpressionBase<GraphicalContent>(){
+	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
+		final Expression<? extends DeprecatedGraphicalContent> superGraphicalContent = super.graphicalContent();
+		return new ExpressionBase<DeprecatedGraphicalContent>(){
 
 			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
-				return new GraphicalContent() {
+			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
+				return new DeprecatedGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest r) {

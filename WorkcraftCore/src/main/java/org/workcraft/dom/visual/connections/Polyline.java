@@ -47,7 +47,7 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.util.Geometry;
@@ -310,10 +310,10 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 	}
 
 	@Override
-	public ExpressionBase<GraphicalContent> graphicalContent() {
-		return new ExpressionBase<GraphicalContent>() {
+	public ExpressionBase<DeprecatedGraphicalContent> graphicalContent() {
+		return new ExpressionBase<DeprecatedGraphicalContent>() {
 			@Override
-			public GraphicalContent evaluate(EvaluationContext resolver) {
+			public DeprecatedGraphicalContent evaluate(EvaluationContext resolver) {
 				
 				final Path2D connectionPath = new Path2D.Double();
 
@@ -338,7 +338,7 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 				
 				final VisualConnectionProperties connInfo = resolver.resolve(connectionInfo);
 
-				return new GraphicalContent() {
+				return new DeprecatedGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest r) {

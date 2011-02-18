@@ -34,7 +34,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
-import org.workcraft.dom.visual.SimpleGraphicalContent;
+import org.workcraft.dom.visual.GraphicalContent;
 
 
 /**
@@ -256,12 +256,12 @@ public class Grid {
 	 * @param g
 	 * Graphics2D object for the component the viewport is drawn onto.
 	 */
-	public Expression<? extends SimpleGraphicalContent> graphicalContent() {
-		return new ExpressionBase<SimpleGraphicalContent>(){
+	public Expression<? extends GraphicalContent> graphicalContent() {
+		return new ExpressionBase<GraphicalContent>(){
 
 			@Override
-			protected SimpleGraphicalContent evaluate(final EvaluationContext context) {
-				return new SimpleGraphicalContent() {
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent() {
 
 					@Override
 					public void draw(Graphics2D g) {

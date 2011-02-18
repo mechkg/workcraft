@@ -33,7 +33,7 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
@@ -73,11 +73,11 @@ public class VisualJoint extends VisualComponent {
 	}
 
 	@Override
-	public Expression<? extends GraphicalContent> graphicalContent() {
-		return new ExpressionBase<GraphicalContent>(){
+	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
+		return new ExpressionBase<DeprecatedGraphicalContent>(){
 			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
-				return new GraphicalContent() {
+			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
+				return new DeprecatedGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest r) {

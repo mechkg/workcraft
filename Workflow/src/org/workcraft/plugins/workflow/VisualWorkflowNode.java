@@ -10,7 +10,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 
@@ -44,8 +44,8 @@ public class VisualWorkflowNode extends VisualComponent {
 	}
 
 	@Override
-	public Expression<? extends GraphicalContent> graphicalContent() {
-		return Expressions.constant(new GraphicalContent() {
+	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
+		return Expressions.constant(new DeprecatedGraphicalContent() {
 			
 			@Override
 			public void draw(DrawRequest r) {

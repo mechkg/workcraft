@@ -92,14 +92,14 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 				+ textBB.getHeight() + 0.1);
 	}
 	
-	private final Expression<GraphicalContent> labelGraphics = new ExpressionBase<GraphicalContent>(){
+	private final Expression<DeprecatedGraphicalContent> labelGraphics = new ExpressionBase<DeprecatedGraphicalContent>(){
 		@Override
-		protected GraphicalContent evaluate(EvaluationContext context) {
+		protected DeprecatedGraphicalContent evaluate(EvaluationContext context) {
 			final Point2D labelPosition = labelPosition(context);
 			final Color labelColor = context.resolve(VisualComponent.this.labelColor);
-			final GraphicalContent labelGraphics = context.resolve(label.graphics);
+			final DeprecatedGraphicalContent labelGraphics = context.resolve(label.graphics);
 			
-			return new GraphicalContent(){
+			return new DeprecatedGraphicalContent(){
 				@Override
 				public void draw(DrawRequest r) {
 					Graphics2D g = r.getGraphics();
@@ -113,7 +113,7 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 		}
 	};
 	
-	protected Expression<GraphicalContent> labelGraphics(){
+	protected Expression<DeprecatedGraphicalContent> labelGraphics(){
 		return labelGraphics;
 	}
 	

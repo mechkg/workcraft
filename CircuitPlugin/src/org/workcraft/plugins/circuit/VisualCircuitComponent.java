@@ -53,7 +53,7 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.CustomTouchable;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
@@ -395,12 +395,12 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 	}
 	
 	@Override
-	public Expression<? extends GraphicalContent> graphicalContent() {
-		return new ExpressionBase<GraphicalContent>(){
+	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
+		return new ExpressionBase<DeprecatedGraphicalContent>(){
 
 			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
-				return new GraphicalContent() {
+			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
+				return new DeprecatedGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest r) {

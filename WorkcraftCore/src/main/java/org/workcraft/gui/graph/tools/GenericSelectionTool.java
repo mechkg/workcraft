@@ -38,7 +38,7 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.visual.MovableNew;
-import org.workcraft.dom.visual.SimpleGraphicalContent;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
@@ -285,15 +285,12 @@ public class GenericSelectionTool<Node> {
 		drag.setValue(DRAG_NONE);
 	}
 
-	public void drawInUserSpace(Graphics2D g, Viewport viewPort) {
-	}
-
-	public Expression<SimpleGraphicalContent> userSpaceContent(final Viewport viewPort) {
-		return new ExpressionBase<SimpleGraphicalContent>() {
+	public Expression<GraphicalContent> userSpaceContent(final Viewport viewPort) {
+		return new ExpressionBase<GraphicalContent>() {
 
 			@Override
-			protected SimpleGraphicalContent evaluate(final EvaluationContext context) {
-				return new SimpleGraphicalContent(){
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent(){
 
 					@Override
 					public void draw(Graphics2D g) {
@@ -305,12 +302,9 @@ public class GenericSelectionTool<Node> {
 							g.setColor(selectionBorderColor);
 							g.draw(context.resolve(selectionBox).asRectangle());
 						}
-
 					}
-					
 				};
 			}
-			
 		};
 	}
 	

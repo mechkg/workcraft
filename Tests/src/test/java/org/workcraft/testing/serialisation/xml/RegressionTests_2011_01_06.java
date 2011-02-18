@@ -3,6 +3,8 @@ package org.workcraft.testing.serialisation.xml;
 import static org.junit.Assert.assertFalse;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,18 +19,21 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Hidable;
 import org.workcraft.dom.visual.Touchable;
+import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.connections.Bezier;
 import org.workcraft.dom.visual.connections.BezierControlPoint;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.dom.visual.connections.VisualConnection.ConnectionType;
 import org.workcraft.exceptions.DeserialisationException;
-import org.workcraft.gui.graph.tools.Decorator;
+import org.workcraft.gui.graph.tools.Decoration;
+import org.workcraft.gui.graph.tools.NodeGraphicalContentProvider;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.DummyTransition;
@@ -50,15 +55,14 @@ public class RegressionTests_2011_01_06 {
 	}
 	
 	class HiddenNode implements Node, DrawableNew, Hidable {
-
 		@Override
 		public Expression<Boolean> hidden() {
 			return Expressions.constant(true);
 		}
 
 		@Override
-		public Expression<? extends GraphicalContent> graphicalContent() {
-			return Expressions.constant(new GraphicalContent(){
+		public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
+			return Expressions.constant(new DeprecatedGraphicalContent(){
 				@Override
 				public void draw(DrawRequest request) {
 					hasBeenDrawn = true;
@@ -90,7 +94,31 @@ public class RegressionTests_2011_01_06 {
 		HiddenNode node = new HiddenNode();
 		Document doc = XmlUtil.createDocument();
 		SVGGraphics2D g2d = new SVGGraphics2D(doc);
-		eval(new DrawMan(null).graphicalContent(node)).draw(g2d, Decorator.Empty.INSTANCE);
+		eval(DrawMan.graphicalContent(node, new NodeGraphicalContentProvider() {
+			@Override
+			public GraphicalContent getGraphicalContent(final Node node) {
+				return new GraphicalContent() {
+					@Override
+					public void draw(final Graphics2D graphics) {
+						eval( ((HiddenNode)node).graphicalContent() ).draw(new DrawRequest() {
+							@Override
+							public Graphics2D getGraphics() {
+								return graphics;
+							}
+
+							@Override
+							public Decoration getDecoration() {
+								return Decoration.empty;		
+							};
+
+							@Override
+							public VisualModel getModel() {
+								return null;
+							} });
+					}
+				};
+			}
+		})).draw(g2d);
 		assertFalse(node.hasBeenDrawn);
 	}
 	

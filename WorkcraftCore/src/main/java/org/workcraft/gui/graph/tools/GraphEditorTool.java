@@ -25,21 +25,19 @@ import javax.swing.Icon;
 import javax.swing.JPanel;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dom.visual.SimpleGraphicalContent;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.gui.graph.Viewport;
 
 public interface GraphEditorTool extends GraphEditorKeyListener, GraphEditorMouseListener {
 	public void activated();
 	public void deactivated();
 	
-	public Expression<? extends SimpleGraphicalContent> userSpaceContent();
-	public Expression<? extends SimpleGraphicalContent> screenSpaceContent(Viewport viewport);
+	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus);
+	public Expression<? extends GraphicalContent> screenSpaceContent(Viewport viewport, Expression<Boolean> hasFocus);
 	
 	public JPanel getInterfacePanel();
 
 	public String getLabel();
 	public Icon getIcon();
 	public int getHotKeyCode();
-	
-	public Expression<? extends Decorator> getDecorator();
 }

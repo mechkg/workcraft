@@ -45,7 +45,7 @@ import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualNode;
@@ -343,8 +343,8 @@ public class VisualConnection extends VisualNode implements
 	}
 
 	@Override
-	public Expression<? extends GraphicalContent> graphicalContent() {
-		return Expressions.constant(new GraphicalContent() {
+	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
+		return Expressions.constant(new DeprecatedGraphicalContent() {
 			@Override
 			public void draw(DrawRequest request) {
 				

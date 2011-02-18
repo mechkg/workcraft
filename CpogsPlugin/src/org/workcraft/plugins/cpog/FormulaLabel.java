@@ -10,7 +10,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
 import org.workcraft.util.Func;
@@ -42,11 +42,11 @@ public class FormulaLabel {
 			}
 		};
 		
-		graphicalContent = new ExpressionBase<GraphicalContent>(){
+		graphicalContent = new ExpressionBase<DeprecatedGraphicalContent>(){
 
 			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
-				return new GraphicalContent(){
+			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
+				return new DeprecatedGraphicalContent(){
 
 					@Override
 					public void draw(DrawRequest r)
@@ -70,6 +70,6 @@ public class FormulaLabel {
 	}
 	
 	public final Expression<Rectangle2D> boundingBox;
-	public final Expression<GraphicalContent> graphicalContent;
+	public final Expression<DeprecatedGraphicalContent> graphicalContent;
 	
 }

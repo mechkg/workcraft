@@ -5,7 +5,7 @@ import org.workcraft.Module;
 import org.workcraft.PluginManager;
 import org.workcraft.interop.Exporter;
 import org.workcraft.plugins.interop.DotExporter;
-import org.workcraft.plugins.interop.SVGExporter;
+import org.workcraft.plugins.interop.AbstractSVGExporter;
 
 public class BuiltinExporters implements Module {
 	@Override
@@ -13,7 +13,7 @@ public class BuiltinExporters implements Module {
 		final PluginManager p = framework.getPluginManager();
 		
 		p.registerClass(Exporter.class, DotExporter.class);
-		p.registerClass(Exporter.class, SVGExporter.class);
+		p.registerClass(Exporter.class, AbstractSVGExporter.class);
 	}
 
 	@Override

@@ -45,7 +45,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
-import org.workcraft.dom.visual.SimpleGraphicalContent;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.dom.visual.VisualNode;
@@ -80,12 +80,12 @@ public class ConnectionTool extends AbstractTool {
 	}
 
 	@Override
-	public Expression<? extends SimpleGraphicalContent> userSpaceContent() {
-		return new ExpressionBase<SimpleGraphicalContent>(){
+	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus) {
+		return new ExpressionBase<GraphicalContent>(){
 
 			@Override
-			protected SimpleGraphicalContent evaluate(final EvaluationContext context) {
-				return new SimpleGraphicalContent(){
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent(){
 
 					@Override
 					public void draw(Graphics2D g) {
@@ -174,25 +174,26 @@ public class ConnectionTool extends AbstractTool {
 
 	
 	@Override
-	public Expression<? extends SimpleGraphicalContent> screenSpaceContent(final Viewport viewport) {
-		return new ExpressionBase<SimpleGraphicalContent>(){
+	public Expression<? extends GraphicalContent> screenSpaceContent(final Viewport viewport, final Expression<Boolean> hasFocus) {
+		return new ExpressionBase<GraphicalContent>(){
 			@Override
-			protected SimpleGraphicalContent evaluate(final EvaluationContext context) {
-				return new SimpleGraphicalContent(){
+			protected GraphicalContent evaluate(final EvaluationContext context) {
+				return new GraphicalContent(){
 
 					@Override
 					public void draw(Graphics2D g) {
 						String message;
-
-						if (warningMessage != null)
-							message = warningMessage;
-						else
-							if (eval(first) == null)
+						
+						if (context.resolve(hasFocus)) {
+							if (warningMessage != null)
+								message = warningMessage;
+							else if (eval(first) == null)
 								message = "Click on the first component";
 							else
 								message = "Click on the second component (control+click to connect continuously)";
 
-						GUI.drawEditorMessage(viewport, g, warningMessage!=null ? Color.RED : Color.BLACK, message, context);
+							GUI.drawEditorMessage(viewport, g, warningMessage != null ? Color.RED : Color.BLACK, message, context);
+						}
 					}
 				};
 			}
@@ -214,36 +215,5 @@ public class ConnectionTool extends AbstractTool {
 	public void deactivated() {
 		first.setValue(null);
 		mouseOverObject.setValue(null);
-	}
-
-	@Override
-	public Expression<Decorator> getDecorator() {
-		return new ExpressionBase<Decorator>(){
-
-			@Override
-			protected Decorator evaluate(final EvaluationContext context) {
-				return new Decorator() {
-
-					@Override
-					public Decoration getDecoration(Node node) {
-						if(node == context.resolve(mouseOverObject))
-							return new Decoration(){
-								
-								@Override
-								public Color getColorisation() {
-									return highlightColor;
-								}
-
-								@Override
-								public Color getBackground() {
-									return null;
-								}
-						}; 
-						return null;
-					}
-				
-				};
-			}
-		};
 	}
 }

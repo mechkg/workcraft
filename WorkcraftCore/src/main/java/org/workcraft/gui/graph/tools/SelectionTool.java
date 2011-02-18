@@ -1,5 +1,7 @@
 package org.workcraft.gui.graph.tools;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
@@ -7,17 +9,15 @@ import java.util.Collection;
 
 import javax.swing.Icon;
 
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.MovableHelper;
 import org.workcraft.dom.visual.MovableNew;
-import org.workcraft.dom.visual.SimpleGraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualModelTransformer;
 import org.workcraft.dom.visual.connections.DefaultAnchorGenerator;
@@ -30,8 +30,6 @@ import org.workcraft.util.Hierarchy;
 
 import pcollections.HashTreePSet;
 import pcollections.PSet;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class SelectionTool extends AbstractTool {
 
@@ -99,59 +97,6 @@ public class SelectionTool extends AbstractTool {
 
 	protected Color grayOutColor = Color.LIGHT_GRAY; 
 	
-	@Override
-	public Expression<Decorator> getDecorator() {
-		return new ExpressionBase<Decorator>(){
-
-			@Override
-			protected Decorator evaluate(final EvaluationContext context) {
-				return new Decorator(){
-
-					@Override
-					public Decoration getDecoration(Node node) {
-						
-						if(node == context.resolve(editor.getModel().currentLevel()))
-							return Decoration.Empty.INSTANCE;
-						
-						if(node == editor.getModel().getRoot())
-							return new Decoration(){
-
-								@Override
-								public Color getColorisation() {
-									return grayOutColor;
-								}
-
-								@Override
-								public Color getBackground() {
-									return null;
-								}
-							};
-							
-						
-						Decoration selectedDecoration = new Decoration() {
-
-							@Override
-							public Color getColorisation() {
-								return selectionColor;
-							}
-
-							@Override
-							public Color getBackground() {
-								return null;
-							}
-						};
-						
-						if(context.resolve(selectionTool.effectiveSelection).contains(node))
-							return selectedDecoration;
-						else
-							return null;
-					}
-					
-				};
-			}
-			
-		};
-	}
 	
 	@Override
 	public String getLabel() {
@@ -275,13 +220,12 @@ public class SelectionTool extends AbstractTool {
 	}
 
 	@Override
-	public Expression<SimpleGraphicalContent> userSpaceContent() {
+	public Expression<GraphicalContent> userSpaceContent(final Expression<Boolean> hasFocus) {
 		return selectionTool.userSpaceContent(editor.getViewport());
 	}
 
 	@Override
-	public Expression<? extends SimpleGraphicalContent> screenSpaceContent(Viewport viewport) {
-		return Expressions.constant(SimpleGraphicalContent.Empty.INSTANCE);
+	public Expression<? extends GraphicalContent> screenSpaceContent(final Viewport viewport, final Expression<Boolean> hasFocus) {
+		return Expressions.constant(GraphicalContent.empty);
 	}
-
 }

@@ -14,7 +14,7 @@
       <repository>
           <id>workcraft_repo</id>
           <name>Workcraft Maven Repository</name>
-          <url>http://workcraft.org/maven2/</url>
+          <url>http://rabbit/nexus/content/groups/public/</url>
       </repository>
   </repositories>
 

@@ -36,7 +36,7 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.circuit.Contact.IoType;
@@ -83,13 +83,13 @@ public class VisualFunctionContact extends VisualContact {
 		renderedResetFormula = createRenderedFormulaExpression(component.resetFunction());
 	}
 	
-	public Expression<? extends GraphicalContent> graphicalContent() {
-		final Expression<? extends GraphicalContent> superGraphicalContent = super.graphicalContent();
-		return new ExpressionBase<GraphicalContent>() {
+	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
+		final Expression<? extends DeprecatedGraphicalContent> superGraphicalContent = super.graphicalContent();
+		return new ExpressionBase<DeprecatedGraphicalContent>() {
 
 			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
-				return new GraphicalContent(){
+			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
+				return new DeprecatedGraphicalContent(){
 					private void drawFormula(Graphics2D g, int arrowType, float xOffset, float yOffset, Color foreground, Color background, FormulaRenderingResult result) {
 						
 						Rectangle2D textBB = result.boundingBox;

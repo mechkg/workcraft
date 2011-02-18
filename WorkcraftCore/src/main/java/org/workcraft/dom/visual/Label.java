@@ -12,7 +12,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.VisualComponent;
 
 public class Label {
@@ -21,7 +21,7 @@ public class Label {
 		return VisualComponent.podgonFontRenderContext();
 	}
 	
-	public final Expression<GraphicalContent> graphics;
+	public final Expression<DeprecatedGraphicalContent> graphics;
 	public final Expression<Rectangle2D> centeredBB;
 	
 	public Label(final Font font, final Expression<String> text) {
@@ -58,15 +58,15 @@ public class Label {
 			}
 		};
 		
-		graphics = new ExpressionBase<GraphicalContent>() {
+		graphics = new ExpressionBase<DeprecatedGraphicalContent>() {
 			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
+			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
 			
 				Point2D textXY = context.resolve(textCoords);
 				final float textX = (float)textXY.getX();
 				final float textY = (float)textXY.getY();
 			
-				return new GraphicalContent() {
+				return new DeprecatedGraphicalContent() {
 					@Override
 					public void draw(DrawRequest request) {
 						Graphics2D g = request.getGraphics();

@@ -38,7 +38,7 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.BoundingBoxHelper;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.connections.ParametricCurve;
 import org.workcraft.dom.visual.connections.VisualConnection;
@@ -203,7 +203,7 @@ public class VisualArc extends VisualConnection
 	}
 	
 	@Override
-	public Expression<? extends GraphicalContent> graphicalContent() {
+	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
 		return label.graphicalContent;
 	}
 	

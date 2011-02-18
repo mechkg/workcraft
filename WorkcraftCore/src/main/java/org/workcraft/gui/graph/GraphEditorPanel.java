@@ -49,7 +49,7 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DependentNode;
-import org.workcraft.dom.visual.SimpleGraphicalContent;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.Overlay;
@@ -72,7 +72,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	class Repainter extends ExpressionBase<ImageModel> {
 		
 		public Repainter() {
-			new Timer(20, new ActionListener(){
+			new Timer(200, new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					eval(Repainter.this);
@@ -193,14 +193,14 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		ruler.setShape(0, 0, getWidth(), getHeight());
 	}
 
-	final Expression<SimpleGraphicalContent> graphicalContent = new ExpressionBase<SimpleGraphicalContent>(){
+	final Expression<GraphicalContent> graphicalContent = new ExpressionBase<GraphicalContent>(){
 
 		@Override
-		protected SimpleGraphicalContent evaluate(final EvaluationContext context) {
+		protected GraphicalContent evaluate(final EvaluationContext context) {
 			
 			final GraphEditorTool tool = context.resolve(toolboxPanel.selectedTool());
 			
-			return new SimpleGraphicalContent() {
+			return new GraphicalContent() {
 				
 				@Override
 				public void draw(Graphics2D g2d) {
@@ -227,17 +227,14 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 				
 					g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-					context.resolve(visualModel.graphicalContent()).draw(g2d, context.resolve(tool.getDecorator()));
-
-					if (context.resolve(hasFocus))
-						context.resolve(tool.userSpaceContent()).draw(g2d);
+					context.resolve(tool.userSpaceContent(hasFocus)).draw(g2d);
 
 					g2d.setTransform(screenTransform);
 
 					context.resolve(ruler.graphicalContent()).draw(g2d);
 
 					if (context.resolve(hasFocus)) {
-						context.resolve(tool.screenSpaceContent(view)).draw(g2d);
+						context.resolve(tool.screenSpaceContent(view, hasFocus)).draw(g2d);
 						g2d.setTransform(screenTransform);
 
 						g2d.setStroke(borderStroke);

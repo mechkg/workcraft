@@ -34,7 +34,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.DeprecatedGraphicalContent;
 import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
@@ -63,18 +63,18 @@ public class VisualSignalTransition extends VisualTransition {
 	}
 	
 	@Override
-	public Expression<? extends GraphicalContent> graphicalContent() {
-		return new ExpressionBase<GraphicalContent>() {
+	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
+		return new ExpressionBase<DeprecatedGraphicalContent>() {
 			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
-				return new GraphicalContent() {
+			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
+				return new DeprecatedGraphicalContent() {
 					@Override
 					public void draw(DrawRequest r) {
 						
 						stg.setValue(((VisualSTG)r.getModel()).stg);
 						
-						final GraphicalContent labelGraphics = context.resolve(labelGraphics());
-						final GraphicalContent nameLabelGraphics = context.resolve(nameLabel.graphics);
+						final DeprecatedGraphicalContent labelGraphics = context.resolve(labelGraphics());
+						final DeprecatedGraphicalContent nameLabelGraphics = context.resolve(nameLabel.graphics);
 						final Color color = context.resolve(color());
 						final Touchable shape = context.resolve(localSpaceTouchable());
 						

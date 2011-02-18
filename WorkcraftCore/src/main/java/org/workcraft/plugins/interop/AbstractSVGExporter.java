@@ -24,6 +24,7 @@ package org.workcraft.plugins.interop;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -36,16 +37,15 @@ import org.apache.batik.svggen.SVGGraphics2D;
 import org.w3c.dom.Document;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.visual.VisualGroup;
-import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.SerialisationException;
-import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.interop.Exporter;
 import org.workcraft.serialisation.Format;
 import org.workcraft.util.XmlUtil;
 
-public class SVGExporter implements Exporter {
+public abstract class AbstractSVGExporter implements Exporter {
 
+	public abstract void draw (Model model, Graphics2D g);
 	
 	public void export(Model model, OutputStream out) throws IOException,
 			ModelValidationException, SerialisationException {
@@ -65,7 +65,7 @@ public class SVGExporter implements Exporter {
 				g2d.translate(-bounds.getMinX(), -bounds.getMinY());
 				g2d.setSVGCanvasSize(new Dimension((int)(bounds.getWidth()*50), (int)(bounds.getHeight()*50)));
 				
-				eval(((VisualModel)model).graphicalContent()).draw(g2d, Decorator.Empty.INSTANCE);
+				draw(model, g2d);
 				
 				g2d.stream(new OutputStreamWriter(out));
 				
@@ -74,24 +74,12 @@ public class SVGExporter implements Exporter {
 			}
 		}
 
-	
-	public String getDescription() {
-		return ".svg (Batik SVG generator)";
-	}
-
-	public String getExtenstion() {
+	public final String getExtenstion() {
 		return ".svg";
 	}
 
-	public int getCompatibility(Model model) {
-		if (model instanceof VisualModel)
-			return Exporter.GENERAL_COMPATIBILITY;
-		else
-			return Exporter.NOT_COMPATIBLE;
-	}
-
 	@Override
-	public UUID getTargetFormat() {
+	public final UUID getTargetFormat() {
 		return Format.SVG;
 	}
 }

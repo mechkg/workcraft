@@ -129,6 +129,8 @@ public class VisualSignalTransition extends VisualTransition {
 			protected String evaluate(EvaluationContext context) {
 				SignalTransition t = getReferencedTransition();
 				STG stg = context.resolve(VisualSignalTransition.this.stg);
+				if(stg == null)
+					return "the model is null O_O";
 				final StringBuffer result = new StringBuffer(context.resolve(stg.signalName(t)));
 				switch (context.resolve(stg.direction(t))) {
 				case PLUS:

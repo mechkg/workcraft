@@ -46,7 +46,6 @@ import org.workcraft.dom.NodeContext;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.gui.propertyeditor.Properties;
@@ -64,8 +63,8 @@ import org.workcraft.util.Triple;
 
 public class STG extends AbstractModel implements STGModel {
 	
-	private final Expression<? extends StgRefMan> referenceManager;
-	private final Expression<? extends StgTextRefMan> textReferenceManager;
+	private final StgRefMan referenceManager;
+	private final StgTextRefMan textReferenceManager;
 
 	private static class ConstructionInfo {
 		private final StorageManager storage;
@@ -76,12 +75,12 @@ public class STG extends AbstractModel implements STGModel {
 			else
 				this.root = root;
 			this.nodeContext = createDefaultNodeContext(this.root);
-			Pair<? extends Expression<? extends StgTextRefMan>, ? extends Expression<? extends StgRefMan>> p = STGReferenceManager.create(this.root, nodeContext, refs);
+			Pair<? extends StgTextRefMan, ? extends StgRefMan> p = STGReferenceManager.create(this.root, nodeContext, refs);
 			this.referenceManager = p.getSecond();
 			this.textReferenceManager = p.getFirst();
 		}
-		public final Expression<? extends StgTextRefMan> textReferenceManager;
-		public final Expression<? extends StgRefMan>  referenceManager; 
+		public final StgTextRefMan textReferenceManager;
+		public final StgRefMan  referenceManager; 
 		public final Expression<? extends NodeContext>  nodeContext; 
 		public final Container root; 
 	}
@@ -99,7 +98,7 @@ public class STG extends AbstractModel implements STGModel {
 	}
 	
 	public STG(ConstructionInfo info) {
-		super(new ModelSpecification(info.root, info.textReferenceManager, createDefaultControllerChain(info.root, info.nodeContext), info.nodeContext));
+		super(new ModelSpecification(info.root, info.textReferenceManager.referenceManager(), createDefaultControllerChain(info.root, info.nodeContext), info.nodeContext));
 		storage = info.storage;
 		referenceManager = info.referenceManager;
 		textReferenceManager = info.textReferenceManager;
@@ -130,7 +129,7 @@ public class STG extends AbstractModel implements STGModel {
 		newPlace.implicit().setValue(markAsImplicit);
 
 		if (name!=null)
-			eval(referenceManager).setName(newPlace, name);
+			referenceManager.setName(newPlace, name);
 
 		add(newPlace);
 
@@ -141,7 +140,7 @@ public class STG extends AbstractModel implements STGModel {
 	final public DummyTransition createDummyTransition(String name) {
 		DummyTransition newTransition = new DummyTransition(storage);
 		if (name!=null)
-			eval(referenceManager).setInstance(newTransition, Pair.of(name, (Integer)null));
+			referenceManager.setInstance(newTransition, Pair.of(name, (Integer)null));
 		add(newTransition);
 		return newTransition;
 	}
@@ -201,7 +200,7 @@ public class STG extends AbstractModel implements STGModel {
 	public Set<String> getDummyNames() {
 		Set<String> result = new HashSet<String>();
 		for (DummyTransition t : getDummies())
-			result.add(eval(referenceManager).getInstance(t).getFirst());
+			result.add(eval(referenceManager.state()).getInstance(t).getFirst());
 		return result;
 	}
 
@@ -219,13 +218,13 @@ public class STG extends AbstractModel implements STGModel {
 			return new ModifiableExpressionBase<Integer>() {
 				@Override
 				public void setValue(Integer newValue) {
-					StgRefMan refMan = eval(referenceManager);
-					refMan.setInstance(st, Pair.of(refMan.getInstance(st).getFirst(), newValue));
+					StgRefManState refMan = eval(referenceManager.state());
+					referenceManager.setInstance(st, Pair.of(refMan.getInstance(st).getFirst(), newValue));
 				}
 
 				@Override
 				protected Integer evaluate(EvaluationContext context) {
-					return context.resolve(referenceManager).getInstance(st).getSecond();
+					return context.resolve(referenceManager.state()).getInstance(st).getSecond();
 				}
 			};
 		}
@@ -235,13 +234,13 @@ public class STG extends AbstractModel implements STGModel {
 			return new ModifiableExpressionBase<Integer>() {
 				@Override
 				public void setValue(Integer newValue) {
-					StgRefMan refMan = eval(referenceManager);
-					refMan.setInstance(dt, Pair.of(refMan.getInstance(dt).getFirst(), newValue));
+					StgRefManState refMan = eval(referenceManager.state());
+					referenceManager.setInstance(dt, Pair.of(refMan.getInstance(dt).getFirst(), newValue));
 				}
 
 				@Override
 				protected Integer evaluate(EvaluationContext context) {
-					return context.resolve(referenceManager).getInstance(dt).getSecond();
+					return context.resolve(referenceManager.state()).getInstance(dt).getSecond();
 				}
 			};
 			
@@ -265,12 +264,12 @@ public class STG extends AbstractModel implements STGModel {
 
 			@Override
 			public void setValue(String newValue) {
-				eval(referenceManager).setName(node, newValue);
+				referenceManager.setName(node, newValue);
 			}
 
 			@Override
 			protected String evaluate(EvaluationContext context) {
-				return context.resolve(referenceManager).getName(node);
+				return context.resolve(referenceManager.state()).getName(node);
 			}
 		};
 	}
@@ -314,16 +313,16 @@ public class STG extends AbstractModel implements STGModel {
 
 			@Override
 			protected String evaluate(EvaluationContext context) {
-				Pair<Pair<String, Direction>, Integer> instance = context.resolve(referenceManager).getInstance(transition);
+				Pair<Pair<String, Direction>, Integer> instance = context.resolve(referenceManager.state()).getInstance(transition);
 				Pair<String, Direction> signalEdge = instance.getFirst();
 				return signalEdge.getFirst();
 			}
 
 			@Override
 			public void setValue(String newValue) {
-				StgRefMan refMan = eval(referenceManager);
+				StgRefManState refMan = eval(referenceManager.state());
 				Pair<Pair<String, Direction>, Integer> oldInstance = refMan.getInstance(transition);
-				refMan.setInstance(transition, Pair.of(Pair.of(newValue, oldInstance.getFirst().getSecond()), (Integer)null));
+				referenceManager.setInstance(transition, Pair.of(Pair.of(newValue, oldInstance.getFirst().getSecond()), (Integer)null));
 				signalTypeConsistencySupervisor.nameChanged(transition, oldInstance.getFirst().getFirst(), newValue);
 			}
 		};
@@ -386,16 +385,11 @@ public class STG extends AbstractModel implements STGModel {
 	
 	public void makeExplicit(STGPlace implicitPlace) {
 		implicitPlace.implicit().setValue(false);
-		eval(referenceManager).setName(implicitPlace, null);
+		referenceManager.setName(implicitPlace, null);
 	}
 
 	public DummyTransition createDummyTransition() {
 		return createDummyTransition(null);
-	}
-
-	@Override
-	public Expression<? extends ReferenceManager> referenceManager() {
-		return textReferenceManager;
 	}
 
 	public ModifiableExpression<Direction> direction(final SignalTransition transition) {
@@ -403,27 +397,38 @@ public class STG extends AbstractModel implements STGModel {
 
 			@Override
 			public void setValue(Direction newValue) {
-				StgRefMan refMan = eval(referenceManager);
+				StgRefManState refMan = eval(referenceManager.state());
 				Pair<Pair<String, Direction>, Integer> oldInstance = refMan.getInstance(transition);
-				refMan.setInstance(transition, Pair.of(Pair.of(oldInstance.getFirst().getFirst(), newValue), (Integer)null));
+				referenceManager.setInstance(transition, Pair.of(Pair.of(oldInstance.getFirst().getFirst(), newValue), (Integer)null));
 			}
 
 			@Override
 			protected Direction evaluate(EvaluationContext context) {
-				return context.resolve(referenceManager).getInstance(transition).getFirst().getSecond();
+				return context.resolve(referenceManager.state()).getInstance(transition).getFirst().getSecond();
 			}
 		};
 		
 	}
 
 	public void setName(MathNode node, String newName) {
-		eval(textReferenceManager).setName(node, newName);
+		if(node instanceof SignalTransition) {
+			// not very good way to do it. chaining StgRefMan would be better.
+			// However, Signals should be made real objects instead of imaginary anyway, so we'll live with this hack for a while
+			SignalTransition trans = (SignalTransition)node;
+			ModifiableExpression<String> signalNameExpr = signalName(trans);
+			String oldTransName = eval(signalNameExpr);
+			textReferenceManager.setName(node, newName);
+			String newTransName = eval(signalNameExpr);
+			signalTypeConsistencySupervisor.nameChanged(trans, oldTransName, newTransName);
+		}
+		else
+			textReferenceManager.setName(node, newName);
 	}
 
 	public SignalTransition createSignalTransition(String name, Direction direction) {
 		SignalTransition ret = new SignalTransition(storage);
 		if (name!=null)
-			eval(referenceManager).setInstance(ret, Pair.of(Pair.of(name, direction), (Integer)null));
+			referenceManager.setInstance(ret, Pair.of(Pair.of(name, direction), (Integer)null));
 		add(ret);
 		return ret;
 	}

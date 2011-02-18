@@ -21,6 +21,10 @@
 
 package org.workcraft.testing.plugins.interop;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,10 +53,6 @@ import org.workcraft.plugins.stg.javacc.generated.ParseException;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.util.Import;
 import org.workcraft.workspace.ModelEntry;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-
-import static org.junit.Assert.*;
 
 public class DotGImporterTests {
 	@Test
@@ -121,6 +121,8 @@ public class DotGImporterTests {
 	
 	static STG parse(String resourceName) throws ParseException {
 		InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream(resourceName);
+		if(inputStream == null)
+			throw new RuntimeException("no such test?!");
 		try{
 			return new DotGParser(inputStream).parse(new DefaultStorageManager());
 		}
@@ -134,9 +136,9 @@ public class DotGImporterTests {
 	}
 	
 	private void testForParseError(String resourceName, int line, int column) {
-		final InputStream test = ClassLoader.getSystemClassLoader().getResourceAsStream(resourceName);
-		DotGParser parser = new DotGParser(test);
-		try { parser.parse(new DefaultStorageManager()); }
+		try {
+			parse(resourceName);
+		 }
 		catch(ParseException ex) { 
 			Assert.assertTrue("line number information must be contained in: '" + ex.getMessage() + "'", ex.getMessage().contains("line "+line));
 			Assert.assertTrue("column number information must be contained in: '" + ex.getMessage() + "'", ex.getMessage().contains("column "+column));
@@ -179,5 +181,17 @@ public class DotGImporterTests {
 	@Test
 	public void testBadImplicitPlaceReference3() {
 		testForParseError("badImplicitPlaceReference3.g", 7, 18); // column information needs fixing
+	}
+	
+	@Test
+	public void testGoodImplicitPlaceReference() throws ParseException {
+		STG stg = parse("goodImplicitPlaceReference.g");
+		boolean occured = false;
+		for(STGPlace p : stg.getPlaces()) {
+			boolean shouldBeMarked = eval(stg.referenceManager()).getNodeReference(p).equals("<a~,b~>");
+			if(shouldBeMarked) occured = true;
+			assertEquals(eval(p.tokens()) > 0, shouldBeMarked);
+		}
+		assertTrue(occured);
 	}
 }

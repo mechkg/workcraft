@@ -20,13 +20,14 @@ import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.util.Pair;
 
-public class STGReferenceManager implements HierarchyObservingState<StgRefMan> {
+public class STGReferenceManager implements StgRefMan, HierarchyObservingState<StgRefManState> {
 	private final InstanceManager<Pair<String,Direction>, SignalTransition> signalInstanceManager;
 	private final InstanceManager<String, DummyTransition> dummyInstanceManager;
-	private UniqueNameManager<Node> defaultNameManager;
+	private final UniqueNameManager<Node> defaultNameManager;
 
 	private int signalCounter = 0;
 	private int dummyCounter = 0;
+	private HierarchySupervisor<StgRefManState> stateExpr;
 
 	public STGReferenceManager() {
 		this.defaultNameManager = new UniqueNameManager<Node>(new Func<Node, String>() {
@@ -55,7 +56,10 @@ public class STGReferenceManager implements HierarchyObservingState<StgRefMan> {
 				return GlobalCache.eval((arg).name());
 			}
 		});
-
+	}
+	
+	public void startHierarchySupervision(Node root) {
+		stateExpr = new HierarchySupervisor<StgRefManState>(root, this);
 	}
 
 	private void nodeAdded(Node node) {
@@ -116,27 +120,47 @@ public class STGReferenceManager implements HierarchyObservingState<StgRefMan> {
 			nodeAdded(node);
 	}
 
+	
 	@Override
-	public StgRefMan getState() {
-		return new StgRefMan() {
-			
-			@Override
-			public void setName(STGPlace place, String name) {
-				if(name != null)
-					defaultNameManager.setName(place, name);
-				else
-					defaultNameManager.setDefaultNameIfUnnamed(place);
-			}
-			
-			@Override
-			public void setInstance(SignalTransition st, Pair<Pair<String, Direction>, Integer> instance) {
-				signalInstanceManager.assign(st, instance);
-			}
-			
-			@Override
-			public void setInstance(DummyTransition dt, Pair<String, Integer> instance) {
-				dummyInstanceManager.assign(dt, instance);
-			}
+	public void setName(STGPlace place, String name) {
+		if(name != null)
+			defaultNameManager.setName(place, name);
+		else
+			defaultNameManager.setDefaultNameIfUnnamed(place);
+		invalidate();
+	}
+	
+	@Override
+	public void setInstance(SignalTransition st, Pair<Pair<String, Direction>, Integer> instance) {
+		signalInstanceManager.assign(st, instance);
+		invalidate();
+	}
+	
+	@Override
+	public void setInstance(DummyTransition dt, Pair<String, Integer> instance) {
+		dummyInstanceManager.assign(dt, instance);
+		invalidate();
+	}
+
+	@Override
+	public void setMiscNodeName(Node node, String s) {
+		defaultNameManager.setName(node, s);
+		invalidate();
+	}	
+	
+	private void invalidate() {
+		if(stateExpr != null)
+			stateExpr.refresh();
+	}
+	
+	@Override
+	public Expression<StgRefManState> state() {
+		return stateExpr;
+	}
+
+	@Override
+	public StgRefManState getState() {
+		return new StgRefManState() {
 			
 			@Override
 			public String getName(STGPlace place) {
@@ -177,18 +201,12 @@ public class STGReferenceManager implements HierarchyObservingState<StgRefMan> {
 			public Node getMiscNode(String name) {
 				return defaultNameManager.get(name);
 			}
-
-			@Override
-			public void setMiscNodeName(Node node, String s) {
-				defaultNameManager.setName(node, s);
-			}
 		};
 	}
 
-	public static Pair<? extends Expression<? extends StgTextRefMan>, ? extends Expression<? extends StgRefMan>> create(Node root, Expression<? extends NodeContext> nodeContext, References refs) {
-		STGReferenceManager rm = new STGReferenceManager();
-		Expression<? extends StgRefMan> refMan =new HierarchySupervisor<StgRefMan>(root, rm);
-		StgRefMan initialRefMan = rm.getState();
-		return Pair.of(new StgTextReferenceManager(root, nodeContext, refMan, initialRefMan, refs), refMan);
+	public static Pair<? extends StgTextRefMan, ? extends StgRefMan> create(Node root, Expression<? extends NodeContext> nodeContext, References refs) {
+		final STGReferenceManager rm = new STGReferenceManager();
+		rm.startHierarchySupervision(root);
+		return Pair.of(new StgTextReferenceManager(root, nodeContext, rm, refs), rm);
 	}
 }

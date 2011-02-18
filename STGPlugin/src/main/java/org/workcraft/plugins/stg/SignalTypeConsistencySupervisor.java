@@ -28,6 +28,7 @@ import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import org.workcraft.plugins.stg.SignalTransition.Type;
 
@@ -56,10 +57,18 @@ class SignalTypeConsistencySupervisor {
 
 	public void nameChanged(SignalTransition transition, String oldName, String newName) {
 		Collection<SignalTransition> sameName = getSameNameTransitions(transition);
-		if(oldName == null || !oldName.equals(newName)) {
-			stg.signalType(transition).setValue(eval(sameName.iterator().next().signalType()));
+		Iterator<SignalTransition> iter = sameName.iterator();
+		if(iter.hasNext()) {
+			System.out.println(String.format("name changed: from %s to %s", oldName, newName));
+			if(oldName == null || !oldName.equals(newName)) {
+				Type othersSignalType = eval(iter.next().signalType());
+				stg.signalType(transition).setValue(othersSignalType);
+				
+				System.out.println("changing signal type to : " + othersSignalType);
+				
+			}
+		}
 	}
-}
 
 	private Collection<SignalTransition> getSameNameTransitions(SignalTransition transition) {
 		Collection<SignalTransition> sameName = new ArrayList<SignalTransition>(stg.getSignalTransitions(eval(stg.signalName(transition))));

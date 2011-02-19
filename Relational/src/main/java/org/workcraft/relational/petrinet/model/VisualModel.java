@@ -98,7 +98,7 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 
 	@Override
 	public ModifiableExpression<Container> currentLevel() {
-		return Expressions.cast(currentLevel, VisualGroupNode.class);
+		return Expressions.cast(currentLevel, VisualGroupNode.class, Container.class);
 	}
 
 	@Override

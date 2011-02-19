@@ -29,7 +29,6 @@ import javax.swing.Icon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
@@ -39,9 +38,11 @@ import org.workcraft.util.GUI;
 public class NodeGeneratorTool extends AbstractTool {
 	private NodeGenerator generator;
 	protected int hotKeyCode;
+	private final Expression<? extends GraphicalContent> graphicalContent;
 
-	public NodeGeneratorTool (NodeGenerator generator) {
+	public NodeGeneratorTool (NodeGenerator generator, Expression<? extends GraphicalContent> graphicalContent) {
 		this.generator = generator;
+		this.graphicalContent = graphicalContent;
 	}
 	
 	public Icon getIcon() {
@@ -62,7 +63,7 @@ public class NodeGeneratorTool extends AbstractTool {
 
 	@Override
 	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus) {
-		return Expressions.constant(GraphicalContent.empty);
+		return graphicalContent;
 	}
 
 	@Override

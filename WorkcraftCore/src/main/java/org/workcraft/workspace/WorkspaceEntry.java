@@ -27,13 +27,14 @@ import org.workcraft.gui.workspace.Path;
 
 public class WorkspaceEntry 
 {
-	private ModelEntry modelEntry = null;
+	private final ModelEntry modelEntry;
 	private boolean changed = true;
 	private boolean temporary = true;
-	private Workspace workspace;
+	private final Workspace workspace;
 
-	public WorkspaceEntry(Workspace workspace) {
+	public WorkspaceEntry(Workspace workspace, ModelEntry modelEntry) {
 		this.workspace = workspace;
+		this.modelEntry = modelEntry;
 	}
 
 	public void setChanged(boolean changed) {
@@ -52,11 +53,6 @@ public class WorkspaceEntry
 		return modelEntry;
 	}
 	
-	public void setModelEntry(ModelEntry modelEntry)
-	{
-		this.modelEntry = modelEntry;
-	}
-
 	public boolean isWork() {
 		return (modelEntry != null) || (getWorkspacePath().getNode().endsWith(".work"));
 	}

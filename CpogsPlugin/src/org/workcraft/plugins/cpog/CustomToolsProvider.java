@@ -8,7 +8,9 @@ import javax.swing.Icon;
 
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
+import org.workcraft.gui.DefaultReflectiveNodeDecorator;
 import org.workcraft.gui.graph.tools.ConnectionTool;
+import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.NodeGenerator;
@@ -100,13 +102,14 @@ public class CustomToolsProvider implements
 	public Iterable<GraphEditorTool> getTools(GraphEditor editor)
 	{
 		ArrayList<GraphEditorTool> res = new ArrayList<GraphEditorTool>();
+		final DefaultReflectiveNodeDecorator defaultReflectiveNodeDecorator = new DefaultReflectiveNodeDecorator(editor.getModel().getRoot());
+
+		res.add(new SelectionTool(editor,defaultReflectiveNodeDecorator));
+		res.add(new ConnectionTool(editor,defaultReflectiveNodeDecorator));
 		
-		res.add(new SelectionTool(editor));
-		res.add(new ConnectionTool(editor));
-		
-		res.add(new NodeGeneratorTool(new VertexGenerator()));
-		res.add(new NodeGeneratorTool(new VariableGenerator()));
-		res.add(new NodeGeneratorTool(new RhoClauseGenerator()));
+		res.add(new NodeGeneratorTool(new VertexGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
+		res.add(new NodeGeneratorTool(new VariableGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
+		res.add(new NodeGeneratorTool(new RhoClauseGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
 		
 		return res;
 	}

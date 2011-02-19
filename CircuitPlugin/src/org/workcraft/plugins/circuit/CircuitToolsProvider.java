@@ -9,8 +9,10 @@ import javax.swing.Icon;
 
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
+import org.workcraft.gui.DefaultReflectiveNodeDecorator;
 import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
+import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.NodeGenerator;
@@ -76,13 +78,15 @@ public class CircuitToolsProvider implements CustomToolsProvider {
 	@Override
 	public Iterable<GraphEditorTool> getTools(GraphEditor editor) {
 		ArrayList<GraphEditorTool> result = new ArrayList<GraphEditorTool>();
+		final DefaultReflectiveNodeDecorator defaultReflectiveNodeDecorator = new DefaultReflectiveNodeDecorator(editor.getModel().getRoot());
+
 		
-		result.add(new CircuitSelectionTool(editor));
-		result.add(new ConnectionTool(editor));
-		result.add(new CircuitSimulationTool(editor));
-		result.add(new ContactGeneratorTool());
-		result.add(new NodeGeneratorTool(new JointGenerator()));
-		result.add(new NodeGeneratorTool(new FunctionComponentGenerator()));
+		result.add(new CircuitSelectionTool(editor, defaultReflectiveNodeDecorator));
+		result.add(new ConnectionTool(editor, defaultReflectiveNodeDecorator));
+		result.add(new CircuitSimulationTool(editor, defaultReflectiveNodeDecorator));
+		result.add(new ContactGeneratorTool(defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
+		result.add(new NodeGeneratorTool(new JointGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
+		result.add(new NodeGeneratorTool(new FunctionComponentGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
 		
 		return result;
 	}

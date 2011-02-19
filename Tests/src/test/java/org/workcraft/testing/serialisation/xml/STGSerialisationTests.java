@@ -44,8 +44,7 @@ public class STGSerialisationTests {
 		VisualSTG stg = XMLSerialisationTestingUtils.createTestSTG3();
 
 		RandomLayout layout = new RandomLayout();
-		WorkspaceEntry we = new WorkspaceEntry(null);
-		we.setModelEntry(new ModelEntry(new STGModelDescriptor(), stg, null));
+		WorkspaceEntry we = new WorkspaceEntry(null, new ModelEntry(new STGModelDescriptor(), stg, null));
 		layout.run(we);
 
 		// serialise

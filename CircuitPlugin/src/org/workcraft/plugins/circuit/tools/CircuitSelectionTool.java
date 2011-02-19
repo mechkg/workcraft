@@ -8,14 +8,18 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
+import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.SelectionTool;
 import org.workcraft.plugins.circuit.VisualCircuitComponent;
 import org.workcraft.plugins.circuit.VisualFunctionComponent;
+import org.workcraft.util.Func;
 
 public class CircuitSelectionTool extends SelectionTool implements ActionListener {
 
@@ -48,8 +52,8 @@ public class CircuitSelectionTool extends SelectionTool implements ActionListene
 	}
 	*/
 	
-	public CircuitSelectionTool(GraphEditor editor) {
-		super(editor);
+	public CircuitSelectionTool(GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
+		super(editor, modelGraphicalContent);
 	}
 
 	@Override

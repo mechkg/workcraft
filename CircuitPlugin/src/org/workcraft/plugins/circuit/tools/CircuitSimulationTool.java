@@ -1,29 +1,23 @@
 package org.workcraft.plugins.circuit.tools;
 
-import java.awt.Color;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
-import org.workcraft.gui.graph.tools.Decoration;
-import org.workcraft.gui.graph.tools.NodeGraphicalContentProvider;
+import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
-import org.workcraft.plugins.circuit.CircuitSettings;
 import org.workcraft.plugins.circuit.Contact;
 import org.workcraft.plugins.circuit.VisualCircuit;
-import org.workcraft.plugins.circuit.VisualCircuitConnection;
 import org.workcraft.plugins.circuit.VisualContact;
-import org.workcraft.plugins.circuit.VisualJoint;
 import org.workcraft.plugins.circuit.stg.CircuitPetriNetGenerator;
-import org.workcraft.plugins.petri.PetriNetModel;
-import org.workcraft.plugins.petri.PetriNetSettings;
 import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.STGModel;
@@ -33,7 +27,6 @@ import org.workcraft.plugins.stg.VisualSTG;
 import org.workcraft.plugins.stg.tools.STGSimulationTool;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class CircuitSimulationTool extends STGSimulationTool {
 
@@ -96,8 +89,8 @@ public class CircuitSimulationTool extends STGSimulationTool {
 		return st;
 	}
 	
-	public CircuitSimulationTool(GraphEditor editor) {
-		super(editor);
+	public CircuitSimulationTool(GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
+		super(editor, modelGraphicalContent);
 		this.editor = editor;
 		createInterface();
 		

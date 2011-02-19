@@ -175,32 +175,4 @@ public class GUI {
 		result.setPreferredSize(new Dimension(minSize, minSize));
 		return result;
 	}
-	
-	public static Graphics2D cloneGraphics(Graphics2D g) {
-		return (Graphics2D)g.create();
-	}
-	
-	public static Expression<? extends GraphicalContent> statePreserving(final Expression<? extends GraphicalContent> content) {
-		return new ExpressionBase<GraphicalContent>(){
-
-			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
-				return new GraphicalContent(){
-
-					@Override
-					public void draw(Graphics2D graphics) {
-						final Graphics2D g = cloneGraphics(graphics);
-						try {
-							context.resolve(content).draw(g);
-						}
-						finally {
-							g.dispose();
-						}
-					}
-					
-				};
-			}
-			
-		};
-	}
 }

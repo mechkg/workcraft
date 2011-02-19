@@ -9,7 +9,9 @@ import java.util.Collection;
 
 import javax.swing.Icon;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
@@ -25,7 +27,9 @@ import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.GenericSelectionTool.DragHandler;
+import org.workcraft.util.Func;
 import org.workcraft.util.GUI;
+import org.workcraft.util.Graphics;
 import org.workcraft.util.Hierarchy;
 
 import pcollections.HashTreePSet;
@@ -36,6 +40,7 @@ public class SelectionTool extends AbstractTool {
 	private final GenericSelectionTool<Node> selectionTool;
 	private DefaultAnchorGenerator anchorGenerator = new DefaultAnchorGenerator();
 	private final GraphEditor editor;
+	private final Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent;
 	
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e) {
@@ -43,8 +48,9 @@ public class SelectionTool extends AbstractTool {
 		anchorGenerator.mouseClicked(e);
 	}
 	
-	public SelectionTool(final GraphEditor editor) {
+	public SelectionTool(final GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
 		this.editor = editor;
+		this.modelGraphicalContent = modelGraphicalContent;
 		selectionTool = new GenericSelectionTool<Node>(
 				editor.getModel().selection(),
 				new GenericSelectionTool.HitTester<Node>() {
@@ -97,6 +103,55 @@ public class SelectionTool extends AbstractTool {
 
 	protected Color grayOutColor = Color.LIGHT_GRAY; 
 	
+	public Decorator getDecorator() {
+		return new HierarchicalColoriser() {
+			
+			@Override
+			public Expression<Decoration> getElementaryDecoration(final Node node) {
+				return new ExpressionBase<Decoration>(){
+
+					@Override
+					protected Decoration evaluate(final EvaluationContext context) {
+						if(node == context.resolve(editor.getModel().currentLevel()))
+							return Decoration.EMPTY;
+						
+						if(node == editor.getModel().getRoot())
+							return new Decoration(){
+	
+								@Override
+								public Color getColorisation() {
+									return grayOutColor;
+								}
+	
+								@Override
+								public Color getBackground() {
+									return null;
+								}
+							};
+							
+						
+						Decoration selectedDecoration = new Decoration() {
+	
+							@Override
+							public Color getColorisation() {
+								return selectionColor;
+							}
+	
+							@Override
+							public Color getBackground() {
+								return null;
+							}
+						};
+						
+						if(context.resolve(selectionTool.effectiveSelection).contains(node))
+							return selectedDecoration;
+						else
+							return null;
+					}
+				};
+			}
+		};
+	}
 	
 	@Override
 	public String getLabel() {
@@ -220,8 +275,8 @@ public class SelectionTool extends AbstractTool {
 	}
 
 	@Override
-	public Expression<GraphicalContent> userSpaceContent(final Expression<Boolean> hasFocus) {
-		return selectionTool.userSpaceContent(editor.getViewport());
+	public Expression<? extends GraphicalContent> userSpaceContent(final Expression<Boolean> hasFocus) {
+		return Graphics.compose(modelGraphicalContent.eval(getDecorator()), selectionTool.userSpaceContent(editor.getViewport()));
 	}
 
 	@Override

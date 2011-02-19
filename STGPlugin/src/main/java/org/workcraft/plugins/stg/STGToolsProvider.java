@@ -8,8 +8,10 @@ import javax.swing.Icon;
 
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
+import org.workcraft.gui.DefaultReflectiveNodeDecorator;
 import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
+import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.NodeGenerator;
@@ -98,13 +100,15 @@ public class STGToolsProvider implements CustomToolsProvider {
 	@Override
 	public Iterable<GraphEditorTool> getTools(GraphEditor editor) {
 		ArrayList<GraphEditorTool> result = new ArrayList<GraphEditorTool>();
+		final DefaultReflectiveNodeDecorator defaultReflectiveNodeDecorator = new DefaultReflectiveNodeDecorator(editor.getModel().getRoot());
+
 		
-		result.add(new STGSelectionTool(editor));
-		result.add(new ConnectionTool(editor));
-		result.add(new NodeGeneratorTool(new PlaceGenerator()));
-		result.add(new NodeGeneratorTool(new SignalTransitionGenerator()));
-		result.add(new NodeGeneratorTool(new DummyTransitionGenerator()));
-		result.add(new STGSimulationTool(editor));
+		result.add(new STGSelectionTool(editor,defaultReflectiveNodeDecorator));
+		result.add(new ConnectionTool(editor,defaultReflectiveNodeDecorator));
+		result.add(new NodeGeneratorTool(new PlaceGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
+		result.add(new NodeGeneratorTool(new SignalTransitionGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
+		result.add(new NodeGeneratorTool(new DummyTransitionGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
+		result.add(new STGSimulationTool(editor, defaultReflectiveNodeDecorator));
 
 		return result;
 	}

@@ -12,7 +12,9 @@ import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
+import org.workcraft.gui.DefaultReflectiveNodeDecorator;
 import org.workcraft.gui.graph.tools.ConnectionTool;
+import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.NodeGenerator;
@@ -80,12 +82,13 @@ public class PetriNetVisualModelDescriptor implements VisualModelDescriptor {
 
 	@Override
 	public Iterable<GraphEditorTool> createTools(GraphEditor editor) {
+		final DefaultReflectiveNodeDecorator defaultReflectiveNodeDecorator = new DefaultReflectiveNodeDecorator(editor.getModel().getRoot());
 		return Arrays.asList(new GraphEditorTool[]{
-				new SelectionTool(editor),
-				new ConnectionTool(editor),
-				new NodeGeneratorTool(new PlaceGenerator()),
-				new NodeGeneratorTool(new TransitionGenerator()),
-				new SimulationTool(editor)
+				new SelectionTool(editor, defaultReflectiveNodeDecorator),
+				new ConnectionTool(editor, defaultReflectiveNodeDecorator),
+				new NodeGeneratorTool(new PlaceGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)),
+				new NodeGeneratorTool(new TransitionGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)),
+				new SimulationTool(editor, defaultReflectiveNodeDecorator)
 		});
 	}
 }

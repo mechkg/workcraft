@@ -72,7 +72,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	class Repainter extends ExpressionBase<ImageModel> {
 		
 		public Repainter() {
-			new Timer(200, new ActionListener(){
+			new Timer(20, new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					eval(Repainter.this);
@@ -227,7 +227,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 				
 					g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-					context.resolve(tool.userSpaceContent(hasFocus)).draw(g2d);
+					context.resolve(tool.userSpaceContent(hasFocus)).draw(org.workcraft.util.Graphics.cloneGraphics(g2d));
 
 					g2d.setTransform(screenTransform);
 

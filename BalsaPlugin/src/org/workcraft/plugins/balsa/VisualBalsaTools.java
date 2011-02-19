@@ -21,66 +21,18 @@
 
 package org.workcraft.plugins.balsa;
 
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-import javax.swing.Icon;
-
-import org.workcraft.dom.visual.VisualModel;
-import org.workcraft.exceptions.NodeCreationException;
-import org.workcraft.gui.graph.tools.ConnectionTool;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
-import org.workcraft.gui.graph.tools.NodeGenerator;
-import org.workcraft.gui.graph.tools.NodeGeneratorTool;
-import org.workcraft.gui.graph.tools.SelectionTool;
 
 public class VisualBalsaTools implements CustomToolsProvider
 {
-	GraphEditorTool getComponentTool(final String componentName)
-	{
-		return new NodeGeneratorTool(new NodeGenerator(){
-			
-			@Override
-			public String getLabel() {
-				return componentName;
-			}
-
-			@Override
-			public Icon getIcon() {
-				return null;
-			}
-
-			@Override
-			public void generate(VisualModel model, Point2D where)
-					throws NodeCreationException {
-				((VisualBalsaCircuit)model).createComponent(componentName, where);
-			}
-
-			@Override
-			public int getHotKeyCode() {
-				return -1;
-			}
-		});
-	}
-	
+		
 	@Override
 	public ArrayList<GraphEditorTool> getTools(GraphEditor editor) {
-		ArrayList<GraphEditorTool> tools = new ArrayList<GraphEditorTool>();
-		
-		//TODO
-		@SuppressWarnings("unused")
-		Class<?> [] balsaClasses = 
-			new Class<?>[]
-			{
-			};
-		
-		tools.add(new SelectionTool(editor));
-		tools.add(new ConnectionTool(editor));
-		//for(Class<?> c : balsaClasses)
-		//	tools.add(getComponentTool((Class<? extends org.workcraft.plugins.balsa.components.Component>) c));
-		
-		return tools;
+		throw new NotImplementedException();
 	}
 }

@@ -1,20 +1,24 @@
 package org.workcraft.plugins.cpog;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.event.KeyEvent;
 import java.util.Collection;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
+import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import org.workcraft.util.Func;
 
 public class SelectionTool extends org.workcraft.gui.graph.tools.SelectionTool
 {
-	public SelectionTool(GraphEditor editor) {
-		super(editor);
+	public SelectionTool(GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
+		super(editor, modelGraphicalContent);
 	}
 	
 	@Override

@@ -15,7 +15,9 @@ import org.apache.batik.svggen.SVGGraphics2D;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.workcraft.Framework;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
@@ -49,11 +51,11 @@ import pcollections.HashTreePSet;
 public class RegressionTests_2011_01_06 {
 	@Test
 	public void bezierDeserialisationInitTest() throws DeserialisationException {
-		
+
 		VisualConnection conn = new VisualConnection(new DefaultStorageManager());
 		new Bezier(conn, new DefaultStorageManager());
 	}
-	
+
 	class HiddenNode implements Node, DrawableNew, Hidable {
 		@Override
 		public Expression<Boolean> hidden() {
@@ -62,14 +64,14 @@ public class RegressionTests_2011_01_06 {
 
 		@Override
 		public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-			return Expressions.constant(new DeprecatedGraphicalContent(){
+			return Expressions.constant(new DeprecatedGraphicalContent() {
 				@Override
 				public void draw(DrawRequest request) {
 					hasBeenDrawn = true;
 				}
 			});
 		}
-		
+
 		public boolean hasBeenDrawn = false;
 
 		@Override
@@ -84,11 +86,11 @@ public class RegressionTests_2011_01_06 {
 
 		@Override
 		public Expression<? extends Collection<? extends Node>> children() {
-			return Expressions.constant(Collections.<Node>emptyList());
+			return Expressions.constant(Collections.<Node> emptyList());
 		}
-		
+
 	}
-	
+
 	@Test
 	public void hiddenNotDrawnTest() throws Exception {
 		HiddenNode node = new HiddenNode();
@@ -96,32 +98,39 @@ public class RegressionTests_2011_01_06 {
 		SVGGraphics2D g2d = new SVGGraphics2D(doc);
 		eval(DrawMan.graphicalContent(node, new NodeGraphicalContentProvider() {
 			@Override
-			public GraphicalContent getGraphicalContent(final Node node) {
-				return new GraphicalContent() {
+			public Expression<? extends GraphicalContent> getGraphicalContent(final Node node) {
+				return new ExpressionBase<GraphicalContent>() {
+
 					@Override
-					public void draw(final Graphics2D graphics) {
-						eval( ((HiddenNode)node).graphicalContent() ).draw(new DrawRequest() {
+					protected GraphicalContent evaluate(EvaluationContext context) {
+						return new GraphicalContent() {
 							@Override
-							public Graphics2D getGraphics() {
-								return graphics;
+							public void draw(final Graphics2D graphics) {
+								eval(((HiddenNode) node).graphicalContent()).draw(new DrawRequest() {
+									@Override
+									public Graphics2D getGraphics() {
+										return graphics;
+									}
+
+									@Override
+									public Decoration getDecoration() {
+										return Decoration.EMPTY;
+									};
+
+									@Override
+									public VisualModel getModel() {
+										return null;
+									}
+								});
 							}
-
-							@Override
-							public Decoration getDecoration() {
-								return Decoration.empty;		
-							};
-
-							@Override
-							public VisualModel getModel() {
-								return null;
-							} });
+						};
 					}
 				};
-			}
+			};
 		})).draw(g2d);
 		assertFalse(node.hasBeenDrawn);
 	}
-	
+
 	@Test
 	public void bezierHideUnhideControlPointsTest() throws Exception {
 		HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
@@ -137,23 +146,23 @@ public class RegressionTests_2011_01_06 {
 		visual.add(vp1);
 		VisualConnection vConn = visual.createConnection(vt1, vp1);
 		vConn.setConnectionType(ConnectionType.BEZIER);
-		Bezier graphic = (Bezier)vConn.getGraphic();
-		//visual.ensureConsistency();
+		Bezier graphic = (Bezier) vConn.getGraphic();
+		// visual.ensureConsistency();
 		BezierControlPoint[] cpoints = eval(graphic.getControlPoints());
 		Assert.assertEquals(2, cpoints.length);
 		Assert.assertTrue(eval(cpoints[0].hidden()));
 		Assert.assertTrue(eval(cpoints[1].hidden()));
-		visual.selection().setValue(HashTreePSet.<Node>singleton(cpoints[0]));
+		visual.selection().setValue(HashTreePSet.<Node> singleton(cpoints[0]));
 		Assert.assertFalse(eval(cpoints[0].hidden()));
 		Assert.assertFalse(eval(cpoints[1].hidden()));
-		visual.selection().setValue(HashTreePSet.<Node>empty());
+		visual.selection().setValue(HashTreePSet.<Node> empty());
 		Assert.assertTrue(eval(cpoints[0].hidden()));
 		Assert.assertTrue(eval(cpoints[1].hidden()));
-		visual.selection().setValue(HashTreePSet.<Node>singleton(vConn));
+		visual.selection().setValue(HashTreePSet.<Node> singleton(vConn));
 		Assert.assertFalse(eval(cpoints[0].hidden()));
 		Assert.assertFalse(eval(cpoints[1].hidden()));
 	}
-	
+
 	@Test
 	public void toggleStgLoadTest() throws Exception {
 		Framework fw = new Framework();
@@ -164,4 +173,3 @@ public class RegressionTests_2011_01_06 {
 		workStream.close();
 	}
 }
-

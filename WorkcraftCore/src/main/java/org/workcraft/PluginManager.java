@@ -246,57 +246,21 @@ public class PluginManager implements PluginProvider {
 		return (Collection<PluginInfo<? extends T>>)(Collection<?>)Collections.unmodifiableCollection(plugins.get(interf));
 	}
 
-	public <T> void registerClass(Class<T> interf, final Class<? extends T> cls)
-	{
-		registerClass(interf, new Initialiser<T>(){
-			@Override
-			public T create() {
-				try {
-					return cls.newInstance();
-				} catch (InstantiationException e) {
-					Throwable q = e;
-					
-					System.err.println (cls.getCanonicalName());
-					while (q != null)
-					{
-						q.printStackTrace();
-						q = q.getCause();
-					}
-					
-					
-					throw new RuntimeException(e);
-				} catch (IllegalAccessException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		});
-	}
-	
 	public <T> void registerClass(Class<T> interf, final Class<? extends T> cls, final Object ... constructorArgs)
 	{
 		registerClass(interf, new Initialiser<T>(){
 			@Override
 			public T create() {
 				try {
-					Class<?> classes[] = new Class<?>[constructorArgs.length];
-					
-					for (int i=0; i<constructorArgs.length; i++)
-						classes[i] = constructorArgs[i].getClass();
-					
-					return new ConstructorParametersMatcher().match(cls, classes).newInstance(constructorArgs);
-				} catch (InstantiationException e) {
-					throw new RuntimeException(e);
-				} catch (IllegalAccessException e) {
-					throw new RuntimeException(e);
-				} catch (SecurityException e) {
+					return ConstructorParametersMatcher.construct(cls, constructorArgs);
+                            }
+                                 catch (SecurityException e) {
 					throw new RuntimeException(e);
 				} catch (NoSuchMethodException e) {
 					throw new RuntimeException(e);
 				} catch (IllegalArgumentException e) {
 					throw new RuntimeException(e);
-				} catch (InvocationTargetException e) {
-					throw new RuntimeException(e);
-				}
+				} 
 			}
 		});
 	}

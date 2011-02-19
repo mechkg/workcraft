@@ -71,8 +71,11 @@ import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.AbstractTool;
+import org.workcraft.gui.graph.tools.Decoration;
+import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.plugins.petri.PetriNetModel;
+import org.workcraft.plugins.petri.PetriNetSettings;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.petri.VisualTransition;
@@ -100,9 +103,12 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 	private Trace savedBranchTrace;
 	private int savedBranchStep = 0;
 
-	public SimulationTool(GraphEditor editor) {
+	private final Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent;
+
+	public SimulationTool(GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
 		super();
 		this.editor = editor;
+		this.modelGraphicalContent = modelGraphicalContent;
 		createInterface();
 	}
 
@@ -712,74 +718,73 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 		this.branchTrace = null;
 		this.branchStep = 0;
 	}
-//
-//	@Override
-//	public Expression<? extends NodeGraphicalContentProvider> getDecorator() {
-//		return new ExpressionBase<NodeGraphicalContentProvider>() { // TODO:
-//																	// make it
-//																	// dependent
-//																	// on the
-//																	// enabledness
-//
-//			@Override
-//			protected NodeGraphicalContentProvider evaluate(EvaluationContext context) {
-//				return new NodeGraphicalContentProvider() {
-//
-//					@Override
-//					public Decoration getDecoration(Node node) {
-//						if (node instanceof VisualTransition) {
-//							Transition transition = ((VisualTransition) node).getReferencedTransition();
-//
-//							String transitionId = null;
-//							Node transition2 = null;
-//
-//							if (branchTrace != null && branchStep < branchTrace.size()) {
-//								transitionId = branchTrace.get(branchStep);
-//								transition2 = eval(net.referenceManager()).getNodeByReference(transitionId);
-//							} else if (branchTrace == null && trace != null && traceStep < trace.size()) {
-//								transitionId = trace.get(traceStep);
-//								transition2 = eval(net.referenceManager()).getNodeByReference(transitionId);
-//							}
-//
-//							if (transition == transition2) {
-//								return new Decoration() {
-//
-//									@Override
-//									public Color getColorisation() {
-//										return PetriNetSettings.getEnabledBackgroundColor();
-//									}
-//
-//									@Override
-//									public Color getBackground() {
-//										return PetriNetSettings.getEnabledForegroundColor();
-//									}
-//								};
-//
-//							}
-//
-//							if (net.isEnabled(transition))
-//								return new Decoration() {
-//
-//									@Override
-//									public Color getColorisation() {
-//										return PetriNetSettings.getEnabledForegroundColor();
-//									}
-//
-//									@Override
-//									public Color getBackground() {
-//										return PetriNetSettings.getEnabledBackgroundColor();
-//									}
-//								};
-//						}
-//						return null;
-//					}
-//
-//				};
-//			}
-//
-//		};
-//
-//	}
+
+	public Decorator getDecorator() {
+		return new Decorator() { // TODO:
+																	// make it
+																	// dependent
+																	// on the
+																	// enabledness
+
+			@Override
+			public Expression<? extends Decoration> getDecoration(final Node node) {
+				return new ExpressionBase<Decoration>() {
+
+					@Override
+					public Decoration evaluate(EvaluationContext context) {
+						if (node instanceof VisualTransition) {
+							Transition transition = ((VisualTransition) node).getReferencedTransition();
+
+							String transitionId = null;
+							Node transition2 = null;
+
+							if (branchTrace != null && branchStep < branchTrace.size()) {
+								transitionId = branchTrace.get(branchStep);
+								transition2 = eval(net.referenceManager()).getNodeByReference(transitionId);
+							} else if (branchTrace == null && trace != null && traceStep < trace.size()) {
+								transitionId = trace.get(traceStep);
+								transition2 = eval(net.referenceManager()).getNodeByReference(transitionId);
+							}
+
+							if (transition == transition2) {
+								return new Decoration() {
+
+									@Override
+									public Color getColorisation() {
+										return PetriNetSettings.getEnabledBackgroundColor();
+									}
+
+									@Override
+									public Color getBackground() {
+										return PetriNetSettings.getEnabledForegroundColor();
+									}
+								};
+
+							}
+
+							if (net.isEnabled(transition))
+								return new Decoration() {
+
+									@Override
+									public Color getColorisation() {
+										return PetriNetSettings.getEnabledForegroundColor();
+									}
+
+									@Override
+									public Color getBackground() {
+										return PetriNetSettings.getEnabledBackgroundColor();
+									}
+								};
+						}
+						return null;
+					}
+
+				};
+			}
+
+		};
+
+	}
 
 	@Override
 	public void lostOwnership(Clipboard clip, Transferable arg) {
@@ -787,6 +792,6 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 
 	@Override
 	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus) {
-		return Expressions.constant(GraphicalContent.empty);
+		return modelGraphicalContent.eval(getDecorator());
 	}
 }

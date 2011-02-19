@@ -28,10 +28,11 @@ import java.util.Collection;
 import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.graph.tools.NodeGraphicalContentProvider;
-import org.workcraft.util.GUI;
+import org.workcraft.util.Graphics;
 
 public class DrawMan
 {
@@ -74,22 +75,18 @@ public class DrawMan
 				@Override
 				public GraphicalContent evaluate(final EvaluationContext resolver) {
 					
+					System.out.println("evaluating for node " + node);
 					Collection<? extends Node> children = resolver.resolve(node.children());
-					final List<GraphicalContent> childrenGraphics = new ArrayList<GraphicalContent>();
+					final List<ExpressionBase<GraphicalContent>> childrenGraphics = new ArrayList<ExpressionBase<GraphicalContent>>();
 					for(Node n : children)
-						childrenGraphics.add(resolver.resolve(graphicalContent(n, gcProvider)));
+						childrenGraphics.add(graphicalContent(n, gcProvider));
 					
-					final GraphicalContent nodeGraphicalContent = gcProvider.getGraphicalContent(node);
+					Expression<? extends GraphicalContent> graphicalContent = gcProvider.getGraphicalContent(node);
 					
-					return new GraphicalContent() {
-						@Override
-						public void draw(final Graphics2D graphics) {
-							nodeGraphicalContent.draw(GUI.cloneGraphics(graphics));
-							
-							for (GraphicalContent child : childrenGraphics)
-								child.draw(GUI.cloneGraphics(graphics));
-						}
-					};
+					for(ExpressionBase<GraphicalContent> child : childrenGraphics)
+						graphicalContent = Graphics.compose(graphicalContent, child);
+					
+					return resolver.resolve(graphicalContent);
 				}
 		};
 	}

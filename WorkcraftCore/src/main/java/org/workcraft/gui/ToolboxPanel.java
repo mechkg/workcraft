@@ -177,8 +177,9 @@ public class ToolboxPanel extends JPanel implements GraphEditorKeyListener {
 	}
 
 	public void addCommonTools(GraphEditor editor) {
-		addTool(new SelectionTool(editor), true);
-		addTool(new ConnectionTool(editor), false);
+		if(true)throw new NotImplementedException();
+		addTool(new SelectionTool(editor, null), true);
+		addTool(new ConnectionTool(editor, null), false);
 	}
 
 	private void setToolsForModel (VisualModelDescriptor modelDescriptor, GraphEditor editor) {

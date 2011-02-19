@@ -1,5 +1,7 @@
 package org.workcraft.plugins.stg;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -14,6 +16,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualModel;
@@ -22,16 +26,16 @@ import org.workcraft.exceptions.ArgumentException;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
+import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.SelectionTool;
 import org.workcraft.plugins.petri.VisualPlace;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import org.workcraft.util.Func;
 
 public class STGSelectionTool extends SelectionTool
 {
-	public STGSelectionTool(GraphEditor editor) {
-		super(editor);
+	public STGSelectionTool(GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
+		super(editor, modelGraphicalContent);
 	}
 
 	private boolean cancelEdit = false;

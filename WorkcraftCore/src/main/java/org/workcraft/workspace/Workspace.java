@@ -47,6 +47,8 @@ import org.workcraft.util.LinkedTwoWayMap;
 import org.workcraft.util.XmlUtil;
 import org.xml.sax.SAXException;
 
+import checkers.nullness.quals.Nullable;
+
 public class Workspace {
 	private LinkedTwoWayMap<Path<String>, WorkspaceEntry> openFiles = new LinkedTwoWayMap<Path<String>, WorkspaceEntry>();
 	private List<WorkspaceListener> workspaceListeners = new ArrayList<WorkspaceListener>();
@@ -67,6 +69,7 @@ public class Workspace {
 		return new WorkspaceTree(this);
 	}
 	
+	@SuppressWarnings("nullness")
 	private File baseDir()
 	{
 		return workspaceFile.getParentFile();
@@ -100,16 +103,13 @@ public class Workspace {
 			for(WorkspaceEntry we : openFiles.values())
 				if(we.getWorkspacePath().equals(workspacePath))
 					return we;
-			
-			WorkspaceEntry we = new WorkspaceEntry(this);
-			we.setTemporary(temporary);
-			we.setChanged(false);
+
+			final ModelEntry modelEntry;
 			if (file.getName().endsWith(".work")) {
 				if (workspacePath == null)
 					workspacePath = tempMountExternalFile(file);
 				
-				ModelEntry modelEntry = framework.load(file.getPath());
-				we.setModelEntry(modelEntry);
+				modelEntry = framework.load(file.getPath());
 			} else {
 				try {
 					Path<String> parent;
@@ -119,24 +119,22 @@ public class Workspace {
 						parent = workspacePath.getParent();
 					
 					final Importer importer = Import.chooseBestImporter(framework.getPluginManager(), file);
-					ModelEntry modelEntry = Import.importFromFile(importer, file);
-					we.setModelEntry(modelEntry);
+					modelEntry = Import.importFromFile(importer, file);
 					
 					workspacePath = newName(parent, FileUtils.getFileNameWithoutExtension(file));
 				} catch (IOException e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(framework.getMainWindow(), e.getMessage(), "I/O error", JOptionPane.ERROR_MESSAGE);
-				} catch (DeserialisationException e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(framework.getMainWindow(), e.getMessage(), "Import error", JOptionPane.ERROR_MESSAGE);
-				}				
+					throw new DeserialisationException(e);
+				}
 			}
+			WorkspaceEntry we = new WorkspaceEntry(this, modelEntry);
+			we.setTemporary(temporary);
+			we.setChanged(false);
 			openFiles.put(workspacePath, we);
 			fireModelLoaded(we);
 			return we;
 		}
 		else
-			return null;
+			throw new DeserialisationException("The file does not exist.");
 	}
 
 	public File getFile(Path<String> wsPath)
@@ -191,10 +189,9 @@ public class Workspace {
 
 	public WorkspaceEntry add(Path<String> directory, String desiredName, ModelEntry modelEntry, boolean temporary) {
 		final Path<String> path = newName(directory, desiredName);
-		WorkspaceEntry we = new WorkspaceEntry(this);
+		WorkspaceEntry we = new WorkspaceEntry(this, modelEntry);
 		we.setTemporary(temporary);
 		we.setChanged(true);
-		we.setModelEntry(modelEntry);
 		openFiles.put(path, we);
 		fireEntryAdded(we);
 		return we;

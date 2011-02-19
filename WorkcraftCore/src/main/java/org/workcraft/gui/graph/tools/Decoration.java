@@ -19,5 +19,5 @@ public interface Decoration {
 		}
 	}
 	
-	public static final Empty empty = new Empty();
+	public static final Empty EMPTY = new Empty();
 }

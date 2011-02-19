@@ -6,6 +6,8 @@ import java.awt.geom.Point2D;
 
 import javax.swing.Icon;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
@@ -18,7 +20,7 @@ import org.workcraft.util.GUI;
 public class ContactGeneratorTool extends NodeGeneratorTool {
 	static boolean shiftPressed;
 	
-	public ContactGeneratorTool() {
+	public ContactGeneratorTool(Expression<? extends GraphicalContent> graphicalContent) {
 		super(new NodeGenerator()
 		{
 			Icon icon = GUI.createIconFromSVG("images/icons/svg/circuit-port.svg");
@@ -43,7 +45,7 @@ public class ContactGeneratorTool extends NodeGeneratorTool {
 			public int getHotKeyCode() {
 				return KeyEvent.VK_P;
 			}
-		});
+		}, graphicalContent);
 	}
 
 	@Override

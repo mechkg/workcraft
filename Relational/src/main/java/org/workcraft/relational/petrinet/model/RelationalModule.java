@@ -9,6 +9,7 @@ import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.VisualModelInstantiationException;
+import org.workcraft.gui.DefaultReflectiveNodeDecorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.SelectionTool;
@@ -50,7 +51,7 @@ public class RelationalModule implements Module {
 
 							@Override
 							public Iterable<? extends GraphEditorTool> createTools(GraphEditor editor) {
-								return TreePVector.<GraphEditorTool>singleton(new SelectionTool(editor)).plus(new UndoTool());
+								return TreePVector.<GraphEditorTool>singleton(new SelectionTool(editor, new DefaultReflectiveNodeDecorator(editor.getModel().getRoot()))).plus(new UndoTool());
 							}
 							
 						};

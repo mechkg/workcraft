@@ -10,7 +10,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
 import org.workcraft.util.Func;
@@ -42,11 +42,11 @@ public class FormulaLabel {
 			}
 		};
 		
-		graphicalContent = new ExpressionBase<DeprecatedGraphicalContent>(){
+		graphicalContent = new ExpressionBase<ColorisableGraphicalContent>(){
 
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				return new DeprecatedGraphicalContent(){
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				return new ColorisableGraphicalContent(){
 
 					@Override
 					public void draw(DrawRequest r)
@@ -60,7 +60,7 @@ public class FormulaLabel {
 						AffineTransform oldTransform = g.getTransform();
 
 						g.transform(context.resolve(labelTransform));		
-						result.draw(g, Coloriser.colorise(Color.BLACK, r.getDecoration().getColorisation()));
+						result.draw(g, Coloriser.colorise(Color.BLACK, r.getColorisation().getColorisation()));
 						g.setTransform(oldTransform);
 					}
 				};
@@ -70,6 +70,6 @@ public class FormulaLabel {
 	}
 	
 	public final Expression<Rectangle2D> boundingBox;
-	public final Expression<DeprecatedGraphicalContent> graphicalContent;
+	public final Expression<ColorisableGraphicalContent> graphicalContent;
 	
 }

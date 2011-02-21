@@ -20,7 +20,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TransformHelper;
@@ -141,11 +141,11 @@ public class VisualPlaceNode implements Node, DrawableNew, MovableNew {
 	}
 	
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>(){
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>(){
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				return new DeprecatedGraphicalContent() {
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				return new ColorisableGraphicalContent() {
 					public void draw(DrawRequest r) {
 						Graphics2D g = r.getGraphics();
 						
@@ -158,13 +158,13 @@ public class VisualPlaceNode implements Node, DrawableNew, MovableNew {
 								size - strokeWidth,
 								size - strokeWidth);
 	
-						g.setColor(Coloriser.colorise(Color.WHITE, r.getDecoration().getColorisation()));
+						g.setColor(Coloriser.colorise(Color.WHITE, r.getColorisation().getColorisation()));
 						g.fill(shape);
-						g.setColor(Coloriser.colorise(Color.BLACK, r.getDecoration().getColorisation()));
+						g.setColor(Coloriser.colorise(Color.BLACK, r.getColorisation().getColorisation()));
 						g.setStroke(new BasicStroke((float)strokeWidth));
 						g.draw(shape);
 	
-						drawTokens(context.resolve(tokenCount), singleTokenSize, multipleTokenSeparation, size, strokeWidth, Coloriser.colorise(context.resolve(tokenColor), r.getDecoration().getColorisation()), g);
+						drawTokens(context.resolve(tokenCount), singleTokenSize, multipleTokenSeparation, size, strokeWidth, Coloriser.colorise(context.resolve(tokenColor), r.getColorisation().getColorisation()), g);
 					}
 				};
 			}

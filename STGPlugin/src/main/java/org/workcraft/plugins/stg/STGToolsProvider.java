@@ -1,23 +1,29 @@
 package org.workcraft.plugins.stg;
 
+import static java.util.Arrays.asList;
+import static org.workcraft.gui.DefaultReflectiveModelPainter.reflectivePainterProvider;
+import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.attachPainter;
+import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.attachParameterisedPainter;
+
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
 
 import javax.swing.Icon;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
-import org.workcraft.gui.DefaultReflectiveNodeDecorator;
+import org.workcraft.gui.graph.tools.Colorisator;
 import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
-import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.NodeGenerator;
 import org.workcraft.gui.graph.tools.NodeGeneratorTool;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.plugins.stg.tools.STGSimulationTool;
+import org.workcraft.util.Func;
 import org.workcraft.util.GUI;
 
 public class STGToolsProvider implements CustomToolsProvider {
@@ -99,18 +105,16 @@ public class STGToolsProvider implements CustomToolsProvider {
 	
 	@Override
 	public Iterable<GraphEditorTool> getTools(GraphEditor editor) {
-		ArrayList<GraphEditorTool> result = new ArrayList<GraphEditorTool>();
-		final DefaultReflectiveNodeDecorator defaultReflectiveNodeDecorator = new DefaultReflectiveNodeDecorator(editor.getModel().getRoot());
-
+		final Func<Colorisator, Expression<? extends GraphicalContent>> painterProvider = reflectivePainterProvider(editor.getModel().getRoot());
+		final Expression<? extends GraphicalContent> simpleModelPainter = painterProvider.eval(Colorisator.EMPTY);
 		
-		result.add(new STGSelectionTool(editor,defaultReflectiveNodeDecorator));
-		result.add(new ConnectionTool(editor,defaultReflectiveNodeDecorator));
-		result.add(new NodeGeneratorTool(new PlaceGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
-		result.add(new NodeGeneratorTool(new SignalTransitionGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
-		result.add(new NodeGeneratorTool(new DummyTransitionGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
-		result.add(new STGSimulationTool(editor, defaultReflectiveNodeDecorator));
-
-		return result;
+		return asList(
+				attachParameterisedPainter(new STGSelectionTool(editor), painterProvider),
+				attachParameterisedPainter(new ConnectionTool(editor), painterProvider),
+				attachPainter(new NodeGeneratorTool(new PlaceGenerator()), simpleModelPainter),
+				attachPainter(new NodeGeneratorTool(new SignalTransitionGenerator()), simpleModelPainter),
+				attachPainter(new NodeGeneratorTool(new DummyTransitionGenerator()), simpleModelPainter),
+				attachParameterisedPainter(new STGSimulationTool(editor), painterProvider));
 	}
 
 }

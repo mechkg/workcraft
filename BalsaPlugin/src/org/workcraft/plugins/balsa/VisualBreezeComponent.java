@@ -48,7 +48,7 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.BoundingBoxHelper;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.MovableHelper;
 import org.workcraft.dom.visual.Touchable;
@@ -225,14 +225,14 @@ public class VisualBreezeComponent extends VisualComponent
 	}
 	
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		return Expressions.constant(new DeprecatedGraphicalContent() {
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		return Expressions.constant(new ColorisableGraphicalContent() {
 
 			@Override
 			public void draw(DrawRequest r) {
 				Graphics2D g = r.getGraphics();
 				g.setStroke(new BasicStroke(0.02f));
-				g.setColor(Coloriser.colorise(Color.black, r.getDecoration().getColorisation()));
+				g.setColor(Coloriser.colorise(Color.black, r.getColorisation().getColorisation()));
 
 				drawSideLine(g, visualLayout.left, -1);
 				drawSideLine(g, visualLayout.right, +1);

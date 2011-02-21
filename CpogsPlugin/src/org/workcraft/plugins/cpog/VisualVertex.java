@@ -42,7 +42,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
@@ -133,16 +133,16 @@ public class VisualVertex extends VisualComponent
 	}
 
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>(){
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>(){
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				return new DeprecatedGraphicalContent() {
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				return new ColorisableGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest r) {
 						Graphics2D g = r.getGraphics();
-						Color colorisation = r.getDecoration().getColorisation();
+						Color colorisation = r.getColorisation().getColorisation();
 						
 						Shape shape = new Ellipse2D.Double(-size / 2 + strokeWidth / 2, -size / 2 + strokeWidth / 2,
 								size - strokeWidth, size - strokeWidth);

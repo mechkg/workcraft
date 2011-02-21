@@ -1,5 +1,5 @@
 package org.workcraft.dom.visual;
 
-public interface DeprecatedGraphicalContent {
+public interface ColorisableGraphicalContent {
 	public void draw(DrawRequest request);
 }

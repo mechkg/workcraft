@@ -1,26 +1,32 @@
 package org.workcraft.plugins.petri;
 
+import static org.workcraft.gui.DefaultReflectiveModelPainter.reflectivePainterProvider;
+import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.attachPainter;
+import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.attachParameterisedPainter;
+
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
 
 import javax.swing.Icon;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
-import org.workcraft.gui.DefaultReflectiveNodeDecorator;
+import org.workcraft.gui.graph.tools.Colorisator;
 import org.workcraft.gui.graph.tools.ConnectionTool;
-import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.NodeGenerator;
 import org.workcraft.gui.graph.tools.NodeGeneratorTool;
 import org.workcraft.gui.graph.tools.SelectionTool;
 import org.workcraft.plugins.petri.tools.SimulationTool;
+import org.workcraft.util.Func;
 import org.workcraft.util.GUI;
 
 public class PetriNetVisualModelDescriptor implements VisualModelDescriptor {
@@ -80,15 +86,16 @@ public class PetriNetVisualModelDescriptor implements VisualModelDescriptor {
 		return new VisualPetriNet ((PetriNet)mathModel, storage);
 	}
 
-	@Override
 	public Iterable<GraphEditorTool> createTools(GraphEditor editor) {
-		final DefaultReflectiveNodeDecorator defaultReflectiveNodeDecorator = new DefaultReflectiveNodeDecorator(editor.getModel().getRoot());
+		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(editor.getModel().getRoot());
+		
 		return Arrays.asList(new GraphEditorTool[]{
-				new SelectionTool(editor, defaultReflectiveNodeDecorator),
-				new ConnectionTool(editor, defaultReflectiveNodeDecorator),
-				new NodeGeneratorTool(new PlaceGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)),
-				new NodeGeneratorTool(new TransitionGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)),
-				new SimulationTool(editor, defaultReflectiveNodeDecorator)
+			attachParameterisedPainter(new SelectionTool(editor), colorisablePainter),
+			attachParameterisedPainter(new ConnectionTool(editor), colorisablePainter),
+			attachPainter(new NodeGeneratorTool(new PlaceGenerator()), colorisablePainter.eval(Colorisator.EMPTY)),
+			attachPainter(new NodeGeneratorTool(new TransitionGenerator()), colorisablePainter.eval(Colorisator.EMPTY)),
+			attachParameterisedPainter(new SimulationTool(editor), colorisablePainter),
 		});
 	}
+	
 }

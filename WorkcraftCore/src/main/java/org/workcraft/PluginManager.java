@@ -157,7 +157,7 @@ public class PluginManager implements PluginProvider {
 				System.out.println("Loading module: " + module.getDescription());
 				module.init(framework);
 			}
-			catch(RuntimeException e) {
+			catch(Throwable e) {
 				System.err.println("Error during initialisation of module " + info.toString());
 			}
 		}

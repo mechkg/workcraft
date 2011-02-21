@@ -6,7 +6,7 @@ import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.AbstractTool;
-import org.workcraft.gui.graph.tools.NodeGraphicalContentProvider;
+import org.workcraft.gui.graph.tools.NodePainter;
 import org.workcraft.gui.graph.tools.GraphEditor;
 
 public class UndoTool extends AbstractTool {

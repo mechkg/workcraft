@@ -16,7 +16,7 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TransformHelper;
@@ -124,21 +124,21 @@ public class VisualGroupNode implements DrawableNew, MovableNew, Container{
 	}
 
 	@Override
-	public ExpressionBase<DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>() {
+	public ExpressionBase<ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>() {
 
 			@Override
-			public DeprecatedGraphicalContent evaluate(EvaluationContext resolver) {
+			public ColorisableGraphicalContent evaluate(EvaluationContext resolver) {
 				final Rectangle2D bb = resolver.resolve(localSpaceShape).getBoundingBox();
 				final Node parent = resolver.resolve(parent());
 				
-				return new DeprecatedGraphicalContent() {
+				return new ColorisableGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest r) {
 						if (bb != null && parent != null) {
 							bb.setRect(bb.getX() - 0.1, bb.getY() - 0.1, bb.getWidth() + 0.2, bb.getHeight() + 0.2);
-							r.getGraphics().setColor(Coloriser.colorise(Color.GRAY, r.getDecoration().getColorisation()));
+							r.getGraphics().setColor(Coloriser.colorise(Color.GRAY, r.getColorisation().getColorisation()));
 							r.getGraphics().setStroke(new BasicStroke(0.02f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[]{0.2f, 0.2f}, 0.0f));
 							r.getGraphics().draw(bb);
 						}

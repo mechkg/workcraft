@@ -33,7 +33,7 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
@@ -53,13 +53,13 @@ public class VisualDummyTransition extends VisualTransition {
 
 	
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>() {
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>() {
 
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				final DeprecatedGraphicalContent labelGraphics = context.resolve(label.graphics);
-				return new DeprecatedGraphicalContent() {
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				final ColorisableGraphicalContent labelGraphics = context.resolve(label.graphics);
+				return new ColorisableGraphicalContent() {
 
 					@Override
 					public void draw(DrawRequest r) {
@@ -68,14 +68,14 @@ public class VisualDummyTransition extends VisualTransition {
 
 						Graphics2D g = r.getGraphics();
 						
-						Color background = r.getDecoration().getBackground();
+						Color background = r.getColorisation().getBackground();
 						if(background!=null)
 						{
 							g.setColor(background);
 							g.fill(context.resolve(shape()).getBoundingBox());
 						}
 
-						g.setColor(Coloriser.colorise(getColor(), r.getDecoration().getColorisation()));
+						g.setColor(Coloriser.colorise(getColor(), r.getColorisation().getColorisation()));
 						
 						labelGraphics.draw(r);
 					}

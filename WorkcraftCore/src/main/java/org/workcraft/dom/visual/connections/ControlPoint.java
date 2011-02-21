@@ -38,7 +38,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualTransformableNode;
 import org.workcraft.gui.Coloriser;
@@ -63,11 +63,11 @@ public class ControlPoint extends VisualTransformableNode implements DrawableNew
 	}
 
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		return Expressions.constant(new DeprecatedGraphicalContent() {
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		return Expressions.constant(new ColorisableGraphicalContent() {
 			@Override
 			public void draw(DrawRequest r) {
-				r.getGraphics().setColor(Coloriser.colorise(fillColor, r.getDecoration().getColorisation()));
+				r.getGraphics().setColor(Coloriser.colorise(fillColor, r.getColorisation().getColorisation()));
 				r.getGraphics().fill(shape);
 			}
 		});

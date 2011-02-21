@@ -31,12 +31,12 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Node;
-import org.workcraft.gui.graph.tools.NodeGraphicalContentProvider;
+import org.workcraft.gui.graph.tools.NodePainter;
 import org.workcraft.util.Graphics;
 
 public class DrawMan
 {
-	public static ExpressionBase<GraphicalContent> graphicalContent(final Node node, final NodeGraphicalContentProvider gcProvider) {
+	public static ExpressionBase<GraphicalContent> graphicalContent(final Node node, final NodePainter gcProvider) {
 		return new ExpressionBase<GraphicalContent>() {
 			@Override
 			public GraphicalContent evaluate(EvaluationContext resolver) {
@@ -50,7 +50,7 @@ public class DrawMan
 		}; 
 	}
 	
-	private static ExpressionBase<GraphicalContent> transformedAndDecorated(final MovableNew node, final NodeGraphicalContentProvider gcProvider)
+	private static ExpressionBase<GraphicalContent> transformedAndDecorated(final MovableNew node, final NodePainter gcProvider)
 	{
 		return new ExpressionBase<GraphicalContent>() {
 			@Override
@@ -69,7 +69,7 @@ public class DrawMan
 		};
 	}
 
-	private static ExpressionBase<GraphicalContent> decorated(final Node node, final NodeGraphicalContentProvider gcProvider)
+	private static ExpressionBase<GraphicalContent> decorated(final Node node, final NodePainter gcProvider)
 	{
 		return new ExpressionBase<GraphicalContent>() {
 				@Override

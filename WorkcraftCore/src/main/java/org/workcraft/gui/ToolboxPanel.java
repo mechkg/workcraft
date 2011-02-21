@@ -176,12 +176,6 @@ public class ToolboxPanel extends JPanel implements GraphEditorKeyListener {
 		selectedTool.setValue(tool);
 	}
 
-	public void addCommonTools(GraphEditor editor) {
-		if(true)throw new NotImplementedException();
-		addTool(new SelectionTool(editor, null), true);
-		addTool(new ConnectionTool(editor, null), false);
-	}
-
 	private void setToolsForModel (VisualModelDescriptor modelDescriptor, GraphEditor editor) {
 		setLayout(new SimpleFlowLayout (5, 5));
 		
@@ -214,7 +208,7 @@ public class ToolboxPanel extends JPanel implements GraphEditorKeyListener {
 		}
 		else
 		{
-			addCommonTools(editor);
+			throw new NotImplementedException();
 		}
 		
 		for (Class<? extends GraphEditorTool>  tool : Annotations.getCustomTools(editor.getModel().getClass()))

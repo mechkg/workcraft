@@ -25,5 +25,5 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 
 
 public interface DrawableNew {
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent();
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent();
 }

@@ -21,7 +21,7 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
@@ -34,8 +34,8 @@ import org.workcraft.dom.visual.connections.BezierControlPoint;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.dom.visual.connections.VisualConnection.ConnectionType;
 import org.workcraft.exceptions.DeserialisationException;
-import org.workcraft.gui.graph.tools.Decoration;
-import org.workcraft.gui.graph.tools.NodeGraphicalContentProvider;
+import org.workcraft.gui.graph.tools.Colorisation;
+import org.workcraft.gui.graph.tools.NodePainter;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.DummyTransition;
@@ -63,8 +63,8 @@ public class RegressionTests_2011_01_06 {
 		}
 
 		@Override
-		public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-			return Expressions.constant(new DeprecatedGraphicalContent() {
+		public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+			return Expressions.constant(new ColorisableGraphicalContent() {
 				@Override
 				public void draw(DrawRequest request) {
 					hasBeenDrawn = true;
@@ -96,7 +96,7 @@ public class RegressionTests_2011_01_06 {
 		HiddenNode node = new HiddenNode();
 		Document doc = XmlUtil.createDocument();
 		SVGGraphics2D g2d = new SVGGraphics2D(doc);
-		eval(DrawMan.graphicalContent(node, new NodeGraphicalContentProvider() {
+		eval(DrawMan.graphicalContent(node, new NodePainter() {
 			@Override
 			public Expression<? extends GraphicalContent> getGraphicalContent(final Node node) {
 				return new ExpressionBase<GraphicalContent>() {
@@ -113,8 +113,8 @@ public class RegressionTests_2011_01_06 {
 									}
 
 									@Override
-									public Decoration getDecoration() {
-										return Decoration.EMPTY;
+									public Colorisation getColorisation() {
+										return Colorisation.EMPTY;
 									};
 
 									@Override

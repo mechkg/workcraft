@@ -52,11 +52,9 @@ import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
-import org.workcraft.util.Func;
 import org.workcraft.util.GUI;
-import org.workcraft.util.Graphics;
 
-public class ConnectionTool extends AbstractTool {
+public class ConnectionTool extends AbstractTool implements DecorationProvider<Colorisator> {
 	private final ModifiableExpression<VisualNode> mouseOverObject = Variable.create(null);
 	private final ModifiableExpression<VisualNode> first = Variable.create(null);
 
@@ -65,13 +63,11 @@ public class ConnectionTool extends AbstractTool {
 	private ModifiableExpression<Point2D> lastMouseCoords = Variable.<Point2D>create(new Point2D.Double());
 	private String warningMessage = null;
 	private final GraphEditor editor;
-	private final Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent;
 	
 	private static Color highlightColor = new Color(99, 130, 191).brighter();
 
-	public ConnectionTool (GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
+	public ConnectionTool (GraphEditor editor) {
 		this.editor = editor;
-		this.modelGraphicalContent = modelGraphicalContent;
 	}
 
 	public Ellipse2D getBoundingCircle(Rectangle2D boundingRect) {
@@ -85,19 +81,24 @@ public class ConnectionTool extends AbstractTool {
 
 	@Override
 	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus) {
-		return Graphics.compose(modelGraphicalContent.eval(getDecorator()), connectingLineGraphicalContent());
+		return connectingLineGraphicalContent();
 	}
 
-	public Decorator getDecorator() {
-		return new HierarchicalColoriser() {
+	@Override
+	public Colorisator getDecoration() {
+		return getColorisator();
+	}
+	
+	public Colorisator getColorisator() {
+		return new HierarchicalColorisator() {
 
 			@Override
-			public Expression<Decoration> getElementaryDecoration(final Node node) {
-				return new ExpressionBase<Decoration>(){
+			public Expression<Colorisation> getSimpleColorisation(final Node node) {
+				return new ExpressionBase<Colorisation>(){
 					@Override
-					protected Decoration evaluate(EvaluationContext context) {
+					protected Colorisation evaluate(EvaluationContext context) {
 						if(node == context.resolve(mouseOverObject))
-							return new Decoration(){
+							return new Colorisation(){
 								
 								@Override
 								public Color getColorisation() {

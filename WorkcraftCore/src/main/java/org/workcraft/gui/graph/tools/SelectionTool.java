@@ -27,20 +27,17 @@ import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.GenericSelectionTool.DragHandler;
-import org.workcraft.util.Func;
 import org.workcraft.util.GUI;
-import org.workcraft.util.Graphics;
 import org.workcraft.util.Hierarchy;
 
 import pcollections.HashTreePSet;
 import pcollections.PSet;
 
-public class SelectionTool extends AbstractTool {
+public class SelectionTool extends AbstractTool implements DecorationProvider<Colorisator> {
 
 	private final GenericSelectionTool<Node> selectionTool;
 	private DefaultAnchorGenerator anchorGenerator = new DefaultAnchorGenerator();
 	private final GraphEditor editor;
-	private final Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent;
 	
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e) {
@@ -48,9 +45,8 @@ public class SelectionTool extends AbstractTool {
 		anchorGenerator.mouseClicked(e);
 	}
 	
-	public SelectionTool(final GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
+	public SelectionTool(final GraphEditor editor) {
 		this.editor = editor;
-		this.modelGraphicalContent = modelGraphicalContent;
 		selectionTool = new GenericSelectionTool<Node>(
 				editor.getModel().selection(),
 				new GenericSelectionTool.HitTester<Node>() {
@@ -102,21 +98,27 @@ public class SelectionTool extends AbstractTool {
 	}
 
 	protected Color grayOutColor = Color.LIGHT_GRAY; 
+
 	
-	public Decorator getDecorator() {
-		return new HierarchicalColoriser() {
+	@Override
+	public Colorisator getDecoration() {
+		return getColorisator();
+	}
+	
+	public Colorisator getColorisator() {
+		return new HierarchicalColorisator() {
 			
 			@Override
-			public Expression<Decoration> getElementaryDecoration(final Node node) {
-				return new ExpressionBase<Decoration>(){
+			public Expression<Colorisation> getSimpleColorisation(final Node node) {
+				return new ExpressionBase<Colorisation>(){
 
 					@Override
-					protected Decoration evaluate(final EvaluationContext context) {
+					protected Colorisation evaluate(final EvaluationContext context) {
 						if(node == context.resolve(editor.getModel().currentLevel()))
-							return Decoration.EMPTY;
+							return Colorisation.EMPTY;
 						
 						if(node == editor.getModel().getRoot())
-							return new Decoration(){
+							return new Colorisation(){
 	
 								@Override
 								public Color getColorisation() {
@@ -130,7 +132,7 @@ public class SelectionTool extends AbstractTool {
 							};
 							
 						
-						Decoration selectedDecoration = new Decoration() {
+						Colorisation selectedDecoration = new Colorisation() {
 	
 							@Override
 							public Color getColorisation() {
@@ -276,7 +278,7 @@ public class SelectionTool extends AbstractTool {
 
 	@Override
 	public Expression<? extends GraphicalContent> userSpaceContent(final Expression<Boolean> hasFocus) {
-		return Graphics.compose(modelGraphicalContent.eval(getDecorator()), selectionTool.userSpaceContent(editor.getViewport()));
+		return selectionTool.userSpaceContent(editor.getViewport());
 	}
 
 	@Override

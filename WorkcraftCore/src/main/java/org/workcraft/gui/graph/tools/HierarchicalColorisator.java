@@ -5,7 +5,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Node;
 
-public abstract class HierarchicalColoriser implements Decorator {
+public abstract class HierarchicalColorisator implements Colorisator {
 
 	/**
 	 * Returns decoration to apply to this node and its children.
@@ -15,21 +15,21 @@ public abstract class HierarchicalColoriser implements Decorator {
 	 * @return
 	 * Decoration to be applied
 	 */
-	public abstract Expression<Decoration> getElementaryDecoration(Node node);
+	public abstract Expression<Colorisation> getSimpleColorisation(Node node);
 	
 	@Override
-	public Expression<Decoration> getDecoration(final Node node) {
-		return new ExpressionBase<Decoration> () {
+	public Expression<Colorisation> getColorisation(final Node node) {
+		return new ExpressionBase<Colorisation> () {
 
 			@Override
-			protected Decoration evaluate(EvaluationContext context) {
+			protected Colorisation evaluate(EvaluationContext context) {
 				if(node == null)
-					return Decoration.EMPTY;
-				final Decoration elementaryDecoration = context.resolve(getElementaryDecoration(node));
-				if(elementaryDecoration != null)
-					return elementaryDecoration;
+					return Colorisation.EMPTY;
+				final Colorisation simpleColorisation = context.resolve(getSimpleColorisation(node));
+				if(simpleColorisation != null)
+					return simpleColorisation;
 				else
-					return context.resolve(getDecoration(context.resolve(node.parent())));
+					return context.resolve(getColorisation(context.resolve(node.parent())));
 			}
 			
 		};

@@ -31,7 +31,7 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.plugins.stg.DefaultStorageManager;
@@ -79,8 +79,8 @@ class SquareNode extends VisualComponent
 	}
 
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		return Expressions.constant(new DeprecatedGraphicalContent() {
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		return Expressions.constant(new ColorisableGraphicalContent() {
 			@Override
 			public void draw(DrawRequest request) {
 			}

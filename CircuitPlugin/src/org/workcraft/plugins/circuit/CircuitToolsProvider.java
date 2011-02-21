@@ -1,18 +1,23 @@
 package org.workcraft.plugins.circuit;
 
 
+import static java.util.Arrays.asList;
+import static org.workcraft.gui.DefaultReflectiveModelPainter.reflectivePainterProvider;
+import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.attachPainter;
+import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.attachParameterisedPainter;
+
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
 
 import javax.swing.Icon;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
-import org.workcraft.gui.DefaultReflectiveNodeDecorator;
+import org.workcraft.gui.graph.tools.Colorisator;
 import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
-import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.NodeGenerator;
@@ -20,6 +25,7 @@ import org.workcraft.gui.graph.tools.NodeGeneratorTool;
 import org.workcraft.plugins.circuit.tools.CircuitSelectionTool;
 import org.workcraft.plugins.circuit.tools.CircuitSimulationTool;
 import org.workcraft.plugins.circuit.tools.ContactGeneratorTool;
+import org.workcraft.util.Func;
 import org.workcraft.util.GUI;
 
 public class CircuitToolsProvider implements CustomToolsProvider {
@@ -77,18 +83,17 @@ public class CircuitToolsProvider implements CustomToolsProvider {
 
 	@Override
 	public Iterable<GraphEditorTool> getTools(GraphEditor editor) {
-		ArrayList<GraphEditorTool> result = new ArrayList<GraphEditorTool>();
-		final DefaultReflectiveNodeDecorator defaultReflectiveNodeDecorator = new DefaultReflectiveNodeDecorator(editor.getModel().getRoot());
+		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(editor.getModel().getRoot());
+		final Expression<? extends GraphicalContent> simplePainter = colorisablePainter.eval(Colorisator.EMPTY);
 
+		return asList(
+				attachParameterisedPainter(new CircuitSelectionTool(editor), colorisablePainter),
+				attachParameterisedPainter(new ConnectionTool(editor), colorisablePainter),
+				attachParameterisedPainter(new CircuitSimulationTool(editor), colorisablePainter),
 		
-		result.add(new CircuitSelectionTool(editor, defaultReflectiveNodeDecorator));
-		result.add(new ConnectionTool(editor, defaultReflectiveNodeDecorator));
-		result.add(new CircuitSimulationTool(editor, defaultReflectiveNodeDecorator));
-		result.add(new ContactGeneratorTool(defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
-		result.add(new NodeGeneratorTool(new JointGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
-		result.add(new NodeGeneratorTool(new FunctionComponentGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
-		
-		return result;
+				attachPainter(new ContactGeneratorTool(), simplePainter),
+				attachPainter(new NodeGeneratorTool(new JointGenerator()), simplePainter),
+				attachPainter(new NodeGeneratorTool(new FunctionComponentGenerator()), simplePainter));
 	}
 
 }

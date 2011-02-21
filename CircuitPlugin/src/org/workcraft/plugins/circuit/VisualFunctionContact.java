@@ -36,7 +36,7 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.circuit.Contact.IoType;
@@ -83,13 +83,13 @@ public class VisualFunctionContact extends VisualContact {
 		renderedResetFormula = createRenderedFormulaExpression(component.resetFunction());
 	}
 	
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		final Expression<? extends DeprecatedGraphicalContent> superGraphicalContent = super.graphicalContent();
-		return new ExpressionBase<DeprecatedGraphicalContent>() {
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		final Expression<? extends ColorisableGraphicalContent> superGraphicalContent = super.graphicalContent();
+		return new ExpressionBase<ColorisableGraphicalContent>() {
 
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				return new DeprecatedGraphicalContent(){
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				return new ColorisableGraphicalContent(){
 					private void drawFormula(Graphics2D g, int arrowType, float xOffset, float yOffset, Color foreground, Color background, FormulaRenderingResult result) {
 						
 						Rectangle2D textBB = result.boundingBox;
@@ -182,7 +182,7 @@ public class VisualFunctionContact extends VisualContact {
 						
 						Graphics2D g = r.getGraphics();
 						
-						Color colorisation = r.getDecoration().getColorisation();
+						Color colorisation = r.getColorisation().getColorisation();
 						Node p = context.resolve(parent()); 
 						if (p!=null) {
 							if ((context.resolve(ioType())==IoType.INPUT)^(p instanceof VisualComponent)) {

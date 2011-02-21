@@ -19,7 +19,7 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.circuit.Contact.IoType;
@@ -261,20 +261,20 @@ public class VisualFunctionComponent extends VisualCircuitComponent implements C
 	}*/
 	
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		final Expression<? extends DeprecatedGraphicalContent> superGraphicalContent = super.graphicalContent();
-		return new ExpressionBase<DeprecatedGraphicalContent>(){
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		final Expression<? extends ColorisableGraphicalContent> superGraphicalContent = super.graphicalContent();
+		return new ExpressionBase<ColorisableGraphicalContent>(){
 
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				return new DeprecatedGraphicalContent() {
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				return new ColorisableGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest r) {
 						ComponentRenderingResult res = getRenderingResult(context);
 						Graphics2D g = r.getGraphics();
 						
-						Color colorisation = r.getDecoration().getColorisation();
+						Color colorisation = r.getColorisation().getColorisation();
 						Color col1 = Coloriser.colorise(CommonVisualSettings.getForegroundColor(), colorisation);
 						Color col2 = Coloriser.colorise(CommonVisualSettings.getBackgroundColor(), colorisation);
 						
@@ -298,7 +298,7 @@ public class VisualFunctionComponent extends VisualCircuitComponent implements C
 							Point2D mp=null, lp=null, pp=null;
 							
 							// draw component label
-							r.getGraphics().setColor(Coloriser.colorise(CommonVisualSettings.getForegroundColor(), r.getDecoration().getColorisation()));
+							r.getGraphics().setColor(Coloriser.colorise(CommonVisualSettings.getForegroundColor(), r.getColorisation().getColorisation()));
 							drawNameInLocalSpace(r, context); // TODO: check if this is correct
 							
 							// draw the rest

@@ -35,7 +35,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 
 public class BezierControlPoint extends ControlPoint {
 	private Expression<Point2D> origin;
@@ -46,16 +46,16 @@ public class BezierControlPoint extends ControlPoint {
 	}
 
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		final Expression<? extends DeprecatedGraphicalContent> superContentExpr = super.graphicalContent();
-		return new ExpressionBase<DeprecatedGraphicalContent>() {
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		final Expression<? extends ColorisableGraphicalContent> superContentExpr = super.graphicalContent();
+		return new ExpressionBase<ColorisableGraphicalContent>() {
 			@Override
-			protected DeprecatedGraphicalContent evaluate(EvaluationContext context) {
+			protected ColorisableGraphicalContent evaluate(EvaluationContext context) {
 				
-				final DeprecatedGraphicalContent superContent = context.resolve(superContentExpr);
+				final ColorisableGraphicalContent superContent = context.resolve(superContentExpr);
 				final Point2D orig = context.resolve(parentToLocalTransform()).transform(context.resolve(origin), null);
 
-				return new DeprecatedGraphicalContent() {
+				return new ColorisableGraphicalContent() {
 
 					@Override
 					public void draw(DrawRequest r) {

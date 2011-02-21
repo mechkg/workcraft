@@ -71,8 +71,9 @@ import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.AbstractTool;
-import org.workcraft.gui.graph.tools.Decoration;
-import org.workcraft.gui.graph.tools.Decorator;
+import org.workcraft.gui.graph.tools.Colorisation;
+import org.workcraft.gui.graph.tools.Colorisator;
+import org.workcraft.gui.graph.tools.DecorationProvider;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.plugins.petri.PetriNetModel;
 import org.workcraft.plugins.petri.PetriNetSettings;
@@ -82,7 +83,7 @@ import org.workcraft.plugins.petri.VisualTransition;
 import org.workcraft.util.Func;
 import org.workcraft.util.GUI;
 
-public class SimulationTool extends AbstractTool implements ClipboardOwner {
+public class SimulationTool extends AbstractTool implements ClipboardOwner, DecorationProvider<Colorisator> {
 	protected VisualModel visualNet;
 
 	protected PetriNetModel net;
@@ -103,12 +104,9 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 	private Trace savedBranchTrace;
 	private int savedBranchStep = 0;
 
-	private final Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent;
-
-	public SimulationTool(GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
+	public SimulationTool(GraphEditor editor) {
 		super();
 		this.editor = editor;
-		this.modelGraphicalContent = modelGraphicalContent;
 		createInterface();
 	}
 
@@ -719,19 +717,24 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 		this.branchStep = 0;
 	}
 
-	public Decorator getDecorator() {
-		return new Decorator() { // TODO:
+	@Override
+	public Colorisator getDecoration() {
+		return getColorisator();
+	}
+	
+	public Colorisator getColorisator() {
+		return new Colorisator() { // TODO:
 																	// make it
 																	// dependent
 																	// on the
 																	// enabledness
 
 			@Override
-			public Expression<? extends Decoration> getDecoration(final Node node) {
-				return new ExpressionBase<Decoration>() {
+			public Expression<? extends Colorisation> getColorisation(final Node node) {
+				return new ExpressionBase<Colorisation>() {
 
 					@Override
-					public Decoration evaluate(EvaluationContext context) {
+					public Colorisation evaluate(EvaluationContext context) {
 						if (node instanceof VisualTransition) {
 							Transition transition = ((VisualTransition) node).getReferencedTransition();
 
@@ -747,7 +750,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 							}
 
 							if (transition == transition2) {
-								return new Decoration() {
+								return new Colorisation() {
 
 									@Override
 									public Color getColorisation() {
@@ -763,7 +766,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 							}
 
 							if (net.isEnabled(transition))
-								return new Decoration() {
+								return new Colorisation() {
 
 									@Override
 									public Color getColorisation() {
@@ -792,6 +795,6 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner {
 
 	@Override
 	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus) {
-		return modelGraphicalContent.eval(getDecorator());
+		return Expressions.constant(GraphicalContent.empty);
 	}
 }

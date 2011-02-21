@@ -37,7 +37,7 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.gui.Coloriser;
@@ -117,16 +117,16 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 	}
 
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
 		
-		final Expression<? extends DeprecatedGraphicalContent> superGraphicalContent = super.graphicalContent();
-		return new ExpressionBase<DeprecatedGraphicalContent>() {
+		final Expression<? extends ColorisableGraphicalContent> superGraphicalContent = super.graphicalContent();
+		return new ExpressionBase<ColorisableGraphicalContent>() {
 
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
 				final int tokens = context.resolve(tokens());
 				
-				return new DeprecatedGraphicalContent() {
+				return new ColorisableGraphicalContent() {
 
 					@Override
 					public void draw(DrawRequest r) {
@@ -134,7 +134,7 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 						Point2D p = getPointOnConnection(0.5);
 						
 						r.getGraphics().translate(p.getX(), p.getY());		
-						VisualPlace.drawTokens(tokens, singleTokenSize, multipleTokenSeparation, tokenSpaceSize, 0, Coloriser.colorise(tokenColor, r.getDecoration().getColorisation()), r.getGraphics());
+						VisualPlace.drawTokens(tokens, singleTokenSize, multipleTokenSeparation, tokenSpaceSize, 0, Coloriser.colorise(tokenColor, r.getColorisation().getColorisation()), r.getGraphics());
 						
 						context.resolve(superGraphicalContent).draw(r);
 					}

@@ -7,12 +7,9 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 
-import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
-import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.plugins.circuit.Contact;
 import org.workcraft.plugins.circuit.VisualCircuit;
@@ -89,8 +86,8 @@ public class CircuitSimulationTool extends STGSimulationTool {
 		return st;
 	}
 	
-	public CircuitSimulationTool(GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
-		super(editor, modelGraphicalContent);
+	public CircuitSimulationTool(GraphEditor editor) {
+		super(editor);
 		this.editor = editor;
 		createInterface();
 		

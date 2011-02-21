@@ -1,20 +1,26 @@
 package org.workcraft.plugins.cpog;
 
+import static java.util.Arrays.asList;
+import static org.workcraft.gui.DefaultReflectiveModelPainter.reflectivePainterProvider;
+import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.attachPainter;
+import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.attachParameterisedPainter;
+
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
 
 import javax.swing.Icon;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
-import org.workcraft.gui.DefaultReflectiveNodeDecorator;
+import org.workcraft.gui.graph.tools.Colorisator;
 import org.workcraft.gui.graph.tools.ConnectionTool;
-import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.NodeGenerator;
 import org.workcraft.gui.graph.tools.NodeGeneratorTool;
+import org.workcraft.util.Func;
 import org.workcraft.util.GUI;
 
 public class CustomToolsProvider implements
@@ -101,17 +107,16 @@ public class CustomToolsProvider implements
 	@Override
 	public Iterable<GraphEditorTool> getTools(GraphEditor editor)
 	{
-		ArrayList<GraphEditorTool> res = new ArrayList<GraphEditorTool>();
-		final DefaultReflectiveNodeDecorator defaultReflectiveNodeDecorator = new DefaultReflectiveNodeDecorator(editor.getModel().getRoot());
+		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(editor.getModel().getRoot());
+		final Expression<? extends GraphicalContent> simplePainter = colorisablePainter.eval(Colorisator.EMPTY);
 
-		res.add(new SelectionTool(editor,defaultReflectiveNodeDecorator));
-		res.add(new ConnectionTool(editor,defaultReflectiveNodeDecorator));
+		return asList(
+				attachParameterisedPainter(new SelectionTool(editor), colorisablePainter),
+				attachParameterisedPainter(new ConnectionTool(editor), colorisablePainter),
 		
-		res.add(new NodeGeneratorTool(new VertexGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
-		res.add(new NodeGeneratorTool(new VariableGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
-		res.add(new NodeGeneratorTool(new RhoClauseGenerator(), defaultReflectiveNodeDecorator.eval(Decorator.EMPTY)));
-		
-		return res;
+				attachPainter(new NodeGeneratorTool(new VertexGenerator()), simplePainter),
+				attachPainter(new NodeGeneratorTool(new VariableGenerator()), simplePainter),
+				attachPainter(new NodeGeneratorTool(new RhoClauseGenerator()), simplePainter));
 	}
 
 }

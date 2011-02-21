@@ -43,7 +43,7 @@ import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.util.ExpressionUtil;
@@ -182,17 +182,17 @@ public class Bezier implements ConnectionGraphic, SelectionObserver {
 	}
 	
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>() {
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>() {
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				return new DeprecatedGraphicalContent() {
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				return new ColorisableGraphicalContent() {
 					@Override
 					public void draw(DrawRequest r) {
 						Graphics2D g = r.getGraphics();
 						
 						VisualConnectionProperties cinfo = context.resolve(connectionInfo);
-						Color color = Coloriser.colorise(cinfo.getDrawColor(), r.getDecoration().getColorisation());
+						Color color = Coloriser.colorise(cinfo.getDrawColor(), r.getColorisation().getColorisation());
 						g.setColor(color);
 //						g.setStroke(new BasicStroke((float)connectionInfo.getLineWidth()));
 						g.setStroke(cinfo.getStroke());

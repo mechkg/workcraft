@@ -1,5 +1,7 @@
 package org.workcraft.plugins.stg.tools;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
@@ -8,24 +10,18 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
-import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.GraphicalContent;
-import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.plugins.petri.PetriNetSettings;
 import org.workcraft.plugins.petri.tools.SimulationTool;
 import org.workcraft.plugins.stg.SignalTransition;
-import org.workcraft.util.Func;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 public class STGSimulationTool extends SimulationTool {
 	private static Color inputsColor = Color.RED.darker();
 	private static Color outputsColor = Color.BLUE.darker();
 	private static Color internalsColor = Color.GREEN.darker();
 	
-	public STGSimulationTool(GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
-		super(editor, modelGraphicalContent);
+	public STGSimulationTool(GraphEditor editor) {
+		super(editor);
 		createInterface();
 	}
 	

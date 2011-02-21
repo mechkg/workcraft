@@ -47,7 +47,7 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.util.Geometry;
@@ -310,10 +310,10 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 	}
 
 	@Override
-	public ExpressionBase<DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>() {
+	public ExpressionBase<ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>() {
 			@Override
-			public DeprecatedGraphicalContent evaluate(EvaluationContext resolver) {
+			public ColorisableGraphicalContent evaluate(EvaluationContext resolver) {
 				
 				final Path2D connectionPath = new Path2D.Double();
 
@@ -338,13 +338,13 @@ public class Polyline implements ConnectionGraphic, Container,SelectionObserver 
 				
 				final VisualConnectionProperties connInfo = resolver.resolve(connectionInfo);
 
-				return new DeprecatedGraphicalContent() {
+				return new ColorisableGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest r) {
 						Graphics2D g = r.getGraphics();
 						
-						Color color = Coloriser.colorise(connInfo.getDrawColor(), r.getDecoration().getColorisation());
+						Color color = Coloriser.colorise(connInfo.getDrawColor(), r.getColorisation().getColorisation());
 						g.setColor(color);
 						g.setStroke(connInfo.getStroke());
 						g.draw(connectionPath);

@@ -54,20 +54,20 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 	final DefaultGroupImpl groupImpl;
 
 	@Override
-	public ExpressionBase<DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>() {
+	public ExpressionBase<ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>() {
 
 			@Override
-			public DeprecatedGraphicalContent evaluate(EvaluationContext resolver) {
+			public ColorisableGraphicalContent evaluate(EvaluationContext resolver) {
 				final Rectangle2D bb = BoundingBoxHelper.expand(resolver.resolve(localSpaceTouchable()).getBoundingBox(), 0.2, 0.2);
 				final Node parent = resolver.resolve(parent());
 				
-				return new DeprecatedGraphicalContent() {
+				return new ColorisableGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest r) {
 						if (bb != null && parent != null) {
-							r.getGraphics().setColor(Coloriser.colorise(Color.GRAY, r.getDecoration().getColorisation()));
+							r.getGraphics().setColor(Coloriser.colorise(Color.GRAY, r.getColorisation().getColorisation()));
 							r.getGraphics().setStroke(new BasicStroke(0.02f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, new float[]{0.2f, 0.2f}, 0.0f));
 							r.getGraphics().draw(bb);
 						}

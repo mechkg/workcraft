@@ -16,8 +16,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 
-import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualModel;
@@ -26,16 +24,14 @@ import org.workcraft.exceptions.ArgumentException;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
-import org.workcraft.gui.graph.tools.Decorator;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.SelectionTool;
 import org.workcraft.plugins.petri.VisualPlace;
-import org.workcraft.util.Func;
 
 public class STGSelectionTool extends SelectionTool
 {
-	public STGSelectionTool(GraphEditor editor, Func<Decorator, Expression<? extends GraphicalContent>> modelGraphicalContent) {
-		super(editor, modelGraphicalContent);
+	public STGSelectionTool(GraphEditor editor) {
+		super(editor);
 	}
 
 	private boolean cancelEdit = false;

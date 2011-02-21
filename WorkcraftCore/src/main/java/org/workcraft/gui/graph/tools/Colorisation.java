@@ -2,11 +2,11 @@ package org.workcraft.gui.graph.tools;
 
 import java.awt.Color;
 
-public interface Decoration {
+public interface Colorisation {
 	Color getColorisation();
 	Color getBackground();
 	
-	public static class Empty implements Decoration {
+	public static class Empty implements Colorisation {
 
 		@Override
 		public Color getColorisation() {

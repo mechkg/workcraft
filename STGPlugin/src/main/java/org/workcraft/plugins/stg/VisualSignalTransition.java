@@ -34,7 +34,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
@@ -63,18 +63,18 @@ public class VisualSignalTransition extends VisualTransition {
 	}
 	
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>() {
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>() {
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				return new DeprecatedGraphicalContent() {
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				return new ColorisableGraphicalContent() {
 					@Override
 					public void draw(DrawRequest r) {
 						
 						stg.setValue(((VisualSTG)r.getModel()).stg);
 						
-						final DeprecatedGraphicalContent labelGraphics = context.resolve(labelGraphics());
-						final DeprecatedGraphicalContent nameLabelGraphics = context.resolve(nameLabel.graphics);
+						final ColorisableGraphicalContent labelGraphics = context.resolve(labelGraphics());
+						final ColorisableGraphicalContent nameLabelGraphics = context.resolve(nameLabel.graphics);
 						final Color color = context.resolve(color());
 						final Touchable shape = context.resolve(localSpaceTouchable());
 						
@@ -82,14 +82,14 @@ public class VisualSignalTransition extends VisualTransition {
 						
 						Graphics2D g = r.getGraphics();
 						
-						Color background = r.getDecoration().getBackground();
+						Color background = r.getColorisation().getBackground();
 						if(background!=null)
 						{
 							g.setColor(background);
 							g.fill(shape.getBoundingBox());
 						}
 						
-						g.setColor(Coloriser.colorise(color, r.getDecoration().getColorisation()));
+						g.setColor(Coloriser.colorise(color, r.getColorisation().getColorisation()));
 						
 						nameLabelGraphics.draw(r);
 					}

@@ -23,7 +23,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.gui.Coloriser;
@@ -148,16 +148,16 @@ public class VisualScenario extends VisualGroup
 	}
 	
 	@Override
-	public ExpressionBase<DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>() {
+	public ExpressionBase<ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>() {
 
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				return new DeprecatedGraphicalContent(){
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				return new ColorisableGraphicalContent(){
 					@Override
 					public void draw(DrawRequest r) {
 						Graphics2D g = r.getGraphics();
-						Color colorisation = r.getDecoration().getColorisation();
+						Color colorisation = r.getColorisation().getColorisation();
 						
 						Rectangle2D bb = getContentsBoundingBox(context);
 					

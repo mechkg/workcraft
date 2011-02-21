@@ -13,29 +13,29 @@ import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NotSupportedException;
-import org.workcraft.gui.graph.tools.Decoration;
-import org.workcraft.gui.graph.tools.Decorator;
-import org.workcraft.gui.graph.tools.NodeGraphicalContentProvider;
+import org.workcraft.gui.graph.tools.Colorisation;
+import org.workcraft.gui.graph.tools.Colorisator;
+import org.workcraft.gui.graph.tools.NodePainter;
 import org.workcraft.util.Func;
 
-public class DefaultReflectiveNodeDecorator implements Func<Decorator, Expression<? extends GraphicalContent>> {
+public class DefaultReflectiveModelPainter {
 	
-	private final Node root;
-
-	public DefaultReflectiveNodeDecorator(Node root) {
-		this.root = root;
+	public static Func<Colorisator, Expression<? extends GraphicalContent>> reflectivePainterProvider(final Node root) {
+		return new Func<Colorisator, Expression<? extends GraphicalContent>>(){
+			@Override
+			public Expression<? extends GraphicalContent> eval(Colorisator colorisator) {
+				return createReflectivePainter(root, colorisator);
+			}
+		};
 	}
 	
-	@Override
-	public Expression<? extends GraphicalContent> eval(final Decorator arg) {
-		
-		return DrawMan.graphicalContent(root, new NodeGraphicalContentProvider() {
-			
+	public static Expression<? extends GraphicalContent> createReflectivePainter(Node root, final Colorisator colorisator) {
+		return DrawMan.graphicalContent(root, new NodePainter() {
 			@Override
 			public Expression<? extends GraphicalContent> getGraphicalContent(Node node) {
 				if(node instanceof DrawableNew) {
 					final DrawableNew drawable = (DrawableNew) node; 
-					final Expression<? extends Decoration> decoration = arg.getDecoration(node);
+					final Expression<? extends Colorisation> colorisation = colorisator.getColorisation(node);
 					return new ExpressionBase<GraphicalContent>(){
 
 						@Override
@@ -46,8 +46,8 @@ public class DefaultReflectiveNodeDecorator implements Func<Decorator, Expressio
 								public void draw(final Graphics2D graphics) {
 									context.resolve(drawable.graphicalContent()).draw(new DrawRequest(){
 										@Override
-										public Decoration getDecoration() {
-											return context.resolve(decoration);
+										public Colorisation getColorisation() {
+											return context.resolve(colorisation);
 										}
 										@Override
 										public Graphics2D getGraphics() {
@@ -68,8 +68,5 @@ public class DefaultReflectiveNodeDecorator implements Func<Decorator, Expressio
 					return Expressions.constant(GraphicalContent.empty);
 			}
 		});
-				
-
-				
 	}
 }

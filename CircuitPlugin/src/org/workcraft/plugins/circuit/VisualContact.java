@@ -45,7 +45,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
@@ -207,12 +207,12 @@ public class VisualContact extends VisualComponent {
 	}
 	
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>(){
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>(){
 
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				return new DeprecatedGraphicalContent() {
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				return new ColorisableGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest request) {
@@ -228,8 +228,8 @@ public class VisualContact extends VisualComponent {
 		connections = eval(r.getModel().nodeContext()).getConnections(this).size();
 		
 		Graphics2D g = r.getGraphics();
-		Color colorisation = r.getDecoration().getColorisation();
-		Color fillColor = r.getDecoration().getBackground();
+		Color colorisation = r.getColorisation().getColorisation();
+		Color fillColor = r.getColorisation().getBackground();
 		if (fillColor==null) fillColor=context.resolve(fillColor());
 		
 		if (!(context.resolve(parent()) instanceof VisualCircuitComponent)) {

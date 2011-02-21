@@ -53,7 +53,7 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.CustomTouchable;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
@@ -122,7 +122,7 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 	protected void drawNameInLocalSpace(DrawRequest r, EvaluationContext context) {
 
 		Graphics2D g = r.getGraphics();
-		g.setColor(Coloriser.colorise(CommonVisualSettings.getForegroundColor(), r.getDecoration().getColorisation()));
+		g.setColor(Coloriser.colorise(CommonVisualSettings.getForegroundColor(), r.getColorisation().getColorisation()));
 		
 		g.setFont(nameFont);
 		Rectangle2D contactLabelBB = context.resolve(this.contactLabelBB);
@@ -301,7 +301,7 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 	
 	protected void drawContactConnections(DrawRequest r, EvaluationContext context) {
 		Graphics2D g = r.getGraphics();
-		Color colorisation = r.getDecoration().getColorisation();
+		Color colorisation = r.getColorisation().getColorisation();
 		g.setStroke(new BasicStroke((float)CircuitSettings.getCircuitWireWidth()));
 		
 		Rectangle2D BB = context.resolve(contactLabelBB);
@@ -347,7 +347,7 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 	protected void drawContacts(DrawRequest r, EvaluationContext context) {
 		
 		Graphics2D g = r.getGraphics();
-		Color colorisation = r.getDecoration().getColorisation();
+		Color colorisation = r.getColorisation().getColorisation();
 		
 		Rectangle2D BB = context.resolve(contactLabelBB);
 	
@@ -395,19 +395,19 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 	}
 	
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>(){
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>(){
 
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				return new DeprecatedGraphicalContent() {
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				return new ColorisableGraphicalContent() {
 					
 					@Override
 					public void draw(DrawRequest r) {
 						drawNameInLocalSpace(r, context);
 		
 						Graphics2D g = r.getGraphics();
-						Color colorisation = r.getDecoration().getColorisation();
+						Color colorisation = r.getColorisation().getColorisation();
 						
 						drawContactConnections(r, context);
 						

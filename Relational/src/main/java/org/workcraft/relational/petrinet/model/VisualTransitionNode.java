@@ -18,7 +18,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.DeprecatedGraphicalContent;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TransformHelper;
@@ -76,11 +76,11 @@ public class VisualTransitionNode implements Node, DrawableNew, MovableNew {
 	protected static double multipleTokenSeparation = CommonVisualSettings.getStrokeWidth() / 8;
 	
 	@Override
-	public Expression<? extends DeprecatedGraphicalContent> graphicalContent() {
-		return new ExpressionBase<DeprecatedGraphicalContent>(){
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		return new ExpressionBase<ColorisableGraphicalContent>(){
 			@Override
-			protected DeprecatedGraphicalContent evaluate(final EvaluationContext context) {
-				return new DeprecatedGraphicalContent() {
+			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				return new ColorisableGraphicalContent() {
 					@Override
 					public void draw(DrawRequest r) {
 						Graphics2D g = r.getGraphics();
@@ -93,9 +93,9 @@ public class VisualTransitionNode implements Node, DrawableNew, MovableNew {
 								-size / 2 + strokeWidth / 2,
 								size - strokeWidth,
 								size - strokeWidth);
-						g.setColor(Coloriser.colorise(Coloriser.colorise(Color.WHITE, r.getDecoration().getBackground()), r.getDecoration().getColorisation()));
+						g.setColor(Coloriser.colorise(Coloriser.colorise(Color.WHITE, r.getColorisation().getBackground()), r.getColorisation().getColorisation()));
 						g.fill(shape);
-						g.setColor(Coloriser.colorise(Coloriser.colorise(Color.BLACK, r.getDecoration().getBackground()), r.getDecoration().getColorisation()));
+						g.setColor(Coloriser.colorise(Coloriser.colorise(Color.BLACK, r.getColorisation().getBackground()), r.getColorisation().getColorisation()));
 						g.setStroke(new BasicStroke((float)CommonVisualSettings.getStrokeWidth()));
 						g.draw(shape);
 

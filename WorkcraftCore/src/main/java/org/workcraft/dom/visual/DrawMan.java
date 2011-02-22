@@ -75,7 +75,6 @@ public class DrawMan
 				@Override
 				public GraphicalContent evaluate(final EvaluationContext resolver) {
 					
-					System.out.println("evaluating for node " + node);
 					Collection<? extends Node> children = resolver.resolve(node.children());
 					final List<ExpressionBase<GraphicalContent>> childrenGraphics = new ArrayList<ExpressionBase<GraphicalContent>>();
 					for(Node n : children)

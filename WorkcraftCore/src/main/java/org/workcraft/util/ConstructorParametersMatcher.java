@@ -22,11 +22,14 @@
 package org.workcraft.util;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
 public class ConstructorParametersMatcher
 {
 	public static <T> T construct(Class<T> cls, Object... parameters) throws NoSuchMethodException {
+		if(cls.isInterface() || Modifier.isAbstract(cls.getModifiers()))
+			throw new RuntimeException("Unable to construct an abstract class or interface");
 		try {
 			Class<?>[] parameterTypes = new Class<?>[parameters.length];
 			for(int i=0;i<parameters.length;i++)

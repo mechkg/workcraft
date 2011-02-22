@@ -20,6 +20,7 @@
  */
 
 package org.workcraft;
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -36,6 +37,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -399,36 +403,35 @@ public class Framework {
 		System.out.println ("Switching to GUI mode...");
 
 
+		Runnable displayMainWindow = new Runnable() {
+			public void run() {
+				mainWindow = new MainWindow(Framework.this);
+				mainWindow.startup();
+			}
+		};
 		if (SwingUtilities.isEventDispatchThread()) {
-			mainWindow = new MainWindow(Framework.this);
-			mainWindow.startup();
-		} else
+			displayMainWindow.run();
+		} else {
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					public void run() {
-						mainWindow = new MainWindow(Framework.this);
-						mainWindow.startup();
-					}
-				});
+				SwingUtilities.invokeAndWait(displayMainWindow);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (InvocationTargetException e) {
 				e.printStackTrace();
 			}
+		}
 
-			contextFactory.call(new ContextAction() {
-				public Object run(Context cx) {
-					Object guiScriptable = Context.javaToJS(mainWindow, systemScope);
-					ScriptableObject.putProperty(systemScope, "mainWindow", guiScriptable);
-					systemScope.setAttributes("mainWindow", ScriptableObject.READONLY);
-					return null;
+		contextFactory.call(new ContextAction() {
+			public Object run(Context cx) {
+				Object guiScriptable = Context.javaToJS(mainWindow, systemScope);
+				ScriptableObject.putProperty(systemScope, "mainWindow", guiScriptable);
+				systemScope.setAttributes("mainWindow", ScriptableObject.READONLY);
+				return null;
+			}
+		});
 
-				}
-			});
-
-			System.out.println ("Now in GUI mode.");
-			inGUIMode = true;
-
+		System.out.println ("Now in GUI mode.");
+		inGUIMode = true;
 	}
 
 	public void shutdownGUI() throws OperationCancelledException {

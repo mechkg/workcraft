@@ -32,7 +32,7 @@ public interface GraphEditorTool extends GraphEditorKeyListener, GraphEditorMous
 	public void activated();
 	public void deactivated();
 	
-	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus);
+	public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus);
 	public Expression<? extends GraphicalContent> screenSpaceContent(Viewport viewport, Expression<Boolean> hasFocus);
 	
 	public JPanel getInterfacePanel();

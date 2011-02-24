@@ -3,7 +3,6 @@ package org.workcraft.testing.serialisation.xml;
 import static org.junit.Assert.assertFalse;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.io.InputStream;
 import java.util.Collection;
@@ -27,8 +26,6 @@ import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Hidable;
-import org.workcraft.dom.visual.Touchable;
-import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.connections.Bezier;
 import org.workcraft.dom.visual.connections.BezierControlPoint;
 import org.workcraft.dom.visual.connections.VisualConnection;
@@ -73,12 +70,6 @@ public class RegressionTests_2011_01_06 {
 		}
 
 		public boolean hasBeenDrawn = false;
-
-		@Override
-		public Expression<? extends Touchable> shape() {
-			return null;
-		}
-
 		@Override
 		public ModifiableExpression<Node> parent() {
 			return null;
@@ -116,11 +107,6 @@ public class RegressionTests_2011_01_06 {
 									public Colorisation getColorisation() {
 										return Colorisation.EMPTY;
 									};
-
-									@Override
-									public VisualModel getModel() {
-										return null;
-									}
 								});
 							}
 						};

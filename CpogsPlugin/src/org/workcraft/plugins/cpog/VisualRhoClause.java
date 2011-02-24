@@ -39,6 +39,8 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawableNew;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
@@ -50,7 +52,7 @@ import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
 
-public class VisualRhoClause extends VisualComponent
+public class VisualRhoClause extends VisualComponent implements DrawableNew, ReflectiveTouchable
 {
 	private static float strokeWidth = 0.038f;
 
@@ -171,7 +173,7 @@ public class VisualRhoClause extends VisualComponent
 	}
 
 	@Override
-	public Expression<? extends Touchable> localSpaceTouchable() {
+	public Expression<? extends Touchable> shape() {
 		return new ExpressionBase<Touchable>() {
 
 			@Override

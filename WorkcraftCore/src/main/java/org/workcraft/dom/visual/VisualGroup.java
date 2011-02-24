@@ -21,6 +21,8 @@
 
 package org.workcraft.dom.visual;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.geom.Point2D;
@@ -30,8 +32,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Container;
@@ -39,9 +41,8 @@ import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.util.Hierarchy;
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
-public class VisualGroup extends VisualTransformableNode implements DrawableNew, Container {
+public class VisualGroup extends VisualTransformableNode implements Container{
 	public static final int HIT_COMPONENT = 1;
 	public static final int HIT_CONNECTION = 2;
 	public static final int HIT_GROUP = 3;
@@ -53,14 +54,13 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 	
 	final DefaultGroupImpl groupImpl;
 
-	@Override
-	public ExpressionBase<ColorisableGraphicalContent> graphicalContent() {
+	public static ExpressionBase<ColorisableGraphicalContent> graphicalContent(final TouchableProvider<Node> tp, final VisualGroup group) {
 		return new ExpressionBase<ColorisableGraphicalContent>() {
 
 			@Override
 			public ColorisableGraphicalContent evaluate(EvaluationContext resolver) {
-				final Rectangle2D bb = BoundingBoxHelper.expand(resolver.resolve(localSpaceTouchable()).getBoundingBox(), 0.2, 0.2);
-				final Node parent = resolver.resolve(parent());
+				final Rectangle2D bb = BoundingBoxHelper.expand(resolver.resolve(localSpaceTouchable(tp, group)).getBoundingBox(), 0.2, 0.2);
+				final Node parent = resolver.resolve(group.parent());
 				
 				return new ColorisableGraphicalContent() {
 					
@@ -77,8 +77,7 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 		};
 	}
 
-	@Override
-	public Expression<Touchable> localSpaceTouchable() {
+	public static Expression<Touchable> localSpaceTouchable(final TouchableProvider<Node> tp, final VisualGroup group) {
 		return new ExpressionBase<Touchable>() {
 			@Override
 			protected Touchable evaluate(final EvaluationContext context) {
@@ -97,10 +96,13 @@ public class VisualGroup extends VisualTransformableNode implements DrawableNew,
 					@Override
 					public Rectangle2D getBoundingBox() {
 						Rectangle2D result = null;
-						for(Node n : context.resolve(children())) {
-							Touchable shape = context.resolve(n.shape());
-							if(shape!=null) {
-								result = BoundingBoxHelper.union(result, shape.getBoundingBox());
+						for(Node n : context.resolve(group.children())) {
+							Expression<? extends Touchable> child = tp.apply(n);
+							if(child!=null) { // fuck you java
+								Touchable shape = context.resolve(child);
+								if(shape!=null) { // fuck you java
+									result = BoundingBoxHelper.union(result, shape.getBoundingBox());
+								}
 							}
 						}
 						return result;

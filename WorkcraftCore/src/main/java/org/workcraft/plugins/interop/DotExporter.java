@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.ModelValidationException;
@@ -23,6 +24,12 @@ import org.workcraft.serialisation.Format;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class DotExporter implements Exporter {
+	
+	private final TouchableProvider<Node> tp;
+
+	public DotExporter(TouchableProvider<Node> tp) {
+		this.tp = tp;
+	}
 
 	public static void export(DotExportable model, OutputStream outStream) throws IOException
 	{
@@ -57,7 +64,7 @@ public class DotExporter implements Exporter {
 				final String id = eval(model.referenceManager()).getNodeReference(comp);
 				
 				if(id!=null) {
-					final Rectangle2D bb = eval(comp.localSpaceTouchable()).getBoundingBox();
+					final Rectangle2D bb = eval(tp.apply(comp)).getBoundingBox();
 
 					if(bb!=null)
 					{

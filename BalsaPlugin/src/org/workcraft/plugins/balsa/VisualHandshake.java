@@ -36,11 +36,13 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawableNew;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.plugins.balsa.handshakebuilder.Handshake;
 
-public class VisualHandshake extends VisualComponent {
+public class VisualHandshake extends VisualComponent implements DrawableNew, ReflectiveTouchable {
 
 	private final Handshake handshake;
 
@@ -128,7 +130,7 @@ public class VisualHandshake extends VisualComponent {
 	}
 
 	@Override
-	public Expression<? extends Touchable> localSpaceTouchable() {
+	public Expression<? extends Touchable> shape() {
 		return Expressions.constant(new Touchable(){
 			public Rectangle2D getBoundingBox() {
 				return new Rectangle2D.Double(-0.5, -0.5, 1, 1);

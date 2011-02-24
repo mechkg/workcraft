@@ -34,11 +34,13 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawableNew;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
-public class VisualVertex extends VisualComponent {
+public class VisualVertex extends VisualComponent implements DrawableNew, ReflectiveTouchable {
 	private static double size = 1;
 	private static float strokeWidth = 0.1f;
 
@@ -72,7 +74,7 @@ public class VisualVertex extends VisualComponent {
 	}
 
 	@Override
-	public Expression<? extends Touchable> localSpaceTouchable() {
+	public Expression<? extends Touchable> shape() {
 		return Expressions.constant(new Touchable(){
 
 			@Override

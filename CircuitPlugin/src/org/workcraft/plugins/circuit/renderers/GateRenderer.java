@@ -1,3 +1,4 @@
+
 package org.workcraft.plugins.circuit.renderers;
 
 import java.awt.Color;
@@ -16,6 +17,7 @@ import org.workcraft.plugins.circuit.naryformula.NaryBooleanFormulaVisitor;
 import org.workcraft.plugins.circuit.naryformula.NaryFormulaBuilder;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
+import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString;
 
 
 public class GateRenderer {
@@ -30,14 +32,13 @@ public class GateRenderer {
 	public static double getXFromY(double y, double pivot) {
 		return -2*y*y*pivot+2*y*pivot;
 	}
-	
 
 	public static ComponentRenderingResult renderGate(BooleanFormula formula) {
 		
-		
+		System.out.println("rendering gate " + FormulaToString.toString(formula));
 		NaryBooleanFormula f = NaryFormulaBuilder.make(formula);
 		
-		return f.accept(new NaryBooleanFormulaVisitor<ComponentRenderingResult>() {
+		ComponentRenderingResult result = f.accept(new NaryBooleanFormulaVisitor<ComponentRenderingResult>() {
 			boolean isBuffer = true;
 
  			@Override
@@ -450,6 +451,7 @@ public class GateRenderer {
 				};
 			}
 		});
-		
+		System.out.println("result bounding box: " + result.boundingBox());
+		return result;
 	}
 }

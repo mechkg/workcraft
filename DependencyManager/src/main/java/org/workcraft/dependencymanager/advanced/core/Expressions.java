@@ -4,9 +4,12 @@ import java.util.Collection;
 
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleTuple;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.Unfold;
 import org.workcraft.dependencymanager.util.listeners.Listener;
+import org.workcraft.util.Function;
+import org.workcraft.util.Function2;
 
 public class Expressions {
 	public static <T> Expression<T> constant(final T value) {
@@ -69,6 +72,57 @@ public class Expressions {
 			@Override
 			public void setValue(T newValue) {
 				setter.setValue(newValue);
+			}
+		};
+	}
+	
+	public static <A,B> Expression<? extends B> bindFunc(final Expression<? extends A> expr1, final Function<? super A, ? extends B> func) {
+		return new ExpressionBase<B>(){
+			@Override
+			protected B evaluate(EvaluationContext context) {
+				return func.apply(context.resolve(expr1));
+			}
+		};
+	}
+	
+	public static <A,B> Expression<? extends B> bind(final Expression<? extends A> expr1, final Combinator<? super A, ? extends B> func) {
+		return new ExpressionBase<B>(){
+			@Override
+			protected B evaluate(EvaluationContext context) {
+				return context.resolve(func.apply(context.resolve(expr1)));
+			}
+		};
+	}
+	
+	public static <A,B,C> Expression<? extends C> bind(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Combinator2<? super A, ? super B, ? extends C> func) {
+		return new ExpressionBase<C>(){
+			@Override
+			protected C evaluate(EvaluationContext context) {
+				return context.resolve(func.apply(context.resolve(expr1),context.resolve(expr2)));
+			}
+		};
+	}
+
+	public static <A,B,C> Expression<? extends C> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Function2<? super A, ? super B, ? extends C> func) {
+		return new ExpressionBase<C>(){
+			@Override
+			protected C evaluate(EvaluationContext context) {
+				return func.apply(context.resolve(expr1),context.resolve(expr2));
+			}
+		};
+	}
+
+	public static <A,B> ModifiableExpression<B> bind(final ModifiableExpression<A> expr1, final ModifiableExpressionCombinator<A, B> combinator) {
+		return new ModifiableExpressionBase<B>(){
+
+			@Override
+			public void setValue(B newValue) {
+				expr1.setValue(combinator.set(GlobalCache.eval(expr1), newValue));
+			}
+
+			@Override
+			protected B evaluate(EvaluationContext context) {
+				return context.resolve(combinator.get(context.resolve(expr1)));
 			}
 		};
 	}

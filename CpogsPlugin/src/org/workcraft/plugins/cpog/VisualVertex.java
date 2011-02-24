@@ -43,7 +43,9 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.Label;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
@@ -58,7 +60,7 @@ import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 import org.workcraft.util.Func;
 
-public class VisualVertex extends VisualComponent
+public class VisualVertex extends VisualComponent implements DrawableNew, ReflectiveTouchable
 {
 	private final static double size = 1;
 	private final static float strokeWidth = 0.1f;
@@ -214,7 +216,7 @@ public class VisualVertex extends VisualComponent
 	}
 
 	@Override
-	public Expression<? extends Touchable> localSpaceTouchable() {
+	public Expression<? extends Touchable> shape() {
 		return new ExpressionBase<Touchable>() {
 
 			@Override

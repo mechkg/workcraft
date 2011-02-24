@@ -26,7 +26,11 @@ import java.awt.geom.Point2D;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.Touchable;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.plugins.stg.DefaultStorageManager;
@@ -37,13 +41,25 @@ public class VisualPlaceTests {
 		Place p = new Place(new DefaultStorageManager());
 		VisualPlace vp = new VisualPlace(p, new DefaultStorageManager());
 		
+		TouchableProvider<Node> tp = TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS;
+		
+		// since 24.02.2011 the Movable is applied on top of shape, so shape does not change anymore
+		// TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS manages it instead.
 		Assert.assertTrue(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(0,0)));
 		Assert.assertFalse(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(5,5)));
+		
+		Expression<? extends Touchable> transformedShape = tp.apply(vp);
+		
+		Assert.assertTrue(GlobalCache.eval(transformedShape).hitTest(new Point2D.Double(0,0)));
+		Assert.assertFalse(GlobalCache.eval(transformedShape).hitTest(new Point2D.Double(5,5)));
 		
 		vp.x().setValue(5.0);
 		vp.y().setValue(5.0);
 		
-		Assert.assertTrue(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(5,5)));
-		Assert.assertFalse(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(0,0)));
+		Assert.assertFalse(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(5,5)));
+		Assert.assertTrue(GlobalCache.eval(vp.shape()).hitTest(new Point2D.Double(0,0)));
+
+		Assert.assertFalse(GlobalCache.eval(transformedShape).hitTest(new Point2D.Double(0,0)));
+		Assert.assertTrue(GlobalCache.eval(transformedShape).hitTest(new Point2D.Double(5,5)));
 	}
 }

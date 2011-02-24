@@ -21,9 +21,6 @@
 
 package org.workcraft.dom.visual;
 
-import java.awt.geom.Point2D;
-import java.util.Collection;
-
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Model;
@@ -45,7 +42,5 @@ public interface VisualModel extends Model {
 	public void groupSelection();
 	public void ungroupSelection();
 	
-	public Collection<Node> boxHitTest(Point2D p1, Point2D p2);
-
 	public ModifiableExpression<PSet<Node>> selection();
 }

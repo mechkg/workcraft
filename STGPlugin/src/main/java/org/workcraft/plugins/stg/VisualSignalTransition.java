@@ -32,38 +32,27 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.petri.Transition;
-import org.workcraft.plugins.petri.VisualTransition;
 import org.workcraft.plugins.stg.SignalTransition.Type;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
-public class VisualSignalTransition extends VisualTransition {
+public class VisualSignalTransition extends VisualStgTransition{
 	private static Color inputsColor = Color.RED.darker();
 	private static Color outputsColor = Color.BLUE.darker();
 	private static Color internalsColor = Color.GREEN.darker();
 
 	private static Font font = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.75f);
 	
-	private Label nameLabel = new Label(font, text());
-	Variable<STG> stg = Variable.<STG>create(null);
-	
 	public VisualSignalTransition(Transition transition, StorageManager storage) {
 		super(transition, storage);
-		addPropertyDeclarations();
-	}
-
-	private void addPropertyDeclarations() {
-		
 	}
 	
-	@Override
-	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+	public Expression<? extends ColorisableGraphicalContent> getGraphicalContent(final Expression<? extends String> text) {
 		return new ExpressionBase<ColorisableGraphicalContent>() {
 			@Override
 			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
@@ -71,12 +60,10 @@ public class VisualSignalTransition extends VisualTransition {
 					@Override
 					public void draw(DrawRequest r) {
 						
-						stg.setValue(((VisualSTG)r.getModel()).stg);
-						
 						final ColorisableGraphicalContent labelGraphics = context.resolve(labelGraphics());
-						final ColorisableGraphicalContent nameLabelGraphics = context.resolve(nameLabel.graphics);
+						final ColorisableGraphicalContent nameLabelGraphics = context.resolve(label(text).graphics);
 						final Color color = context.resolve(color());
-						final Touchable shape = context.resolve(localSpaceTouchable());
+						final Touchable shape = context.resolve(localSpaceTouchable(text));
 						
 						labelGraphics.draw(r);
 						
@@ -97,16 +84,19 @@ public class VisualSignalTransition extends VisualTransition {
 			}
 		};
 	}
+
+	private Label label(final Expression<? extends String> text) {
+		return new Label(font, text);
+	}
 	
-	@Override
-	public Expression<Touchable> localSpaceTouchable() {
+	public Expression<Touchable> localSpaceTouchable(final Expression<? extends String> text) {
 		return new ExpressionBase<Touchable>() {
 			@Override
 			protected Touchable evaluate(final EvaluationContext context) {
 				return new Touchable() {
 					@Override
 					public Rectangle2D getBoundingBox() {
-						return context.resolve(nameLabel.centeredBB);
+						return context.resolve(label(text).centeredBB);
 					}
 					
 					@Override
@@ -119,28 +109,6 @@ public class VisualSignalTransition extends VisualTransition {
 						return getBoundingBox().contains(point);
 					}
 				};
-			}
-		};
-	}
-	
-	private Expression<String> text() {
-		return new ExpressionBase<String>() {
-			@Override
-			protected String evaluate(EvaluationContext context) {
-				SignalTransition t = getReferencedTransition();
-				STG stg = context.resolve(VisualSignalTransition.this.stg);
-				if(stg == null)
-					return "the model is null O_O";
-				final StringBuffer result = new StringBuffer(context.resolve(stg.signalName(t)));
-				switch (context.resolve(stg.direction(t))) {
-				case PLUS:
-					result.append("+"); break;
-				case MINUS:
-					result.append("-"); break;
-				case TOGGLE:
-					result.append("~"); break;
-				}
-				return result.toString();
 			}
 		};
 	}

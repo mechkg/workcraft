@@ -33,12 +33,14 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawableNew;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
-public class VisualTransition extends VisualComponent {
+public class VisualTransition extends VisualComponent implements DrawableNew, ReflectiveTouchable {
 
 	public VisualTransition(Transition transition, StorageManager storage) {
 		super(transition, storage);
@@ -81,7 +83,7 @@ public class VisualTransition extends VisualComponent {
 	}
 	
 	@Override
-	public Expression<Touchable> localSpaceTouchable() {
+	public Expression<Touchable> shape() {
 		return new ExpressionBase<Touchable>() {
 
 			@Override

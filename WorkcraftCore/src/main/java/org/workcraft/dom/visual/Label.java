@@ -24,7 +24,7 @@ public class Label {
 	public final Expression<ColorisableGraphicalContent> graphics;
 	public final Expression<Rectangle2D> centeredBB;
 	
-	public Label(final Font font, final Expression<String> text) {
+	public Label(final Font font, final Expression<? extends String> text) {
 		
 		final Expression<GlyphVector> glyphVector = new ExpressionBase<GlyphVector>() {
 			@Override

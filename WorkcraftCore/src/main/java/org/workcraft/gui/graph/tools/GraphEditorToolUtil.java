@@ -56,8 +56,8 @@ public class GraphEditorToolUtil {
 				tool.deactivated();
 			}
 
-			public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus) {
-				return Graphics.compose(painter, tool.userSpaceContent(hasFocus));
+			public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
+				return Graphics.compose(painter, tool.userSpaceContent(viewport, hasFocus));
 			}
 
 			public void mouseReleased(GraphEditorMouseEvent e) {

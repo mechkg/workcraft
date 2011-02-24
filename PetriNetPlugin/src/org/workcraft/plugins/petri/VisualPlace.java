@@ -40,13 +40,14 @@ import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
-public class VisualPlace extends VisualComponent implements DrawableNew {
+public class VisualPlace extends VisualComponent implements DrawableNew, ReflectiveTouchable {
 	protected static double singleTokenSize = CommonVisualSettings.getSize() / 1.9;
 	protected static double multipleTokenSeparation = CommonVisualSettings.getStrokeWidth() / 8;
 	
@@ -167,7 +168,7 @@ public class VisualPlace extends VisualComponent implements DrawableNew {
 	}
 
 	@Override
-	public Expression<? extends Touchable> localSpaceTouchable() {
+	public Expression<? extends Touchable> shape() {
 		return Expressions.constant(new Touchable(){
 
 			@Override

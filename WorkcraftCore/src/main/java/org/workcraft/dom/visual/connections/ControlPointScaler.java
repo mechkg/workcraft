@@ -26,7 +26,6 @@ import static org.workcraft.util.Geometry.add;
 import static org.workcraft.util.Geometry.changeBasis;
 import static org.workcraft.util.Geometry.multiply;
 import static org.workcraft.util.Geometry.normalize;
-import static org.workcraft.util.Geometry.reduce;
 import static org.workcraft.util.Geometry.rotate90CCW;
 import static org.workcraft.util.Geometry.subtract;
 
@@ -117,6 +116,11 @@ public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, Modifia
 		return result;
 	}
 
+	public static Point2D reduce (Point2D p) {
+		Point2D result = multiply (normalize(p), Math.pow(p.distanceSq(0, 0), 0.2));
+		return result;
+	}
+	
 	private static Point2D getUpVector(VisualConnection.ScaleMode mode, Point2D v0) {
 		switch (mode) {
 		case SCALE:

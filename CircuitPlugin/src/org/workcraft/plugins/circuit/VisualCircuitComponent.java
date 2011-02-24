@@ -41,6 +41,7 @@ import java.util.LinkedHashMap;
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.Hotkey;
 import org.workcraft.annotations.SVGIcon;
+import org.workcraft.dependencymanager.advanced.core.DummyEvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
@@ -51,13 +52,14 @@ import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.BoundingBoxHelper;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.CustomTouchable;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.Label;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
-import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
@@ -65,13 +67,12 @@ import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.plugins.circuit.VisualContact.Direction;
 import org.workcraft.plugins.circuit.renderers.ComponentRenderingResult.RenderType;
 import org.workcraft.plugins.shared.CommonVisualSettings;
-import org.workcraft.util.Hierarchy;
 
 @DisplayName("Abstract Component")
 @Hotkey(KeyEvent.VK_A)
 @SVGIcon("images/icons/svg/circuit-component.svg")
 
-public class VisualCircuitComponent extends VisualComponent implements Container, CustomTouchable {
+public class VisualCircuitComponent extends VisualComponent implements Container, CustomTouchable, DrawableNew, ReflectiveTouchable {
 	
 	private Color inputColor = VisualContact.inputColor;
 	private Color outputColor = VisualContact.outputColor;
@@ -438,7 +439,7 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 	}
 
 	@Override
-	public Expression<? extends Touchable> localSpaceTouchable() {
+	public Expression<? extends Touchable> shape() {
 		return new ExpressionBase<Touchable>(){
 
 			@Override
@@ -517,10 +518,9 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 	@Override
 	public Node customHitTest(Point2D point) {
 		Point2D pointInLocalSpace = eval(parentToLocalTransform()).transform(point, null);
-		for(Node vn : eval(children()))
-			if (vn instanceof VisualNode)
-				if(eval(((VisualNode)vn).shape()).hitTest(pointInLocalSpace))
-					return vn;
+		for(VisualContact vc : getContacts(new DummyEvaluationContext()))
+			if(eval(vc.shape()).hitTest(pointInLocalSpace))
+				return vc;
 		
 		if(eval(shape()).hitTest(point))
 			return this;

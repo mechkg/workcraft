@@ -50,7 +50,9 @@ import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.MovableHelper;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
@@ -59,7 +61,7 @@ import org.workcraft.plugins.balsa.handshakebuilder.Handshake;
 import org.workcraft.plugins.balsa.layouts.MainLayouter;
 import org.workcraft.util.Hierarchy;
 
-public class VisualBreezeComponent extends VisualComponent
+public class VisualBreezeComponent extends VisualComponent implements DrawableNew, ReflectiveTouchable
 {
 	HandshakeComponentLayout layout;
 	Map<String, VisualHandshake> visualHandshakes; // TODO: make auto-updated Expression
@@ -168,7 +170,7 @@ public class VisualBreezeComponent extends VisualComponent
 
 	
 	@Override
-	public Expression<? extends Touchable> localSpaceTouchable() {
+	public Expression<? extends Touchable> shape() {
 		return Expressions.constant(new Touchable(){
 			@Override
 			public Rectangle2D getBoundingBox() {

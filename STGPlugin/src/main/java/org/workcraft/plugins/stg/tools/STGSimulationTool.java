@@ -11,6 +11,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.plugins.petri.PetriNetSettings;
 import org.workcraft.plugins.petri.tools.SimulationTool;
@@ -20,8 +21,8 @@ public class STGSimulationTool extends SimulationTool {
 	private static Color outputsColor = Color.BLUE.darker();
 	private static Color internalsColor = Color.GREEN.darker();
 	
-	public STGSimulationTool(GraphEditor editor) {
-		super(editor);
+	public STGSimulationTool(GraphEditor editor, TouchableProvider<Node> touchableProvider) {
+		super(editor, touchableProvider);
 		createInterface();
 	}
 	

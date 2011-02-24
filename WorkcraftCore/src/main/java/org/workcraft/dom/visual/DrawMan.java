@@ -41,7 +41,7 @@ public class DrawMan
 			@Override
 			public GraphicalContent evaluate(EvaluationContext resolver) {
 				if (node instanceof Hidable && resolver.resolve(((Hidable)node).hidden()))
-					return GraphicalContent.empty;
+					return GraphicalContent.EMPTY;
 				else if (node instanceof MovableNew)
 					return resolver.resolve(transformedAndDecorated((MovableNew)node, gcProvider));
 				else

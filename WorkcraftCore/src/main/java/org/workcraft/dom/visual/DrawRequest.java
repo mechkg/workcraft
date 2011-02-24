@@ -7,5 +7,4 @@ import org.workcraft.gui.graph.tools.Colorisation;
 public interface DrawRequest {
 	public Graphics2D getGraphics();
 	public Colorisation getColorisation();
-	public VisualModel getModel();
 }

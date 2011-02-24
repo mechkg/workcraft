@@ -36,7 +36,9 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.exceptions.NotSupportedException;
 
 public class HitmanTests {
@@ -56,10 +58,6 @@ public class HitmanTests {
 			this.children = children;
 		}
 		@Override
-		public Expression<? extends Touchable> shape() {
-			return null;
-		}
-		@Override
 		public ModifiableExpression<Node> parent() {
 			throw new NotSupportedException();
 		}
@@ -69,7 +67,7 @@ public class HitmanTests {
 		}
 	}
 	
-	class HitableNode extends DummyNode
+	class HitableNode extends DummyNode implements ReflectiveTouchable
 	{
 		@Override
 		public Expression<? extends Touchable> shape() {
@@ -103,6 +101,6 @@ public class HitmanTests {
 					new DummyNode(),
 			}
 		);
-		assertSame(toHit, HitMan.hitDeepestNodeOfType(new Point2D.Double(0.5, 0.5), node, HitableNode.class));
+		assertSame(toHit, HitMan.hitDeepestNodeOfType(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(0.5, 0.5), node, HitableNode.class));
 	}
 }

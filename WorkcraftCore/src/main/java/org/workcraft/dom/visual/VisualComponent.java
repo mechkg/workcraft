@@ -34,15 +34,15 @@ import java.util.Collection;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
-public abstract class VisualComponent extends VisualTransformableNode implements DependentNode, DrawableNew {
+public abstract class VisualComponent extends VisualTransformableNode implements DependentNode {
 	private final MathNode refNode;
 
 	private final static Font labelFont = new Font("Sans-serif", Font.PLAIN, 1)
@@ -84,8 +84,10 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 	}
 
 	Point2D labelPosition(EvaluationContext context) {
+		if(true)
+			throw new NotImplementedException("The label rendering requires a bounding box, which is not necessarily available here");
 		Rectangle2D textBB = context.resolve(label.centeredBB);
-		Rectangle2D bb = GlobalCache.eval(localSpaceTouchable()).getBoundingBox();
+		Rectangle2D bb = null; //GlobalCache.eval(localSpaceTouchable()).getBoundingBox();
 		
 		return new Point2D.Double(bb.getMinX()
 				+ (bb.getWidth() - textBB.getWidth()) * 0.5, bb.getMaxY()

@@ -61,8 +61,8 @@ public class NodeGeneratorTool extends AbstractTool {
 	}
 
 	@Override
-	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus) {
-		return Expressions.constant(GraphicalContent.empty);
+	public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
+		return Expressions.constant(GraphicalContent.EMPTY);
 	}
 
 	@Override

@@ -336,20 +336,6 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		deleteSelection();
 	}
 
-	private Point2D transformToCurrentSpace(Point2D pointInRootSpace)
-	{
-		Point2D newPoint = new Point2D.Double();
-		TransformHelper.getTransform(getRoot(), eval(currentLevel)).transform(pointInRootSpace, newPoint);
-		return newPoint;
-	}
-
-	@Override
-	public Collection<Node> boxHitTest(Point2D p1, Point2D p2) {
-		p1 = transformToCurrentSpace(p1);
-		p2 = transformToCurrentSpace(p2);
-		return HitMan.boxHitTest(eval(currentLevel), p1, p2);
-	}
-
 	@Override public Properties getProperties(Node node) {
 		return null;
 	}

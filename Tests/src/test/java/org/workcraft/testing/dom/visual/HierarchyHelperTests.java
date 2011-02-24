@@ -51,11 +51,6 @@ public class HierarchyHelperTests {
 		public Expression<? extends Collection<? extends Node>> children() {
 			throw new NotSupportedException("not implemented");
 		}
-
-		@Override
-		public Expression<? extends Touchable> shape() {
-			return null;
-		}
 	}
 
 	@Test

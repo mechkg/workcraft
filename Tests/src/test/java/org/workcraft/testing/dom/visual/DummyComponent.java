@@ -30,13 +30,12 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.plugins.stg.DefaultStorageManager;
 
-class SquareNode extends VisualComponent
+class SquareNode extends VisualComponent implements ReflectiveTouchable
 {
 	Rectangle2D.Double rectOuter;
 	Rectangle2D.Double rectInner;
@@ -57,7 +56,7 @@ class SquareNode extends VisualComponent
 	}
 
 	@Override
-	public Expression<? extends Touchable> localSpaceTouchable() {
+	public Expression<? extends Touchable> shape() {
 		return Expressions.constant(new Touchable() {
 			@Override
 			public Rectangle2D getBoundingBox() {
@@ -77,15 +76,5 @@ class SquareNode extends VisualComponent
 	public Collection<MathNode> getMathReferences() {
 		return Arrays.asList(new MathNode[]{});
 	}
-
-	@Override
-	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
-		return Expressions.constant(new ColorisableGraphicalContent() {
-			@Override
-			public void draw(DrawRequest request) {
-			}
-		});
-	}
-
 }
 

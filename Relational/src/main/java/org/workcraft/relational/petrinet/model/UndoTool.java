@@ -6,7 +6,6 @@ import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.AbstractTool;
-import org.workcraft.gui.graph.tools.NodePainter;
 import org.workcraft.gui.graph.tools.GraphEditor;
 
 public class UndoTool extends AbstractTool {
@@ -32,13 +31,13 @@ public class UndoTool extends AbstractTool {
 
 
 	@Override
-	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus) {
-		return Expressions.constant(GraphicalContent.empty);
+	public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
+		return Expressions.constant(GraphicalContent.EMPTY);
 	}
 
 	@Override
 	public Expression<? extends GraphicalContent> screenSpaceContent(Viewport view, Expression<Boolean> hasFocus) {
-		return Expressions.constant(GraphicalContent.empty);
+		return Expressions.constant(GraphicalContent.EMPTY);
 	}
 
 }

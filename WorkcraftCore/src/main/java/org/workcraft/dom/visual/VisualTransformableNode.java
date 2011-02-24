@@ -39,7 +39,7 @@ import org.workcraft.serialisation.xml.NoAutoSerialisation;
 import org.workcraft.util.Geometry;
 
 public abstract class VisualTransformableNode extends VisualNode implements MovableNew {
-	private final static class AffineTransform_X extends ModifiableExpressionImpl<Double> {
+	public final static class AffineTransform_X extends ModifiableExpressionImpl<Double> {
 		private final ModifiableExpression<AffineTransform> transform;
 
 		public AffineTransform_X(ModifiableExpression<AffineTransform> transform) {
@@ -59,7 +59,7 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		}
 	}
 
-	private final static class AffineTransform_Y extends ModifiableExpressionImpl<Double> {
+	public final static class AffineTransform_Y extends ModifiableExpressionImpl<Double> {
 		private final ModifiableExpression<AffineTransform> transform;
 
 		public AffineTransform_Y(ModifiableExpression<AffineTransform> transform) {
@@ -76,27 +76,6 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 		public void simpleSetValue(Double newValue) {
 			AffineTransform old = GlobalCache.eval(transform);
 			transform.setValue(translate(old, 0, newValue-old.getTranslateY()));
-		}
-	}
-
-	private final static class AffineTransform_Position extends ModifiableExpressionImpl<Point2D> {
-		private final AffineTransform_X x;
-		private final AffineTransform_Y y;
-
-		public AffineTransform_Position(ModifiableExpression<AffineTransform> transform) {
-			this.x = new AffineTransform_X(transform);
-			this.y = new AffineTransform_Y(transform);
-		}
-		
-		@Override
-		public Point2D evaluate(EvaluationContext resolver) {
-			return new Point2D.Double(resolver.resolve(x), resolver.resolve(y)); 
-		}
-
-		@Override
-		public void simpleSetValue(Point2D newValue) {
-			x.setValue(newValue.getX());
-			y.setValue(newValue.getY());
 		}
 	}
 
@@ -192,12 +171,5 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 	@Override
 	public ModifiableExpression<AffineTransform> transform() {
 		return localToParentTransform;
-	}
-	
-	public abstract Expression<? extends Touchable> localSpaceTouchable();
-	
-	@Override
-	public final Expression<? extends Touchable> shape() {
-		return TransformHelper.transform(localSpaceTouchable(), transform());
 	}
 }

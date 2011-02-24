@@ -25,6 +25,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.connections.ParametricCurve;
@@ -66,9 +67,10 @@ public class Geometry {
 		return result;
 	}
 	
-	public static Point2D reduce (Point2D p) {
-		Point2D result = multiply (normalize(p), Math.pow(p.distanceSq(0, 0), 0.2));
-		return result;
+	public static Rectangle2D.Double createRectangle (Point2D p1, Point2D p2) {
+		Rectangle2D.Double rect = new Rectangle2D.Double(p1.getX(), p1.getY(), 0, 0);
+		rect.add(p2);
+		return rect; 
 	}
 	
 	public static double dotProduct (Point2D v1, Point2D v2) {

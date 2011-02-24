@@ -32,15 +32,16 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.Label;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.plugins.petri.VisualTransition;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
-public class VisualDummyTransition extends VisualTransition {
+public class VisualDummyTransition extends VisualStgTransition implements ReflectiveTouchable, DrawableNew {
 	private static Font font = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.75f);
 	
 	private final Label label;
@@ -51,7 +52,6 @@ public class VisualDummyTransition extends VisualTransition {
 		label = new Label(font, transition.name());
 	}
 
-	
 	@Override
 	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
 		return new ExpressionBase<ColorisableGraphicalContent>() {
@@ -85,7 +85,7 @@ public class VisualDummyTransition extends VisualTransition {
 	}
 	
 	@Override
-	public Expression<Touchable> localSpaceTouchable() {
+	public Expression<Touchable> shape() {
 		return new  ExpressionBase<Touchable>() {
 
 			@Override

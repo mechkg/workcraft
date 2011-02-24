@@ -23,6 +23,7 @@ package org.workcraft.dom.visual.connections;
 
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.tools.DummyMouseListener;
 
@@ -30,7 +31,7 @@ public class DefaultAnchorGenerator extends DummyMouseListener {
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e) {
 		if (e.getClickCount()==2) {
-			Node n = HitMan.hitTestForSelection(e.getPosition(), e.getModel());
+			Node n = HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, e.getPosition(), e.getModel());
 			if (n instanceof VisualConnection) {
 				VisualConnection con = (VisualConnection)n;
 				if (con.getGraphic() instanceof Polyline)

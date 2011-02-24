@@ -46,6 +46,7 @@ import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.dom.visual.VisualNode;
@@ -65,9 +66,11 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 	private final GraphEditor editor;
 	
 	private static Color highlightColor = new Color(99, 130, 191).brighter();
+	private final TouchableProvider<Node> touchableProvider;
 
-	public ConnectionTool (GraphEditor editor) {
+	public ConnectionTool (GraphEditor editor, TouchableProvider<Node> touchableProvider) {
 		this.editor = editor;
+		this.touchableProvider = touchableProvider;
 	}
 
 	public Ellipse2D getBoundingCircle(Rectangle2D boundingRect) {
@@ -80,7 +83,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 	}
 
 	@Override
-	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus) {
+	public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
 		return connectingLineGraphicalContent();
 	}
 
@@ -154,7 +157,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 	private void drawConnectingLine(Graphics2D g, VisualGroup root, Color color, EvaluationContext context) {
 		g.setColor(color);
 		
-		Point2D center = context.resolve(TransformHelper.transform(context.resolve(first).shape(), TransformHelper.getTransformToAncestor(first, Expressions.constant(root)))).getCenter();
+		Point2D center = context.resolve(TransformHelper.transform(touchableProvider.apply(context.resolve(first)), TransformHelper.getTransformToAncestor(first, Expressions.constant(root)))).getCenter();
 		
 		Line2D line = new Line2D.Double(center.getX(), center.getY(), context.resolve(lastMouseCoords).getX(), context.resolve(lastMouseCoords).getY());
 		g.draw(line);
@@ -168,7 +171,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 	public void mouseMoved(GraphEditorMouseEvent e) {
 		lastMouseCoords.setValue(e.getPosition());
 		
-		VisualNode newMouseOverObject = (VisualNode) HitMan.hitTestForConnection(e.getPosition(), e.getModel());
+		VisualNode newMouseOverObject = (VisualNode) HitMan.hitTestForConnection(touchableProvider, e.getPosition(), e.getModel());
 		
 		mouseOverObject.setValue(newMouseOverObject);
 

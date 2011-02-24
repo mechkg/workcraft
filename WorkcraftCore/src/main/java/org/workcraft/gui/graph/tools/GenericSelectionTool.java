@@ -28,16 +28,15 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
@@ -48,17 +47,12 @@ import pcollections.PSet;
 
 public class GenericSelectionTool<Node> {
 	
-	public interface HitTester<Node> {
-		Node hitTest(Point2D point);
-		PSet<Node> boxHitTest(Point2D boxStart, Point2D boxEnd);
-	}
-	
 	public interface DragHandler {
 		void drag(double dx, double dy);
 	}
 	
 	private final HitTester<Node> hitTester;
-	private final DragHandler dragHandler;
+	private final MovableController<Node> movableController;
 	
 	private static final int DRAG_NONE = 0;
 	private static final int DRAG_MOVE = 1;
@@ -113,10 +107,10 @@ public class GenericSelectionTool<Node> {
 	
 
 
-	public GenericSelectionTool(ModifiableExpression<PSet<Node>> selection, HitTester<Node> hitTester, DragHandler dragHandler) {
+	public GenericSelectionTool(ModifiableExpression<PSet<Node>> selection, HitTester<Node> hitTester, MovableController<Node> movableController) {
 		this.selection = selection;
 		this.hitTester = hitTester;
-		this.dragHandler = dragHandler;
+		this.movableController = movableController;
 	}
 	
 	public boolean isDragging() {
@@ -174,6 +168,15 @@ public class GenericSelectionTool<Node> {
 		}
 	}
 
+	private void offsetSelection (double dx, double dy) {
+		for(Node node : GlobalCache.eval(selection)) {
+			ModifiableExpression<Point2D> pos = movableController.position(node);
+			if(pos != null) {
+				pos.setValue(new Point2D.Double(dx, dy));
+			}
+		}
+	}
+	
 	public void mouseMoved(GraphEditorMouseEvent e) {
 		
 		if(eval(drag)==DRAG_MOVE) {
@@ -184,7 +187,7 @@ public class GenericSelectionTool<Node> {
 							prevPosition.getY()+
 							snapOffset.getY()));
 			Point2D p2 = e.getEditor().snap(new Point2D.Double(e.getX()+snapOffset.getX(), e.getY()+snapOffset.getY()));
-			dragHandler.drag(p2.getX()-p1.getX(), p2.getY()-p1.getY());
+			offsetSelection(p2.getX()-p1.getX(), p2.getY()-p1.getY());
 		}
 		
 		else if(eval(drag)==DRAG_SELECT) {
@@ -224,19 +227,18 @@ public class GenericSelectionTool<Node> {
 
 			} else {
 				// hit something
-				
-				if(e.getKeyModifiers()==0 && hitNode instanceof MovableNew) {
+				ModifiableExpression<Point2D> nodePos = movableController.position(hitNode);
+				if(nodePos != null && e.getKeyModifiers()==0) {
 					// mouse down without modifiers, begin move-drag
 					drag.setValue(DRAG_MOVE);
 					
 					if(hitNode!=null && !eval(selection).contains(hitNode))
 						selection.setValue(HashTreePSet.singleton(hitNode));
 
-					MovableNew node = (MovableNew) hitNode;
-					AffineTransform nodeTransform = eval(node.transform());
-					Point2D pos = new Point2D.Double(nodeTransform.getTranslateX(), nodeTransform.getTranslateY());
+					Point2D nodePosValue = eval(nodePos);
+					Point2D pos = new Point2D.Double(nodePosValue.getX(), nodePosValue.getY());
 					Point2D pSnap = e.getEditor().snap(pos);
-					dragHandler.drag(pSnap.getX()-pos.getX(), pSnap.getY()-pos.getY());
+					offsetSelection(pSnap.getX()-pos.getX(), pSnap.getY()-pos.getY());
 					snapOffset = new Point2D.Double(pSnap.getX()-e.getStartPosition().getX(), pSnap.getY()-e.getStartPosition().getY());
 				}
 				// do nothing if pressed on a node with modifiers
@@ -277,7 +279,7 @@ public class GenericSelectionTool<Node> {
 		if(eval(drag)==DRAG_MOVE) {
 			Point2D p1 = e.getEditor().snap(new Point2D.Double(e.getStartPosition().getX()+snapOffset.getX(), e.getStartPosition().getY()+snapOffset.getY()));
 			Point2D p2 = e.getEditor().snap(new Point2D.Double(e.getX()+snapOffset.getX(), e.getY()+snapOffset.getY()));
-			dragHandler.drag(p1.getX()-p2.getX(), p1.getY()-p2.getY());
+			offsetSelection(p1.getX()-p2.getX(), p1.getY()-p2.getY());
 		}
 		else if(eval(drag) == DRAG_SELECT) {
 			selectionBox.setValue(null);

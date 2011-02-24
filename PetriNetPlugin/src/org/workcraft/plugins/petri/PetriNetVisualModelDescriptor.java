@@ -15,6 +15,7 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
@@ -25,6 +26,7 @@ import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.NodeGenerator;
 import org.workcraft.gui.graph.tools.NodeGeneratorTool;
 import org.workcraft.gui.graph.tools.SelectionTool;
+import org.workcraft.gui.graph.tools.SelectionToolConfig;
 import org.workcraft.plugins.petri.tools.SimulationTool;
 import org.workcraft.util.Func;
 import org.workcraft.util.GUI;
@@ -90,11 +92,11 @@ public class PetriNetVisualModelDescriptor implements VisualModelDescriptor {
 		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(editor.getModel().getRoot());
 		
 		return Arrays.asList(new GraphEditorTool[]{
-			attachParameterisedPainter(new SelectionTool(editor), colorisablePainter),
-			attachParameterisedPainter(new ConnectionTool(editor), colorisablePainter),
+			attachParameterisedPainter(new SelectionTool(new SelectionToolConfig.Default(editor.getModel())), colorisablePainter),
+			attachParameterisedPainter(new ConnectionTool(editor, TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS), colorisablePainter),
 			attachPainter(new NodeGeneratorTool(new PlaceGenerator()), colorisablePainter.eval(Colorisator.EMPTY)),
 			attachPainter(new NodeGeneratorTool(new TransitionGenerator()), colorisablePainter.eval(Colorisator.EMPTY)),
-			attachParameterisedPainter(new SimulationTool(editor), colorisablePainter),
+			attachParameterisedPainter(new SimulationTool(editor, TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS), colorisablePainter),
 		});
 	}
 	

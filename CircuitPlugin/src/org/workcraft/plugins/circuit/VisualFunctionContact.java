@@ -35,6 +35,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.NodeContext;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.VisualComponent;
@@ -83,8 +84,8 @@ public class VisualFunctionContact extends VisualContact {
 		renderedResetFormula = createRenderedFormulaExpression(component.resetFunction());
 	}
 	
-	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
-		final Expression<? extends ColorisableGraphicalContent> superGraphicalContent = super.graphicalContent();
+	public static Expression<? extends ColorisableGraphicalContent> graphicalContent(Expression<? extends NodeContext> nodeContext, final VisualFunctionContact contact) {
+		final Expression<? extends ColorisableGraphicalContent> superGraphicalContent = createGraphicalContent(nodeContext, contact);
 		return new ExpressionBase<ColorisableGraphicalContent>() {
 
 			@Override
@@ -103,9 +104,9 @@ public class VisualFunctionContact extends VisualContact {
 						
 						AffineTransform transform = g.getTransform();
 						AffineTransform at = new AffineTransform();
-						Direction dir = context.resolve(direction());
+						Direction dir = context.resolve(contact.direction());
 						
-						if (!(context.resolve(parent()) instanceof VisualFunctionComponent)) {
+						if (!(context.resolve(contact.parent()) instanceof VisualFunctionComponent)) {
 							dir = flipDirection(dir);
 						}
 						
@@ -183,14 +184,14 @@ public class VisualFunctionContact extends VisualContact {
 						Graphics2D g = r.getGraphics();
 						
 						Color colorisation = r.getColorisation().getColorisation();
-						Node p = context.resolve(parent()); 
+						Node p = context.resolve(contact.parent()); 
 						if (p!=null) {
-							if ((context.resolve(ioType())==IoType.INPUT)^(p instanceof VisualComponent)) {
+							if ((context.resolve(contact.ioType())==IoType.INPUT)^(p instanceof VisualComponent)) {
 								if (!(p instanceof VisualCircuitComponent)||
 										context.resolve(((VisualCircuitComponent)p).renderType())==RenderType.BOX) {
 									
-									FormulaRenderingResult setResult = context.resolve(renderedSetFormula);
-									FormulaRenderingResult resetResult = context.resolve(renderedResetFormula);
+									FormulaRenderingResult setResult = context.resolve(contact.renderedSetFormula);
+									FormulaRenderingResult resetResult = context.resolve(contact.renderedResetFormula);
 									float xOfs = (float)0.5;
 									
 									if (!CircuitSettings.getShowContacts()&&(p instanceof VisualComponent)) xOfs = (float)-0.5;

@@ -10,11 +10,12 @@ import org.workcraft.dom.Node;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.tools.GraphEditor;
+import org.workcraft.gui.graph.tools.SelectionToolConfig;
 
 public class SelectionTool extends org.workcraft.gui.graph.tools.SelectionTool
 {
 	public SelectionTool(GraphEditor editor) {
-		super(editor);
+		super(new SelectionToolConfig.Default(editor.getModel()));
 	}
 	
 	@Override

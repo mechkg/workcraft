@@ -94,8 +94,8 @@ public class VisualFunctionComponent extends VisualCircuitComponent implements C
 	}
 	
 	@Override
-	public Expression<? extends Touchable> localSpaceTouchable() {
-		final Expression<? extends Touchable> superTouchable = super.localSpaceTouchable();
+	public Expression<? extends Touchable> shape() {
+		final Expression<? extends Touchable> superTouchable = super.shape();
 		return new ExpressionBase<Touchable>(){
 
 			@Override
@@ -272,6 +272,8 @@ public class VisualFunctionComponent extends VisualCircuitComponent implements C
 					@Override
 					public void draw(DrawRequest r) {
 						ComponentRenderingResult res = getRenderingResult(context);
+						//System.out.println("rendering result bounding box: " + res.boundingBox());
+						
 						Graphics2D g = r.getGraphics();
 						
 						Color colorisation = r.getColorisation().getColorisation();

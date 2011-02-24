@@ -20,6 +20,8 @@ public abstract class ExpressionBase<T> implements Expression<T> {
 		}
 	}
 	
+	Exception creationStackTrace = new RuntimeException("Expression creation stack trace");
+	
 	static class Cache<T> implements Listener, Handle {
 		public T value;
 		public boolean filled = false;
@@ -95,12 +97,20 @@ public abstract class ExpressionBase<T> implements Expression<T> {
 
 	private Cache<T> makeCache() {
 		final Cache<T> c = new Cache<T>();
-		T result = evaluate(new EvaluationContext() {
+		final T result;
+		try{
+			result = evaluate(new EvaluationContext() {
 			@Override
 			public <T2> T2 resolve(Expression<T2> dependency) {
 				return c.getValue(dependency);
 			}
 		});
+		}
+		catch(RuntimeException t) {
+			System.err.println("the failed expression was constructed at:");
+			creationStackTrace.printStackTrace();
+			throw t;
+		}
 		c.value = result;
 		c.filled = true;
 		return c;

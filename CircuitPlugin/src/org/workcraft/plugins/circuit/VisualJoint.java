@@ -34,12 +34,14 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawableNew;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.petri.Place;
 
-public class VisualJoint extends VisualComponent {
+public class VisualJoint extends VisualComponent implements DrawableNew, ReflectiveTouchable {
 	static public double jointSize = 0.25;
 	
 	final static public Shape shape = new Ellipse2D.Double(
@@ -95,7 +97,7 @@ public class VisualJoint extends VisualComponent {
 	}
 	
 	@Override
-	public Expression<? extends Touchable> localSpaceTouchable() {
+	public Expression<? extends Touchable> shape() {
 		return Expressions.constant(new Touchable() {
 			@Override
 			public boolean hitTest(Point2D point) {

@@ -4,7 +4,6 @@ import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import java.awt.Color;
 import java.awt.event.KeyEvent;
-import java.awt.geom.Point2D;
 import java.util.Collection;
 
 import javax.swing.Icon;
@@ -17,27 +16,23 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.GraphicalContent;
-import org.workcraft.dom.visual.HitMan;
-import org.workcraft.dom.visual.MovableHelper;
-import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualModelTransformer;
 import org.workcraft.dom.visual.connections.DefaultAnchorGenerator;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
-import org.workcraft.gui.graph.tools.GenericSelectionTool.DragHandler;
 import org.workcraft.util.GUI;
 import org.workcraft.util.Hierarchy;
 
 import pcollections.HashTreePSet;
-import pcollections.PSet;
 
 public class SelectionTool extends AbstractTool implements DecorationProvider<Colorisator> {
 
 	private final GenericSelectionTool<Node> selectionTool;
-	private DefaultAnchorGenerator anchorGenerator = new DefaultAnchorGenerator();
-	private final GraphEditor editor;
+	private final DefaultAnchorGenerator anchorGenerator = new DefaultAnchorGenerator();
+	private final Expression<Node> currentLevel;
+
 	
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e) {
@@ -45,27 +40,12 @@ public class SelectionTool extends AbstractTool implements DecorationProvider<Co
 		anchorGenerator.mouseClicked(e);
 	}
 	
-	public SelectionTool(final GraphEditor editor) {
-		this.editor = editor;
+	public SelectionTool(SelectionToolConfig<Node> config) {
+		this.currentLevel = config.currentEditingLevel();
 		selectionTool = new GenericSelectionTool<Node>(
-				editor.getModel().selection(),
-				new GenericSelectionTool.HitTester<Node>() {
-			@Override
-			public Node hitTest(Point2D point) {
-				return HitMan.hitTestForSelection(point, editor.getModel());
-			}
-
-			@Override
-			public PSet<Node> boxHitTest(Point2D boxStart, Point2D boxEnd) {
-				return HashTreePSet.from(editor.getModel().boxHitTest(boxStart, boxEnd));
-			}
-		}, new DragHandler() {
-
-			@Override
-			public void drag(double dx, double dy) {
-				offsetSelection(dx, dy);
-			}
-		});
+				config.selection(),
+				config.hitTester(),
+				config.movableController());
 	}
 	
 	protected void currentLevelDown(VisualModel model) {
@@ -88,15 +68,6 @@ public class SelectionTool extends AbstractTool implements DecorationProvider<Co
 		}
 	}
 
-	private void offsetSelection(double dx, double dy) {
-		
-		for(Node node : GlobalCache.eval(selectionTool.selection)) {
-			if(node instanceof MovableNew) {
-				MovableHelper.translate((MovableNew) node, dx, dy);
-			}
-		}
-	}
-
 	protected Color grayOutColor = Color.LIGHT_GRAY; 
 
 	
@@ -106,7 +77,19 @@ public class SelectionTool extends AbstractTool implements DecorationProvider<Co
 	}
 	
 	public Colorisator getColorisator() {
-		return new HierarchicalColorisator() {
+
+		Colorisation greyOutColourisation = new Colorisation(){
+			@Override
+			public Color getColorisation() {
+				return grayOutColor;
+			}
+
+			@Override
+			public Color getBackground() {
+				return null;
+			}
+		};
+		return new HierarchicalColorisator(greyOutColourisation) {
 			
 			@Override
 			public Expression<Colorisation> getSimpleColorisation(final Node node) {
@@ -114,23 +97,8 @@ public class SelectionTool extends AbstractTool implements DecorationProvider<Co
 
 					@Override
 					protected Colorisation evaluate(final EvaluationContext context) {
-						if(node == context.resolve(editor.getModel().currentLevel()))
+						if(node == context.resolve(currentLevel))
 							return Colorisation.EMPTY;
-						
-						if(node == editor.getModel().getRoot())
-							return new Colorisation(){
-	
-								@Override
-								public Color getColorisation() {
-									return grayOutColor;
-								}
-	
-								@Override
-								public Color getBackground() {
-									return null;
-								}
-							};
-							
 						
 						Colorisation selectedDecoration = new Colorisation() {
 	
@@ -277,12 +245,12 @@ public class SelectionTool extends AbstractTool implements DecorationProvider<Co
 	}
 
 	@Override
-	public Expression<? extends GraphicalContent> userSpaceContent(final Expression<Boolean> hasFocus) {
-		return selectionTool.userSpaceContent(editor.getViewport());
+	public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, final Expression<Boolean> hasFocus) {
+		return selectionTool.userSpaceContent(viewport);
 	}
 
 	@Override
 	public Expression<? extends GraphicalContent> screenSpaceContent(final Viewport viewport, final Expression<Boolean> hasFocus) {
-		return Expressions.constant(GraphicalContent.empty);
+		return Expressions.constant(GraphicalContent.EMPTY);
 	}
 }

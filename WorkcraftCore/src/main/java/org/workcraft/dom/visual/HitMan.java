@@ -21,6 +21,8 @@
 
 package org.workcraft.dom.visual;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -33,35 +35,36 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.connections.VisualConnection;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.util.Func;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Hierarchy;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-
 public class HitMan
 {
-	private static <T extends Node> Iterable<T> filterByBB(Iterable<T> nodes, final Point2D pointInLocalSpace) {
+	private static <T extends Node> Iterable<T> filterByBB(final TouchableProvider<? super T> tp, Iterable<? extends T> nodes, final Point2D point) {
 		return filter(nodes, new Func<T, Boolean>()
 				{
 			private static final long serialVersionUID = -7790168871113424836L;
 
 			@Override
 			public Boolean eval(T arg) {
-				if(arg.shape() == null)
+				if(tp.apply(arg) == null)
 					return true;
+				if(arg == null)
+					throw new RuntimeException("wtf");
 
-				Rectangle2D boundingBox = GlobalCache.eval(arg.shape()).getBoundingBox();
+				Rectangle2D boundingBox = GlobalCache.eval(tp.apply(arg)).getBoundingBox();
 
 				return 
 				boundingBox != null &&
-				boundingBox.contains(pointInLocalSpace);
+				boundingBox.contains(point);
 			}
 			}
 		);
 	}
 	
-	private static <T> Iterable<T> filter(Iterable<T> nodes, Func<T, Boolean> filter) {
+	private static <T> Iterable<T> filter(Iterable<? extends T> nodes, Func<? super T, Boolean> filter) {
 		ArrayList<T> result = new ArrayList<T>();
 		for(T node : nodes)
 			if(filter.eval(node))
@@ -69,80 +72,76 @@ public class HitMan
 		return result;
 	}
 
-	private static Iterable<? extends Node> getFilteredChildren(Point2D point, Node node)
+	private static Iterable<? extends Node> getFilteredChildren(final TouchableProvider<Node> tp, Point2D point, Node node)
 	{
-		return reverse(filterByBB(GlobalCache.eval(node.children()), point));
+		return reverse(filterByBB(tp, GlobalCache.eval(node.children()), point));
 	}
 
-	public static Node hitDeepest(Point2D point, Node node, Func<Node, Boolean> filter) {
-		Point2D transformedPoint = transformToChildSpace(point, node);
-
-		for (Node n : getFilteredChildren(transformedPoint, node)) {
-			Node result = hitDeepest(transformedPoint, n, filter);
+	public static Node hitDeepest(final TouchableProvider<Node> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
+		
+		for (Node n : getFilteredChildren(tp, point, node)) {
+			Node result = hitDeepest(tp, point, n, filter);
 			if(result!=null)
 				return result;
 		}
 
 		if (filter.eval(node))
-			return hitBranch(point, node);
+			return hitBranch(tp, point, node);
 		return null;
 	}
 
-	public static boolean isBranchHit (Point2D point, Node node) {
+	public static boolean isBranchHit (final TouchableProvider<Node> tp, Point2D point, Node node) {
 
-		if (node.shape() != null && GlobalCache.eval(node.shape()).hitTest(point))	{
+		if (tp.apply(node) != null && GlobalCache.eval(tp.apply(node)).hitTest(point))	{
 			if (node instanceof Hidable)
 				return !GlobalCache.eval(((Hidable)node).hidden());
 			else
 				return true;
 		}
 
-		Point2D transformedPoint = transformToChildSpace(point, node);
-
-		for (Node n : getFilteredChildren(transformedPoint, node)) {
-			if (isBranchHit(transformedPoint, n))
+		for (Node n : getFilteredChildren(tp, point, node)) {
+			if (isBranchHit(tp, point, n))
 				return true;
 		}
 
 		return false;
 	}
 
-	public static Node hitFirst(Point2D point, Node node) {
-		return hitFirst(point, node, new Func<Node, Boolean>(){
+	public static Node hitFirst(final TouchableProvider<Node> tp, Point2D point, Node node) {
+		return hitFirst(tp, point, node, new Func<Node, Boolean>(){
 			public Boolean eval(Node arg0) {
 				return true;
 			}
 		});
 	}
 
-	public static Node hitFirst(Point2D point, Node node, Func<Node, Boolean> filter) {
+	public static Node hitFirst(final TouchableProvider<Node> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
 		if (filter.eval(node)) {
-			return hitBranch(point, node);
+			return hitBranch(tp, point, node);
 		} else {
-			return hitFirstChild(point, node, filter);
+			return hitFirstChild(tp, point, node, filter);
 		}
 	}
 
-	private static Node hitBranch(Point2D point, Node node) {
-		if(node instanceof CustomTouchable)
+	private static Node hitBranch(final TouchableProvider<Node> tp, Point2D point, Node node) {
+		if(node instanceof CustomTouchable) {
+			if(true)throw new NotImplementedException("Get rid of CustomTouchable in favor of custom hitman");
 			return ((CustomTouchable)node).customHitTest(point);
+		}
 		
-		if (isBranchHit(point, node))
+		if (isBranchHit(tp, point, node))
 			return node;
 		else
 			return null;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T extends Node> T hitFirstNodeOfType(Point2D point, Node node, Class<T> type) {
-		return (T) hitFirst(point, node, Hierarchy.getTypeFilter(type));
+	public static <T extends Node> T hitFirstNodeOfType(TouchableProvider<Node> tp, Point2D point, Node node, Class<T> type) {
+		return type.cast(hitFirst(tp, point, node, Hierarchy.getTypeFilter(type)));
 	}
 
-	public static Node hitFirstChild(Point2D point,
-			Node node, Func<Node, Boolean> filter) {
-		Point2D transformedPoint = transformToChildSpace(point, node);
-		for (Node n : getFilteredChildren(transformedPoint, node)) {
-			Node hit = hitFirst(transformedPoint, n, filter);
+	public static Node hitFirstChild(TouchableProvider<Node> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
+		for (Node n : getFilteredChildren(tp, point, node)) {
+			Node hit = hitFirst(tp, point, n, filter);
 			if (hit != null)
 				return hit;
 		}
@@ -150,23 +149,9 @@ public class HitMan
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Node> T hitFirstChildOfType(Point2D point, Node node, Class<T> type) {
-		return (T) hitFirstChild(point, node, Hierarchy.getTypeFilter(type));
+	public static <T extends Node> T hitFirstChildOfType(TouchableProvider<Node> tp, Point2D point, Node node, Class<T> type) {
+		return (T) hitFirstChild(tp, point, node, Hierarchy.getTypeFilter(type));
 	}
-
-	private static Point2D transformToChildSpace(Point2D point,
-			Node node) {
-		Point2D transformedPoint; 
-
-		if (node instanceof MovableNew) {
-			transformedPoint = new Point2D.Double();
-			AffineTransform t = Geometry.optimisticInverse(GlobalCache.eval(((MovableNew)node).transform()));
-			t.transform(point, transformedPoint);
-		} else
-			transformedPoint = point;
-		return transformedPoint;
-	}
-
 
 	private static <T> Iterable<T> reverse(Iterable<T> original)
 	{
@@ -194,14 +179,12 @@ public class HitMan
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Node> T hitDeepestNodeOfType(Point2D point, Node group, final Class<T> type) {
-
-		return (T)hitDeepest(point, group, Hierarchy.getTypeFilter(type));
+	public static <T extends Node> T hitDeepestNodeOfType(TouchableProvider<Node> tp, Point2D point, Node group, final Class<T> type) {
+		return (T)hitDeepest(tp, point, group, Hierarchy.getTypeFilter(type));
 	}
 
-
-	public static Node hitTestForSelection(Point2D point, Node node) {
-		Node nd = HitMan.hitFirstChild(point, node, new Func<Node, Boolean>() {
+	public static Node hitTestForSelection(TouchableProvider<Node> tp, Point2D point, Node node) {
+		Node nd = HitMan.hitFirstChild(tp, point, node, new Func<Node, Boolean>() {
 			public Boolean eval(Node n) {
 				if (!(n instanceof MovableNew))
 					return false;
@@ -214,7 +197,7 @@ public class HitMan
 		});
 
 		if (nd == null)
-			nd = HitMan.hitFirstChild(point, node, new Func<Node, Boolean>() {
+			nd = HitMan.hitFirstChild(tp, point, node, new Func<Node, Boolean>() {
 				public Boolean eval(Node n) {
 					if (n instanceof VisualConnection) {
 						if (n instanceof Hidable) 
@@ -230,8 +213,8 @@ public class HitMan
 		return nd;
 	}
 
-	public static Node hitTestForConnection(Point2D point, Node node) {
-		Node nd = HitMan.hitDeepest(point, node, new Func<Node, Boolean>() {
+	public static Node hitTestForConnection(TouchableProvider<Node> tp, Point2D point, Node node) {
+		Node nd = HitMan.hitDeepest(tp, point, node, new Func<Node, Boolean>() {
 			public Boolean eval(Node n) {
 				if (n instanceof MovableNew && ! (n instanceof Container)) {
 					if (n instanceof Hidable) 
@@ -245,7 +228,7 @@ public class HitMan
 		});
 
 		if (nd == null)
-			nd = HitMan.hitDeepest(point, node, new Func<Node, Boolean>() {
+			nd = HitMan.hitDeepest(tp, point, node, new Func<Node, Boolean>() {
 				public Boolean eval(Node n) {
 					if (n instanceof VisualConnection) {
 						if (n instanceof Hidable) 
@@ -261,20 +244,26 @@ public class HitMan
 		return nd;
 	}
 
-	public static Node hitTestForConnection (Point2D point, VisualModel model) {
+	public static Node hitTestForConnection (TouchableProvider<Node> tp, Point2D point, VisualModel model) {
+		Point2D pt = transformToCurrentLevel(point, model);
+		return hitTestForConnection(tp, pt, eval(model.currentLevel()));
+	}
+
+	public static Node hitTestForSelection (TouchableProvider<Node> tp, Point2D point, VisualModel model) {
+		Point2D pt = transformToCurrentLevel(point, model);
+		return hitTestForSelection(tp, pt, eval(model.currentLevel()));
+	}
+
+	private static Point2D transformToCurrentLevel(Point2D point, VisualModel model) {
 		AffineTransform t = TransformHelper.getTransform(model.getRoot(), eval(model.currentLevel()));
 		Point2D pt = new Point2D.Double();
 		t.transform(point, pt);
-		return hitTestForConnection(pt, eval(model.currentLevel()));	
+		return pt;
 	}
 
-	public static Node hitTestForSelection (Point2D point, VisualModel model) {
-		AffineTransform t = TransformHelper.getTransform(model.getRoot(), eval(model.currentLevel()));
-		Point2D pt = new Point2D.Double();
-		t.transform(point, pt);
-		return hitTestForSelection(pt, eval(model.currentLevel()));	
+	public static Collection<? extends Node> boxHitTestReflective (Node container, Point2D p1, Point2D p2) {
+		return boxHitTest(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, eval(container.children()), p1, p2);
 	}
-
 
 	/**
 	 * The method finds all direct children of the given container, which completely fit inside the given rectangle.
@@ -283,35 +272,19 @@ public class HitMan
 	 * @param p2 		The bottom-right corner of the rectangle
 	 * @return 			The collection of nodes fitting completely inside the rectangle
 	 */
-	public static Collection<Node> boxHitTest (Node container, Point2D p1, Point2D p2) {
-		
-		if(container instanceof MovableNew)
-		{
-			AffineTransform toLocal = Geometry.optimisticInverse(GlobalCache.eval(((MovableNew) container).transform()));
-			toLocal.transform(p1, p1);
-			toLocal.transform(p2, p2);
-		}
+	public static <N> Collection<? extends N> boxHitTest (TouchableProvider<? super N> t, Collection<? extends N> nodes, Point2D p1, Point2D p2) {
+		LinkedList<N> hit = new LinkedList<N>();
 
-		LinkedList<Node> hit = new LinkedList<Node>();
+		Rectangle2D rect = Geometry.createRectangle(p1, p2);
 
-		Rectangle2D rect = new Rectangle2D.Double(
-				Math.min(p1.getX(), p2.getX()), 
-				Math.min(p1.getY(), p2.getY()), 
-				Math.abs(p1.getX()-p2.getX()), 
-				Math.abs(p1.getY()-p2.getY()));
-
-		for (Node n : GlobalCache.eval(container.children())) {
-			if(n.shape() != null) {
-				if (n instanceof Hidable && GlobalCache.eval(((Hidable)n).hidden()) )
-					continue;
-	
-				if (p1.getX()<=p2.getX()) {
-					if (TouchableHelper.insideRectangle(GlobalCache.eval(n.shape()), rect))
-						hit.add((Node)n);
-				} else {
-					if (TouchableHelper.touchesRectangle(GlobalCache.eval(n.shape()), rect))
-						hit.add((Node)n);
-				}
+		for (N n : nodes) {
+			Touchable touchable = eval(t.apply(n));
+			if (p1.getX()<=p2.getX()) {
+				if (TouchableHelper.insideRectangle(touchable, rect))
+					hit.add(n);
+			} else {
+				if (TouchableHelper.touchesRectangle(touchable, rect))
+					hit.add(n);
 			}
 		}
 		return hit;

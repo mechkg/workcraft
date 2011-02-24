@@ -19,6 +19,7 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.NodeContext;
 import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.visual.Touchable;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.exceptions.SerialisationException;
@@ -107,7 +108,7 @@ public class DotExporterTests {
 
 	@Test
 	public void testEmpty() throws IOException, ModelValidationException, SerialisationException{
-		DotExporter exporter = new DotExporter();
+		DotExporter exporter = new DotExporter(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS);
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		exporter.export(new MockModel(new MockNode(null, TreePVector.<MockNode>empty())), outStream);
 		Assert.assertEquals("digraph work {\ngraph [nodesep=\"0.5\", overlap=\"false\", splines=\"true\"];\nnode [shape=box];\n}\n", outStream.toString("UTF-8"));

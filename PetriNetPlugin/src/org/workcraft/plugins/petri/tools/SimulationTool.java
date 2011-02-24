@@ -65,6 +65,7 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.SimpleFlowLayout;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
@@ -104,9 +105,10 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner, Deco
 	private Trace savedBranchTrace;
 	private int savedBranchStep = 0;
 
-	public SimulationTool(GraphEditor editor) {
+	public SimulationTool(GraphEditor editor, TouchableProvider<Node> tp) {
 		super();
 		this.editor = editor;
+		touchableProvider = tp;
 		createInterface();
 	}
 
@@ -118,6 +120,8 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner, Deco
 	private Timer timer = null;
 
 	private final GraphEditor editor;
+
+	private final TouchableProvider<Node> touchableProvider;
 
 	private void applyMarking(Map<Place, Integer> marking) {
 		for (Place p : marking.keySet()) {
@@ -662,7 +666,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner, Deco
 
 	@Override
 	public void mousePressed(GraphEditorMouseEvent e) {
-		Node node = HitMan.hitDeepest(e.getPosition(), e.getModel().getRoot(), new Func<Node, Boolean>() {
+		Node node = HitMan.hitDeepest(touchableProvider, e.getPosition(), e.getModel().getRoot(), new Func<Node, Boolean>() {
 			@Override
 			public Boolean eval(Node node) {
 				return node instanceof VisualTransition && net.isEnabled(((VisualTransition) node).getReferencedTransition());
@@ -794,7 +798,7 @@ public class SimulationTool extends AbstractTool implements ClipboardOwner, Deco
 	}
 
 	@Override
-	public Expression<? extends GraphicalContent> userSpaceContent(Expression<Boolean> hasFocus) {
-		return Expressions.constant(GraphicalContent.empty);
+	public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
+		return Expressions.constant(GraphicalContent.EMPTY);
 	}
 }

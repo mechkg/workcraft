@@ -44,8 +44,10 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.NodeContext;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
@@ -54,7 +56,7 @@ import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.stg.SignalTransition;
 
-public class VisualContact extends VisualComponent {
+public class VisualContact extends VisualComponent implements ReflectiveTouchable {
 	public enum Direction {	NORTH, SOUTH, EAST, WEST};
 	public static final Color inputColor = Color.RED;
 	public static final Color outputColor = Color.BLUE;
@@ -206,98 +208,95 @@ public class VisualContact extends VisualComponent {
 		return getReferencedContact().initOne();
 	}
 	
-	@Override
-	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+	public static Expression<? extends ColorisableGraphicalContent> createGraphicalContent(final Expression<? extends NodeContext> nodeContext, final VisualContact contact) {
 		return new ExpressionBase<ColorisableGraphicalContent>(){
 
 			@Override
 			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
+
 				return new ColorisableGraphicalContent() {
-					
+
 					@Override
 					public void draw(DrawRequest request) {
-						VisualContact.this.draw(request, context);
+
+						int connections = context.resolve(nodeContext).getConnections(contact).size();
+						
+						Graphics2D g = request.getGraphics();
+						Color colorisation = request.getColorisation().getColorisation();
+						Color fillColor = request.getColorisation().getBackground();
+						if (fillColor==null) fillColor=context.resolve(contact.fillColor());
+						
+						if (!(context.resolve(contact.parent()) instanceof VisualCircuitComponent)) {
+							
+							AffineTransform at = new AffineTransform();
+							switch (context.resolve(contact.direction())) {
+							case NORTH:
+								at.quadrantRotate(-1);
+								break;
+							case SOUTH:
+								at.quadrantRotate(1);
+								break;
+							case EAST:
+								at.quadrantRotate(2);
+								break;
+							}
+							
+							g.transform(at);
+						}
+						
+						Shape shape = contact.getShape(context);
+						if (connections>1&&(context.resolve(contact.parent()) instanceof VisualCircuitComponent)&&!CircuitSettings.getShowContacts()) {
+							g.setColor(Coloriser.colorise(context.resolve(contact.foregroundColor()), colorisation));
+							g.fill(shape);
+							
+						} else {
+							if (!(shape instanceof Line2D)) {
+								g.setStroke(new BasicStroke((float)CircuitSettings.getCircuitWireWidth()));
+								g.setColor(fillColor);
+								g.fill(shape);
+								g.setColor(Coloriser.colorise(context.resolve(contact.foregroundColor()), colorisation));
+								g.draw(shape);
+							}
+						}
+						
+						if (!(context.resolve(contact.parent()) instanceof VisualCircuitComponent)) {
+							AffineTransform at = new AffineTransform();
+							
+							switch (context.resolve(contact.direction())) {
+							case SOUTH:
+								at.quadrantRotate(2);
+								break;
+							case EAST:
+								at.quadrantRotate(2);
+								break;
+							}
+							
+							g.transform(at);
+							
+							GlyphVector gv = context.resolve(contact.nameGlyphs());
+							Rectangle2D cur = gv.getVisualBounds();
+							g.setColor(Coloriser.colorise((context.resolve(contact.ioType())==IoType.INPUT)?inputColor:outputColor, colorisation));
+							
+							float xx = 0;
+							
+							if (context.resolve(contact.ioType())==IoType.INPUT) {
+								xx = (float)(-cur.getWidth()-0.5);
+							} else {
+								xx = (float)0.5;
+							}
+							g.drawGlyphVector(gv, xx, -0.5f);
+							
+						}
+
 					}
 				};
 			}
+
 		};
-	}
-	
-	private void draw(DrawRequest r, EvaluationContext context) {
-		
-		connections = eval(r.getModel().nodeContext()).getConnections(this).size();
-		
-		Graphics2D g = r.getGraphics();
-		Color colorisation = r.getColorisation().getColorisation();
-		Color fillColor = r.getColorisation().getBackground();
-		if (fillColor==null) fillColor=context.resolve(fillColor());
-		
-		if (!(context.resolve(parent()) instanceof VisualCircuitComponent)) {
-			
-			AffineTransform at = new AffineTransform();
-			switch (context.resolve(direction())) {
-			case NORTH:
-				at.quadrantRotate(-1);
-				break;
-			case SOUTH:
-				at.quadrantRotate(1);
-				break;
-			case EAST:
-				at.quadrantRotate(2);
-				break;
-			}
-			
-			g.transform(at);
-		}
-		
-		Shape shape = getShape(context);
-		if (connections>1&&(context.resolve(parent()) instanceof VisualCircuitComponent)&&!CircuitSettings.getShowContacts()) {
-			g.setColor(Coloriser.colorise(context.resolve(foregroundColor()), colorisation));
-			g.fill(shape);
-			
-		} else {
-			if (!(shape instanceof Line2D)) {
-				g.setStroke(new BasicStroke((float)CircuitSettings.getCircuitWireWidth()));
-				g.setColor(fillColor);
-				g.fill(shape);
-				g.setColor(Coloriser.colorise(context.resolve(foregroundColor()), colorisation));
-				g.draw(shape);
-			}
-		}
-		
-		if (!(context.resolve(parent()) instanceof VisualCircuitComponent)) {
-			AffineTransform at = new AffineTransform();
-			
-			switch (context.resolve(direction())) {
-			case SOUTH:
-				at.quadrantRotate(2);
-				break;
-			case EAST:
-				at.quadrantRotate(2);
-				break;
-			}
-			
-			g.transform(at);
-			
-			GlyphVector gv = context.resolve(nameGlyphs());
-			Rectangle2D cur = gv.getVisualBounds();
-			g.setColor(Coloriser.colorise((context.resolve(ioType())==IoType.INPUT)?inputColor:outputColor, colorisation));
-			
-			float xx = 0;
-			
-			if (context.resolve(ioType())==IoType.INPUT) {
-				xx = (float)(-cur.getWidth()-0.5);
-			} else {
-				xx = (float)0.5;
-			}
-			g.drawGlyphVector(gv, xx, -0.5f);
-			
-		}
-		
-	}
+	}		
 
 	@Override
-	public Expression<? extends Touchable> localSpaceTouchable() {
+	public Expression<? extends Touchable> shape() {
 		return new ExpressionBase<Touchable>(){
 
 			@Override

@@ -227,7 +227,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 				
 					g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-					context.resolve(tool.userSpaceContent(hasFocus)).draw(org.workcraft.util.Graphics.cloneGraphics(g2d));
+					context.resolve(tool.userSpaceContent(view, hasFocus)).draw(org.workcraft.util.Graphics.cloneGraphics(g2d));
 
 					g2d.setTransform(screenTransform);
 

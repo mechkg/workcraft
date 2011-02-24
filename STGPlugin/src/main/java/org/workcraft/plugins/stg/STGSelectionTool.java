@@ -16,7 +16,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 
+import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualNode;
@@ -26,12 +28,16 @@ import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.SelectionTool;
+import org.workcraft.gui.graph.tools.SelectionToolConfig;
 import org.workcraft.plugins.petri.VisualPlace;
 
 public class STGSelectionTool extends SelectionTool
 {
-	public STGSelectionTool(GraphEditor editor) {
-		super(editor);
+	private final TouchableProvider<Node> touchableProvider;
+
+	public STGSelectionTool(GraphEditor editor, TouchableProvider<Node> touchableProvider) {
+		super(new SelectionToolConfig.Default(editor.getModel()));
+		this.touchableProvider = touchableProvider;
 	}
 
 	private boolean cancelEdit = false;
@@ -40,7 +46,7 @@ public class STGSelectionTool extends SelectionTool
 		final Viewport viewport = editor.getViewport();
 		final STG model = (STG)editor.getModel().getMathModel();
 
-		Rectangle2D bb = eval(t.shape()).getBoundingBox();
+		Rectangle2D bb = eval(touchableProvider.apply(t)).getBoundingBox();
 		Rectangle r = viewport.userToScreen(bb);
 
 
@@ -116,7 +122,7 @@ public class STGSelectionTool extends SelectionTool
 		VisualModel model = e.getEditor().getModel();
 
 		if(e.getButton()==MouseEvent.BUTTON1 && e.getClickCount() > 1) {
-			VisualNode node = (VisualNode) HitMan.hitTestForSelection(e.getPosition(), model);
+			VisualNode node = (VisualNode) HitMan.hitTestForSelection(touchableProvider, e.getPosition(), model);
 			if (node != null)
 			{
 				if(node instanceof VisualPlace)
@@ -139,7 +145,7 @@ public class STGSelectionTool extends SelectionTool
 			}
 
 		} else if (e.getButton() == MouseEvent.BUTTON3 && e.getClickCount() == 1) {
-			VisualNode node = (VisualNode) HitMan.hitTestForSelection(e.getPosition(), model);
+			VisualNode node = (VisualNode) HitMan.hitTestForSelection(touchableProvider, e.getPosition(), model);
 			JPopupMenu popup = createPopupMenu(node);
 			if (popup!=null)
 				popup.show(e.getSystemEvent().getComponent(), e.getSystemEvent().getX(), e.getSystemEvent().getY());

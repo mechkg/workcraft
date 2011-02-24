@@ -36,6 +36,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.w3c.dom.Document;
 import org.workcraft.dom.Model;
+import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.SerialisationException;
@@ -45,6 +47,13 @@ import org.workcraft.util.XmlUtil;
 
 public abstract class AbstractSVGExporter implements Exporter {
 
+	private final TouchableProvider<Node> tp;
+
+	public AbstractSVGExporter(TouchableProvider<Node> tp) {
+		this.tp = tp;
+		
+	}
+	
 	public abstract void draw (Model model, Graphics2D g);
 	
 	public void export(Model model, OutputStream out) throws IOException,
@@ -60,7 +69,7 @@ public abstract class AbstractSVGExporter implements Exporter {
 				
 				g2d.scale(50, 50);
 				
-				Rectangle2D bounds = eval(((VisualGroup)model.getRoot()).localSpaceTouchable()).getBoundingBox();
+				Rectangle2D bounds = eval(tp.apply((VisualGroup)model.getRoot())).getBoundingBox();
 				
 				g2d.translate(-bounds.getMinX(), -bounds.getMinY());
 				g2d.setSVGCanvasSize(new Dimension((int)(bounds.getWidth()*50), (int)(bounds.getHeight()*50)));

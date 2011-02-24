@@ -28,6 +28,7 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.Touchable;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.dom.visual.VisualComponent;
 
@@ -35,7 +36,7 @@ public class ComponentsTransformer {
 	
 	public static ExpressionBase<Touchable> transform (VisualComponent first, Node transformTo) {
 		Expression<AffineTransform> expr = TransformHelper.getTransformExpression(Expressions.constant(first), Expressions.constant(transformTo));
-		return TransformHelper.transform(first.shape(), expr);
+		return TransformHelper.transform(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS.apply(first), expr);
 
 	}
 }

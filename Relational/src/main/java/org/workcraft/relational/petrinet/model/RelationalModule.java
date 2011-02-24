@@ -14,6 +14,7 @@ import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.GraphEditorToolUtil;
 import org.workcraft.gui.graph.tools.SelectionTool;
+import org.workcraft.gui.graph.tools.SelectionToolConfig;
 
 import pcollections.TreePVector;
 
@@ -53,7 +54,7 @@ public class RelationalModule implements Module {
 							@Override
 							public Iterable<? extends GraphEditorTool> createTools(GraphEditor editor) {
 								return TreePVector.<GraphEditorTool>singleton(
-										GraphEditorToolUtil.attachParameterisedPainter(new SelectionTool(editor), DefaultReflectiveModelPainter.reflectivePainterProvider(editor.getModel().getRoot()))
+										GraphEditorToolUtil.attachParameterisedPainter(new SelectionTool(new SelectionToolConfig.Default(editor.getModel())), DefaultReflectiveModelPainter.reflectivePainterProvider(editor.getModel().getRoot()))
 								).plus(new UndoTool());
 							}
 							

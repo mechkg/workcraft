@@ -6,18 +6,14 @@ public interface Colorisation {
 	Color getColorisation();
 	Color getBackground();
 	
-	public static class Empty implements Colorisation {
-
+	public static final Colorisation EMPTY = new Colorisation() {
 		@Override
 		public Color getColorisation() {
 			return null;
 		}
-
 		@Override
 		public Color getBackground() {
 			return null;
 		}
-	}
-	
-	public static final Empty EMPTY = new Empty();
+	};
 }

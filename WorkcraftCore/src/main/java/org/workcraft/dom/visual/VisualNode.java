@@ -21,16 +21,12 @@
 
 package org.workcraft.dom.visual;
 
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Collections;
 
 import javax.swing.JPopupMenu;
 
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
@@ -46,32 +42,6 @@ public abstract class VisualNode implements Properties, Node, Hidable {
 
 	public VisualNode(StorageManager storage) {
 		parent = storage.create(null);
-	}
-	
-	@Override
-	public Expression<? extends Touchable> shape() {
-		return new ExpressionBase<Touchable>() {
-			@Override
-			protected Touchable evaluate(EvaluationContext context) {
-				return new Touchable() {
-
-					@Override
-					public boolean hitTest(Point2D point) {
-						return false;
-					}
-
-					@Override
-					public Rectangle2D getBoundingBox() {
-						return null;
-					}
-
-					@Override
-					public Point2D getCenter() {
-						return new Point2D.Double(0, 0);
-					}
-				};
-			}
-		};
 	}
 	
 	public Expression<? extends Collection<Node>> children() {

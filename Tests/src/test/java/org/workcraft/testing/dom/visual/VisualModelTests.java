@@ -524,11 +524,11 @@ public class VisualModelTests {
 		SquareNode sq = new SquareNode(group1, new Rectangle2D.Double(0, 0, 1, 1));
 		group1.add(sq);
 		
-		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(0.5, 0.5), model));
-		Assert.assertEquals(group1, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(101.5, 0.5), model));
+		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(0.5, 0.5), model));
+		Assert.assertEquals(group1, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(101.5, 0.5), model));
 		model.currentLevel().setValue(group1);
-		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(0.5, 0.5), model));
-		Assert.assertEquals(sq, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(101.5, 0.5), model));
+		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(0.5, 0.5), model));
+		Assert.assertEquals(sq, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(101.5, 0.5), model));
 	}
 	
 	@Test
@@ -558,8 +558,7 @@ public class VisualModelTests {
 	}
 
 	private Collection<? extends Node> boxHitTest(VisualModel model, Rectangle2D.Double rect) {
-		// todo: translation?
-		return HitMan.boxHitTestReflective(eval(model.currentLevel()), new Point2D.Double(rect.getMinX(), rect.getMinY()), 
+		return HitMan.boxHitTest(TouchableProvider.DEFAULT, eval(model.currentLevel()), new Point2D.Double(rect.getMinX(), rect.getMinY()), 
 				new Point2D.Double(rect.getMaxX(), rect.getMaxY()));
 	}
 }

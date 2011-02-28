@@ -25,8 +25,9 @@ package org.workcraft.dom.visual.connections;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawableNew;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 
-public interface ConnectionGraphic extends Node, DrawableNew {
+public interface ConnectionGraphic extends Node, DrawableNew, ReflectiveTouchable {
 	
 	public Expression<? extends ParametricCurve> curve();
 	public ControlPointScaler scaler();

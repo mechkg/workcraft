@@ -41,7 +41,7 @@ public class VisualPlaceTests {
 		Place p = new Place(new DefaultStorageManager());
 		VisualPlace vp = new VisualPlace(p, new DefaultStorageManager());
 		
-		TouchableProvider<Node> tp = TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS;
+		TouchableProvider<Node> tp = TouchableProvider.DEFAULT;
 		
 		// since 24.02.2011 the Movable is applied on top of shape, so shape does not change anymore
 		// TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS manages it instead.

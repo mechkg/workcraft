@@ -46,6 +46,7 @@ import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualNode;
@@ -55,7 +56,7 @@ import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
 public class VisualConnection extends VisualNode implements
 		Node, DrawableNew, Connection,
-		DependentNode {
+		DependentNode, ReflectiveTouchable {
 	
 	private final class Properties extends ExpressionBase<VisualConnectionProperties> {
 		@Override

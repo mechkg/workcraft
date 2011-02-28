@@ -44,13 +44,14 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.DrawHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.util.ExpressionUtil;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Geometry.CurveSplitResult;
 
-public class Bezier implements ConnectionGraphic, SelectionObserver {
+public class Bezier implements ConnectionGraphic, SelectionObserver, ReflectiveTouchable {
 
 	private final Expression<PartialCurveInfo> curveInfo;
 	private final Expression<VisualConnectionProperties> connectionInfo;

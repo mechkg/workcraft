@@ -20,7 +20,6 @@
  */
 
 package org.workcraft;
-import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -37,9 +36,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -567,7 +563,7 @@ public class Framework {
 			Element visualElement = XmlUtil.getChildElement("visual", metaDoc.getDocumentElement());
 
 			if (visualElement == null)
-				return new ModelEntry(descriptor, mathResult.model, storage);
+				return new ModelEntry(descriptor, mathResult.model, storage, descriptor.createServiceProvider(mathResult.model));
 
 			//UUID visualFormatUUID = UUID.fromString(visualElement.getAttribute("format-uuid"));
 			InputStream visualData = getUncompressedEntry (visualElement.getAttribute("entry-name"), new ByteArrayInputStream(bufferedInput));
@@ -577,7 +573,7 @@ public class Framework {
 
 			DeserialisationResult visualResult = visualDeserialiser.deserialise(visualData, storage, mathResult.referenceResolver);
 			//visualResult.model.getVisualModel().setMathModel(mathResult.model.getMathModel());
-			return new ModelEntry(descriptor, visualResult.model, storage);
+			return new ModelEntry(descriptor, visualResult.model, storage, descriptor.createServiceProvider(visualResult.model));
 
 		} catch (IOException e) {
 			throw new DeserialisationException(e);

@@ -10,50 +10,50 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.graph.tools.MovableController;
 import org.workcraft.util.Function2;
-import org.workcraft.util.Geometry;
 
 public interface TouchableProvider<N> extends Combinator<N,Touchable> {
-	class WithTranslations implements TouchableProvider<Node> {
-		MovableController<Node> movable = MovableController.REFLECTIVE_HIERARCHICAL;
-		private final Node root;
-
-		public WithTranslations(Node root) {
-			this.root = root;
-		}
-
-		@Override
-		public Expression<? extends Touchable> apply(Node node) {
-			Expression<? extends Touchable> localTouchable = REFLECTIVE.apply(node);
-			ModifiableExpression<Point2D> position = movable.position(node);
-			ModifiableExpression<Point2D> rootPosition = movable.position(root);
-			
-			Expression<? extends Point2D> relativePosition = Expressions.bindFunc(position, rootPosition, new Function2<Point2D, Point2D, Point2D>(){
-				@Override
-				public Point2D apply(Point2D position, Point2D origin) {
-					return Geometry.subtract(position, origin);
-				}
-			});
-			
-			return Expressions.bindFunc(localTouchable, relativePosition, new Function2<Touchable, Point2D, Touchable>() {
-				@Override
-				public Touchable apply(Touchable arg1, Point2D arg2) {
-					return new TouchableTransformer(arg1, AffineTransform.getTranslateInstance(arg2.getX(), arg2.getY()));
-				}
-			});
-		}
-	}
-
-	TouchableProvider<Node> REFLECTIVE = new TouchableProvider<Node>(){
+	
+	public final TouchableProvider<Node> LOCAL_REFLECTIVE = new TouchableProvider<Node> () {
 		@Override
 		public Expression<? extends Touchable> apply(Node node) {
 			if (node instanceof ReflectiveTouchable) 
 				return ((ReflectiveTouchable)node).shape();
-			else if(node instanceof VisualGroup)
-				return VisualGroup.localSpaceTouchable(new WithTranslations(node), ((VisualGroup)node));
 			else
 				return null;
 		}
 	};
 	
-	TouchableProvider<Node> REFLECTIVE_WITH_TRANSLATIONS = new WithTranslations(null);
+	TouchableProvider<Node> DEFAULT = Util.applyTransformAndAddVisualGroups(LOCAL_REFLECTIVE);
+	
+	public final class Util{
+
+		public static TouchableProvider<Node> applyTransformAndAddVisualGroups(final TouchableProvider<Node> localTP) {
+			final MovableController<Node> movable = MovableController.REFLECTIVE_HIERARCHICAL;
+			return new TouchableProvider<Node>() {
+
+				@Override
+				public Expression<? extends Touchable> apply(Node node) {
+
+					final Expression<? extends Touchable> localTouchable;
+					
+					if(node instanceof VisualGroup)
+						return VisualGroup.screenSpaceBounds(this, ((VisualGroup)node));
+					else
+						localTouchable = localTP.apply(node);
+					
+					if(localTouchable == null) // fuck you java :D
+						return null;
+					ModifiableExpression<Point2D> position = movable.position(node);
+					
+					return Expressions.bindFunc(localTouchable, position, new Function2<Touchable, Point2D, Touchable>() {
+						@Override
+						public Touchable apply(Touchable arg1, Point2D arg2) {
+							return new TouchableTransformer(arg1, AffineTransform.getTranslateInstance(arg2.getX(), arg2.getY()));
+						}
+					});
+				}
+				
+			};
+		}
+	}
 }

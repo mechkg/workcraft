@@ -198,7 +198,8 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		@Override
 		protected GraphicalContent evaluate(final EvaluationContext context) {
 			
-			final GraphEditorTool tool = context.resolve(toolboxPanel.selectedTool());
+			final GraphEditorTool tool = context.resolve(
+					toolboxPanel.selectedTool());
 			
 			return new GraphicalContent() {
 				

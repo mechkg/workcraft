@@ -1,5 +1,7 @@
 package org.workcraft.plugins.interop;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -14,14 +16,14 @@ import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualComponent;
-import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.exceptions.SerialisationException;
+import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.serialisation.Format;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class DotExporter implements Exporter {
 	
@@ -54,81 +56,88 @@ public class DotExporter implements Exporter {
 	}
 	
 	@Override
-	public void export(Model model, OutputStream outStream) throws IOException,
-			ModelValidationException, SerialisationException {
+	public ExportJob getExportJob(ServiceProvider modelServices) throws ServiceNotAvailableException {
+		
+		DotExportableService exportableService = modelServices.getImplementation(DotExportableService.SERVICE_HANDLE);
+		final Model model = exportableService.getModel();
+		
+		return new ExportJob() {
+			
+			@Override
+			public int getCompatibility() {
+				return Exporter.GENERAL_COMPATIBILITY;
+			}
+			
+			
+			@Override
+			public void export(OutputStream outStream) throws IOException, ModelValidationException, SerialisationException {
 
-		final List<DotExportNode> export = new ArrayList<DotExportNode>();
-		for (Node n : eval(model.getRoot().children())) {
-			if (n instanceof VisualComponent) {
-				VisualComponent comp = (VisualComponent) n;
-				final String id = eval(model.referenceManager()).getNodeReference(comp);
-				
-				if(id!=null) {
-					final Rectangle2D bb = eval(tp.apply(comp)).getBoundingBox();
+				final List<DotExportNode> export = new ArrayList<DotExportNode>();
+				for (Node n : eval(model.getRoot().children())) {
+					if (n instanceof VisualComponent) {
+						VisualComponent comp = (VisualComponent) n;
+						final String id = eval(model.referenceManager()).getNodeReference(comp);
+						
+						if(id!=null) {
+							final Rectangle2D bb = eval(tp.apply(comp)).getBoundingBox();
 
-					if(bb!=null)
-					{
-						final List<String> destinations = new ArrayList<String>();
-						
-							
-						Set<Node> postset = eval(model.nodeContext()).getPostset(comp);
-						
-						for(Node target : postset) {
-							String targetId = eval(model.referenceManager()).getNodeReference(target);
-							if(targetId!=null)
-								destinations.add(targetId);
-						}
-						
-						export.add(new DotExportNode()
-						{
-							@Override
-							public String getName() {
-								return id;
-							}
-	
-							@Override
-							public Dimension2D getDimensions() {
-								return new Dimension2D()
+							if(bb!=null)
+							{
+								final List<String> destinations = new ArrayList<String>();
+								
+									
+								Set<Node> postset = eval(model.nodeContext()).getPostset(comp);
+								
+								for(Node target : postset) {
+									String targetId = eval(model.referenceManager()).getNodeReference(target);
+									if(targetId!=null)
+										destinations.add(targetId);
+								}
+								
+								export.add(new DotExportNode()
 								{
 									@Override
-									public double getHeight() {
-										return bb.getHeight();
+									public String getName() {
+										return id;
 									}
+			
 									@Override
-									public double getWidth() {
-										return bb.getWidth();
+									public Dimension2D getDimensions() {
+										return new Dimension2D()
+										{
+											@Override
+											public double getHeight() {
+												return bb.getHeight();
+											}
+											@Override
+											public double getWidth() {
+												return bb.getWidth();
+											}
+											@Override
+											public void setSize(double width, double height) {
+												throw new NotSupportedException();
+											}
+										};
 									}
+			
 									@Override
-									public void setSize(double width, double height) {
-										throw new NotSupportedException();
+									public String[] getOutgoingArcs() {
+										return destinations.toArray(new String[0]);
 									}
-								};
+								});
 							}
-	
-							@Override
-							public String[] getOutgoingArcs() {
-								return destinations.toArray(new String[0]);
-							}
-						});
+						}
 					}
 				}
+				
+				DotExporter.export(new DotExportable() {
+					@Override
+					public DotExportNode[] getNodes() {
+						return export.toArray(new DotExportNode[0]);
+					}
+				}, outStream);
 			}
-		}
-		
-		export(new DotExportable() {
-			@Override
-			public DotExportNode[] getNodes() {
-				return export.toArray(new DotExportNode[0]);
-			}
-		}, outStream);
-	}
-
-	@Override
-	public int getCompatibility(Model model) {
-		if (model instanceof VisualModel)
-			return Exporter.GENERAL_COMPATIBILITY;
-		else
-			return Exporter.NOT_COMPATIBLE;
+		};
 	}
 
 	@Override

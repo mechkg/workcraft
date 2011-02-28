@@ -23,10 +23,8 @@ package org.workcraft.plugins.stg;
 
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.annotations.VisualClass;
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.plugins.petri.Transition;
-import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
 @DisplayName("Dummy transition")
 @VisualClass(org.workcraft.plugins.stg.VisualDummyTransition.class)
@@ -34,16 +32,8 @@ public class DummyTransition extends Transition implements StgTransition {
 	
 	public DummyTransition(StorageManager storage) {
 		super(storage);
-		name = storage.create(null);
 	}
 	
-	private final ModifiableExpression<String> name;
-	
-	@NoAutoSerialisation
-	public ModifiableExpression<String> name() {
-		return name;
-	}
-
 	@Override
 	public DummyTransition asDummy() {
 		return this;

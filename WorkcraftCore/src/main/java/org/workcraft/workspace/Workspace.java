@@ -47,8 +47,6 @@ import org.workcraft.util.LinkedTwoWayMap;
 import org.workcraft.util.XmlUtil;
 import org.xml.sax.SAXException;
 
-import checkers.nullness.quals.Nullable;
-
 public class Workspace {
 	private LinkedTwoWayMap<Path<String>, WorkspaceEntry> openFiles = new LinkedTwoWayMap<Path<String>, WorkspaceEntry>();
 	private List<WorkspaceListener> workspaceListeners = new ArrayList<WorkspaceListener>();
@@ -69,7 +67,6 @@ public class Workspace {
 		return new WorkspaceTree(this);
 	}
 	
-	@SuppressWarnings("nullness")
 	private File baseDir()
 	{
 		return workspaceFile.getParentFile();

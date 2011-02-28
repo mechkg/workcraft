@@ -48,11 +48,12 @@ import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.util.Geometry;
 
-public class Polyline implements ConnectionGraphic, Container,SelectionObserver {
+public class Polyline implements ConnectionGraphic, Container,SelectionObserver, ReflectiveTouchable {
 	
 	@Override
 	public Expression<? extends Touchable> shape() {

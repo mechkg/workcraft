@@ -54,7 +54,6 @@ import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.SignalTransition.Type;
-import org.workcraft.plugins.stg.propertydescriptors.DummyNamePropertyDescriptor;
 import org.workcraft.serialisation.References;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
@@ -274,6 +273,22 @@ public class STG extends AbstractModel implements STGModel {
 		};
 	}
 
+	public ModifiableExpression<String> name(final DummyTransition dt) {
+		return new ModifiableExpressionBase<String>() {
+
+			@Override
+			public void setValue(String newValue) {
+				Integer newInstanceNumber = null;
+				referenceManager.setInstance(dt, Pair.of(newValue, newInstanceNumber));
+			}
+
+			@Override
+			protected String evaluate(EvaluationContext context) {
+				return context.resolve(referenceManager.state()).getInstance(dt).getFirst();
+			}
+		};
+	}
+
 	@Override
 	public Properties getProperties(Node node) {
 		Properties.Mix result = new Properties.Mix();
@@ -302,7 +317,7 @@ public class STG extends AbstractModel implements STGModel {
 			ModifiableExpression<Type> signalType = signalType(transition);
 			result.add(ExpressionPropertyDeclaration.create("Signal type", signalType, signalType, SignalTransition.Type.class, types));
 		} if (node instanceof DummyTransition) {
-			result.add(new DummyNamePropertyDescriptor(this, (DummyTransition) node));
+			result.add (ExpressionPropertyDeclaration.create("Name", name((DummyTransition)node), String.class));
 			result.add(ExpressionPropertyDeclaration.create("Instance", instanceNumber((DummyTransition)node), Integer.class));
 		}
 		return result;

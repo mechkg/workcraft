@@ -53,7 +53,8 @@ public class STGReferenceManager implements StgRefMan, HierarchyObservingState<S
 		this.dummyInstanceManager = InstanceManager.create(new Func<DummyTransition, String>() {
 			@Override
 			public String eval(DummyTransition arg) {
-				return GlobalCache.eval((arg).name());
+				throw new NotSupportedException();
+				//return GlobalCache.eval((arg).name());
 			}
 		});
 	}
@@ -90,7 +91,6 @@ public class STGReferenceManager implements StgRefMan, HierarchyObservingState<S
 				return;
 
 			String name = "dummy" + dummyCounter++;
-			dt.name().setValue(name);
 
 			dummyInstanceManager.assign(dt);
 		} else if (node instanceof STGPlace) {

@@ -20,22 +20,31 @@
 */
 
 package org.workcraft.interop;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.UUID;
 
-import org.workcraft.dom.Model;
-import org.workcraft.exceptions.ModelValidationException;
-import org.workcraft.exceptions.SerialisationException;
+import checkers.nullness.quals.Nullable;
 
 public interface Exporter {
-	public static final int NOT_COMPATIBLE = 0;
 	public static final int GENERAL_COMPATIBILITY = 1;
 	public static final int BEST_COMPATIBILITY = 10;
 	
 	public String getDescription();
 	public String getExtenstion();
 	public UUID getTargetFormat();
-	public int getCompatibility(Model model);
-	public void export (Model model, OutputStream out) throws IOException, ModelValidationException, SerialisationException;
+	/**
+	 * Returns the export job which exports the model specified by its ServiceProvider.
+	 * @param modelServices
+	 * The services provided by the model.
+	 * @return
+	 * The job to export the model
+	 * @throws ServiceNotAvailableException
+	 */
+	public ExportJob getExportJob(ServiceProvider modelServices) throws ServiceNotAvailableException;
+	
+	public class Util {
+		public static @Nullable ExportJob tryGetExportJob(Exporter exporter, ServiceProvider modelServices) {
+			try { return exporter.getExportJob(modelServices); }
+			catch (ServiceNotAvailableException ex) { return null; }
+		}
+	}
 }

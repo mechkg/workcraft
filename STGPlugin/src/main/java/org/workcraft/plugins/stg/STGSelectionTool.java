@@ -36,7 +36,7 @@ public class STGSelectionTool extends SelectionTool
 	private final TouchableProvider<Node> touchableProvider;
 
 	public STGSelectionTool(GraphEditor editor, TouchableProvider<Node> touchableProvider) {
-		super(new SelectionToolConfig.Default(editor.getModel()));
+		super(new SelectionToolConfig.Default(editor.getModel(), touchableProvider));
 		this.touchableProvider = touchableProvider;
 	}
 

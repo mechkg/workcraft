@@ -97,6 +97,7 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 	private final Expression<ColorisableGraphicalContent> labelGraphics = new ExpressionBase<ColorisableGraphicalContent>(){
 		@Override
 		protected ColorisableGraphicalContent evaluate(EvaluationContext context) {
+			if(true)return ColorisableGraphicalContent.EMPTY;
 			final Point2D labelPosition = labelPosition(context);
 			final Color labelColor = context.resolve(VisualComponent.this.labelColor);
 			final ColorisableGraphicalContent labelGraphics = context.resolve(label.graphics);

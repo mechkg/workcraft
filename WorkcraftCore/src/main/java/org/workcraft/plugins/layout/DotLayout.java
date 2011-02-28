@@ -47,7 +47,8 @@ import org.workcraft.dom.visual.connections.VisualConnection.ScaleMode;
 import org.workcraft.exceptions.LayoutException;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.SerialisationException;
-import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ExportJob;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.layout.generated.DotParser;
 import org.workcraft.plugins.layout.generated.ParseException;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
@@ -59,6 +60,7 @@ import org.workcraft.tasks.Task;
 import org.workcraft.util.Export;
 import org.workcraft.util.FileUtils;
 import org.workcraft.util.WorkspaceUtils;
+import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class DotLayout implements Tool {
@@ -69,13 +71,15 @@ public class DotLayout implements Tool {
 		this.framework = framework;
 	}
 	
-	private void saveGraph(VisualModel model, File file) throws IOException, ModelValidationException, SerialisationException {
-		Exporter exporter = Export.chooseBestExporter(framework.getPluginManager(), model, Format.DOT);
-		if (exporter == null)
-			throw new RuntimeException ("Cannot find a .dot exporter for the model " + model);
+	private void saveGraph(ServiceProvider modelServices, File file) throws IOException, ModelValidationException, SerialisationException {
+		ExportJob exporter = Export.chooseBestExporter(framework.getPluginManager(), modelServices, Format.DOT);
 		FileOutputStream out = new FileOutputStream(file);
-		exporter.export(model, out);
-		out.close();
+		try{
+			exporter.export(out);
+		}
+		finally{
+			out.close();
+		}
 	}
 	
 	List<Point2D> parseConnectionSpline(String pos) throws ParseException
@@ -205,13 +209,15 @@ public class DotLayout implements Tool {
 	}
 	
 	public void run (WorkspaceEntry entry) {
+		ModelEntry modelEntry = entry.getModelEntry();
+		ServiceProvider services = modelEntry.services;
 		VisualModel model = WorkspaceUtils.getAs(entry, VisualModel.class);
 		File original = null, layout = null;
 		try {
 			original = File.createTempFile("work", ".dot");
 			layout = File.createTempFile("worklayout", ".dot");
 			
-			saveGraph((VisualModel)model, original);
+			saveGraph(services, original);
 			
 			List<String> args = new ArrayList<String>();
 			args.add(DotLayoutSettings.dotCommand);

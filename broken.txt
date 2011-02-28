@@ -1,0 +1,41 @@
+/*import javax.swing.JLabel;
+
+package org.workcraft.util;
+
+import org.workcraft.dom.visual.VisualModel;
+import org.workcraft.interop.Exporter;
+
+public class Crap {
+
+	
+	
+	if (model instanceof VisualModel)
+		if (exporter.getCompatibility(model) == Exporter.NOT_COMPATIBLE)
+			if (exporter.getCompatibility(((VisualModel)model).getMathModel()) == Exporter.NOT_COMPATIBLE)
+					throw new RuntimeException ("Exporter is not applicable to the model.");
+			else
+				model = ((VisualModel)model).getMathModel();
+
+	
+	
+	create a DotExporter
+	
+	
+	
+	
+	implement LayoutableBalsaCircuit
+	
+	MainMenu.setMenuForWorkspaceEntry: 				
+	separation between visual and math exporters
+	if (!haveVisual)
+					addExportSeparator("Visual");
+	private void addExportSeparator (String text) {
+		mnExport.add(new JLabel(text));
+		mnExport.addSeparator();
+	}
+	
+
+	
+	
+}
+*/

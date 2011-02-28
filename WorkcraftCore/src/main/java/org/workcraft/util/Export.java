@@ -27,11 +27,12 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.workcraft.PluginProvider;
-import org.workcraft.dom.Model;
-import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.SerialisationException;
+import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.PluginInfo;
 import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.ProgressMonitor;
@@ -40,94 +41,67 @@ import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.tasks.Task;
 
 public class Export {
-	public static class ExportTask implements Task<Object> {
-		Exporter exporter;
-		Model model;
+	public static class ExportTask implements Task<Null> {
+		ExportJob exporter;
 		File file;
 		
-		public ExportTask(Exporter exporter, Model model, String path) {
+		public ExportTask(ExportJob exporter, File file) {
 			this.exporter = exporter;
-			this.model = model;
-			this.file = new File(path);
+			this.file = file;
 		}
 		
 		@Override
-		public Result<? extends Object> run(ProgressMonitor<? super Object> monitor) {
-			FileOutputStream fos;
-			
+		public Result<? extends Null> run(ProgressMonitor<? super Null> monitor) {
 			try {
-				file.createNewFile();
-				fos = new FileOutputStream(file);
-			} catch (IOException e) {
-				return new Result<Boolean>(e);
-			}
-			 
-			boolean ok = false;
-			
-			try
-			{
-				if (model instanceof VisualModel)
-					if (exporter.getCompatibility(model) == Exporter.NOT_COMPATIBLE)
-						if (exporter.getCompatibility(((VisualModel)model).getMathModel()) == Exporter.NOT_COMPATIBLE)
-								return new Result<Boolean>(new Exception(new RuntimeException ("Exporter is not applicable to the model.")));
-						else
-							model = ((VisualModel)model).getMathModel();
-				exporter.export(model, fos);
-				ok = true;
+				exportToFile(exporter, file);
 			} catch (Throwable e) {
-				return new Result<Boolean>(e);
-			}
-			finally
-			{
-				try {
-					fos.close();
-				} catch (IOException e) {
-					return new Result<Boolean>(e);
-				}
-				if(!ok)
-					file.delete();
+				return new Result<Null>(e);
 			}
 			
-			return new Result<Boolean>(Outcome.FINISHED);
+			return new Result<Null>(Outcome.FINISHED);
 		}
 	}
 	
-	static public Exporter chooseBestExporter (PluginProvider provider, Model model, UUID targetFormat) {
+	static public ExportJob chooseBestExporter (PluginProvider provider, ServiceProvider modelServices, UUID targetFormat) throws SerialisationException {
 		Iterable<PluginInfo<? extends Exporter>> plugins = provider.getPlugins(Exporter.class);
 		
-		Exporter best = null;
-		int bestCompatibility = Exporter.NOT_COMPATIBLE;
+		ExportJob best = null;
+		int bestCompatibility = -1;
 		
 		for (PluginInfo<? extends Exporter> info : plugins) {
 			Exporter exporter = info.getSingleton();
 			
 			if (exporter.getTargetFormat().equals(targetFormat)) {
-				int compatibility = exporter.getCompatibility(model);
-				if (compatibility > bestCompatibility) {
-					bestCompatibility = compatibility;
-					best = exporter;
+				ExportJob exportJob;
+				try {
+					exportJob = exporter.getExportJob(modelServices);
+					int compatibility = exportJob.getCompatibility();
+					
+					if (best == null || compatibility > bestCompatibility) {
+						bestCompatibility = compatibility;
+						best = exportJob;
+					}
+				} catch (ServiceNotAvailableException e) {
 				}
 			}
 		}
-		
+
+		if (best == null) // TODO: determine model type name?
+			throw new SerialisationException("No exporter available for the model " + modelServices + " to produce format " + Format.getDescription(targetFormat));
 		return best;
 	}
 	
-	static public void exportToFile (Model model, File file, UUID targetFormat, PluginProvider provider) throws IOException, ModelValidationException, SerialisationException {
-		Exporter exporter = chooseBestExporter(provider, model, targetFormat);
-		if (exporter == null)
-			throw new SerialisationException("No exporter available for model type " + model.getClass().getCanonicalName() + " to produce format " + Format.getDescription(targetFormat));
-		exportToFile(exporter, model, file);
+	static public void exportToFile (ServiceProvider modelServices, File file, UUID targetFormat, PluginProvider provider) throws IOException, ModelValidationException, SerialisationException {
+		ExportJob exporter = chooseBestExporter(provider, modelServices, targetFormat);
+		exportToFile(exporter, file);
 	}
 	
-	static public ExportTask createExportTask (Model model, File file, UUID targetFormat, PluginProvider provider) throws SerialisationException {
-		Exporter exporter = chooseBestExporter(provider, model, targetFormat);
-		if (exporter == null)
-			throw new SerialisationException("No exporter available for model type " + model.getClass().getCanonicalName() + " to produce format " + Format.getDescription(targetFormat));
-		return new ExportTask(exporter, model, file.getAbsolutePath());
+	static public ExportTask createExportTask (ServiceProvider modelServices, File file, UUID targetFormat, PluginProvider provider) throws SerialisationException {
+		ExportJob exporter = chooseBestExporter(provider, modelServices, targetFormat);
+		return new ExportTask(exporter, file);
 	}
 	
-	static public void exportToFile (Exporter exporter, Model model, File file) throws IOException, ModelValidationException, SerialisationException {
+	static public void exportToFile (ExportJob exporter, File file) throws IOException, ModelValidationException, SerialisationException {
 		file.createNewFile();
 		FileOutputStream fos = new FileOutputStream(file);
 		
@@ -135,13 +109,7 @@ public class Export {
 		
 		try
 		{
-			if (model instanceof VisualModel)
-				if (exporter.getCompatibility(model) == Exporter.NOT_COMPATIBLE)
-					if (exporter.getCompatibility(((VisualModel)model).getMathModel()) == Exporter.NOT_COMPATIBLE)
-							throw new RuntimeException ("Exporter is not applicable to the model.");
-					else
-						model = ((VisualModel)model).getMathModel();
-			exporter.export(model, fos);
+			exporter.export(fos);
 			ok = true;
 		}
 		finally
@@ -150,9 +118,5 @@ public class Export {
 			if(!ok)
 				file.delete();
 		}
-	}
-	
-	static public void exportToFile (Exporter exporter, Model model, String fileName) throws IOException, ModelValidationException, SerialisationException {
-		exportToFile(exporter, model, new File(fileName));
 	}
 }

@@ -36,7 +36,7 @@ public class ComponentsTransformer {
 	
 	public static ExpressionBase<Touchable> transform (VisualComponent first, Node transformTo) {
 		Expression<AffineTransform> expr = TransformHelper.getTransformExpression(Expressions.constant(first), Expressions.constant(transformTo));
-		return TransformHelper.transform(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS.apply(first), expr);
+		return TransformHelper.transform(TouchableProvider.DEFAULT.apply(first), expr);
 
 	}
 }

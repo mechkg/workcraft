@@ -126,6 +126,23 @@ public class STGToolsProvider implements CustomToolsProvider {
 
 		final STG stg = ((VisualSTG)editor.getModel()).stg;
 		
+		TouchableProvider<Node> localTP = new TouchableProvider<Node>(){
+			@Override
+			public Expression<? extends Touchable> apply(Node node) {
+				if(node instanceof VisualSignalTransition) {
+					final VisualSignalTransition vst = (VisualSignalTransition)node;
+					return vst.localSpaceTouchable(transitionName(stg, vst));
+				} else 
+					if(node instanceof VisualDummyTransition) {
+						final VisualDummyTransition vdt = (VisualDummyTransition)node;
+						return vdt.shape(stg.name(vdt.getReferencedTransition()));
+					} else
+				return LOCAL_REFLECTIVE.apply(node);
+			}
+		};
+		
+		final TouchableProvider<Node> tp = TouchableProvider.Util.applyTransformAndAddVisualGroups(localTP);
+
 		final Func<Colorisator, Expression<? extends GraphicalContent>> painterProvider = new Func<Colorisator, Expression<? extends GraphicalContent>>() {
 			@Override
 			public Expression<? extends GraphicalContent> eval(final Colorisator colorisator) {
@@ -133,35 +150,22 @@ public class STGToolsProvider implements CustomToolsProvider {
 				final NodePainter myNodePainter = new NodePainter() {
 					@Override
 					public Expression<? extends GraphicalContent> getGraphicalContent(Node node) {
-						final VisualSignalTransition vst = VisualSignalTransition.class.cast(node);
-						if(vst != null) {
+						if(node instanceof VisualSignalTransition) {
+							final VisualSignalTransition vst = (VisualSignalTransition)node;
 							return DefaultReflectiveModelPainter.ReflectiveNodePainter.colorise(vst.getGraphicalContent(transitionName(stg, vst)), colorisator.getColorisation(node));
 						} else
-							return new DefaultReflectiveModelPainter.ReflectiveNodePainter(colorisator).getGraphicalContent(node);
+							if(node instanceof VisualDummyTransition) {
+								final VisualDummyTransition vdt = (VisualDummyTransition)node;
+								return DefaultReflectiveModelPainter.ReflectiveNodePainter.colorise(vdt.graphicalContent(stg.name(vdt.getReferencedTransition())), colorisator.getColorisation(node));
+							} else
+							return new DefaultReflectiveModelPainter.ReflectiveNodePainter(tp, colorisator).getGraphicalContent(node);
 					}
 				};
 				
-				return DrawMan.graphicalContent(editor.getModel().getRoot(), new NodePainter(){
-					@Override
-					public Expression<? extends GraphicalContent> getGraphicalContent(Node node) {
-						return myNodePainter.getGraphicalContent(node);
-					}
-				});
+				return DrawMan.graphicalContent(editor.getModel().getRoot(), myNodePainter);
 			}
 		};
 		final Expression<? extends GraphicalContent> simpleModelPainter = painterProvider.eval(Colorisator.EMPTY);
-		
-		
-		TouchableProvider<Node> tp = new TouchableProvider<Node>(){
-			@Override
-			public Expression<? extends Touchable> apply(Node argument) {
-				final VisualSignalTransition vst = VisualSignalTransition.class.cast(argument);
-				if(vst != null) {
-					return vst.localSpaceTouchable(transitionName(stg, vst));
-				} else 
-				return REFLECTIVE_WITH_TRANSLATIONS.apply(argument);
-			}
-		};
 		
 		return asList(
 				attachParameterisedPainter(new STGSelectionTool(editor, tp), painterProvider),

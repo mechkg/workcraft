@@ -1,6 +1,7 @@
 package org.workcraft.plugins.stg;
 
 import org.workcraft.Framework;
+import org.workcraft.Initialiser;
 import org.workcraft.Module;
 import org.workcraft.PluginManager;
 import org.workcraft.dom.ModelDescriptor;
@@ -26,7 +27,12 @@ public class STGModule implements Module {
 		p.registerClass(XMLSerialiser.class, ImplicitPlaceArcSerialiser.class);
 		p.registerClass(XMLDeserialiser.class, ImplicitPlaceArcDeserialiser.class);
 		
-		p.registerClass(Exporter.class, DotGExporter.class);
+		p.registerClass(Exporter.class, new Initialiser<Exporter>(){
+
+			@Override
+			public Exporter create() {
+				return new DotGExporter();
+			}} );
 		p.registerClass(Importer.class, DotGImporter.class);
 		
 		p.registerClass(ModelSerialiser.class, DotGSerialiser.class);

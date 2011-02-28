@@ -27,15 +27,9 @@ import java.util.LinkedList;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dom.visual.Touchable;
 
 public abstract class AbstractGroup implements Container {
 	private Container groupRef;
-	
-	@Override
-	public Expression<? extends Touchable> shape() {
-		return null;
-	}
 	
 	AbstractGroup (Container groupRef, ModifiableExpression<Node> parent) {
 		this.groupRef = groupRef;

@@ -29,7 +29,6 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.Touchable;
 
 /**
  * Base type for mathematical objects -- components (graph nodes)
@@ -53,10 +52,5 @@ public abstract class MathNode implements Node {
 	@Override
 	public ModifiableExpression<Node> parent() {
 		return parent;
-	}
-	
-	@Override
-	public Expression<? extends Touchable> shape() {
-		return null;
 	}
 }

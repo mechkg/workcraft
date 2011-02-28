@@ -85,6 +85,7 @@ import org.workcraft.gui.tasks.TaskFailureNotifier;
 import org.workcraft.gui.tasks.TaskManagerWindow;
 import org.workcraft.gui.workspace.Path;
 import org.workcraft.gui.workspace.WorkspaceWindow;
+import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
 import org.workcraft.interop.Importer;
 import org.workcraft.plugins.PluginInfo;
@@ -96,6 +97,7 @@ import org.workcraft.util.FileUtils;
 import org.workcraft.util.GUI;
 import org.workcraft.util.Import;
 import org.workcraft.util.ListMap;
+import org.workcraft.util.Null;
 import org.workcraft.util.Tools;
 import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.Workspace;
@@ -941,7 +943,7 @@ public class MainWindow extends JFrame {
 		Tools.run(editorInFocus.getWorkspaceEntry(), tool);
 	}
 
-	void export(Exporter exporter) throws OperationCancelledException {
+	void export(Exporter exporter, ExportJob job) throws OperationCancelledException {
 		JFileChooser fc = new JFileChooser();
 		fc.setDialogType(JFileChooser.SAVE_DIALOG);
 		fc.setDialogTitle("Export as " + exporter.getDescription());
@@ -958,15 +960,15 @@ public class MainWindow extends JFrame {
 		if (lastSavePath != null)
 			fc.setCurrentDirectory(new File(lastSavePath));
 
-		String path;
+		File f;
 
 		while (true) {
 			if(fc.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
-				path = fc.getSelectedFile().getPath();
+				String path = fc.getSelectedFile().getPath();
 				if (!path.endsWith(exporter.getExtenstion()))
 					path += exporter.getExtenstion();
 
-				File f = new File(path);
+				f = new File(path);
 
 				if (!f.exists())
 					break;
@@ -979,7 +981,7 @@ public class MainWindow extends JFrame {
 		}
 
 
-		Task<Object> exportTask = new Export.ExportTask (exporter, editorInFocus.getModel(), path);
+		Task<Null> exportTask = new Export.ExportTask (job, f);
 		framework.getTaskManager().queue(exportTask, "Exporting " + title, new TaskFailureNotifier());
 
 		//Export.exportToFile(exporter, editorInFocus.getModel(), path);

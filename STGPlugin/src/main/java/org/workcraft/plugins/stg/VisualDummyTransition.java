@@ -30,7 +30,6 @@ import java.awt.geom.Rectangle2D;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawRequest;
@@ -38,22 +37,27 @@ import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
+import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
 public class VisualDummyTransition extends VisualStgTransition implements ReflectiveTouchable, DrawableNew {
 	private static Font font = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.75f);
 	
-	private final Label label;
-
 	public VisualDummyTransition(DummyTransition transition, StorageManager storage) {
 		super(transition, storage);
-		
-		label = new Label(font, transition.name());
+	}
+	
+	public Label createLabel(Expression<String> text) {
+		return new Label(font, text);
 	}
 
-	@Override
 	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+		throw new NotSupportedException("use parameterised graphicalContent(Expression<String> text) instead");
+	}
+	
+	public Expression<? extends ColorisableGraphicalContent> graphicalContent(Expression<String> text) {
+		final Label label = createLabel(text);
 		return new ExpressionBase<ColorisableGraphicalContent>() {
 
 			@Override
@@ -84,8 +88,12 @@ public class VisualDummyTransition extends VisualStgTransition implements Reflec
 		};
 	}
 	
-	@Override
 	public Expression<Touchable> shape() {
+		throw new NotSupportedException("use parameterised shape(Expression<String> text) instead");
+	}
+	
+	public Expression<Touchable> shape(Expression<String> text) {
+		final Label label = new Label(font, text);
 		return new  ExpressionBase<Touchable>() {
 
 			@Override
@@ -119,9 +127,5 @@ public class VisualDummyTransition extends VisualStgTransition implements Reflec
 	@NoAutoSerialisation
 	public DummyTransition getReferencedTransition() {
 		return (DummyTransition)getReferencedComponent();
-	}
-	
-	public ModifiableExpression<String> name() {
-		return getReferencedTransition().name();
 	}
 }

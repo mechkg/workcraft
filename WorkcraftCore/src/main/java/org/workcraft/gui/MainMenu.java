@@ -35,13 +35,15 @@ import javax.swing.KeyStroke;
 
 import org.workcraft.Framework;
 import org.workcraft.Tool;
-import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.gui.actions.Action;
 import org.workcraft.gui.actions.ActionCheckBoxMenuItem;
 import org.workcraft.gui.actions.ActionMenuItem;
 import org.workcraft.gui.workspace.WorkspaceWindow;
+import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.PluginInfo;
 import org.workcraft.util.ListMap;
 import org.workcraft.util.Pair;
@@ -87,14 +89,16 @@ public class MainMenu extends JMenuBar {
 	}
 	class ExportAction extends Action {
 		private final Exporter exporter;
+		private final ExportJob job;
 		
-		public ExportAction(Exporter exporter) {
+		public ExportAction(Exporter exporter, ExportJob job) {
 			this.exporter = exporter;
+			this.job = job;
 		}
 		
 		@Override
 		public void run(Framework framework) {
-			try {framework.getMainWindow().export(exporter);} catch (OperationCancelledException e) {}
+			try {framework.getMainWindow().export(exporter, job);} catch (OperationCancelledException e) {}
 		}
 
 		public String getText() {
@@ -288,17 +292,12 @@ public class MainMenu extends JMenuBar {
 		add(mnTools);
 	}
 
-	private void addExporter (Exporter exporter) {
-		addExporter (exporter, null);
+	private void addExporter (Exporter exporter, ExportJob job) {
+		addExporter (exporter, job, null);
 	}
 	
-	private void addExportSeparator (String text) {
-		mnExport.add(new JLabel(text));
-		mnExport.addSeparator();
-	}
-	
-	private void addExporter (Exporter exporter, String additionalDescription) {
-		ActionMenuItem miExport = new ActionMenuItem(new ExportAction(exporter), 
+	private void addExporter (Exporter exporter, ExportJob job, String additionalDescription) {
+		ActionMenuItem miExport = new ActionMenuItem(new ExportAction(exporter, job), 
 				additionalDescription == null? 
 					exporter.getDescription() 
 					: 
@@ -340,32 +339,15 @@ public class MainMenu extends JMenuBar {
 		mnExport.removeAll();
 		mnExport.setEnabled(false);
 
-		VisualModel model = we.getModelEntry().getVisualModel();
+		ServiceProvider modelServices = we.getModelEntry().services;
 		
-		boolean haveVisual = false;
-
 		for (PluginInfo<? extends Exporter> info : framework.getPluginManager().getPlugins(Exporter.class)) { 
 			Exporter exporter = info.getSingleton();
-
-			if (exporter.getCompatibility(model) > Exporter.NOT_COMPATIBLE) {
-				if (!haveVisual)
-					addExportSeparator("Visual");
-				addExporter(exporter);
-				haveVisual = true;
-			}
-		}
-		
-		boolean haveNonVisual = false;
-
-		for (PluginInfo<? extends Exporter> info : framework.getPluginManager().getPlugins(Exporter.class)) { 
-			Exporter exporter = info.getSingleton();
-
-			if (exporter.getCompatibility(model.getMathModel()) > Exporter.NOT_COMPATIBLE) {
-				if (!haveNonVisual)
-					addExportSeparator("Non-visual");
-				addExporter(exporter);
-				haveNonVisual = true;
-			}
+			
+			try {
+				ExportJob job = exporter.getExportJob(modelServices);
+				addExporter(exporter, job);
+			} catch(ServiceNotAvailableException ex) {}
 		}
 	}
 

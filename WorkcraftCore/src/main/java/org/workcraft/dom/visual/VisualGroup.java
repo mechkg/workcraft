@@ -59,7 +59,7 @@ public class VisualGroup extends VisualTransformableNode implements Container{
 
 			@Override
 			public ColorisableGraphicalContent evaluate(EvaluationContext resolver) {
-				final Rectangle2D bb = BoundingBoxHelper.expand(resolver.resolve(localSpaceTouchable(tp, group)).getBoundingBox(), 0.2, 0.2);
+				final Rectangle2D bb = BoundingBoxHelper.expand(resolver.resolve(screenSpaceBounds(tp, group)).getBoundingBox(), 0.2, 0.2);
 				final Node parent = resolver.resolve(group.parent());
 				
 				return new ColorisableGraphicalContent() {
@@ -77,7 +77,7 @@ public class VisualGroup extends VisualTransformableNode implements Container{
 		};
 	}
 
-	public static Expression<Touchable> localSpaceTouchable(final TouchableProvider<Node> tp, final VisualGroup group) {
+	public static Expression<Touchable> screenSpaceBounds(final TouchableProvider<Node> tp, final VisualGroup group) {
 		return new ExpressionBase<Touchable>() {
 			@Override
 			protected Touchable evaluate(final EvaluationContext context) {

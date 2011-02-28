@@ -18,12 +18,13 @@ import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.NodeContext;
 import org.workcraft.dom.references.ReferenceManager;
-import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.gui.propertyeditor.Properties;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProviderImpl;
 
 import pcollections.PVector;
 import pcollections.TreePVector;
@@ -93,10 +94,6 @@ public class DotExporterTests {
 		public PVector<MockNode> children;
 		
 		@Override
-		public Expression<? extends Touchable> shape() {
-			return null;
-		}
-		@Override
 		public ModifiableExpression<Node> parent() {
 			return null;
 		}
@@ -107,10 +104,18 @@ public class DotExporterTests {
 	}
 
 	@Test
-	public void testEmpty() throws IOException, ModelValidationException, SerialisationException{
-		DotExporter exporter = new DotExporter(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS);
+	public void testEmpty() throws IOException, ModelValidationException, SerialisationException, ServiceNotAvailableException{
+		DotExporter exporter = new DotExporter(TouchableProvider.DEFAULT);
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-		exporter.export(new MockModel(new MockNode(null, TreePVector.<MockNode>empty())), outStream);
+		ServiceProviderImpl serviceProviderImpl = new ServiceProviderImpl();
+		final MockModel model = new MockModel(new MockNode(null, TreePVector.<MockNode>empty()));
+		serviceProviderImpl.addImplementation(DotExportableService.SERVICE_HANDLE, new DotExportableService(){
+			@Override
+			public Model getModel() {
+				return model;
+			}
+		});
+		exporter.getExportJob(serviceProviderImpl).export(outStream);
 		Assert.assertEquals("digraph work {\ngraph [nodesep=\"0.5\", overlap=\"false\", splines=\"true\"];\nnode [shape=box];\n}\n", outStream.toString("UTF-8"));
 	}
 

@@ -24,9 +24,11 @@ public interface SelectionToolConfig<N> {
 	
 	public class Default implements SelectionToolConfig<org.workcraft.dom.Node> {
 		private final VisualModel model;
+		private final TouchableProvider<Node> tp;
 
-		public Default(VisualModel model) {
+		public Default(VisualModel model, TouchableProvider<Node> tp) {
 			this.model = model;
+			this.tp = tp;
 		}
 		
 		@Override
@@ -39,7 +41,7 @@ public interface SelectionToolConfig<N> {
 			return new HitTester<Node>() {
 				@Override
 				public Node hitTest(Point2D point) {
-					return HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, point, model);
+					return HitMan.hitTestForSelection(tp, point, model);
 				}
 
 				private Point2D transformToCurrentSpace(Point2D pointInRootSpace)
@@ -53,7 +55,7 @@ public interface SelectionToolConfig<N> {
 				public PSet<Node> boxHitTest(Point2D boxStart, Point2D boxEnd) {
 					boxStart = transformToCurrentSpace(boxStart); // TODO: find out why current
 					boxEnd = transformToCurrentSpace(boxEnd);
-					return HashTreePSet.from(HitMan.boxHitTestReflective(eval(model.currentLevel()), boxStart, boxEnd));
+					return HashTreePSet.from(HitMan.boxHitTest(tp, eval(model.currentLevel()), boxStart, boxEnd));
 				}
 			};
 		}

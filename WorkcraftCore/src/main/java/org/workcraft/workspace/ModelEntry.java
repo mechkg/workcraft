@@ -5,17 +5,24 @@ import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.VisualModel;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 
 public class ModelEntry {
 	private final ModelDescriptor descriptor;
 	private Model model;
+	public final ServiceProvider services;
 	private final HistoryPreservingStorageManager storage;
 
-	public ModelEntry(ModelDescriptor descriptor, Model model, StorageManager storage)
+	public ModelEntry(ModelDescriptor descriptor, Model model, StorageManager storage) {
+		this(descriptor, model, storage, descriptor.createServiceProvider(model));
+	}
+	
+	public ModelEntry(ModelDescriptor descriptor, Model model, StorageManager storage, ServiceProvider services)
 	{
 		this.descriptor = descriptor;
 		this.model = model;
+		this.services = services;
 		this.storage = storage instanceof HistoryPreservingStorageManager ? (HistoryPreservingStorageManager) storage : null;
 	}
 

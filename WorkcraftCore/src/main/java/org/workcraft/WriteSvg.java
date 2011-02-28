@@ -23,7 +23,7 @@ public class WriteSvg {
 			Framework framework = new Framework();
 			framework.initPlugins();
 			ModelEntry loaded = framework.load(args[0]);
-			Export.exportToFile(loaded.getModel(), new File(args[1]), Format.SVG, framework.getPluginManager());
+			Export.exportToFile(loaded.services, new File(args[1]), Format.SVG, framework.getPluginManager());
 			System.out.println("svg saved to '" + args[1]+"'");
 			return 0;
 		}

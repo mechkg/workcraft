@@ -22,8 +22,10 @@ public class DefaultReflectiveModelPainter {
 	
 	public static final class ReflectiveNodePainter implements NodePainter {
 		private final Colorisator colorisator;
+		private final TouchableProvider<Node> tp;
 
-		public ReflectiveNodePainter(Colorisator colorisator) {
+		public ReflectiveNodePainter(final TouchableProvider<Node> tp, Colorisator colorisator) {
+			this.tp = tp;
 			this.colorisator = colorisator;
 		}
 
@@ -61,23 +63,23 @@ public class DefaultReflectiveModelPainter {
 			}
 			else
 				if(node instanceof VisualGroup) {
-					return colorise(VisualGroup.graphicalContent(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, ((VisualGroup)node)), colorisation);
+					return colorise(VisualGroup.graphicalContent(tp, ((VisualGroup)node)), colorisation);
 				}
 			else
 				return Expressions.constant(GraphicalContent.EMPTY);
 		}
 	}
 
-	public static Func<Colorisator, Expression<? extends GraphicalContent>> reflectivePainterProvider(final Node root) {
+	public static Func<Colorisator, Expression<? extends GraphicalContent>> reflectivePainterProvider(final TouchableProvider<Node> tp, final Node root) {
 		return new Func<Colorisator, Expression<? extends GraphicalContent>>(){
 			@Override
 			public Expression<? extends GraphicalContent> eval(Colorisator colorisator) {
-				return createReflectivePainter(root, colorisator);
+				return createReflectivePainter(tp, root, colorisator);
 			}
 		};
 	}
 	
-	public static Expression<? extends GraphicalContent> createReflectivePainter(Node root, final Colorisator colorisator) {
-		return DrawMan.graphicalContent(root, new ReflectiveNodePainter(colorisator));
+	public static Expression<? extends GraphicalContent> createReflectivePainter(TouchableProvider<Node>tp, Node root, final Colorisator colorisator) {
+		return DrawMan.graphicalContent(root, new ReflectiveNodePainter(tp, colorisator));
 	}
 }

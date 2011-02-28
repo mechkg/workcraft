@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
@@ -92,7 +93,8 @@ public class HitMan
 
 	public static boolean isBranchHit (final TouchableProvider<Node> tp, Point2D point, Node node) {
 
-		if (tp.apply(node) != null && GlobalCache.eval(tp.apply(node)).hitTest(point))	{
+		Expression<? extends Touchable> touchable = tp.apply(node);
+		if (touchable != null && GlobalCache.eval(touchable).hitTest(point))	{
 			if (node instanceof Hidable)
 				return !GlobalCache.eval(((Hidable)node).hidden());
 			else
@@ -261,8 +263,8 @@ public class HitMan
 		return pt;
 	}
 
-	public static Collection<? extends Node> boxHitTestReflective (Node container, Point2D p1, Point2D p2) {
-		return boxHitTest(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, eval(container.children()), p1, p2);
+	public static Collection<? extends Node> boxHitTest (TouchableProvider<Node> touchableProvider, Node container, Point2D p1, Point2D p2) {
+		return boxHitTest(touchableProvider, eval(container.children()), p1, p2);
 	}
 
 	/**
@@ -278,13 +280,16 @@ public class HitMan
 		Rectangle2D rect = Geometry.createRectangle(p1, p2);
 
 		for (N n : nodes) {
-			Touchable touchable = eval(t.apply(n));
-			if (p1.getX()<=p2.getX()) {
-				if (TouchableHelper.insideRectangle(touchable, rect))
-					hit.add(n);
-			} else {
-				if (TouchableHelper.touchesRectangle(touchable, rect))
-					hit.add(n);
+			Expression<? extends Touchable> tt = t.apply(n);
+			if(tt != null) {
+				Touchable touchable = eval(tt);
+				if (p1.getX()<=p2.getX()) {
+					if (TouchableHelper.insideRectangle(touchable, rect))
+						hit.add(n);
+				} else {
+					if (TouchableHelper.touchesRectangle(touchable, rect))
+						hit.add(n);
+				}
 			}
 		}
 		return hit;

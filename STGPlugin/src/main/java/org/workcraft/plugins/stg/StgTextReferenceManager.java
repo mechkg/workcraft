@@ -85,7 +85,6 @@ public class StgTextReferenceManager implements StgTextRefMan {
 				if (r==null)
 					throw new ArgumentException (s + " is not a valid transition label");
 				refMan.setInstance(dt, r);
-				dt.name().setValue(r.getFirst());
 			} catch (DuplicateIDException e) {
 				throw new ArgumentException ("Instance number " + e.getId() + " is already taken.");
 			}

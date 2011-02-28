@@ -52,9 +52,9 @@ public class VisualComponentGroupTests {
 		root.add(sq1);
 		node1.add(sq2);
 		
-		Assert.assertEquals(sq1, HitMan.hitDeepestNodeOfType(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(1.5, 1.5), root, VisualComponent.class));
-		Assert.assertEquals(sq2, HitMan.hitDeepestNodeOfType(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(7.5, 2.5), root, VisualComponent.class));
-		Assert.assertEquals(null, HitMan.hitDeepestNodeOfType(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(2.5, 2.5), root, VisualComponent.class));
+		Assert.assertEquals(sq1, HitMan.hitDeepestNodeOfType(TouchableProvider.DEFAULT, new Point2D.Double(1.5, 1.5), root, VisualComponent.class));
+		Assert.assertEquals(sq2, HitMan.hitDeepestNodeOfType(TouchableProvider.DEFAULT, new Point2D.Double(7.5, 2.5), root, VisualComponent.class));
+		Assert.assertEquals(null, HitMan.hitDeepestNodeOfType(TouchableProvider.DEFAULT, new Point2D.Double(2.5, 2.5), root, VisualComponent.class));
 	}
 
 	public void TestHitConnection()
@@ -75,8 +75,8 @@ public class VisualComponentGroupTests {
 		group.add(sqg2);
 		Tools.createConnection(null, sqg1, sqg2, group);
 		
-		Assert.assertEquals(connectionR, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(2.5, 1.5), root));
-		Assert.assertEquals(group, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(7.5, 1.5), root));
+		Assert.assertEquals(connectionR, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(2.5, 1.5), root));
+		Assert.assertEquals(group, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(7.5, 1.5), root));
 	}
 
 	@Test
@@ -102,24 +102,24 @@ public class VisualComponentGroupTests {
 		VisualNode node2 = new SquareNode(group, r2, r2_);
 		VisualNode node3 = new SquareNode(group, r3, r3_);
 		
-		Assert.assertNull(GlobalCache.eval(VisualGroup.localSpaceTouchable(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, group)).getBoundingBox());
+		Assert.assertNull(GlobalCache.eval(VisualGroup.screenSpaceBounds(TouchableProvider.DEFAULT, group)).getBoundingBox());
 		
 		group.add(node1);
 		group.add(node2);
 		group.add(node3);
-		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(-1, -1), group));
-		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(10, 10), group));
-		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(0.05, 0.05), group));
-		Assert.assertEquals(node1, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(0.15, 0.5), group));
-		Assert.assertEquals(node1, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(0.55, 0.55), group));
-		Assert.assertEquals(node2, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(0.65, 0.65), group));
-		Assert.assertEquals(node2, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(1.05, 1.05), group));
-		Assert.assertEquals(node3, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(1.15, 1.15), group));
-		Assert.assertEquals(node3, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(1.95, 1.95), group));
-		Assert.assertEquals(node3, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(2.35, 1.35), group));
-		Assert.assertEquals(node3, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(2.45, 1.45), group));
-		Assert.assertEquals(node3, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(2.85, 2.85), group));
-		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(2.95, 2.95), group));
+		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(-1, -1), group));
+		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(10, 10), group));
+		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(0.05, 0.05), group));
+		Assert.assertEquals(node1, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(0.15, 0.5), group));
+		Assert.assertEquals(node1, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(0.55, 0.55), group));
+		Assert.assertEquals(node2, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(0.65, 0.65), group));
+		Assert.assertEquals(node2, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(1.05, 1.05), group));
+		Assert.assertEquals(node3, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(1.15, 1.15), group));
+		Assert.assertEquals(node3, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(1.95, 1.95), group));
+		Assert.assertEquals(node3, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(2.35, 1.35), group));
+		Assert.assertEquals(node3, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(2.45, 1.45), group));
+		Assert.assertEquals(node3, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(2.85, 2.85), group));
+		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(2.95, 2.95), group));
 	}
 	
 	private SquareNode getSquareNode(VisualNode parent, double x, double y)
@@ -139,8 +139,8 @@ public class VisualComponentGroupTests {
 		root.add((VisualNode)node2);
 		node1.add(getSquareNode(node1, 0, 0));
 		node2.add(getSquareNode(node2, 1, 1));
-		Assert.assertEquals(node2, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(1.5, 1.5), root));
-		Assert.assertEquals(node1, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(0.5, 0.5), root));
+		Assert.assertEquals(node2, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(1.5, 1.5), root));
+		Assert.assertEquals(node1, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(0.5, 0.5), root));
 	}
 	
 	@Test
@@ -165,12 +165,12 @@ public class VisualComponentGroupTests {
 		SquareNode sq3 = getSquareNode(node1, 2, 2);
 		node1.add(sq3);
 
-		Assert.assertEquals(sq1, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(10.5, 15.5), node1));
-		Assert.assertEquals(sq2, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(11.5, 16.5), node1));
+		Assert.assertEquals(sq1, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(10.5, 15.5), node1));
+		Assert.assertEquals(sq2, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(11.5, 16.5), node1));
 		
-		Assert.assertEquals(node1, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(10.5, 15.5), root));
-		Assert.assertEquals(node1, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(11.5, 16.5), root));
-		Assert.assertEquals(null, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(10.5, 16.5), root));
+		Assert.assertEquals(node1, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(10.5, 15.5), root));
+		Assert.assertEquals(node1, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(11.5, 16.5), root));
+		Assert.assertEquals(null, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(10.5, 16.5), root));
 		
 		Iterable<Node> unGroup = node1.unGroup();
 		ArrayList<Node> list = new ArrayList<Node>();
@@ -186,12 +186,12 @@ public class VisualComponentGroupTests {
 		Assert.assertTrue(list.indexOf(sq2) > list.indexOf(sq1));
 		Assert.assertTrue(list.indexOf(sq3) > list.indexOf(sq2));
 		
-		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(0.5, 0.5), node1));
-		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(1.5, 1.5), node1));
+		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(0.5, 0.5), node1));
+		Assert.assertNull(HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(1.5, 1.5), node1));
 		
-		Assert.assertEquals(sq1, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(10.5, 15.5), root));
-		Assert.assertEquals(sq2, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(11.5, 16.5), root));
-		Assert.assertEquals(null, HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, new Point2D.Double(10.5, 16.5), root));
+		Assert.assertEquals(sq1, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(10.5, 15.5), root));
+		Assert.assertEquals(sq2, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(11.5, 16.5), root));
+		Assert.assertEquals(null, HitMan.hitTestForSelection(TouchableProvider.DEFAULT, new Point2D.Double(10.5, 16.5), root));
 	}
 
 	private VisualGroup createGroup(VisualGroup parent)

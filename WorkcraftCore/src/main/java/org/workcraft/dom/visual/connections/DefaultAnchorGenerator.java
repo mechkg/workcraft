@@ -31,7 +31,7 @@ public class DefaultAnchorGenerator extends DummyMouseListener {
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e) {
 		if (e.getClickCount()==2) {
-			Node n = HitMan.hitTestForSelection(TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS, e.getPosition(), e.getModel());
+			Node n = HitMan.hitTestForSelection(TouchableProvider.DEFAULT, e.getPosition(), e.getModel());
 			if (n instanceof VisualConnection) {
 				VisualConnection con = (VisualConnection)n;
 				if (con.getGraphic() instanceof Polyline)

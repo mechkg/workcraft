@@ -110,7 +110,7 @@ public class TESTS {
 		
 		final BalsaExportConfig balsaConfig = new BalsaExportConfig(null, CompositionMode.IMPROVED_PCOMP, Protocol.FOUR_PHASE);
 		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(framework, circuit, balsaConfig, storage);
-		Export.exportToFile(new DotGExporter(), stgExtractionTask.getSTG(), "viterbi.g");
+		Export.exportToFile(new DotGExporter.ExportJob(stgExtractionTask.getSTG()), new File("viterbi.g"));
 		
 		//new SynthesisWithMpsat(framework).export(circuit, stream);
 	}
@@ -414,7 +414,7 @@ public class TESTS {
 			f.initPlugins();
 			final BalsaExportConfig balsaConfig = new BalsaExportConfig(null, CompositionMode.IMPROVED_PCOMP, Protocol.FOUR_PHASE);
 			final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, control, balsaConfig, new DefaultStorageManager());
-			new DotGExporter().export(stgExtractionTask.getSTG(), out);
+			new DotGExporter.ExportJob(stgExtractionTask.getSTG()).export(out);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

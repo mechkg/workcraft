@@ -22,9 +22,11 @@ public class DecompositionResultHandler extends DummyProgressMonitor<DesiJResult
 	
 	private Framework framework;
 	private boolean logFileOutput;
+	private final Path<String> specificationPath;
 	
-	public DecompositionResultHandler(Framework framework, boolean logFileOutput) {
+	public DecompositionResultHandler(Framework framework, Path<String> specificationPath, boolean logFileOutput) {
 		this.framework = framework;
+		this.specificationPath = specificationPath;
 		this.logFileOutput = logFileOutput;
 	}
 
@@ -54,8 +56,7 @@ public class DecompositionResultHandler extends DummyProgressMonitor<DesiJResult
 			if (desijResult.getComponentFiles() != null)  // independent from the compiler 
 				if (desijResult.getComponentFiles().length > 0) {
 					
-					Path<String> componentsDirectoryPath = Path.fromString(
-							desijResult.getSpecificationModel().getTitle() + "-components");
+					Path<String> componentsDirectoryPath = Path.append(specificationPath.getParent(), specificationPath.getNode() + "-components"); 
 					
 					try {
 						workspace.delete(componentsDirectoryPath);
@@ -98,15 +99,15 @@ public class DecompositionResultHandler extends DummyProgressMonitor<DesiJResult
 					});*/
 				}
 			if (desijResult.getModifiedSpecResult() != null) {
-				String resultPath = desijResult.getSpecificationModel().getTitle() + "_modifiedResult.g";
+				Path<String> resultPath = Path.append(specificationPath.getParent(), specificationPath.getNode()+"_modifiedResult.g");
 				
 				try {
-					workspace.delete(Path.fromString(resultPath));
+					workspace.delete(resultPath);
 				} catch (OperationCancelledException e) {
 					return;
 				}
 														
-				File modifiedSpecification = workspace.getFile(Path.fromString(resultPath));
+				File modifiedSpecification = workspace.getFile(resultPath);
 				desijResult.getModifiedSpecResult().renameTo(modifiedSpecification);
 				
 				workspace.fireWorkspaceChanged(); // update of workspace window

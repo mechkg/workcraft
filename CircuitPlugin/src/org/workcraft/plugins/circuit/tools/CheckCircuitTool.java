@@ -7,8 +7,9 @@ import javax.swing.SwingUtilities;
 
 import org.workcraft.Framework;
 import org.workcraft.Tool;
+import org.workcraft.ToolJob;
 import org.workcraft.Trace;
-import org.workcraft.plugins.circuit.Circuit;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.circuit.VisualCircuit;
 import org.workcraft.plugins.circuit.tasks.CheckCircuitTask;
 import org.workcraft.plugins.mpsat.MpsatResultParser;
@@ -47,62 +48,64 @@ public class CheckCircuitTool implements Tool {
 	}
 
 	@Override
-	public boolean isApplicableTo(WorkspaceEntry we) {
-		return we.getModelEntry().getMathModel() instanceof Circuit;
-	}
-
-	@Override
-	public void run(WorkspaceEntry we) {
+	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
+		final VisualCircuit circuit = we.getModelEntry().services.getImplementation(VisualCircuit.SERVICE_HANDLE);
 		
-		checkTask = new CheckCircuitTask(we, framework);
-		
-		framework.getTaskManager().queue(checkTask, "Checking circuit for deadlocks and hazards",
-				new ProgressMonitor<MpsatChainResult>() {
-
-					@Override
-					public void finished(final Result<? extends MpsatChainResult> result, String description) {
-						SwingUtilities.invokeLater(new Runnable(){
+		return new ToolJob() {
+			
+			@Override
+			public void run() {
+				checkTask = new CheckCircuitTask(circuit, framework);
+				
+				framework.getTaskManager().queue(checkTask, "Checking circuit for deadlocks and hazards",
+						new ProgressMonitor<MpsatChainResult>() {
 
 							@Override
-							public void run() {
-								
-								MpsatResultParser mdp = new MpsatResultParser(result.getReturnValue().getMpsatResult().getReturnValue());
-								
-								List<Trace> solutions = mdp.getSolutions();
-								
-								if (!solutions.isEmpty()) {
-									final SolutionsDialog solutionsDialog = new SolutionsDialog(checkTask, result.getReturnValue().getMessage(), solutions);
+							public void finished(final Result<? extends MpsatChainResult> result, String description) {
+								SwingUtilities.invokeLater(new Runnable(){
+
+									@Override
+									public void run() {
+										
+										MpsatResultParser mdp = new MpsatResultParser(result.getReturnValue().getMpsatResult().getReturnValue());
+										
+										List<Trace> solutions = mdp.getSolutions();
+										
+										if (!solutions.isEmpty()) {
+											final SolutionsDialog solutionsDialog = new SolutionsDialog(framework.getMainWindow(), we, result.getReturnValue().getMessage(), solutions);
+											
+											GUI.centerAndSizeToParent(solutionsDialog, framework.getMainWindow());
+											
+											solutionsDialog.setVisible(true);
+											
+										} else
+											JOptionPane.showMessageDialog(null, result.getReturnValue().getMessage());
+									}
 									
-									GUI.centerAndSizeToParent(solutionsDialog, framework.getMainWindow());
-									
-									solutionsDialog.setVisible(true);
-									
-								} else
-									JOptionPane.showMessageDialog(null, result.getReturnValue().getMessage());
+								});
 							}
-							
-						});
-					}
 
-					@Override
-					public boolean isCancelRequested() {
-						return false;
-					}
+							@Override
+							public boolean isCancelRequested() {
+								return false;
+							}
 
-					@Override
-					public void progressUpdate(double completion) {
-					}
+							@Override
+							public void progressUpdate(double completion) {
+							}
 
-					@Override
-					public void stderr(byte[] data) {
-					}
+							@Override
+							public void stderr(byte[] data) {
+							}
 
-					@Override
-					public void stdout(byte[] data) {
-					}
-		}
-		);
+							@Override
+							public void stdout(byte[] data) {
+							}
+				}
+				);
 
+			}
+		};
 	}
 
 }

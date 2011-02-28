@@ -48,6 +48,7 @@ import org.workcraft.Framework;
 import org.workcraft.exceptions.FormatException;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.ModelValidationException;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.exceptions.PluginInstantiationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.parsers.breeze.BreezeInstance;
@@ -301,7 +302,7 @@ public class TestGCD {
 		
 		final BalsaExportConfig config = new BalsaExportConfig(null, CompositionMode.IMPROVED_PCOMP, Protocol.FOUR_PHASE);
 		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, circuit, config, new DefaultStorageManager());
-		Export.exportToFile(new DotGExporter(), stgExtractionTask.getSTG(),"export_gcd.g");
+		Export.exportToFile(new DotGExporter.ExportJob(stgExtractionTask.getSTG()), new File("export_gcd.g"));
 
 		
 		//Export.exportToFile((Exporter)synthesiser, circuit, "/home/dell/export.eqn");
@@ -694,12 +695,13 @@ public class TestGCD {
 			};
 			
 			final STGModel stg = stgExtractionTask.getSTG();
-			Export.exportToFile(new DotGExporter(), stg, stgFile);
+			Export.exportToFile(new DotGExporter.ExportJob(stg), stgFile);
 			
 			try
 			{
 				final GateLevelModel gates = STGSynthesisTask.synthesise(framework, stg, BalsaExportConfig.DEFAULT);
-				Export.exportToFile(gates, eqnFile, Format.EQN, framework.getPluginManager());
+				throw new NotImplementedException("need an EQN exporter");
+				//Export.exportToFile(gates, eqnFile, Format.EQN, framework.getPluginManager());
 			}
 			catch(RuntimeException e)
 			{

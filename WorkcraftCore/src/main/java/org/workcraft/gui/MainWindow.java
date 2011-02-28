@@ -63,10 +63,9 @@ import org.flexdock.perspective.PerspectiveManager;
 import org.flexdock.perspective.persist.PerspectiveModel;
 import org.flexdock.perspective.persist.xml.XMLPersister;
 import org.flexdock.plaf.common.border.ShadowBorder;
-import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 import org.pushingpixels.substance.api.SubstanceConstants.TabContentPaneBorderKind;
+import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 import org.workcraft.Framework;
-import org.workcraft.Tool;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
@@ -88,6 +87,7 @@ import org.workcraft.gui.workspace.WorkspaceWindow;
 import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
 import org.workcraft.interop.Importer;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.PluginInfo;
 import org.workcraft.plugins.layout.DotLayout;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
@@ -98,7 +98,6 @@ import org.workcraft.util.GUI;
 import org.workcraft.util.Import;
 import org.workcraft.util.ListMap;
 import org.workcraft.util.Null;
-import org.workcraft.util.Tools;
 import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.Workspace;
 import org.workcraft.workspace.WorkspaceEntry;
@@ -251,8 +250,10 @@ public class MainWindow extends JFrame {
 				modelEntry.setModel(visualModel);
 
 				DotLayout layout = new DotLayout(framework);
-				layout.run(we);
+				layout.applyTo(we).run();
 			} catch (LayoutException e) {
+				// Layout failed for whatever reason, ignore
+			} catch (ServiceNotAvailableException e) {
 				// Layout failed for whatever reason, ignore
 			} catch (VisualModelInstantiationException e) {
 				JOptionPane.showMessageDialog(MainWindow.this, "A visual model could not be created for the selected model.\nPlease refer to the Problems window for details.\n", "Error", JOptionPane.ERROR_MESSAGE);
@@ -937,10 +938,6 @@ public class MainWindow extends JFrame {
 			}
 			lastOpenPath = fc.getCurrentDirectory().getPath();
 		}
-	}
-
-	public void runTool (Tool tool) {
-		Tools.run(editorInFocus.getWorkspaceEntry(), tool);
 	}
 
 	void export(Exporter exporter, ExportJob job) throws OperationCancelledException {

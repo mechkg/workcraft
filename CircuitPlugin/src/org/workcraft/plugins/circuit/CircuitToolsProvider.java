@@ -13,6 +13,7 @@ import javax.swing.Icon;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.graph.tools.Colorisator;
@@ -83,12 +84,12 @@ public class CircuitToolsProvider implements CustomToolsProvider {
 
 	@Override
 	public Iterable<GraphEditorTool> getTools(GraphEditor editor) {
-		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(editor.getModel().getRoot());
+		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(TouchableProvider.DEFAULT, editor.getModel().getRoot());
 		final Expression<? extends GraphicalContent> simplePainter = colorisablePainter.eval(Colorisator.EMPTY);
 
 		return asList(
 				attachParameterisedPainter(new CircuitSelectionTool(editor), colorisablePainter),
-				attachParameterisedPainter(new ConnectionTool(editor), colorisablePainter),
+				attachParameterisedPainter(new ConnectionTool(editor, TouchableProvider.DEFAULT), colorisablePainter),
 				attachParameterisedPainter(new CircuitSimulationTool(editor), colorisablePainter),
 		
 				attachPainter(new ContactGeneratorTool(), simplePainter),

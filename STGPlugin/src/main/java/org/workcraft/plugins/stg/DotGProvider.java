@@ -8,6 +8,7 @@ import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.gui.workspace.Path;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.serialisation.Format;
 import org.workcraft.util.Export;
 import org.workcraft.workspace.ModelEntry;
@@ -18,43 +19,35 @@ public class DotGProvider {
 	private final Framework framework;
 	private final Workspace workspace;
 
-	public DotGProvider (Framework framework) {
+	public DotGProvider(final Framework framework) {
 		this.framework = framework;
 		this.workspace = framework.getWorkspace();
 	}
-	
-	public File getDotG (Path<String> source) {
-		WorkspaceEntry we = workspace.getOpenFile(source);
-		
+
+	public File getDotG(final Path<String> source) throws ServiceNotAvailableException {
+		final WorkspaceEntry we = workspace.getOpenFile(source);
+
 		if (we != null) {
-			STGModel model;
-			
-			ModelEntry modelEntry = we.getModelEntry();
-			
-			if (modelEntry.getMathModel() instanceof STGModel)
-				model = (STGModel) modelEntry.getMathModel();
-			else
-				throw new RuntimeException ("Unexpected model class " + we.getClass().getName());
+			final ModelEntry modelEntry = we.getModelEntry();
+
 			try {
-				String prefix = model.getTitle();
-				if (prefix.isEmpty())
-					prefix = "untitled";
-				File file = File.createTempFile(prefix, ".g");
-				Export.exportToFile(model, file, Format.STG, framework.getPluginManager());
+				final String prefix = "workcraft-stg";
+				final File file = File.createTempFile(prefix, ".g");
+				Export.exportToFile(modelEntry.services, file, Format.STG, framework.getPluginManager());
 				return file;
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new RuntimeException(e);
-			} catch (ModelValidationException e) {
+			} catch (final ModelValidationException e) {
 				throw new RuntimeException(e);
-			} catch (SerialisationException e) {
+			} catch (final SerialisationException e) {
 				throw new RuntimeException(e);
 			}
-		} else if (source.getNode().endsWith(".g")){
+		} else if (source.getNode().endsWith(".g")) {
 			return workspace.getFile(source);
-		} else if (source.getNode().endsWith(".work")){
+		} else if (source.getNode().endsWith(".work")) {
 			throw new NotImplementedException();
 		} else {
-			throw new RuntimeException ("Don't know how to create a .g file from " + source);
+			throw new RuntimeException("Don't know how to create a .g file from " + source);
 		}
 	}
 }

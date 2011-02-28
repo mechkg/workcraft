@@ -16,7 +16,6 @@ import org.workcraft.Trace;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.ToolboxPanel;
 import org.workcraft.gui.graph.GraphEditorPanel;
-import org.workcraft.plugins.mpsat.tasks.MpsatChainTask;
 import org.workcraft.plugins.petri.tools.SimulationTool;
 import org.workcraft.workspace.WorkspaceEntry;
 
@@ -26,7 +25,7 @@ public class SolutionPanel extends JPanel {
 	private JPanel buttonsPanel;
 	private JTextArea traceText;
 	
-	public SolutionPanel(final MpsatChainTask task, final Trace t, final ActionListener closeAction) {
+	public SolutionPanel(final MainWindow mainWindow, final WorkspaceEntry we, final Trace t, final ActionListener closeAction) {
 		super (new TableLayout(new double[][]
 		        { { TableLayout.FILL, TableLayout.PREFERRED },
 				{TableLayout.FILL} }
@@ -48,8 +47,6 @@ public class SolutionPanel extends JPanel {
 		{
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final WorkspaceEntry we = task.getWorkspaceEntry();
-				final MainWindow mainWindow = task.getFramework().getMainWindow();
 				GraphEditorPanel currentEditor = mainWindow.getCurrentEditor();
 				if(currentEditor == null || currentEditor.getWorkspaceEntry() != we)
 				{

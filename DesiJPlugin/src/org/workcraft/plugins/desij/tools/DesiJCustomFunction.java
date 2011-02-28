@@ -2,13 +2,16 @@ package org.workcraft.plugins.desij.tools;
 
 import org.workcraft.Framework;
 import org.workcraft.Tool;
+import org.workcraft.ToolJob;
+import org.workcraft.interop.ExportJob;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.desij.DecompositionResultHandler;
 import org.workcraft.plugins.desij.DesiJPresetManager;
 import org.workcraft.plugins.desij.gui.DesiJConfigurationDialog;
 import org.workcraft.plugins.desij.tasks.DesiJTask;
-import org.workcraft.plugins.stg.STGModel;
+import org.workcraft.serialisation.Format;
+import org.workcraft.util.Export;
 import org.workcraft.util.GUI;
-import org.workcraft.util.WorkspaceUtils;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class DesiJCustomFunction implements Tool {
@@ -25,21 +28,23 @@ public class DesiJCustomFunction implements Tool {
 	}
 
 	@Override
-	public boolean isApplicableTo(WorkspaceEntry we) {
-		return WorkspaceUtils.canHas(we, STGModel.class);
-	}
+	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
+		final ExportJob stgExporter = Export.chooseBestExporter(framework.getPluginManager(), we.getModelEntry().services, Format.STG);
 
-	@Override
-	public void run(WorkspaceEntry we) {
-		DesiJPresetManager pmgr = new DesiJPresetManager();
-		DesiJConfigurationDialog dialog = new DesiJConfigurationDialog(framework.getMainWindow(), pmgr);
-		GUI.centerAndSizeToParent(dialog, framework.getMainWindow());
-		dialog.setVisible(true);
-		if (dialog.getModalResult() == 1)
-		{
-			framework.getTaskManager().queue(new DesiJTask(WorkspaceUtils.getAs(we, STGModel.class), framework, dialog.getSettings()), 
-					"DesiJ Execution", new DecompositionResultHandler(framework, false));
-		}
+		return new ToolJob() {
+			@Override
+			public void run() {
+				DesiJPresetManager pmgr = new DesiJPresetManager();
+				DesiJConfigurationDialog dialog = new DesiJConfigurationDialog(framework.getMainWindow(), pmgr);
+				GUI.centerAndSizeToParent(dialog, framework.getMainWindow());
+				dialog.setVisible(true);
+				if (dialog.getModalResult() == 1)
+				{
+					framework.getTaskManager().queue(new DesiJTask(stgExporter, framework, dialog.getSettings()), 
+							"DesiJ Execution", new DecompositionResultHandler(framework, we.getWorkspacePath(), false));
+				}
+			}
+		};
 	}
 
 	@Override

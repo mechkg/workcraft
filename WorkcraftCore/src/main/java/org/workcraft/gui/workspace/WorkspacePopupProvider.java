@@ -35,7 +35,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 import org.workcraft.Framework;
-import org.workcraft.Tool;
+import org.workcraft.ToolJob;
 import org.workcraft.dom.Model;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.gui.trees.TreePopupProvider;
@@ -61,7 +61,7 @@ public class WorkspacePopupProvider implements TreePopupProvider<Path<String>> {
 		JPopupMenu popup = new JPopupMenu();
 
 		final HashMap<JMenuItem, FileHandler> handlers = new HashMap<JMenuItem, FileHandler>();
-		final HashMap<JMenuItem, Tool> tools = new HashMap<JMenuItem, Tool>();
+		final HashMap<JMenuItem, ToolJob> tools = new HashMap<JMenuItem, ToolJob>();
 
 		final Workspace workspace = framework.getWorkspace();
 
@@ -195,7 +195,7 @@ public class WorkspacePopupProvider implements TreePopupProvider<Path<String>> {
 				popup.add(miSaveAs);
 				popup.add(miOpenView);
 
-				ListMap<String, Pair<String, Tool>> applicableTools = Tools.getTools(openFile, framework);
+				ListMap<String, Pair<String, ToolJob>> applicableTools = Tools.getTools(openFile, framework);
 				List<String> sections = Tools.getSections(applicableTools);
 
 				if (!sections.isEmpty())
@@ -204,13 +204,13 @@ public class WorkspacePopupProvider implements TreePopupProvider<Path<String>> {
 				for (String section : sections) {
 					JMenu m = new JMenu(section);
 
-					for (Pair<String, Tool> tool : Tools.getSectionTools(section, applicableTools)) {
+					for (Pair<String, ToolJob> tool : Tools.getSectionTools(section, applicableTools)) {
 						JMenuItem mi = new JMenuItem(tool.getFirst());
 						tools.put(mi, tool.getSecond());
 
 						mi.addActionListener(new ActionListener() {
 							public void actionPerformed(ActionEvent e) {
-								Tools.run(openFile, tools.get(e.getSource()));
+								tools.get(e.getSource()).run();
 							}
 						});
 

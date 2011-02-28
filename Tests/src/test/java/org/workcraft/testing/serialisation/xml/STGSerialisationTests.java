@@ -45,7 +45,7 @@ public class STGSerialisationTests {
 
 		RandomLayout layout = new RandomLayout();
 		WorkspaceEntry we = new WorkspaceEntry(null, new ModelEntry(new STGModelDescriptor(), stg, null));
-		layout.run(we);
+		layout.applyTo(we).run();
 
 		// serialise
 		PluginProvider mockPluginManager = XMLSerialisationTestingUtils.createMockPluginManager();

@@ -25,20 +25,22 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.UUID;
 
 import org.workcraft.Framework;
 import org.workcraft.dom.Model;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.SerialisationException;
+import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.petrify.tasks.DrawAstgTask;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
-import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.Result;
 import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.util.Export;
+import org.workcraft.util.Export.ExportTask;
 import org.workcraft.util.FileUtils;
 
 public class PSExporter implements Exporter {
@@ -49,50 +51,65 @@ public class PSExporter implements Exporter {
 	
 	private Framework framework;
 
+	@Override
+	public ExportJob getExportJob(final ServiceProvider modelServices) throws ServiceNotAvailableException {
+		
+		final ExportJob dotGExportJob = Export.chooseBestExporter(framework.getPluginManager(), modelServices, Format.STG);
+		
+		return new ExportJob(){
+
+			@Override
+			public int getCompatibility() {
+				return GENERAL_COMPATIBILITY;
+			}
+
+			@Override
+			public void export(OutputStream out) throws IOException, ModelValidationException, SerialisationException {
+				File dotG = File.createTempFile("workcraft", ".g");
+				
+				final Result<? extends Object> result = framework.getTaskManager().execute(new ExportTask(dotGExportJob, dotG), "Exporting to .g");
+				
+				if (result.getOutcome() != Outcome.FINISHED)
+				{
+					if (result.getOutcome() == Outcome.CANCELLED)
+						return;
+					else
+						if (result.getCause() != null)
+							throw new SerialisationException (result.getCause());
+						else
+							throw new SerialisationException ("Could not export model as .g");
+				}
+				
+				File ps = File.createTempFile("workcraft", ".ps");
+				
+				DrawAstgTask task = new DrawAstgTask(dotG.getAbsolutePath(), ps.getAbsolutePath(), new ArrayList<String>());
+				
+				final Result<? extends ExternalProcessResult> draw_astgResult = framework.getTaskManager().execute(task, "Executing draw_astg");
+				
+				if (draw_astgResult.getOutcome() != Outcome.FINISHED) {
+					if (draw_astgResult.getOutcome() == Outcome.CANCELLED)
+						return;
+
+					else
+						if (draw_astgResult.getCause() != null)
+							throw new SerialisationException (draw_astgResult.getCause());
+						else
+							throw new SerialisationException ("draw_astg failed with return code " + draw_astgResult.getReturnValue().getReturnCode() + "\n\n" +
+									new String(draw_astgResult.getReturnValue().getErrors()) +"\n");
+						
+				}
+				
+				FileUtils.copyFileToStream(ps, out);
+				
+				dotG.delete();
+				ps.delete();
+			}
+		};
+	}
+	
 	public void export(Model model, OutputStream out) throws IOException,
 	ModelValidationException, SerialisationException {
 
-		if (model == null)
-			throw new IllegalArgumentException("Model is null");
-		
-		File dotG = File.createTempFile("workcraft", ".g");
-		
-		final Result<? extends Object> result = framework.getTaskManager().execute(Export.createExportTask(model, dotG, Format.STG, framework.getPluginManager()), "Exporting to .g");
-		
-		if (result.getOutcome() != Outcome.FINISHED)
-		{
-			if (result.getOutcome() == Outcome.CANCELLED)
-				return;
-			else
-				if (result.getCause() != null)
-					throw new SerialisationException (result.getCause());
-				else
-					throw new SerialisationException ("Could not export model as .g");
-		}
-		
-		File ps = File.createTempFile("workcraft", ".ps");
-		
-		DrawAstgTask task = new DrawAstgTask(dotG.getAbsolutePath(), ps.getAbsolutePath(), new ArrayList<String>());
-		
-		final Result<? extends ExternalProcessResult> draw_astgResult = framework.getTaskManager().execute(task, "Executing draw_astg");
-		
-		if (draw_astgResult.getOutcome() != Outcome.FINISHED) {
-			if (draw_astgResult.getOutcome() == Outcome.CANCELLED)
-				return;
-
-			else
-				if (draw_astgResult.getCause() != null)
-					throw new SerialisationException (draw_astgResult.getCause());
-				else
-					throw new SerialisationException ("draw_astg failed with return code " + draw_astgResult.getReturnValue().getReturnCode() + "\n\n" +
-							new String(draw_astgResult.getReturnValue().getErrors()) +"\n");
-				
-		}
-		
-		FileUtils.copyFileToStream(ps, out);
-		
-		dotG.delete();
-		ps.delete();
 	}
 
 	public String getDescription() {
@@ -103,15 +120,8 @@ public class PSExporter implements Exporter {
 		return ".ps";
 	}
 
-	public int getCompatibility(Model model) {
-		if (model instanceof STGModel)
-			return Exporter.GENERAL_COMPATIBILITY;
-		else
-			return Exporter.NOT_COMPATIBLE;
-	}
-
 	@Override
-	public UUID getTargetFormat() {
+	public Format getTargetFormat() {
 		return Format.PS;
 	}
 }

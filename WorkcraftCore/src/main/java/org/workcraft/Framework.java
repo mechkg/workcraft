@@ -651,13 +651,13 @@ public class Framework {
 
 			Element math = doc.createElement("math");
 			math.setAttribute("entry-name", mathEntryName);
-			math.setAttribute("format-uuid", mathSerialiser.getFormatUUID().toString());
+			math.setAttribute("format-uuid", mathSerialiser.getFormat().toString());
 			root.appendChild(math);
 
 			if (visualModel != null) {
 				Element visual = doc.createElement("visual");
 				visual.setAttribute("entry-name", visualEntryName);
-				visual.setAttribute("format-uuid", visualSerialiser.getFormatUUID().toString());
+				visual.setAttribute("format-uuid", visualSerialiser.getFormat().toString());
 				root.appendChild(visual);
 			}
 

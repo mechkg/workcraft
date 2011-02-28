@@ -60,6 +60,7 @@ import org.workcraft.dom.visual.Label;
 import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
@@ -234,8 +235,9 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 			@Override
 			protected Rectangle2D evaluate(EvaluationContext context) {
 				Rectangle2D result = context.resolve(contactLabelBB);
+				if(true)throw new NotImplementedException("need custom touchable here");
 				for(Node child : VisualCircuitComponent.this.getContacts(context))
-					result = BoundingBoxHelper.union(result, context.resolve(child.shape()).getBoundingBox());
+					result = BoundingBoxHelper.union(result, context.resolve(((ReflectiveTouchable)child).shape()).getBoundingBox());
 				return result;
 			}
 		};

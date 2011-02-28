@@ -50,7 +50,7 @@ public class VisualModelSerialisation {
 		RandomLayout layout = new RandomLayout();
 		WorkspaceEntry we = new WorkspaceEntry(null, new ModelEntry(new STGModelDescriptor(), visualstg, new HistoryPreservingStorageManager()));
 		
-		layout.run(we);
+		layout.applyTo(we).run();
 
 		// serialise
 		PluginProvider mockPluginManager = XMLSerialisationTestingUtils.createMockPluginManager();

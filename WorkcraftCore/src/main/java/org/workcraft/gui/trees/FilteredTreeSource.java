@@ -5,20 +5,20 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.workcraft.gui.workspace.Path;
-import org.workcraft.util.Func;
+import org.workcraft.util.Function;
 
 public class FilteredTreeSource<T> implements TreeSource<T> {
 	private final TreeSource<T> source;
 	private HashMap<T, Boolean> acceptableCache = new HashMap<T, Boolean>();
-	private Func<T, Boolean> filter;
+	private Function<T, Boolean> filter;
 	private final LinkedList<TreeListener<T>> listeners = new LinkedList<TreeListener<T>>();
 
-	public FilteredTreeSource (TreeSource<T> sourceTree, Func<T, Boolean> filter) {
+	public FilteredTreeSource (TreeSource<T> sourceTree, Function<T, Boolean> filter) {
 		this.source = sourceTree;
 		this.filter = filter;
 	}
 
-	public void setFilter(Func<T, Boolean> filter) {
+	public void setFilter(Function<T, Boolean> filter) {
 		this.filter = filter;
 		acceptableCache.clear();
 
@@ -38,7 +38,7 @@ public class FilteredTreeSource<T> implements TreeSource<T> {
 		boolean result;
 
 		if (isLeaf(node))
-			result = filter.eval(node);
+			result = filter.apply(node);
 		else
 			if (depth == 0)
 				result = true;

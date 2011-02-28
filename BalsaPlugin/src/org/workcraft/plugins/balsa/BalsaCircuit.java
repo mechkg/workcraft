@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.balsa;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,10 +35,10 @@ import java.util.Set;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Connection;
-import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.exceptions.InvalidConnectionException;
+import org.workcraft.interop.ServiceHandle;
 import org.workcraft.parsers.breeze.Netlist;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
 import org.workcraft.plugins.balsa.handshakebuilder.DataHandshake;
@@ -49,10 +51,10 @@ import org.workcraft.plugins.balsa.handshakebuilder.PushHandshake;
 import org.workcraft.plugins.balsa.handshakes.MainHandshakeMaker;
 import org.workcraft.util.Hierarchy;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-
 public final class BalsaCircuit extends AbstractModel implements MathModel {
 
+	public static ServiceHandle<BalsaCircuit> SERVICE_HANDLE = ServiceHandle.createNewService(BalsaCircuit.class, "A balsa circuit");
+	
 	public final StorageManager storage;
 
 	public BalsaCircuit(StorageManager storage) {

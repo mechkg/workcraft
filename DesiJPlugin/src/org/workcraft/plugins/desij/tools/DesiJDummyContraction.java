@@ -2,11 +2,14 @@ package org.workcraft.plugins.desij.tools;
 
 import org.workcraft.Framework;
 import org.workcraft.Tool;
+import org.workcraft.ToolJob;
+import org.workcraft.interop.ExportJob;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.desij.DecompositionResultHandler;
 import org.workcraft.plugins.desij.DesiJPresetManager;
 import org.workcraft.plugins.desij.tasks.DesiJTask;
-import org.workcraft.plugins.stg.STGModel;
-import org.workcraft.util.WorkspaceUtils;
+import org.workcraft.serialisation.Format;
+import org.workcraft.util.Export;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class DesiJDummyContraction implements Tool {
@@ -23,17 +26,18 @@ public class DesiJDummyContraction implements Tool {
 	}
 
 	@Override
-	public boolean isApplicableTo(WorkspaceEntry we) {
-		return WorkspaceUtils.canHas(we, STGModel.class);
+	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
+		final ExportJob stgExporter = Export.chooseBestExporter(framework.getPluginManager(), we.getModelEntry().services, Format.STG);
+		return new ToolJob() {
+			
+			@Override
+			public void run() {
+				framework.getTaskManager().queue(new DesiJTask(stgExporter, framework, DesiJPresetManager.DUMMY_REMOVAL.getSettings()), 
+						"Execution of DesiJ", new DecompositionResultHandler(framework, we.getWorkspacePath(), true));
+			}
+		};
 	}
-
-	@Override
-	public void run(WorkspaceEntry we) {
-		// call desiJ asynchronous (w/o blocking the GUI)
-		framework.getTaskManager().queue(new DesiJTask(WorkspaceUtils.getAs(we, STGModel.class), framework, DesiJPresetManager.DUMMY_REMOVAL.getSettings()), 
-				"Execution of DesiJ", new DecompositionResultHandler(framework, true));
-	}
-
+	
 	@Override
 	public String getDisplayName() {
 		return "Contract dummies (DesiJ)";

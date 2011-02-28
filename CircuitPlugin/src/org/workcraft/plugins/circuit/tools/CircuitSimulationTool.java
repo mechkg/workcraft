@@ -9,6 +9,7 @@ import javax.swing.JButton;
 
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.plugins.circuit.Contact;
@@ -87,7 +88,7 @@ public class CircuitSimulationTool extends STGSimulationTool {
 	}
 	
 	public CircuitSimulationTool(GraphEditor editor) {
-		super(editor);
+		super(editor, TouchableProvider.DEFAULT);
 		this.editor = editor;
 		createInterface();
 		
@@ -118,7 +119,7 @@ public class CircuitSimulationTool extends STGSimulationTool {
 	
 	@Override
 	public void mousePressed(GraphEditorMouseEvent e) {
-		Node node = HitMan.hitDeepest(e.getPosition(), e.getModel().getRoot(), new Func<Node, Boolean>()
+		Node node = HitMan.hitDeepest(TouchableProvider.DEFAULT, e.getPosition(), e.getModel().getRoot(), new Func<Node, Boolean>()
 				{
 					@Override
 					public Boolean eval(Node node) {

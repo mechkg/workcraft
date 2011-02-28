@@ -36,11 +36,14 @@ import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
 import org.workcraft.gui.propertyeditor.Properties;
+import org.workcraft.interop.ServiceHandle;
 import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.util.Hierarchy;
 
 public class VisualCircuit extends AbstractVisualModel {
 
+	public static ServiceHandle<VisualCircuit> SERVICE_HANDLE = ServiceHandle.createNewService(VisualCircuit.class, "Digital Circuit");
+	
 	private Circuit circuit;
 	
 	@Override

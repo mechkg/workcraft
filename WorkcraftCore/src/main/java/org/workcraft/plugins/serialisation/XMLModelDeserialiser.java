@@ -23,7 +23,6 @@ package org.workcraft.plugins.serialisation;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.UUID;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -49,6 +48,7 @@ public class XMLModelDeserialiser implements ModelDeserialiser {
 		deserialisation.processPlugins(mock);
 	}
 
+	@Override
 	public DeserialisationResult deserialise(InputStream inputStream, StorageManager storage,
 			ReferenceResolver externalReferenceResolver)
 	throws DeserialisationException {
@@ -82,11 +82,13 @@ public class XMLModelDeserialiser implements ModelDeserialiser {
 		}
 	}
 
+	@Override
 	public String getDescription() {
 		return "Workcraft XML deserialiser";
 	}
 
-	public UUID getFormatUUID() {
+	@Override
+	public Format getFormat() {
 		return Format.workcraftXML;
 	}
 }

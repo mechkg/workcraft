@@ -24,11 +24,15 @@ package org.workcraft.plugins.layout;
 import java.util.Random;
 
 import org.workcraft.Tool;
+import org.workcraft.ToolJob;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualTransformableNode;
-import org.workcraft.util.WorkspaceUtils;
+import org.workcraft.interop.ServiceHandle;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
+import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class RandomLayout implements Tool {
@@ -40,20 +44,24 @@ public class RandomLayout implements Tool {
 	}
 
 	@Override
-	public boolean isApplicableTo(WorkspaceEntry we) {
-		return WorkspaceUtils.canHas(we, VisualModel.class);
-	}
-
-	@Override
-	public void run(WorkspaceEntry we) {
-		for (Node n : GlobalCache.eval(WorkspaceUtils.getAs(we, VisualModel.class).getRoot().children())) {
-			if (n instanceof VisualTransformableNode) {
-				GlobalCache.setValue(((VisualTransformableNode)n).x(),(RandomLayoutSettings.startX + r.nextDouble()*RandomLayoutSettings.rangeX));
-				GlobalCache.setValue(((VisualTransformableNode)n).y(),(RandomLayoutSettings.startY + r.nextDouble()*RandomLayoutSettings.rangeY));
+	public ToolJob applyTo(WorkspaceEntry entry) throws ServiceNotAvailableException {
+		ModelEntry modelEntry = entry.getModelEntry();
+		final ServiceProvider services = modelEntry.services;
+		final VisualModel model = services.getImplementation(ServiceHandle.LegacyVisualModelService);
+		return new ToolJob() {
+			
+			@Override
+			public void run() {
+				for (Node n : GlobalCache.eval(model.getRoot().children())) {
+					if (n instanceof VisualTransformableNode) {
+						GlobalCache.setValue(((VisualTransformableNode)n).x(),(RandomLayoutSettings.startX + r.nextDouble()*RandomLayoutSettings.rangeX));
+						GlobalCache.setValue(((VisualTransformableNode)n).y(),(RandomLayoutSettings.startY + r.nextDouble()*RandomLayoutSettings.rangeY));
+					}
+				}	
 			}
-		}	
+		};
 	}
-
+	
 	@Override
 	public String getDisplayName() {
 		return "Randomize layout";

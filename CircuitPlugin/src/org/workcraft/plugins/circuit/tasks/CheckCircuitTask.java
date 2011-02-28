@@ -3,7 +3,8 @@ package org.workcraft.plugins.circuit.tasks;
 import java.io.File;
 
 import org.workcraft.Framework;
-import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ExportJob;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.circuit.CircuitSettings;
 import org.workcraft.plugins.circuit.VisualCircuit;
 import org.workcraft.plugins.circuit.stg.CircuitPetriNetGenerator;
@@ -12,27 +13,26 @@ import org.workcraft.plugins.mpsat.MpsatResultParser;
 import org.workcraft.plugins.mpsat.MpsatSettings;
 import org.workcraft.plugins.mpsat.MpsatSettings.SolutionMode;
 import org.workcraft.plugins.mpsat.tasks.MpsatChainResult;
-import org.workcraft.plugins.mpsat.tasks.MpsatChainTask;
 import org.workcraft.plugins.mpsat.tasks.MpsatTask;
 import org.workcraft.plugins.mpsat.tasks.PunfTask;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
 import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STGModel;
+import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.ProgressMonitor;
 import org.workcraft.tasks.Result;
-import org.workcraft.tasks.SubtaskMonitor;
 import org.workcraft.tasks.Result.Outcome;
+import org.workcraft.tasks.SubtaskMonitor;
+import org.workcraft.tasks.Task;
 import org.workcraft.util.Export;
 import org.workcraft.util.Export.ExportTask;
-import org.workcraft.workspace.WorkspaceEntry;
 
 
-public class CheckCircuitTask extends MpsatChainTask {
+public class CheckCircuitTask implements Task<MpsatChainResult>{
 	private final MpsatSettings deadlockSettings;
 	private final MpsatSettings semimodSettings;
 //	private final MpsatSettings settings;
-	private final WorkspaceEntry we;
 	private final Framework framework;
 	private STGModel model;
 	
@@ -51,11 +51,11 @@ public class CheckCircuitTask extends MpsatChainTask {
 		"	    }\n"+
 		"	  }\n"+
 		"	}\n";
+	private final VisualCircuit circuit;
 
 	
-	public CheckCircuitTask(WorkspaceEntry we, Framework framework) {
-		super (we, null, framework);
-		this.we = we;
+	public CheckCircuitTask(VisualCircuit circuit, Framework framework) {
+		this.circuit = circuit;
 		this.framework = framework;
 		this.model = null;
 		
@@ -64,27 +64,26 @@ public class CheckCircuitTask extends MpsatChainTask {
 		this.semimodSettings = new MpsatSettings(MpsatMode.STG_REACHABILITY, 0, MpsatSettings.SOLVER_MINISAT, 
 				CircuitSettings.getCheckMode(),(CircuitSettings.getCheckMode()==SolutionMode.ALL)?10:1, nonPersReach);
 	}
-
 	
 	@Override
 	public Result<? extends MpsatChainResult> run(ProgressMonitor<? super MpsatChainResult> monitor) {
 		try {
-			
 			monitor.progressUpdate(0.05);
-			VisualCircuit circuit = (VisualCircuit) we.getModelEntry().getVisualModel();
 			model = (STGModel) CircuitPetriNetGenerator.generate(circuit, new DefaultStorageManager()).getMathModel();
 			monitor.progressUpdate(0.10);
 			
-			Exporter exporter = Export.chooseBestExporter(framework.getPluginManager(), model, Format.STG);
+			final ExportJob exporter;
 			
-			if (exporter == null)
-				throw new RuntimeException ("Exporter not available: model class " + model.getClass().getName() + " to format STG.");
+			try { exporter = Export.chooseBestExporter(framework.getPluginManager(), new STGModelDescriptor().createServiceProvider(model), Format.STG); }
+			catch(ServiceNotAvailableException ex) {
+				throw new RuntimeException (ex);
+			}
 			
-			File netFile = File.createTempFile("net", exporter.getExtenstion());
+			File netFile = File.createTempFile("net", ".g");
 			
 			ExportTask exportTask;
 			
-			exportTask = new ExportTask(exporter, model, netFile.getCanonicalPath());
+			exportTask = new ExportTask(exporter, netFile);
 			
 			SubtaskMonitor<Object> mon = new SubtaskMonitor<Object>(monitor);
 			

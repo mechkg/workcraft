@@ -10,7 +10,9 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.workcraft.Framework;
-import org.workcraft.dom.Model;
+import org.workcraft.interop.ExportJob;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
 import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.ProgressMonitor;
@@ -18,16 +20,18 @@ import org.workcraft.tasks.Result;
 import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.tasks.Task;
 import org.workcraft.util.Export;
+import org.workcraft.util.Export.ExportTask;
+import org.workcraft.util.Null;
 
 public class DrawSgTask implements Task<DrawSgResult> {
-	private final Model model;
 	private Framework framework;
 	private boolean writeHuge = false;
+	private ExportJob dotGExportJob;
 
-	public DrawSgTask(Model model, Framework framework) 
+	public DrawSgTask(ServiceProvider services, Framework framework) throws ServiceNotAvailableException 
 	{
-		this.model = model;
 		this.framework = framework;
+		this.dotGExportJob = Export.chooseBestExporter(framework.getPluginManager(), services, Format.STG); 
 	}
 
 	@Override
@@ -38,7 +42,7 @@ public class DrawSgTask implements Task<DrawSgResult> {
 			File dotG = File.createTempFile("workcraft", ".g");
 			dotG.deleteOnExit();
 
-			final Result<? extends Object> dotGResult = framework.getTaskManager().execute(Export.createExportTask(model, dotG, Format.STG, framework.getPluginManager()), "Exporting to .g" );
+			final Result<? extends Null> dotGResult = framework.getTaskManager().<Null>execute(new ExportTask(dotGExportJob, dotG), "Exporting to .g");
 
 			if (dotGResult.getOutcome() != Outcome.FINISHED)
 			{

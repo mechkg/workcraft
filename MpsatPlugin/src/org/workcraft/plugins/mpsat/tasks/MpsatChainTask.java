@@ -3,37 +3,32 @@ package org.workcraft.plugins.mpsat.tasks;
 import java.io.File;
 
 import org.workcraft.Framework;
-import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ExportJob;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.mpsat.MpsatSettings;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
-import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.ProgressMonitor;
 import org.workcraft.tasks.Result;
+import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.tasks.SubtaskMonitor;
 import org.workcraft.tasks.Task;
-import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.util.Export;
-import org.workcraft.util.WorkspaceUtils;
 import org.workcraft.util.Export.ExportTask;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class MpsatChainTask implements Task<MpsatChainResult> {
-	private final WorkspaceEntry we;
 	private final MpsatSettings settings;
 	private final Framework framework;
-	private STGModel model;
+	private ExportJob dotGExportJob;
 
-	public MpsatChainTask(WorkspaceEntry we, MpsatSettings settings, Framework framework) {
-		this.we = we;
-		this.settings = settings;
-		this.framework = framework;
-		this.model = null;
+	public static MpsatChainTask create(WorkspaceEntry we, MpsatSettings settings, Framework framework) throws ServiceNotAvailableException {
+		ExportJob dotGExportJob = Export.chooseBestExporter(framework.getPluginManager(), we.getModelEntry().services, Format.STG);
+		return new MpsatChainTask(dotGExportJob, settings, framework);
 	}
 	
-	public MpsatChainTask(STGModel model, MpsatSettings settings, Framework framework) {
-		this.we = null;
-		this.model = model;
+	public MpsatChainTask(ExportJob dotGExportJob, MpsatSettings settings, Framework framework) {
+		this.dotGExportJob = dotGExportJob;
 		this.settings = settings;
 		this.framework = framework;
 	}
@@ -41,19 +36,11 @@ public class MpsatChainTask implements Task<MpsatChainResult> {
 	@Override
 	public Result<? extends MpsatChainResult> run(ProgressMonitor<? super MpsatChainResult> monitor) {
 		try {
-			if(model == null)
-				model = WorkspaceUtils.getAs(getWorkspaceEntry(), STGModel.class);
-			
-			Exporter exporter = Export.chooseBestExporter(framework.getPluginManager(), model, Format.STG);
-			
-			if (exporter == null)
-				throw new RuntimeException ("Exporter not available: model class " + model.getClass().getName() + " to format STG.");
-			
-			File netFile = File.createTempFile("net", exporter.getExtenstion());
+			File netFile = File.createTempFile("net", ".g");
 			
 			ExportTask exportTask;
 			
-			exportTask = new ExportTask(exporter, model, netFile.getCanonicalPath());
+			exportTask = new ExportTask(dotGExportJob, netFile);
 			
 			SubtaskMonitor<Object> mon = new SubtaskMonitor<Object>(monitor);
 			
@@ -107,9 +94,5 @@ public class MpsatChainTask implements Task<MpsatChainResult> {
 
 	public Framework getFramework() {
 		return framework;
-	}
-
-	public WorkspaceEntry getWorkspaceEntry() {
-		return we;
 	}
 }

@@ -128,7 +128,7 @@ public class WhileTests {
 		
 		final BalsaExportConfig balsaConfig = new BalsaExportConfig(null, CompositionMode.IMPROVED_PCOMP, Protocol.FOUR_PHASE);
 		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(framework, balsa, balsaConfig, new DefaultStorageManager());
-		Export.exportToFile(new DotGExporter(), stgExtractionTask.getSTG(), stgFile);
+		Export.exportToFile(new DotGExporter.ExportJob(stgExtractionTask.getSTG()), stgFile);
 		
 		final STG stg = (STG) Import.importFromFile(new DotGImporter(), stgFile).getModel();
 		

@@ -24,7 +24,6 @@ package org.workcraft.util;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.UUID;
 
 import org.workcraft.PluginProvider;
 import org.workcraft.exceptions.ModelValidationException;
@@ -62,7 +61,7 @@ public class Export {
 		}
 	}
 	
-	static public ExportJob chooseBestExporter (PluginProvider provider, ServiceProvider modelServices, UUID targetFormat) throws SerialisationException {
+	static public ExportJob chooseBestExporter (PluginProvider provider, ServiceProvider modelServices, Format targetFormat) throws ServiceNotAvailableException {
 		Iterable<PluginInfo<? extends Exporter>> plugins = provider.getPlugins(Exporter.class);
 		
 		ExportJob best = null;
@@ -87,16 +86,16 @@ public class Export {
 		}
 
 		if (best == null) // TODO: determine model type name?
-			throw new SerialisationException("No exporter available for the model " + modelServices + " to produce format " + Format.getDescription(targetFormat));
+			throw new ServiceNotAvailableException("No exporter available for the model " + modelServices + " to produce format " + Format.getDescription(targetFormat));
 		return best;
 	}
 	
-	static public void exportToFile (ServiceProvider modelServices, File file, UUID targetFormat, PluginProvider provider) throws IOException, ModelValidationException, SerialisationException {
+	static public void exportToFile (ServiceProvider modelServices, File file, Format targetFormat, PluginProvider provider) throws IOException, ModelValidationException, ServiceNotAvailableException, SerialisationException {
 		ExportJob exporter = chooseBestExporter(provider, modelServices, targetFormat);
 		exportToFile(exporter, file);
 	}
 	
-	static public ExportTask createExportTask (ServiceProvider modelServices, File file, UUID targetFormat, PluginProvider provider) throws SerialisationException {
+	static public ExportTask createExportTask (ServiceProvider modelServices, File file, Format targetFormat, PluginProvider provider) throws ServiceNotAvailableException {
 		ExportJob exporter = chooseBestExporter(provider, modelServices, targetFormat);
 		return new ExportTask(exporter, file);
 	}

@@ -27,7 +27,6 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.UUID;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -89,7 +88,7 @@ public abstract class AbstractSVGExporter implements Exporter {
 	}
 
 	@Override
-	public final UUID getTargetFormat() {
+	public final Format getTargetFormat() {
 		return Format.SVG;
 	}
 }

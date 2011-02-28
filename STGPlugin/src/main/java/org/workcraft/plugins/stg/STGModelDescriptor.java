@@ -1,9 +1,13 @@
 package org.workcraft.plugins.stg;
 
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
+import org.workcraft.interop.ExportJob;
+import org.workcraft.interop.ServiceProvider;
+import org.workcraft.interop.ServiceProviderImpl;
 
 public class STGModelDescriptor implements ModelDescriptor
 {
@@ -20,5 +24,15 @@ public class STGModelDescriptor implements ModelDescriptor
 	@Override
 	public VisualModelDescriptor getVisualModelDescriptor() {
 		return new STGVisualModelDescriptor();
+	}
+
+	@Override
+	public ServiceProvider createServiceProvider(Model model) {
+		return ServiceProviderImpl.createLegacyServiceProvider(model);
+	}
+
+	public static ServiceProvider getServices(STGModel model) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

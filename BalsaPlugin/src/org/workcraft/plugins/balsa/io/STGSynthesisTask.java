@@ -35,8 +35,11 @@ import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.balsa.BalsaCircuit;
 import org.workcraft.plugins.gates.GateLevelModel;
+import org.workcraft.plugins.interop.DotGExporter;
 import org.workcraft.plugins.mpsat.MpsatCscResolutionResultHandler;
 import org.workcraft.plugins.mpsat.MpsatEqnParser;
 import org.workcraft.plugins.mpsat.MpsatMode;
@@ -51,6 +54,7 @@ import org.workcraft.plugins.shared.tasks.ExternalProcessTask;
 import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.STGModel;
+import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.ProgressMonitor;
 import org.workcraft.tasks.Result;
@@ -82,8 +86,14 @@ public class STGSynthesisTask implements Task<SynthesisResult> {
 
 	private void exportFromStg(STGModel model, OutputStream out) throws IOException, ModelValidationException, SerialisationException {
 		GateLevelModel gates = synthesise(framework, model, getConfig());
-		Export.chooseBestExporter(framework.getPluginManager(), gates, Format.EQN);
+		try { Export.chooseBestExporter(framework.getPluginManager(), asServiceProvider(gates), Format.EQN); } catch(ServiceNotAvailableException ex) {
+			throw new NotImplementedException();
+		}
 		export(gates, out);
+	}
+
+	private ServiceProvider asServiceProvider(GateLevelModel gates) {
+		throw new org.workcraft.exceptions.NotImplementedException();
 	}
 
 	private BalsaExportConfig getConfig() {
@@ -124,9 +134,9 @@ public class STGSynthesisTask implements Task<SynthesisResult> {
 
 	private static STGModel resolveCscWithMpsat(Framework framework, STGModel original, StorageManager storage) {
 		MpsatSettings settings = new MpsatSettings(MpsatMode.RESOLVE_ENCODING_CONFLICTS, 4, MpsatSettings.SOLVER_MINISAT, SolutionMode.MINIMUM_COST, 1, null);
-		MpsatChainTask mpsatTask = new MpsatChainTask(original, settings, framework);
+		MpsatChainTask mpsatTask = new MpsatChainTask(new DotGExporter.ExportJob(original), settings, framework);
 		final Result<? extends MpsatChainResult> result = framework.getTaskManager().execute(mpsatTask, "CSC conflict resolution");
-		return new MpsatCscResolutionResultHandler(mpsatTask, result, storage).getResolvedStg();
+		return MpsatCscResolutionResultHandler.getStg(result, storage);
 	}
 
 	private static GateLevelModel petrifyMakeEqn(TaskManager taskManager, STGModel stg) throws IOException {
@@ -212,7 +222,7 @@ public class STGSynthesisTask implements Task<SynthesisResult> {
 		//TODO: re-implement using MpsatChainTask
 		MpsatSettings settings = new MpsatSettings(MpsatMode.COMPLEX_GATE_IMPLEMENTATION, 0, MpsatSettings.SOLVER_MINISAT, SolutionMode.FIRST, 1, null);
 
-		new MpsatChainTask(stg, settings, framework);
+		//new MpsatChainTask(stg, settings, framework);
 		Result<? extends ExternalProcessResult> result = framework.getTaskManager().execute(new MpsatTask(settings.getMpsatArguments(), null), "MPSat Complex gate synthesis");
 		
 		System.out.println("MPSat complex gate synthesis output: ");
@@ -250,14 +260,7 @@ public class STGSynthesisTask implements Task<SynthesisResult> {
 	public String getExtenstion() {
 		return ".eqn";
 	}
-
-	public int getCompatibility(Model model) {
-		if (model instanceof BalsaCircuit || model instanceof STG)
-			return Exporter.BEST_COMPATIBILITY;
-		else
-			return Exporter.NOT_COMPATIBLE;
-	}
-
+	
 	@Override
 	public Result<? extends SynthesisResult> run(ProgressMonitor<? super SynthesisResult> monitor) {
 		throw new org.workcraft.exceptions.NotImplementedException();

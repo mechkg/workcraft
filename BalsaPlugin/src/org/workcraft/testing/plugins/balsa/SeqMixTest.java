@@ -108,7 +108,7 @@ public class SeqMixTest {
 		
 		
 		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, circuit, new BalsaExportConfig(null, CompositionMode.PCOMP, Protocol.FOUR_PHASE), new DefaultStorageManager());
-		Export.exportToFile(new DotGExporter(), stgExtractionTask.getSTG(), "/home/dell/export_standard.g");
+		Export.exportToFile(new DotGExporter.ExportJob(stgExtractionTask.getSTG()), new File("/home/dell/export_standard.g"));
 //		Export.exportToFile((Exporter)synthesiser, circuit, "/home/dell/export.eqn");
 	}
 	
@@ -243,7 +243,7 @@ public class SeqMixTest {
 
 					final BalsaExportConfig balsaConfig = new BalsaExportConfig(null, 1==(o&1) ? CompositionMode.IMPROVED_PCOMP : CompositionMode.PCOMP, Protocol.FOUR_PHASE);
 					final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(f, circuit, balsaConfig, new DefaultStorageManager());
-					Export.exportToFile(new DotGExporter(), stgExtractionTask.getSTG(), gFile);
+					Export.exportToFile(new DotGExporter.ExportJob(stgExtractionTask.getSTG()), gFile);
 					
 					PrintStream defaultOut = System.out;
 					File desiJOutFile = new File("/home/dell/desij_" + runName.replace('\t', '_') + ".out");
@@ -253,7 +253,7 @@ public class SeqMixTest {
 					long ts = System.currentTimeMillis();
 					
 					System.setOut(desiJOut);
-					Result<? extends DesiJResult> result = f.getTaskManager().execute(new DesiJTask(model, f, desiJSettings), "desij");
+					Result<? extends DesiJResult> result = f.getTaskManager().execute(new DesiJTask(new DotGExporter.ExportJob(model), f, desiJSettings), "desij");
 					
 					long dt = System.currentTimeMillis() - ts;
 					

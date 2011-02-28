@@ -10,7 +10,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
@@ -151,7 +150,7 @@ public class DotExporter implements Exporter {
 	}
 
 	@Override
-	public UUID getTargetFormat() {
+	public Format getTargetFormat() {
 		return Format.DOT;
 	}
 }

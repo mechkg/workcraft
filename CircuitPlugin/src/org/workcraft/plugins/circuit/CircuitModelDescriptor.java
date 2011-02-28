@@ -1,6 +1,7 @@
 package org.workcraft.plugins.circuit;
 
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
@@ -8,6 +9,8 @@ import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.VisualModelInstantiationException;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
+import org.workcraft.interop.ServiceProvider;
+import org.workcraft.interop.ServiceProviderImpl;
 
 public class CircuitModelDescriptor implements ModelDescriptor {
 
@@ -36,6 +39,11 @@ public class CircuitModelDescriptor implements ModelDescriptor {
 				return new CircuitToolsProvider().getTools(editor);
 			}
 		};
+	}
+
+	@Override
+	public ServiceProvider createServiceProvider(Model model) {
+		return ServiceProviderImpl.createLegacyServiceProvider(model);
 	}
 
 }

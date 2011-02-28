@@ -21,14 +21,19 @@
 
 package org.workcraft.plugins.layout;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.setValue;
+
 import org.workcraft.Tool;
+import org.workcraft.ToolJob;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualTransformableNode;
-import org.workcraft.util.WorkspaceUtils;
+import org.workcraft.interop.ServiceHandle;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
+import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class NullLayout implements Tool {
 
@@ -38,18 +43,22 @@ public class NullLayout implements Tool {
 	}
 
 	@Override
-	public boolean isApplicableTo(WorkspaceEntry we) {
-		return WorkspaceUtils.canHas(we, VisualModel.class);
-	}
-
-	@Override
-	public void run(WorkspaceEntry we) {
-		for (Node n : eval(WorkspaceUtils.getAs(we, VisualModel.class).getRoot().children())) {
-			if (n instanceof VisualTransformableNode) {
-				setValue(((VisualTransformableNode)n).x(),(Double)0.0);
-				setValue(((VisualTransformableNode)n).y(),(Double)0.0);
+	public ToolJob applyTo(WorkspaceEntry entry) throws ServiceNotAvailableException {
+		ModelEntry modelEntry = entry.getModelEntry();
+		final ServiceProvider services = modelEntry.services;
+		final VisualModel model = services.getImplementation(ServiceHandle.LegacyVisualModelService);
+		return new ToolJob() {
+			
+			@Override
+			public void run() {
+				for (Node n : eval(model.getRoot().children())) {
+					if (n instanceof VisualTransformableNode) {
+						setValue(((VisualTransformableNode)n).x(),(Double)0.0);
+						setValue(((VisualTransformableNode)n).y(),(Double)0.0);
+					}
+				}
 			}
-		}
+		};
 	}
 
 	@Override

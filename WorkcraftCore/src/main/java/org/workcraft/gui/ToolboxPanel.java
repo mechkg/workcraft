@@ -21,6 +21,8 @@
 
 package org.workcraft.gui;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -43,15 +45,11 @@ import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.graph.GraphEditorPanel;
-import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
-import org.workcraft.gui.graph.tools.SelectionTool;
 import org.workcraft.plugins.shared.CommonVisualSettings;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 @SuppressWarnings("serial")
 public class ToolboxPanel extends JPanel implements GraphEditorKeyListener {

@@ -11,15 +11,15 @@ import javax.swing.JOptionPane;
 
 import org.workcraft.Framework;
 import org.workcraft.Tool;
-import org.workcraft.dom.Model;
-import org.workcraft.interop.Exporter;
+import org.workcraft.ToolJob;
+import org.workcraft.interop.ExportJob;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.petrify.SynthesisResultHandler;
 import org.workcraft.plugins.petrify.tasks.SynthesisTask;
-import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.serialisation.Format;
 import org.workcraft.util.Export;
 import org.workcraft.util.Export.ExportTask;
-import org.workcraft.util.WorkspaceUtils;
 import org.workcraft.workspace.WorkspaceEntry;
 
 /**
@@ -34,68 +34,59 @@ public class PetrifyComplexGateSynthesis implements Tool {
 		this.framework = framework;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.workcraft.Tool#getSection()
-	 */
 	@Override
 	public String getSection() {
 		return "Synthesis";
 	}
 
-	/* (non-Javadoc)
-	 * @see org.workcraft.Tool#isApplicableTo(org.workcraft.dom.Model)
-	 */
 	@Override
-	public boolean isApplicableTo(WorkspaceEntry we) {
-		return WorkspaceUtils.canHas(we, STGModel.class);
-	}
+	public ToolJob applyTo(WorkspaceEntry we) throws ServiceNotAvailableException {
+		ServiceProvider services = we.getModelEntry().services;
+		final ExportJob dotGExportJob = Export.chooseBestExporter(framework.getPluginManager(), services, Format.STG);
+		
+		return new ToolJob(){
 
-	/* (non-Javadoc)
-	 * @see org.workcraft.Tool#run(org.workcraft.dom.Model, org.workcraft.Framework)
-	 */
-	@Override
-	public void run(WorkspaceEntry we) {
-		
-		//Custom button text
-		Object[] options = {"Yes, please",
-		                    "No, thanks",
-		                    "Cancel Logic Synthesis"};
-		int option = JOptionPane.showOptionDialog(framework.getMainWindow(),
-		    "Would you like to do technology mapping as well?",
-		    "Technology mapping",
-		    JOptionPane.YES_NO_CANCEL_OPTION,
-		    JOptionPane.QUESTION_MESSAGE,
-		    null, // no icon
-		    options,
-		    options[2]); // initial Value: Cancel
-		
-		if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION)
-			return;
-		
-		File libraryFile = null;
-					
-		if (option == JOptionPane.YES_OPTION) {
-			// choose library File
-			JFileChooser fc = new JFileChooser();
-			fc.setDialogTitle("Choose a library file");
-			fc.setFileSelectionMode(JFileChooser.FILES_ONLY); // default
-			if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
-				libraryFile = fc.getSelectedFile();
-		}
-		
-		// call petrify asynchronous (w/o blocking the GUI) 
-		try {
-			framework.getTaskManager().queue(
-					new SynthesisTask(getComplexGateSynParamter(), getInputSTG(framework, WorkspaceUtils.getAs(we, STGModel.class)), 
-					File.createTempFile("petrifyEquations", ".eqn"), libraryFile, null), 
-					"Petrify Logic Synthesis", new SynthesisResultHandler(framework));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		
+			@Override
+			public void run() {
+				//Custom button text
+				Object[] options = {"Yes, please",
+				                    "No, thanks",
+				                    "Cancel Logic Synthesis"};
+				int option = JOptionPane.showOptionDialog(framework.getMainWindow(),
+				    "Would you like to do technology mapping as well?",
+				    "Technology mapping",
+				    JOptionPane.YES_NO_CANCEL_OPTION,
+				    JOptionPane.QUESTION_MESSAGE,
+				    null, // no icon
+				    options,
+				    options[2]); // initial Value: Cancel
+				
+				if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION)
+					return;
+				
+				File libraryFile = null;
+							
+				if (option == JOptionPane.YES_OPTION) {
+					// choose library File
+					JFileChooser fc = new JFileChooser();
+					fc.setDialogTitle("Choose a library file");
+					fc.setFileSelectionMode(JFileChooser.FILES_ONLY); // default
+					if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+						libraryFile = fc.getSelectedFile();
+				}
+				
+				// call petrify asynchronous (w/o blocking the GUI) 
+				try {
+					framework.getTaskManager().queue(
+							new SynthesisTask(getComplexGateSynParamter(), getInputSTG(framework, dotGExportJob), 
+							File.createTempFile("petrifyEquations", ".eqn"), libraryFile, null), 
+							"Petrify Logic Synthesis", new SynthesisResultHandler(framework));
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		};
 	}
-	
-	
 	
 	private String[] getComplexGateSynParamter() {
 		String[] result = new String[1];
@@ -103,17 +94,12 @@ public class PetrifyComplexGateSynthesis implements Tool {
 		return result;
 	}
 
-	private File getInputSTG(Framework framework, Model model) {
-		Exporter stgExporter = Export.chooseBestExporter(framework.getPluginManager(), model, Format.STG);
-		
-		if (stgExporter == null)
-			throw new RuntimeException ("Exporter not available: model class " + model.getClass().getName() + " to format STG.");
-		
+	private File getInputSTG(Framework framework, ExportJob dotGExportJob) {
 		File stgFile;
 		
 		try {
-			stgFile = File.createTempFile("STG", stgExporter.getExtenstion());
-			ExportTask exportTask = new ExportTask(stgExporter, model, stgFile.getCanonicalPath());
+			stgFile = File.createTempFile("STG", ".g");
+			ExportTask exportTask = new ExportTask(dotGExportJob, stgFile);
 			framework.getTaskManager().execute(exportTask, "Exporting .g");
 			
 			return stgFile;

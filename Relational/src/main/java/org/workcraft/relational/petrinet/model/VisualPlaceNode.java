@@ -69,11 +69,6 @@ public class VisualPlaceNode implements Node, DrawableNew, MovableNew {
 	Integer getTokens() {
 		return eval(tokenCount);
 	}
-	
-	@Override
-	public Expression<? extends Touchable> shape() {
-		return TransformHelper.transform(localTouchable, transform);
-	}
 
 	@Override
 	public ModifiableExpression<Node> parent() {

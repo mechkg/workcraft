@@ -77,14 +77,6 @@ public class VisualModel implements org.workcraft.dom.visual.VisualModel {
 	}
 
 	@Override
-	public Collection<Node> boxHitTest(Point2D p1, Point2D p2) {
-		p1 = transformToCurrentSpace(p1);
-		p2 = transformToCurrentSpace(p2);
-		return HitMan.boxHitTest(eval(currentLevel), p1, p2);
-	}
-
-
-	@Override
 	public void connect(Node first, Node second) throws InvalidConnectionException {
 		// TODO Auto-generated method stub
 		

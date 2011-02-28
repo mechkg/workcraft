@@ -20,16 +20,16 @@ import javax.swing.JRadioButton;
 import org.workcraft.Framework;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.trees.TreeWindow;
-import org.workcraft.gui.workspace.Path;
 import org.workcraft.gui.workspace.WorkspaceChooser;
 import org.workcraft.plugins.pcomp.PCompOutputMode;
-import org.workcraft.plugins.stg.STGWorkspaceFilter;
+import org.workcraft.plugins.stg.DotGFile;
+import org.workcraft.plugins.stg.ServiceWorkspaceFilter;
 
 @SuppressWarnings("serial")
 public class PcompDialog extends JDialog {
 	private final Framework framework;
 	protected boolean result;
-	private Set<Path<String>> sourcePaths;
+	private Set<DotGFile> sourcePaths;
 	private JCheckBox showInEditor;
 
 	JRadioButton leaveOutputs;
@@ -45,7 +45,7 @@ public class PcompDialog extends JDialog {
 		this.setContentPane(content);
 	}
 	
-	public Set<Path<String>> getSourcePaths() {
+	public Set<DotGFile> getSelectedItems() {
 		return sourcePaths;
 	}
 	
@@ -81,7 +81,7 @@ public class PcompDialog extends JDialog {
 		
 		final JPanel content = new JPanel(new TableLayout(sizes));
 		
-		final WorkspaceChooser chooser = new WorkspaceChooser(framework.getWorkspace(), new STGWorkspaceFilter(framework));
+		final WorkspaceChooser<DotGFile> chooser = new WorkspaceChooser<DotGFile>(framework.getWorkspace(), new ServiceWorkspaceFilter<DotGFile>(framework, DotGFile.SERVICE_HANDLE));
 		chooser.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Source STGs"), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		chooser.setCheckBoxMode(TreeWindow.CheckBoxMode.LEAF);
 		

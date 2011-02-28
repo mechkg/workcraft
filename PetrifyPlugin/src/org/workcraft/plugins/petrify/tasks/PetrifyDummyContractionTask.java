@@ -5,28 +5,29 @@ import java.io.File;
 
 import org.workcraft.Framework;
 import org.workcraft.exceptions.DeserialisationException;
+import org.workcraft.interop.ExportJob;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.interop.DotGImporter;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
 import org.workcraft.plugins.shared.tasks.PetrifyTask;
-import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.ProgressMonitor;
 import org.workcraft.tasks.Result;
 import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.tasks.Task;
+import org.workcraft.tasks.TaskManager;
 import org.workcraft.util.Export;
 import org.workcraft.util.Export.ExportTask;
-import org.workcraft.util.WorkspaceUtils;
 import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class PetrifyDummyContractionTask implements Task<PetrifyDummyContractionResult>{
-	private Framework framework;
-	private WorkspaceEntry workspaceEntry;
+	private final ExportJob dotGExportJob;
+	private final TaskManager taskManager;
 
-	public PetrifyDummyContractionTask(Framework framework, WorkspaceEntry workspaceEntry) {
-		this.framework = framework;
-		this.workspaceEntry = workspaceEntry;
+	public PetrifyDummyContractionTask(Framework framework, WorkspaceEntry workspaceEntry) throws ServiceNotAvailableException {
+		this.taskManager = framework.getTaskManager();
+		this.dotGExportJob = Export.chooseBestExporter(framework.getPluginManager(), workspaceEntry.getModelEntry().services, Format.STG);
 	}
 
 	@Override
@@ -35,9 +36,9 @@ public class PetrifyDummyContractionTask implements Task<PetrifyDummyContraction
 		{
 			File tmp = File.createTempFile("stg_", ".g");
 
-			ExportTask exportTask = Export.createExportTask(WorkspaceUtils.getAs(workspaceEntry, STGModel.class), tmp, Format.STG, getFramework().getPluginManager());
+			ExportTask exportTask = new ExportTask(dotGExportJob, tmp);
 
-			final Result<? extends Object> exportResult = getFramework().getTaskManager().execute(exportTask, "Dummy contraction: writing .g");
+			final Result<? extends Object> exportResult = taskManager.execute(exportTask, "Dummy contraction: writing .g");
 
 			if (exportResult.getOutcome() != Outcome.FINISHED)
 				if (exportResult.getOutcome() == Outcome.CANCELLED)
@@ -47,7 +48,7 @@ public class PetrifyDummyContractionTask implements Task<PetrifyDummyContraction
 
 			PetrifyTask petrifyTask = new PetrifyTask(new String[] { "-hide", ".dummy" }, tmp.getAbsolutePath());
 
-			final Result<? extends ExternalProcessResult> petrifyResult = getFramework().getTaskManager().execute(petrifyTask, "Dummy contraction: executing Petrify");
+			final Result<? extends ExternalProcessResult> petrifyResult = taskManager.execute(petrifyTask, "Dummy contraction: executing Petrify");
 
 			if (petrifyResult.getOutcome() == Outcome.FINISHED)
 			{
@@ -69,13 +70,5 @@ public class PetrifyDummyContractionTask implements Task<PetrifyDummyContraction
 		{
 			return Result.exception(e);
 		}
-	}
-
-	public WorkspaceEntry getWorkspaceEntry() {
-		return workspaceEntry;
-	}
-
-	public Framework getFramework() {
-		return framework;
 	}
 }

@@ -33,7 +33,6 @@ import java.util.NoSuchElementException;
 import org.workcraft.Framework;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.DeserialisationException;
-import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.parsers.breeze.Netlist;
 import org.workcraft.plugins.balsa.BreezeComponent;
 import org.workcraft.plugins.balsa.BreezeConnection;
@@ -62,6 +61,7 @@ import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
 import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.STGModel;
+import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.ProgressMonitor;
 import org.workcraft.tasks.Result;
@@ -319,8 +319,8 @@ public class ExtractControlSTGTask implements Task<StgExtractionResult> {
 				
 				ExportTask exportTask;
 				try {
-					exportTask = Export.createExportTask(stg, tempFile, Format.STG, framework.getPluginManager());
-				} catch (SerialisationException e) {
+					exportTask = Export.createExportTask(new STGModelDescriptor().createServiceProvider(stg), tempFile, Format.STG, framework.getPluginManager());
+				} catch (Exception e) {
 					return Result.exception(e);
 				}
 				

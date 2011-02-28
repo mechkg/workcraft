@@ -11,7 +11,9 @@ import java.awt.geom.Point2D;
 import javax.swing.Icon;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.graph.tools.Colorisator;
@@ -107,12 +109,13 @@ public class CustomToolsProvider implements
 	@Override
 	public Iterable<GraphEditorTool> getTools(GraphEditor editor)
 	{
-		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(editor.getModel().getRoot());
+		TouchableProvider<Node> tp = TouchableProvider.DEFAULT;
+		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(tp , editor.getModel().getRoot());
 		final Expression<? extends GraphicalContent> simplePainter = colorisablePainter.eval(Colorisator.EMPTY);
 
 		return asList(
 				attachParameterisedPainter(new SelectionTool(editor), colorisablePainter),
-				attachParameterisedPainter(new ConnectionTool(editor), colorisablePainter),
+				attachParameterisedPainter(new ConnectionTool(editor, tp), colorisablePainter),
 		
 				attachPainter(new NodeGeneratorTool(new VertexGenerator()), simplePainter),
 				attachPainter(new NodeGeneratorTool(new VariableGenerator()), simplePainter),

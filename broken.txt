@@ -25,6 +25,9 @@ public class Crap {
 	
 	implement LayoutableBalsaCircuit
 	
+	
+	
+	
 	MainMenu.setMenuForWorkspaceEntry: 				
 	separation between visual and math exporters
 	if (!haveVisual)
@@ -35,6 +38,26 @@ public class Crap {
 	}
 	
 
+
+    Implement DotGFile:
+		if (entry != null && entry.getModelEntry() != null && entry.getModelEntry().getMathModel() instanceof STGModel)
+			return true;
+		if (arg.getNode().endsWith(".g"))
+			return true;
+		return false;
+    DotGProvider.java should be used.
+    
+	
+	
+	
+	VisualScenario.shape() :(
+	VisualScenario.graphicalContent() :(
+	VisualCircuitComponent.shape() :(
+	
+	
+	
+	
+	
 	
 	
 }

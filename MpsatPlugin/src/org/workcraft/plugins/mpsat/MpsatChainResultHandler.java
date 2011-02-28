@@ -6,38 +6,43 @@ package org.workcraft.plugins.mpsat;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.workcraft.Framework;
+import org.workcraft.gui.MainWindow;
 import org.workcraft.plugins.mpsat.tasks.MpsatChainResult;
-import org.workcraft.plugins.mpsat.tasks.MpsatChainTask;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.tasks.DummyProgressMonitor;
 import org.workcraft.tasks.Result;
 import org.workcraft.tasks.Result.Outcome;
+import org.workcraft.workspace.WorkspaceEntry;
 
 public class MpsatChainResultHandler extends DummyProgressMonitor<MpsatChainResult> {
 	private String errorMessage;
-	private final MpsatChainTask task;
+	private final WorkspaceEntry we;
+	private final Framework framework;
 	
-	public MpsatChainResultHandler(MpsatChainTask task) {
-		this.task = task;
+	public MpsatChainResultHandler(Framework framework, WorkspaceEntry we) {
+		this.framework = framework;
+		this.we = we;
 	}
 	
 	@Override
 	public void finished(final Result<? extends MpsatChainResult> mpsatChainResult, String description) {
 		if (mpsatChainResult.getOutcome() == Outcome.FINISHED) {
 			final MpsatMode mpsatMode = mpsatChainResult.getReturnValue().getMpsatSettings().getMode();
+			MainWindow w = framework.getMainWindow();
 			switch (mpsatMode) {
 			case DEADLOCK:
-				SwingUtilities.invokeLater(new MpsatDeadlockResultHandler(task, mpsatChainResult));
+				SwingUtilities.invokeLater(new MpsatDeadlockResultHandler(w, we, mpsatChainResult));
 				break;
 			case RESOLVE_ENCODING_CONFLICTS:
-				SwingUtilities.invokeLater(new MpsatCscResolutionResultHandler(task, mpsatChainResult, new HistoryPreservingStorageManager()));
+				SwingUtilities.invokeLater(new MpsatCscResolutionResultHandler(framework, we.getWorkspacePath(), mpsatChainResult, new HistoryPreservingStorageManager()));
 				break;
 			case COMPLEX_GATE_IMPLEMENTATION:
-				SwingUtilities.invokeLater(new MpsatSynthesisResultHandler(task, mpsatChainResult));
+				SwingUtilities.invokeLater(new MpsatSynthesisResultHandler(framework.getWorkspace(), we.getWorkspacePath(), mpsatChainResult));
 				break;
 			case STG_REACHABILITY:
-				SwingUtilities.invokeLater(new MpsatStgReachabilityResultHandler(task, mpsatChainResult));
+				SwingUtilities.invokeLater(new MpsatStgReachabilityResultHandler(w, we, mpsatChainResult));
 				break;
 
 			default:

@@ -107,9 +107,8 @@ public class DotExporterTests {
 	public void testEmpty() throws IOException, ModelValidationException, SerialisationException, ServiceNotAvailableException{
 		DotExporter exporter = new DotExporter(TouchableProvider.DEFAULT);
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-		ServiceProviderImpl serviceProviderImpl = new ServiceProviderImpl();
 		final MockModel model = new MockModel(new MockNode(null, TreePVector.<MockNode>empty()));
-		serviceProviderImpl.addImplementation(DotExportableService.SERVICE_HANDLE, new DotExportableService(){
+		ServiceProviderImpl serviceProviderImpl = ServiceProviderImpl.EMPTY.plusImplementation(DotExportableService.SERVICE_HANDLE, new DotExportableService(){
 			@Override
 			public Model getModel() {
 				return model;

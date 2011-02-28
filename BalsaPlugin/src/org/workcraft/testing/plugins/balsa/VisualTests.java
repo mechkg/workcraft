@@ -87,7 +87,7 @@ public class VisualTests {
 		circuit.add(mathComp);
 		VisualBreezeComponent visual = new VisualBreezeComponent(mathComp, new DefaultStorageManager());
 
-		Rectangle2D box = eval(visual.localSpaceTouchable()).getBoundingBox();
+		Rectangle2D box = eval(visual.shape()).getBoundingBox();
 		
 		assertTrue(-0.51 > box.getMinX());
 		assertTrue(-0.8 < box.getMinX());

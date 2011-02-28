@@ -10,10 +10,8 @@ import org.workcraft.interop.Exporter;
 import org.workcraft.interop.Importer;
 import org.workcraft.plugins.interop.DotGExporter;
 import org.workcraft.plugins.interop.DotGImporter;
-import org.workcraft.plugins.stg.serialisation.DotGSerialiser;
 import org.workcraft.plugins.stg.serialisation.ImplicitPlaceArcDeserialiser;
 import org.workcraft.plugins.stg.serialisation.ImplicitPlaceArcSerialiser;
-import org.workcraft.serialisation.ModelSerialiser;
 import org.workcraft.serialisation.xml.XMLDeserialiser;
 import org.workcraft.serialisation.xml.XMLSerialiser;
 
@@ -35,9 +33,7 @@ public class STGModule implements Module {
 			}} );
 		p.registerClass(Importer.class, DotGImporter.class);
 		
-		p.registerClass(ModelSerialiser.class, DotGSerialiser.class);
 		p.registerClass(SettingsPage.class, STGSettings.class);
-
 	}
 
 	@Override

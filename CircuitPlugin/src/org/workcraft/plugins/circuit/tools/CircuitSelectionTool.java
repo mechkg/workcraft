@@ -9,6 +9,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import org.workcraft.dom.visual.HitMan;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
@@ -50,7 +51,7 @@ public class CircuitSelectionTool extends SelectionTool implements ActionListene
 	*/
 	
 	public CircuitSelectionTool(GraphEditor editor) {
-		super(new SelectionToolConfig.Default(editor.getModel()));
+		super(new SelectionToolConfig.Default(editor.getModel(), TouchableProvider.DEFAULT));
 	}
 
 	@Override
@@ -61,7 +62,7 @@ public class CircuitSelectionTool extends SelectionTool implements ActionListene
 		VisualModel model = e.getEditor().getModel();
 
 		if (e.getButton() == MouseEvent.BUTTON3 && e.getClickCount() == 1) {
-			VisualNode node = (VisualNode) HitMan.hitTestForSelection(e.getPosition(), model);
+			VisualNode node = (VisualNode) HitMan.hitTestForSelection(TouchableProvider.DEFAULT, e.getPosition(), model);
 			JPopupMenu popup = createPopupMenu(node);
 			if (popup!=null)
 				popup.show(e.getSystemEvent().getComponent(), e.getSystemEvent().getX(), e.getSystemEvent().getY());

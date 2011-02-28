@@ -16,12 +16,11 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.dom.visual.Touchable;
-import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 import org.workcraft.util.ExpressionUtil;
@@ -57,11 +56,6 @@ public class VisualTransitionNode implements Node, DrawableNew, MovableNew {
 		});
 	}
 	
-	@Override
-	public Expression<? extends Touchable> shape() {
-		return TransformHelper.transform(localTouchable, transform);
-	}
-
 	@Override
 	public ModifiableExpression<Node> parent() {
 		return ExpressionUtil.modificationNotSupported(parent);

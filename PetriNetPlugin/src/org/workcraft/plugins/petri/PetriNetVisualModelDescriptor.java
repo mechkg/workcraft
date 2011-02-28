@@ -12,6 +12,7 @@ import javax.swing.Icon;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.Node;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.GraphicalContent;
@@ -89,14 +90,15 @@ public class PetriNetVisualModelDescriptor implements VisualModelDescriptor {
 	}
 
 	public Iterable<GraphEditorTool> createTools(GraphEditor editor) {
-		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(editor.getModel().getRoot());
+		TouchableProvider<Node> tp = TouchableProvider.DEFAULT;
+		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(tp, editor.getModel().getRoot());
 		
 		return Arrays.asList(new GraphEditorTool[]{
-			attachParameterisedPainter(new SelectionTool(new SelectionToolConfig.Default(editor.getModel())), colorisablePainter),
-			attachParameterisedPainter(new ConnectionTool(editor, TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS), colorisablePainter),
+			attachParameterisedPainter(new SelectionTool(new SelectionToolConfig.Default(editor.getModel(), tp)), colorisablePainter),
+			attachParameterisedPainter(new ConnectionTool(editor, tp), colorisablePainter),
 			attachPainter(new NodeGeneratorTool(new PlaceGenerator()), colorisablePainter.eval(Colorisator.EMPTY)),
 			attachPainter(new NodeGeneratorTool(new TransitionGenerator()), colorisablePainter.eval(Colorisator.EMPTY)),
-			attachParameterisedPainter(new SimulationTool(editor, TouchableProvider.REFLECTIVE_WITH_TRANSLATIONS), colorisablePainter),
+			attachParameterisedPainter(new SimulationTool(editor, tp), colorisablePainter),
 		});
 	}
 	

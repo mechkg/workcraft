@@ -5,52 +5,54 @@ import java.util.ArrayList;
 
 import org.workcraft.Framework;
 import org.workcraft.Tool;
-import org.workcraft.gui.workspace.Path;
+import org.workcraft.ToolJob;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.pcomp.gui.PcompDialog;
 import org.workcraft.plugins.pcomp.tasks.PcompResultHandler;
 import org.workcraft.plugins.pcomp.tasks.PcompTask;
-import org.workcraft.plugins.stg.DotGProvider;
-import org.workcraft.plugins.stg.STGModel;
+import org.workcraft.plugins.stg.DotGFile;
 import org.workcraft.util.GUI;
-import org.workcraft.util.WorkspaceUtils;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class PcompTool implements Tool {
 
 	private final Framework framework;
 
-	public PcompTool(Framework framework) {
+	public PcompTool(final Framework framework) {
 		this.framework = framework;
 	}
-	
+
+	@Override
 	public final String getSection() {
 		return "Composition";
 	}
 
-	public final boolean isApplicableTo(WorkspaceEntry we) {
-		return WorkspaceUtils.canHas(we, STGModel.class);
-	}
+	@Override
+	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
+		return new ToolJob() {
 
-	public final void run(WorkspaceEntry we) {
-		PcompDialog dialog = new PcompDialog(framework.getMainWindow(), framework);
-		GUI.centerAndSizeToParent(dialog, framework.getMainWindow());
-		
-		if (dialog.run()) {
-			
-			DotGProvider dotGProvider = new DotGProvider(framework);
-			
-			ArrayList<File> inputs = new ArrayList<File>();
-			
-			for (Path<String> p : dialog.getSourcePaths()) {
-				inputs.add(dotGProvider.getDotG(p));
+			@Override
+			public void run() {
+				final PcompDialog dialog = new PcompDialog(framework.getMainWindow(), framework);
+				GUI.centerAndSizeToParent(dialog, framework.getMainWindow());
+
+				if (dialog.run()) {
+
+					final ArrayList<File> inputs = new ArrayList<File>();
+
+					for (final DotGFile p : dialog.getSelectedItems()) {
+						inputs.add(p.getFile());
+					}
+
+					framework.getTaskManager().queue(new PcompTask(inputs.toArray(new File[0]), dialog.getMode(), dialog.isImprovedPcompChecked()),
+							"Running pcomp", new PcompResultHandler(framework, dialog.showInEditor()));
+				}
 			}
-			
-			framework.getTaskManager().queue(new PcompTask(inputs.toArray(new File[0]), dialog.getMode(), dialog.isImprovedPcompChecked()), "Running pcomp", new PcompResultHandler(framework, dialog.showInEditor()));
-		}
+		};
 	}
 
 	@Override
 	public String getDisplayName() {
-		return "Parallel composition (PComp)"; 
+		return "Parallel composition (PComp)";
 	}
 }

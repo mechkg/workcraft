@@ -6,8 +6,8 @@ import org.workcraft.plugins.mpsat.MpsatBuiltinPresets;
 import org.workcraft.plugins.mpsat.MpsatSettings;
 
 public class MpsatDeadlockChecker extends AbstractMpsatChecker implements Tool {
-	
-	public MpsatDeadlockChecker(Framework framework) {
+
+	public MpsatDeadlockChecker(final Framework framework) {
 		super(framework);
 	}
 

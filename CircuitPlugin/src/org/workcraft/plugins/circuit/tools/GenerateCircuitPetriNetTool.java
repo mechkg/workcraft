@@ -1,7 +1,8 @@
 package org.workcraft.plugins.circuit.tools;
 
 import org.workcraft.Tool;
-import org.workcraft.plugins.circuit.Circuit;
+import org.workcraft.ToolJob;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.circuit.VisualCircuit;
 import org.workcraft.plugins.circuit.stg.CircuitPetriNetGenerator;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
@@ -31,17 +32,18 @@ public class GenerateCircuitPetriNetTool implements Tool {
 	}
 
 	@Override
-	public boolean isApplicableTo(WorkspaceEntry we) {
-		return we.getModelEntry().getMathModel() instanceof Circuit;
-	}
+	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
 
-	@Override
-	public void run(WorkspaceEntry we) {
-		VisualCircuit circuit = (VisualCircuit)we.getModelEntry().getVisualModel();
-		HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
-		VisualSTG vstg = CircuitPetriNetGenerator.generate(circuit, storage);
-		ws.add(we.getWorkspacePath().getParent(), we.getWorkspacePath().getNode(), 
-				new ModelEntry(new STGModelDescriptor(), vstg, storage), false);
+		final VisualCircuit circuit = we.getModelEntry().services.getImplementation(VisualCircuit.SERVICE_HANDLE);
+		
+		return new ToolJob(){
+			@Override
+			public void run() {
+				HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
+				VisualSTG vstg = CircuitPetriNetGenerator.generate(circuit, storage);
+				ws.add(we.getWorkspacePath().getParent(), we.getWorkspacePath().getNode(), 
+						new ModelEntry(new STGModelDescriptor(), vstg, storage), false);
+			}
+		};
 	}
-
 }

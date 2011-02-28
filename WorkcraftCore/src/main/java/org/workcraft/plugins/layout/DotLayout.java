@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.workcraft.Framework;
 import org.workcraft.Tool;
+import org.workcraft.ToolJob;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.MovableHelper;
@@ -48,6 +49,8 @@ import org.workcraft.exceptions.LayoutException;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.interop.ExportJob;
+import org.workcraft.interop.ServiceHandle;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.layout.generated.DotParser;
 import org.workcraft.plugins.layout.generated.ParseException;
@@ -59,7 +62,6 @@ import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.tasks.Task;
 import org.workcraft.util.Export;
 import org.workcraft.util.FileUtils;
-import org.workcraft.util.WorkspaceUtils;
 import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
 
@@ -71,11 +73,10 @@ public class DotLayout implements Tool {
 		this.framework = framework;
 	}
 	
-	private void saveGraph(ServiceProvider modelServices, File file) throws IOException, ModelValidationException, SerialisationException {
-		ExportJob exporter = Export.chooseBestExporter(framework.getPluginManager(), modelServices, Format.DOT);
+	private void saveGraph(ExportJob dotExporter, File file) throws IOException, ModelValidationException, SerialisationException {
 		FileOutputStream out = new FileOutputStream(file);
 		try{
-			exporter.export(out);
+			dotExporter.export(out);
 		}
 		finally{
 			out.close();
@@ -208,55 +209,60 @@ public class DotLayout implements Tool {
 		}
 	}
 	
-	public void run (WorkspaceEntry entry) {
+	@Override
+	public ToolJob applyTo(WorkspaceEntry entry) throws ServiceNotAvailableException {
 		ModelEntry modelEntry = entry.getModelEntry();
-		ServiceProvider services = modelEntry.services;
-		VisualModel model = WorkspaceUtils.getAs(entry, VisualModel.class);
-		File original = null, layout = null;
-		try {
-			original = File.createTempFile("work", ".dot");
-			layout = File.createTempFile("worklayout", ".dot");
-			
-			saveGraph(services, original);
-			
-			List<String> args = new ArrayList<String>();
-			args.add(DotLayoutSettings.dotCommand);
-			args.add("-Tdot");
-			args.add("-o");
-			args.add(layout.getAbsolutePath());
-			args.add(original.getAbsolutePath());
-			
-			Task<ExternalProcessResult> task = new ExternalProcessTask(args, new File("."));
-			Result<? extends ExternalProcessResult> res = framework.getTaskManager().execute(task, "Laying out the graph...");
-			
-			if(res.getOutcome() == Outcome.CANCELLED)
-				return;
-			if(res.getOutcome() == Outcome.FAILED)
-				throw new LayoutException("Failed to execute external process:\n" + res.getCause());
-			if(res.getReturnValue().getReturnCode() == 0) {
-				String in = FileUtils.readAllText(layout);
-				applyLayout(in, (VisualModel)model);
+		final ServiceProvider services = modelEntry.services;
+		final VisualModel model = services.getImplementation(ServiceHandle.LegacyVisualModelService);
+		final ExportJob dotExporter = Export.chooseBestExporter(framework.getPluginManager(), services, Format.DOT);
+		
+		return new ToolJob(){
+
+			@Override
+			public void run() {
+				File original = null, layout = null;
+				try {
+					original = File.createTempFile("work", ".dot");
+					layout = File.createTempFile("worklayout", ".dot");
+					
+					saveGraph(dotExporter, original);
+					
+					List<String> args = new ArrayList<String>();
+					args.add(DotLayoutSettings.dotCommand);
+					args.add("-Tdot");
+					args.add("-o");
+					args.add(layout.getAbsolutePath());
+					args.add(original.getAbsolutePath());
+					
+					Task<ExternalProcessResult> task = new ExternalProcessTask(args, new File("."));
+					Result<? extends ExternalProcessResult> res = framework.getTaskManager().execute(task, "Laying out the graph...");
+					
+					if(res.getOutcome() == Outcome.CANCELLED)
+						return;
+					if(res.getOutcome() == Outcome.FAILED)
+						throw new LayoutException("Failed to execute external process:\n" + res.getCause());
+					if(res.getReturnValue().getReturnCode() == 0) {
+						String in = FileUtils.readAllText(layout);
+						applyLayout(in, model);
+					}
+					else
+						throw new LayoutException("External process (dot) failed (code " + res.getReturnValue().getReturnCode() +")\n\n"+new String(res.getReturnValue().getOutput())+"\n\n"+new String(res.getReturnValue().getErrors()));
+				} catch(IOException e) {
+					throw new RuntimeException(e);
+				} catch (ModelValidationException e) {
+					throw new RuntimeException(e);
+				} catch (SerialisationException e) {
+					throw new RuntimeException(e);
+				} finally {
+					if(original!=null)
+						original.delete();
+					if(layout!=null)
+						layout.delete();
+				}
 			}
-			else
-				throw new LayoutException("External process (dot) failed (code " + res.getReturnValue().getReturnCode() +")\n\n"+new String(res.getReturnValue().getOutput())+"\n\n"+new String(res.getReturnValue().getErrors()));
-		} catch(IOException e) {
-			throw new RuntimeException(e);
-		} catch (ModelValidationException e) {
-			throw new RuntimeException(e);
-		} catch (SerialisationException e) {
-			throw new RuntimeException(e);
-		} finally {
-			if(original!=null)
-				original.delete();
-			if(layout!=null)
-				layout.delete();
-		}
+		};
 	}
-
-	public boolean isApplicableTo(WorkspaceEntry we) {
-		return WorkspaceUtils.canHas(we, VisualModel.class);
-	}
-
+	
 	@Override
 	public String getSection() {
 		return "Layout";

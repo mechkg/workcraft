@@ -21,9 +21,10 @@
 
 package org.workcraft.plugins.serialisation;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.UUID;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -39,8 +40,6 @@ import org.workcraft.serialisation.ModelSerialiser;
 import org.workcraft.serialisation.ReferenceProducer;
 import org.workcraft.serialisation.xml.XMLSerialisationManager;
 import org.workcraft.util.XmlUtil;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class XMLModelSerialiser implements ModelSerialiser {
 	XMLSerialisationManager serialisation = new XMLSerialisationManager();
@@ -61,7 +60,7 @@ public class XMLModelSerialiser implements ModelSerialiser {
 		return true;
 	}
 
-	public UUID getFormatUUID() {
+	public Format getFormat() {
 		return Format.workcraftXML;
 	}
 

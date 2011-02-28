@@ -10,17 +10,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.workcraft.Framework;
-import org.workcraft.dom.Model;
-import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ExportJob;
 import org.workcraft.plugins.desij.DesiJOperation;
 import org.workcraft.plugins.desij.DesiJSettings;
-import org.workcraft.plugins.stg.STGModel;
-import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.ProgressMonitor;
 import org.workcraft.tasks.Result;
 import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.tasks.Task;
-import org.workcraft.util.Export;
 import org.workcraft.util.Export.ExportTask;
 
 /**
@@ -32,7 +28,6 @@ public class DesiJTask implements Task<DesiJResult> {
 	private boolean userCancelled = false; // user cancelled the execution of desiJ
 	private int returnCode = 0;
 	
-	private STGModel specModel;
 	private File specificationFile; // specified in the last argument of desiJArgs
 	
 	private DesiJSettings desiJSettings = null; // is not always set
@@ -42,16 +37,15 @@ public class DesiJTask implements Task<DesiJResult> {
 	/*
 	 * Constructors
 	 */
-	public DesiJTask(STGModel model, Framework framework, String[] desiJParameters) {
+	public DesiJTask(ExportJob specificationDotGExporter, Framework framework, String[] desiJParameters) {
 		
-		this.specModel = model;		
 		desiJArgs = new String[desiJParameters.length+1];
 		
 		// copy content from desiJParameters to desiJArgs
 		for (int i=0; i < desiJParameters.length; i++)
 			desiJArgs[i] = desiJParameters[i];
 		
-		this.specificationFile = getSpecificationFile(model, framework);
+		this.specificationFile = getSpecificationFile(specificationDotGExporter, framework);
 		// and add the specification filename as last argument
 		try {
 			desiJArgs[desiJParameters.length] = this.specificationFile.getCanonicalPath();
@@ -60,8 +54,8 @@ public class DesiJTask implements Task<DesiJResult> {
 		}
 	}
 	
-	public DesiJTask(STGModel model, Framework framework, DesiJSettings settings) {
-		this(model, framework, generateCommandLineParameters(settings));
+	public DesiJTask(ExportJob specificationDotGExporter, Framework framework, DesiJSettings settings) {
+		this(specificationDotGExporter, framework, generateCommandLineParameters(settings));
 		this.desiJSettings = settings;
 	}
 
@@ -114,8 +108,7 @@ public class DesiJTask implements Task<DesiJResult> {
 				equationsFile = getEquationsFile();
 		}
 		
-		DesiJResult result = new DesiJResult(this.specModel, this.specificationFile,
-				componentFiles, logFile, modifiedSpecification, equationsFile);
+		DesiJResult result = new DesiJResult(this.specificationFile, componentFiles, logFile, modifiedSpecification, equationsFile);
 		
 		if (returnCode < 2)
 			return new Result<DesiJResult>(Outcome.FINISHED, result);
@@ -206,21 +199,15 @@ public class DesiJTask implements Task<DesiJResult> {
 	}
 
 
-	private File getSpecificationFile(Model model, Framework framework) {
-		Exporter stgExporter = Export.chooseBestExporter(framework.getPluginManager(), model, Format.STG);
-		
-		if (stgExporter == null)
-			throw new RuntimeException ("Exporter not available: model class " + model.getClass().getName() + " to format STG.");
-		
+	private File getSpecificationFile(ExportJob dotGExportJob, Framework framework) {
 		File stgFile;
 		
 		try {
-			stgFile = File.createTempFile("specification", stgExporter.getExtenstion());
-			ExportTask exportTask = new ExportTask(stgExporter, model, stgFile.getCanonicalPath());
+			stgFile = File.createTempFile("specification", ".g");
+			ExportTask exportTask = new ExportTask(dotGExportJob, stgFile);
 			framework.getTaskManager().execute(exportTask, "Exporting .g");
 			
 			return stgFile;
-			
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

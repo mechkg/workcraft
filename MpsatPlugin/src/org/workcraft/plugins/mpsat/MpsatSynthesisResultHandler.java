@@ -2,30 +2,31 @@ package org.workcraft.plugins.mpsat;
 
 import java.io.File;
 
+import org.workcraft.gui.workspace.Path;
 import org.workcraft.plugins.gates.GateLevelModelDescriptor;
 import org.workcraft.plugins.mpsat.tasks.MpsatChainResult;
-import org.workcraft.plugins.mpsat.tasks.MpsatChainTask;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.tasks.Result;
 import org.workcraft.util.FileUtils;
 import org.workcraft.workspace.ModelEntry;
-import org.workcraft.workspace.WorkspaceEntry;
+import org.workcraft.workspace.Workspace;
 
 public class MpsatSynthesisResultHandler implements Runnable {
 
-	private final MpsatChainTask task;
 	private final Result<? extends MpsatChainResult> mpsatChainResult;
+	private final Workspace workspace;
+	private final Path<String> path;
 
-	public MpsatSynthesisResultHandler(MpsatChainTask task, Result<? extends MpsatChainResult> mpsatChainResult) {
-		this.task = task;
+	public MpsatSynthesisResultHandler(Workspace workspace, Path<String> path, Result<? extends MpsatChainResult> mpsatChainResult) {
+		this.workspace = workspace;
+		this.path = path;
 		this.mpsatChainResult = mpsatChainResult;
 	}
 
 	@Override
 	public void run() {
-		final WorkspaceEntry we = task.getWorkspaceEntry();
-		final String desiredName = FileUtils.getFileNameWithoutExtension(new File(we.getWorkspacePath().getNode()));
+		final String desiredName = FileUtils.getFileNameWithoutExtension(new File(path.getNode()));
 		final String mpsatOutput = new String(mpsatChainResult.getReturnValue().getMpsatResult().getReturnValue().getOutput());
-		task.getFramework().getWorkspace().add(we.getWorkspacePath().getParent(), desiredName, new ModelEntry(new GateLevelModelDescriptor(), new MpsatEqnParser().parse(mpsatOutput), new HistoryPreservingStorageManager()), true);
+		workspace.add(path.getParent(), desiredName, new ModelEntry(new GateLevelModelDescriptor(), new MpsatEqnParser().parse(mpsatOutput), new HistoryPreservingStorageManager()), true);
 	}
 }

@@ -5,6 +5,7 @@ import java.io.File;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.workcraft.Framework;
 import org.workcraft.gui.ExceptionDialog;
 import org.workcraft.gui.workspace.Path;
 import org.workcraft.tasks.DummyProgressMonitor;
@@ -15,10 +16,12 @@ import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class PetrifyDummyContractionResultHandler extends DummyProgressMonitor<PetrifyDummyContractionResult> {
-	private final PetrifyDummyContractionTask task;
+	private final Framework framework;
+	private final Path<String> path;
 
-	public PetrifyDummyContractionResultHandler(PetrifyDummyContractionTask task) {
-		this.task = task;
+	public PetrifyDummyContractionResultHandler(Framework framework, Path<String> path) {
+		this.framework = framework;
+		this.path = path;
 	}
 
 	@Override
@@ -28,22 +31,19 @@ public class PetrifyDummyContractionResultHandler extends DummyProgressMonitor<P
 		{
 			@Override
 			public void run() {
-				WorkspaceEntry we = task.getWorkspaceEntry();
-				Path<String> path = we.getWorkspacePath();
-
 				String fileName = FileUtils.getFileNameWithoutExtension(new File(path.getNode()));
 				
 				if (result.getOutcome() == Outcome.FINISHED)
 				{
 					ModelEntry model = result.getReturnValue().getResult();
-					final WorkspaceEntry resolved = task.getFramework().getWorkspace().add(path.getParent(), fileName + "_contracted", model, true);
-					task.getFramework().getMainWindow().createEditorWindow(resolved);
+					final WorkspaceEntry resolved = framework.getWorkspace().add(path.getParent(), fileName + "_contracted", model, true);
+					framework.getMainWindow().createEditorWindow(resolved);
 				} else
 				{
 					if (result.getCause() == null)
-						JOptionPane.showMessageDialog(task.getFramework().getMainWindow(), "Petrify output: \n\n" + new String(result.getReturnValue().getPetrifyResult().getReturnValue().getErrors()), "Dummy contraction failed", JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(framework.getMainWindow(), "Petrify output: \n\n" + new String(result.getReturnValue().getPetrifyResult().getReturnValue().getErrors()), "Dummy contraction failed", JOptionPane.WARNING_MESSAGE);
 					else
-						ExceptionDialog.show(task.getFramework().getMainWindow(), result.getCause());
+						ExceptionDialog.show(framework.getMainWindow(), result.getCause());
 				}
 			}
 

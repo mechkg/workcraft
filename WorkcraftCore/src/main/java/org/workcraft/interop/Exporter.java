@@ -20,7 +20,7 @@
 */
 
 package org.workcraft.interop;
-import java.util.UUID;
+import org.workcraft.serialisation.Format;
 
 import checkers.nullness.quals.Nullable;
 
@@ -30,7 +30,7 @@ public interface Exporter {
 	
 	public String getDescription();
 	public String getExtenstion();
-	public UUID getTargetFormat();
+	public Format getTargetFormat();
 	/**
 	 * Returns the export job which exports the model specified by its ServiceProvider.
 	 * @param modelServices

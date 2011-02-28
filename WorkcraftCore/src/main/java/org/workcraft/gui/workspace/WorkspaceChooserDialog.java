@@ -13,19 +13,19 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import org.workcraft.util.Func;
+
 import org.workcraft.workspace.Workspace;
 import org.workcraft.workspace.WorkspaceEntry;
 
 @SuppressWarnings("serial")
-public class WorkspaceChooserDialog extends JDialog {
-	private WorkspaceChooser chooser;
+public class WorkspaceChooserDialog<T> extends JDialog {
+	private WorkspaceChooser<T> chooser;
 	private JPanel buttonsPanel;
 	private JButton cancelButton;
 	private final Workspace workspace;
-	private final Func<Path<String>, Boolean> filter;
+	private final WorkspaceFilter<T> filter;
 
-	public WorkspaceChooserDialog(Window parent, String title, Workspace workspace, Func<Path<String>, Boolean> filter) {
+	public WorkspaceChooserDialog(Window parent, String title, Workspace workspace, WorkspaceFilter<T> filter) {
 		super(parent, title, ModalityType.APPLICATION_MODAL);
 		this.workspace = workspace;
 		this.filter = filter;
@@ -42,7 +42,7 @@ public class WorkspaceChooserDialog extends JDialog {
 
 		JPanel contents = new JPanel(new TableLayout(sizes));
 
-		chooser = new WorkspaceChooser(workspace, filter);
+		chooser = new WorkspaceChooser<T>(workspace, filter);
 
 		buttonsPanel = new JPanel (new FlowLayout(FlowLayout.RIGHT));
 

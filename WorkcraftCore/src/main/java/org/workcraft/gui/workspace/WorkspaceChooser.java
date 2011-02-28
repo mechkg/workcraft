@@ -1,8 +1,9 @@
 package org.workcraft.gui.workspace;
 
-import java.util.Set;
-
 import info.clearthought.layout.TableLayout;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -15,21 +16,23 @@ import org.workcraft.gui.WorkspaceTreeDecorator;
 import org.workcraft.gui.trees.FilteredTreeSource;
 import org.workcraft.gui.trees.TreeWindow;
 import org.workcraft.gui.trees.TreeWindow.CheckBoxMode;
-import org.workcraft.util.Func;
+import org.workcraft.util.Function;
 import org.workcraft.util.GUI;
 import org.workcraft.workspace.Workspace;
 
 @SuppressWarnings("serial")
-public class WorkspaceChooser extends JPanel {
-	private final Func<Path<String>, Boolean> filter;
+public class WorkspaceChooser<T> extends JPanel {
+	private final WorkspaceFilter<T> mapper;
+	private final Function<Path<String>, Boolean> filter;
 	private TreeWindow<Path<String>> tree;
 	private JTextField nameFilter;
 	private FilteredTreeSource<Path<String>> filteredSource;
 
-	public WorkspaceChooser(Workspace workspace, Func<Path<String>, Boolean> filter) {
+	public WorkspaceChooser(Workspace workspace, WorkspaceFilter<T>mapper) {
 		super();
 
-		this.filter = filter;
+		this.mapper = mapper;
+		this.filter = nonNullFilter(mapper);
 
 		double[][] sizes = 
 		{
@@ -65,27 +68,34 @@ public class WorkspaceChooser extends JPanel {
 		});
 
 		this.add(GUI.createWideLabeledComponent(nameFilter, "Search:"), "0 0");
-		
+
 		filteredSource = new FilteredTreeSource<Path<String>>(workspace.getTree(), filter);
 
 		tree = TreeWindow.create(filteredSource, new WorkspaceTreeDecorator(workspace), null);
-		
-		
-		
+
 		JScrollPane scroll = new JScrollPane();
 		scroll.setViewportView(tree);
-		
 
 		expand(filteredSource.getRoot());
 
 		this.add(scroll, "0 1");
 		
-		filteredSource.setFilter(filter);
+		filteredSource.setFilter(nonNullFilter(mapper));
+	}
+
+	private static <T> Function<Path<String>, Boolean> nonNullFilter(final WorkspaceFilter<T> filter) {
+		return new Function<Path<String>, Boolean>(){
+
+			@Override
+			public Boolean apply(Path<String> path) {
+				return filter.interpret(path) != null;
+			}
+		};
 	}
 
 	private void expand(Path<String> node) {
 		if (filteredSource.isLeaf(node)) {
-			if (filter.eval(node))
+			if (filter.apply(node))
 				tree.makeVisible(filteredSource.getPath(node));
 		} else {
 			for (Path<String> n : filteredSource.getChildren(node))
@@ -94,10 +104,10 @@ public class WorkspaceChooser extends JPanel {
 	}
 
 	private void updateFilter() {
-		filteredSource.setFilter(new Func<Path<String>, Boolean>() {
+		filteredSource.setFilter(new Function<Path<String>, Boolean>() {
 			@Override
-			public Boolean eval(Path<String> arg) {
-				return (filter.eval(arg) && arg.getNode().contains(nameFilter.getText())) || getCheckedNodes().contains(arg);
+			public Boolean apply(Path<String> argument) {
+				return (argument.getNode().contains(nameFilter.getText()) || getCheckedNodes().contains(argument)) && filter.apply(argument);
 			}
 		});
 
@@ -112,7 +122,14 @@ public class WorkspaceChooser extends JPanel {
 		tree.setCheckBoxMode(mode);
 	}
 
-	public Set<Path<String>> getCheckedNodes() {
-		return tree.getCheckedNodes();
+	public Set<T> getCheckedNodes() {
+		HashSet<T> res = new HashSet<T>(); 
+		for(Path<String> path : tree.getCheckedNodes()) {
+			T t = mapper.interpret(path);
+			if(t == null)
+				throw new RuntimeException("A terrible thing happened! The non-null-filtered collection contains null!");
+			res.add(t);
+		}
+		return res;
 	} 
 }

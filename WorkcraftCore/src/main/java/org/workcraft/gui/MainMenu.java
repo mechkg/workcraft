@@ -34,7 +34,7 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 import org.workcraft.Framework;
-import org.workcraft.Tool;
+import org.workcraft.ToolJob;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.gui.actions.Action;
 import org.workcraft.gui.actions.ActionCheckBoxMenuItem;
@@ -53,10 +53,10 @@ import org.workcraft.workspace.WorkspaceEntry;
 @SuppressWarnings("serial")
 public class MainMenu extends JMenuBar {
 	class ToolAction extends Action {
-		Tool tool;
+		ToolJob tool;
 		String text;
 
-		public ToolAction(Pair<String, Tool> tool) {
+		public ToolAction(Pair<String, ToolJob> tool) {
 			this.tool = tool.getSecond();
 			this.text = tool.getFirst();
 		}
@@ -67,7 +67,7 @@ public class MainMenu extends JMenuBar {
 
 		@Override
 		public void run(Framework framework) {
-			framework.getMainWindow().runTool(tool);
+			tool.run();
 		}
 	}	
 	class ToggleWindowAction extends Action {
@@ -315,7 +315,7 @@ public class MainMenu extends JMenuBar {
 
 		Framework framework = mainWindow.getFramework();
 		
-		ListMap<String, Pair<String, Tool>> tools = Tools.getTools(we, framework);
+		ListMap<String, Pair<String, ToolJob>> tools = Tools.getTools(we, framework);
 		List<String> sections = Tools.getSections(tools);
 		
 		for (String section : sections) {
@@ -329,7 +329,7 @@ public class MainMenu extends JMenuBar {
 				target = sectionMenu;
 			}
 			
-			for (Pair<String, Tool> tool : Tools.getSectionTools(section, tools)) {
+			for (Pair<String, ToolJob> tool : Tools.getSectionTools(section, tools)) {
 				ActionMenuItem miTool = new ActionMenuItem(new ToolAction(tool));
 				miTool.addScriptedActionListener(mainWindow.getDefaultActionListener());
 				target.add(miTool);

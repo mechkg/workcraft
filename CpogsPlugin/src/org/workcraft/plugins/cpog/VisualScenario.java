@@ -22,8 +22,10 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.BoundingBoxHelper;
-import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.DrawableNew;
+import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.gui.Coloriser;
@@ -32,7 +34,7 @@ import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingR
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 import org.workcraft.util.Hierarchy;
 
-public class VisualScenario extends VisualGroup
+public class VisualScenario extends VisualGroup implements ReflectiveTouchable, DrawableNew
 {
 	private static final class ReverseComparator implements Comparator<Variable>
 	{
@@ -84,7 +86,7 @@ public class VisualScenario extends VisualGroup
 	}
 
 	@Override
-	public Expression<Touchable> localSpaceTouchable() {
+	public Expression<Touchable> shape() {
 		return new ExpressionBase<Touchable>() {
 
 			@Override

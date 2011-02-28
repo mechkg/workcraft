@@ -4,9 +4,11 @@ import org.workcraft.Framework;
 import org.workcraft.Initialiser;
 import org.workcraft.Module;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.VisualModelInstantiationException;
 import org.workcraft.gui.DefaultReflectiveModelPainter;
@@ -15,6 +17,8 @@ import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.GraphEditorToolUtil;
 import org.workcraft.gui.graph.tools.SelectionTool;
 import org.workcraft.gui.graph.tools.SelectionToolConfig;
+import org.workcraft.interop.ServiceProvider;
+import org.workcraft.interop.ServiceProviderImpl;
 
 import pcollections.TreePVector;
 
@@ -54,11 +58,16 @@ public class RelationalModule implements Module {
 							@Override
 							public Iterable<? extends GraphEditorTool> createTools(GraphEditor editor) {
 								return TreePVector.<GraphEditorTool>singleton(
-										GraphEditorToolUtil.attachParameterisedPainter(new SelectionTool(new SelectionToolConfig.Default(editor.getModel())), DefaultReflectiveModelPainter.reflectivePainterProvider(editor.getModel().getRoot()))
+										GraphEditorToolUtil.attachParameterisedPainter(new SelectionTool(new SelectionToolConfig.Default(editor.getModel(), TouchableProvider.DEFAULT)), DefaultReflectiveModelPainter.reflectivePainterProvider(TouchableProvider.DEFAULT, editor.getModel().getRoot()))
 								).plus(new UndoTool());
 							}
 							
 						};
+					}
+
+					@Override
+					public ServiceProvider createServiceProvider(Model model) {
+						return ServiceProviderImpl.createLegacyServiceProvider(model);
 					}
 					
 				};

@@ -4,12 +4,15 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.interop.ServiceHandle;
 import org.workcraft.plugins.petri.PetriNetModel;
 import org.workcraft.plugins.petri.Transition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
 import org.workcraft.plugins.stg.SignalTransition.Type;
 
 public interface STGModel extends PetriNetModel {
+	public static ServiceHandle<STGModel> SERVICE_HANDLE = ServiceHandle.createNewService(STGModel.class, "STG representation of the underlying model");
+	
 	public SignalTransition createSignalTransition (String name);
 	
 	public Collection<? extends SignalTransition> getSignalTransitions();

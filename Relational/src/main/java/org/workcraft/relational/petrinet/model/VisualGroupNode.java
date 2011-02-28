@@ -27,7 +27,6 @@ import org.workcraft.relational.engine.Id;
 public class VisualGroupNode implements DrawableNew, MovableNew, Container{
 	private final ModifiableExpression<AffineTransform> transform;
 	private final Expression<? extends Collection<Node>> children;
-	private final Expression<Touchable> localSpaceShape;
 	private final ModifiableExpression<Node> parent;
 	private final Id visualGroupId;
 
@@ -40,42 +39,6 @@ public class VisualGroupNode implements DrawableNew, MovableNew, Container{
 		this.children = children;
 		this.parent = parent;
 		this.visualGroupId = visualGroupId;
-		this.localSpaceShape = new ExpressionBase<Touchable>() {
-
-			@Override
-			protected Touchable evaluate(final EvaluationContext context) {
-				return new Touchable() {
-					
-					@Override
-					public boolean hitTest(Point2D point) {
-						return false;
-					}
-					
-					@Override
-					public Point2D getCenter() {
-						return new Point2D.Double(0, 0);
-					}
-					
-					@Override
-					public Rectangle2D getBoundingBox() {
-						Rectangle2D result = null;
-						for(Node n : context.resolve(children())) {
-							Touchable shape = context.resolve(n.shape());
-							if(shape!=null) {
-								result = BoundingBoxHelper.union(result, shape.getBoundingBox());
-							}
-						}
-						return result;
-					}
-				};
-			}
-			
-		};
-	}
-
-	@Override
-	public Expression<? extends Touchable> shape() {
-		return TransformHelper.transform(localSpaceShape, transform);
 	}
 
 	@Override
@@ -129,7 +92,7 @@ public class VisualGroupNode implements DrawableNew, MovableNew, Container{
 
 			@Override
 			public ColorisableGraphicalContent evaluate(EvaluationContext resolver) {
-				final Rectangle2D bb = resolver.resolve(localSpaceShape).getBoundingBox();
+				final Rectangle2D bb = null;
 				final Node parent = resolver.resolve(parent());
 				
 				return new ColorisableGraphicalContent() {

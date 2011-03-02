@@ -47,8 +47,10 @@ import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.exceptions.InvalidConnectionException;
-import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.Properties;
+import org.workcraft.gui.propertyeditor.choice.ChoiceProperty;
+import org.workcraft.gui.propertyeditor.string.StringProperty;
 import org.workcraft.plugins.petri.PetriNet;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.Transition;
@@ -59,6 +61,8 @@ import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.util.Pair;
 import org.workcraft.util.Triple;
+
+import pcollections.PVector;
 
 public class STG extends AbstractModel implements STGModel {
 	
@@ -290,15 +294,20 @@ public class STG extends AbstractModel implements STGModel {
 	}
 
 	@Override
-	public Properties getProperties(Node node) {
-		Properties.Mix result = new Properties.Mix();
+	public PVector<EditableProperty> getProperties(Node node) {
+		PVector<EditableProperty> superProperties = super.getProperties(node);
+		return superProperties;
 		if (node instanceof STGPlace) {
 			if (!eval(((STGPlace) node).implicit()))
-				result.add (ExpressionPropertyDeclaration.create("Name", name((STGPlace)node), String.class));
+				return superProperties.plus(StringProperty.create("Name", name((STGPlace)node)));
+			else
+				return superProperties;
 		}
 		if (node instanceof SignalTransition) {
 			SignalTransition transition = (SignalTransition)node;
-			result.add(ExpressionPropertyDeclaration.create("Signal name", signalName(transition), String.class));
+			return superProperties
+				.plus(StringProperty.create("Signal name", signalName(transition)))
+				.plus(ChoiceProperty.create("Transition direction", signalName(transition)))
 
 			LinkedHashMap<String, Object> directions = new LinkedHashMap<String, Object>();
 			directions.put("+", SignalTransition.Direction.PLUS);

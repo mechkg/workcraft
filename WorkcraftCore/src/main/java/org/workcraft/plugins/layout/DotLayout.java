@@ -62,7 +62,6 @@ import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.tasks.Task;
 import org.workcraft.util.Export;
 import org.workcraft.util.FileUtils;
-import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class DotLayout implements Tool {
@@ -164,7 +163,7 @@ public class DotLayout implements Tool {
 				@Override
 				public void arc(String from, String to, Map<String, String> properties) {
 					
-					if(DotLayoutSettings.getImportConnectionsShape())
+					if(eval(DotLayoutSettings.importConnectionsShape))
 					{
 						Node comp1 = eval(model.referenceManager()).getNodeByReference(from);
 						Node comp2 = eval(model.referenceManager()).getNodeByReference(to);
@@ -211,8 +210,7 @@ public class DotLayout implements Tool {
 	
 	@Override
 	public ToolJob applyTo(WorkspaceEntry entry) throws ServiceNotAvailableException {
-		ModelEntry modelEntry = entry.getModelEntry();
-		final ServiceProvider services = modelEntry.services;
+		final ServiceProvider services = entry.getModelEntry();
 		final VisualModel model = services.getImplementation(ServiceHandle.LegacyVisualModelService);
 		final ExportJob dotExporter = Export.chooseBestExporter(framework.getPluginManager(), services, Format.DOT);
 		
@@ -228,7 +226,7 @@ public class DotLayout implements Tool {
 					saveGraph(dotExporter, original);
 					
 					List<String> args = new ArrayList<String>();
-					args.add(DotLayoutSettings.dotCommand);
+					args.add(eval(DotLayoutSettings.dotCommand));
 					args.add("-Tdot");
 					args.add("-o");
 					args.add(layout.getAbsolutePath());

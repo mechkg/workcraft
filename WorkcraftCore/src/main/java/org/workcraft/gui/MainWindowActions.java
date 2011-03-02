@@ -4,6 +4,7 @@ import org.workcraft.Framework;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.exceptions.PluginInstantiationException;
 import org.workcraft.gui.actions.Action;
+import org.workcraft.interop.ServiceNotAvailableException;
 
 public class MainWindowActions {
 	public static final Action CREATE_WORK_ACTION = new Action() {
@@ -24,7 +25,10 @@ public class MainWindowActions {
 	};
 	public static final Action SAVE_WORK_ACTION = new Action() {
 		@Override public void run(Framework f) {
-			try { f.getMainWindow().saveWork(); } catch (OperationCancelledException e) { }
+			try { f.getMainWindow().saveWork(); } catch (OperationCancelledException e) { } catch (ServiceNotAvailableException e2) {
+				// TODO: something better
+				e2.printStackTrace();
+			}
 		}
 		@Override public String getText() {
 			return "Save work";
@@ -32,7 +36,10 @@ public class MainWindowActions {
 	};
 	public static final Action SAVE_WORK_AS_ACTION = new Action() {
 		@Override public void run(Framework f) {
-			try { f.getMainWindow().saveWorkAs(); } catch (OperationCancelledException e) { }
+			try { f.getMainWindow().saveWorkAs(); } catch (OperationCancelledException e) { } catch (ServiceNotAvailableException e2) {
+				// TODO: something better
+				e2.printStackTrace();
+			}
 		}
 		public String getText() {
 			return "Save work as...";

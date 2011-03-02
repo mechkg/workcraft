@@ -24,17 +24,20 @@ package org.workcraft.workspace;
 import java.io.File;
 
 import org.workcraft.gui.workspace.Path;
+import org.workcraft.interop.ServiceProvider;
+
+import checkers.nullness.quals.Nullable;
 
 public class WorkspaceEntry 
 {
-	private final ModelEntry modelEntry;
+	private final @Nullable ServiceProvider modelServices;
 	private boolean changed = true;
 	private boolean temporary = true;
 	private final Workspace workspace;
 
-	public WorkspaceEntry(Workspace workspace, ModelEntry modelEntry) {
+	public WorkspaceEntry(Workspace workspace, @Nullable ServiceProvider modelServices) {
 		this.workspace = workspace;
-		this.modelEntry = modelEntry;
+		this.modelServices = modelServices;
 	}
 
 	public void setChanged(boolean changed) {
@@ -48,13 +51,13 @@ public class WorkspaceEntry
 		return changed;
 	}
 	
-	public ModelEntry getModelEntry()
+	public ServiceProvider getModelEntry()
 	{
-		return modelEntry;
+		return modelServices;
 	}
 	
 	public boolean isWork() {
-		return (modelEntry != null) || (getWorkspacePath().getNode().endsWith(".work"));
+		return (modelServices != null) || (getWorkspacePath().getNode().endsWith(".work"));
 	}
 	
 	public String getTitle() {
@@ -75,10 +78,6 @@ public class WorkspaceEntry
 	@Override
 	public String toString() {
 		String res = getTitle();
-		
-		if (modelEntry != null)		
-			if (modelEntry.isVisual())
-				res = res + " [V]";
 
 		if (changed)
 			res = "* " + res;

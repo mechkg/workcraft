@@ -28,21 +28,21 @@ import java.io.IOException;
 import org.workcraft.PluginProvider;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.interop.Importer;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.PluginInfo;
-import org.workcraft.workspace.ModelEntry;
 
 public class Import {
 	
-	static public ModelEntry importFromFile (Importer importer, File file) throws IOException, DeserialisationException {
+	static public ServiceProvider importFromFile (Importer importer, File file) throws IOException, DeserialisationException {
 		FileInputStream fileInputStream = new FileInputStream(file);
-		ModelEntry model = importer.importFrom(fileInputStream);
+		ServiceProvider model = importer.importFrom(fileInputStream);
 		fileInputStream.close();
 		return model;
 	}
 	
-	static public ModelEntry importFromFile (Importer importer, String fileName) throws IOException, DeserialisationException {
+	static public ServiceProvider importFromFile (Importer importer, String fileName) throws IOException, DeserialisationException {
 		FileInputStream fileInputStream = new FileInputStream(new File(fileName));
-		ModelEntry model = importer.importFrom(fileInputStream);
+		ServiceProvider model = importer.importFrom(fileInputStream);
 		fileInputStream.close();
 		return model;
 	}

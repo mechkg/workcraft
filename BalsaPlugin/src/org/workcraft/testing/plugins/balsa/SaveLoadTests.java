@@ -46,6 +46,7 @@ import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.exceptions.PluginInstantiationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.balsa.BalsaCircuit;
 import org.workcraft.plugins.balsa.BreezeComponent;
 import org.workcraft.plugins.balsa.BreezeHandshake;
@@ -65,12 +66,12 @@ public class SaveLoadTests {
 		testMathModelLoadWhileWhile(new FileInputStream("./org/workcraft/testing/plugins/balsa/tests/LoopWhile.work"));
 	}
 	
-	void testMathModelLoadWhileWhile(InputStream input) throws LoadFromXMLException, DeserialisationException, IOException, FormatException, PluginInstantiationException
+	void testMathModelLoadWhileWhile(InputStream input) throws LoadFromXMLException, DeserialisationException, IOException, FormatException, PluginInstantiationException, ServiceNotAvailableException
 	{
 		Framework framework = new Framework();
 		framework.getPluginManager().loadManifest();
 		
-		BalsaCircuit circuit = (BalsaCircuit)framework.load(input).getModel();
+		BalsaCircuit circuit = framework.load(input).services.getImplementation(BalsaCircuit.SERVICE_HANDLE);
 
 		Assert.assertNotNull(circuit);
 		
@@ -259,7 +260,7 @@ public class SaveLoadTests {
 
 	
 //	@Test
-	public void TestMathModelSaveLoadSaveLoad() throws InvalidConnectionException, ModelSaveFailedException, LoadFromXMLException, IOException, ModelValidationException, SerialisationException, FormatException, DeserialisationException, PluginInstantiationException 
+	public void TestMathModelSaveLoadSaveLoad() throws InvalidConnectionException, ModelSaveFailedException, LoadFromXMLException, IOException, ModelValidationException, SerialisationException, FormatException, DeserialisationException, PluginInstantiationException, ServiceNotAvailableException 
 	{
 		Framework f = new Framework();
 		f.getPluginManager().loadManifest();
@@ -271,7 +272,7 @@ public class SaveLoadTests {
 		StorageManager storage = new DefaultStorageManager();
 		f.save(new ModelEntry(new BalsaModelDescriptor(), circuit, storage ), stream);
 		
-		Model loaded = f.load(new ByteArrayInputStream(stream.toByteArray())).getModel();
+		BalsaCircuit loaded = f.load(new ByteArrayInputStream(stream.toByteArray())).services.getImplementation(BalsaCircuit.SERVICE_HANDLE);
 		
 		stream = new ByteArrayOutputStream();
 		

@@ -28,12 +28,14 @@ import javax.swing.JScrollPane;
 
 import org.workcraft.Framework;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.AutoRefreshExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.gui.propertyeditor.Properties;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.PropertyEditorTable;
+
+import pcollections.PVector;
 
 @SuppressWarnings("serial")
 public class PropertyEditorWindow extends JPanel {
@@ -56,7 +58,7 @@ public class PropertyEditorWindow extends JPanel {
 		refresher = new AutoRefreshExpression() {
 			@Override
 			protected void onEvaluate(EvaluationContext context) {
-				Properties obj = context.resolve(prop);
+				PVector<EditableProperty> obj = context.resolve(prop);
 				if(obj == null)
 					clearObject();
 				else
@@ -65,14 +67,10 @@ public class PropertyEditorWindow extends JPanel {
 		};
 	}
 	
-	public final Variable<Expression<? extends Properties>> propertyObject = new Variable<Expression<? extends Properties>>(null);
-	final Expression<Properties> prop = Expressions.unfold(propertyObject);
+	public final Variable<Expression<? extends PVector<EditableProperty>>> propertyObject = new Variable<Expression<? extends PVector<EditableProperty>>>(null);
+	final Expression<PVector<EditableProperty>> prop = Expressions.unfold(propertyObject);
 	
-	public Properties getObject () {
-		return propertyTable.getObject();
-	}
-
-	public void setObject (Properties o) {
+	public void setObject (PVector<EditableProperty> o) {
 		removeAll();
 		propertyTable.setObject(o);
 		add(scrollProperties, BorderLayout.CENTER);
@@ -81,12 +79,10 @@ public class PropertyEditorWindow extends JPanel {
 	}
 
 	public void clearObject () {
-		if (propertyTable.getObject() != null) {
-			removeAll();
-			propertyTable.clearObject();
-			add(new DisabledPanel(), BorderLayout.CENTER);
-			validate();
-			repaint();
-		}
+		removeAll();
+		propertyTable.clearObject();
+		add(new DisabledPanel(), BorderLayout.CENTER);
+		validate();
+		repaint();
 	}
 }

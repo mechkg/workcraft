@@ -21,53 +21,36 @@
 
 package org.workcraft.plugins.layout;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.workcraft.Config;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
+import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.SettingsPage;
+import org.workcraft.gui.propertyeditor.bool.BooleanProperty;
+import org.workcraft.gui.propertyeditor.string.StringProperty;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class DotLayoutSettings implements SettingsPage {
-	protected static boolean importConnectionsShape = false;
-	protected static String dotCommand = "dot";
+	public final static Variable<Boolean> importConnectionsShape = Variable.create(false);
+	public final static Variable<String> dotCommand = Variable.create("dot");
 	
-	private static LinkedList<PropertyDescriptor> properties;
-	
-	public DotLayoutSettings() {
-		properties = new LinkedList<PropertyDescriptor>();
-		properties.add(new PropertyDeclaration(this, "Dot command", "getDotCommand", "setDotCommand", String.class));
-		properties.add(new PropertyDeclaration(this, "Import connections shape from Dot graph (experimental)", "getImportConnectionsShape", "setImportConnectionsShape", Boolean.class));
-	}
-	public List<PropertyDescriptor> getDescriptors() {
-		return properties;
+	@Override
+	public PVector<EditableProperty> getProperties() {
+		return TreePVector.<EditableProperty>empty()
+			.plus(StringProperty.create("Dot command", dotCommand))
+			.plus(BooleanProperty.create("Import connections shape from Dot graph (experimental)", importConnectionsShape))
+			;
 	}
 
 	public void load(Config config) {
-		dotCommand = config.getString("DotLayout.dotCommand", "dot");
-		importConnectionsShape = config.getBoolean("DotLayout.importConnectionsShape", false);
+		dotCommand.setValue(config.getString("DotLayout.dotCommand", "dot"));
+		importConnectionsShape.setValue(config.getBoolean("DotLayout.importConnectionsShape", false));
 	}
 
 	public void save(Config config) {
-		config.set("DotLayout.dotCommand", dotCommand)	;
-		config.setBoolean("DotLayout.importConnectionsShape", importConnectionsShape);
-	}
-	
-	public static Boolean getImportConnectionsShape() {
-		return importConnectionsShape;
-	}
-
-	public static void setImportConnectionsShape(Boolean value) {
-		importConnectionsShape = value;
-	}
-
-	public static String getDotCommand() {
-		return DotLayoutSettings.dotCommand;
-	}
-
-	public static void setDotCommand(String dotCommand) {
-		DotLayoutSettings.dotCommand = dotCommand;
+		config.set("DotLayout.dotCommand", dotCommand.getValue());
+		config.setBoolean("DotLayout.importConnectionsShape", importConnectionsShape.getValue());
 	}
 	
 	public String getSection() {

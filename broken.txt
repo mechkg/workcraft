@@ -56,9 +56,194 @@ public class Crap {
 	
 	
 	
+  Automatically create a visual model:		
+		ModelDescriptor descriptor = modelEntry.getDescriptor();
+		VisualModel visualModel = (modelEntry.getModel() instanceof VisualModel) ? (VisualModel) modelEntry.getModel() : null;
+		if (visualModel == null)
+			try {
+				VisualModelDescriptor vmd = descriptor.getVisualModelDescriptor();
+				if (vmd == null)
+					throw new RuntimeException();
+				visualModel = vmd.create((MathModel)modelEntry.getModel(), modelEntry.getStorage());
+				modelEntry.setModel(visualModel);
+				DotLayout layout = new DotLayout(framework);
+				layout.applyTo(we).run();
+			} catch (LayoutException e) {
+				// Layout failed for whatever reason, ignore
+			} catch (ServiceNotAvailableException e) {
+				// Layout failed for whatever reason, ignore
+			} catch (VisualModelInstantiationException e) {
+				JOptionPane.showMessageDialog(MainWindow.this, "A visual model could not be created for the selected model.\nPlease refer to the Problems window for details.\n", "Error", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
+				return null;
+			}
+	
+
+
+  Reflectively get tools:
+		Class<? extends CustomToolsProvider> customTools = Annotations.getCustomToolsProvider(editor.getModel().getClass());
+		if(customTools != null)
+		{
+			boolean selected = true;
+			CustomToolsProvider provider = null;
+			try {
+				provider = customTools.getConstructor().newInstance();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if(provider != null)
+				for(GraphEditorTool tool : provider.getTools(editor))
+				{
+					addTool(tool, selected);
+					selected = false;
+				}
+		}
+		else
+		{
+			throw new NotImplementedException();
+		}
+		
+		for (Class<? extends GraphEditorTool>  tool : Annotations.getCustomTools(editor.getModel().getClass()))
+			try {
+				addTool(tool.newInstance() , false);
+			} catch (InstantiationException e) {
+				throw new RuntimeException(e);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
 	
 	
+
+ Track model changes!
+				workspaceEntry.setChanged(true);
 	
+
+
+
+read-only properties in property editor?
+PropertyEditorTableModel.isCellEditable
+
+
+
+property-editor: "#EXCEPTION"?
+
+
+property-editor: need to pass to the renderer the following? 
+    focus, selected, coordinates
+
+
+
+property-editor: find out why this was needed:
+	@Override
+	public void editingStopped(ChangeEvent e) {  
+        TableCellEditor editor = getCellEditor();
+        if (editor != null) {
+        	Object value = editor.getCellEditorValue();
+            try
+            {
+                setValueAt(value, editingRow, editingColumn);
+                removeEditor();
+            }
+            catch(Throwable t)
+            {
+            	ExceptionDialog.show(null, "Cannot change property", t);
+            	PrintStream p = null;
+            	PrintWriter w = null;
+            	t.printStackTrace(p);
+            	t.printStackTrace(w);
+            	JOptionPane.showMessageDialog(null, t.getMessage() + "\n", "Cannot change property", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }  
+
+
+currentLevel: move outside of the model, and:
+		public void setValue(Container value) {
+			selection.setValue(HashTreePSet.<Node>empty());
+			super.setValue(value);
+		};
+	protected void currentLevelDown(VisualModel model) {
+		Collection<? extends Node> selection = eval(model.selection());
+		if(selection.size() == 1)
+		{
+			Node selectedNode = selection.iterator().next();
+			if(selectedNode instanceof Container)
+				model.currentLevel().setValue((Container)selectedNode);
+		}
+	}
+	protected void currentLevelUp(VisualModel model) {
+		Container level = eval(model.currentLevel());
+		Container parent = Hierarchy.getNearestAncestor(GlobalCache.eval(level.parent()), Container.class);
+		if(parent!=null)
+		{
+			model.currentLevel().setValue(parent);
+			model.selection().setValue(HashTreePSet.<Node>singleton(level));
+		}
+	}
+also, make group(), ungroup(), clear() behave the same way as before (in relation to selection and currentLevel), also filter selection by existing nodes
+	private Collection<Node> getGroupableSelection()
+	{
+		ArrayList<Node> result = new ArrayList<Node>();
+		for(Node node : getOrderedCurrentLevelSelection())
+			if(node instanceof VisualTransformableNode)
+				result.add((VisualTransformableNode)node);
+		return result;
+	}
+	public Collection<Node> getOrderedCurrentLevelSelection() {
+		List<Node> result = new ArrayList<Node>();
+		for(Node node : GlobalCache.eval(eval(currentLevel).children()))
+		{
+			if(GlobalCache.eval(selection).contains(node) && node instanceof VisualNode)
+				result.add((VisualNode)node);
+		}
+		return result;
+	}
+
+
+
+		
+		
+properties: auto-collect them!
+		new ExpressionBase<Properties>() {
+			@Override
+			protected Properties evaluate(EvaluationContext context) {
+				Collection<? extends Node> selection = context.resolve(visualModel.selection());
+				if (selection.size() == 1) {
+					Node selected = selection.iterator().next();
+					Mix mix = new Mix();
+					Properties visualModelProperties = visualModel.getProperties(selected);
+					mix.add(visualModelProperties);
+					if (selected instanceof Properties)
+						mix.add((Properties)selected);
+					if (selected instanceof DependentNode) {
+						for (Node n : ((DependentNode)selected).getMathReferences()) {
+							mix.add(visualModel.getMathModel().getProperties(n));
+							if (n instanceof Properties)
+								mix.add((Properties)n);
+						}
+					}
+					if(mix.isEmpty())
+						return null;
+					else
+						return mix;
+				} 
+				return null;
+			}
+		});
+
+
+
+
+MiscellaneousModelActions: implement them
+
+
+
+
+
+DefaultAnchorGenerator: make sure it works
+
+
 	
 }
 */
+

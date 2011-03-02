@@ -28,6 +28,7 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.FormatException;
 import org.workcraft.interop.Importer;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.plugins.stg.STGModelDescriptor;
@@ -47,9 +48,9 @@ public class DotGImporter implements Importer {
 	}
 
 	@Override
-	public ModelEntry importFrom(InputStream in) throws DeserialisationException {
+	public ServiceProvider importFrom(InputStream in) throws DeserialisationException {
 		HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
-		return new ModelEntry(new STGModelDescriptor(), importSTG(in, storage), storage);
+		return STGModelDescriptor.getServices(importSTG(in, storage), storage);
 	}
 
 	public STGModel importSTG(InputStream in, StorageManager storage) throws DeserialisationException {

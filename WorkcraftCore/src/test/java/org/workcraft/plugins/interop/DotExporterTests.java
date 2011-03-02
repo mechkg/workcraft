@@ -22,7 +22,7 @@ import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.exceptions.SerialisationException;
-import org.workcraft.gui.propertyeditor.Properties;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.interop.ServiceProviderImpl;
 
@@ -75,7 +75,7 @@ public class DotExporterTests {
 		}
 
 		@Override
-		public Properties getProperties(Node node) {
+		public PVector<EditableProperty> getProperties(Node node) {
 			return null;
 		}
 

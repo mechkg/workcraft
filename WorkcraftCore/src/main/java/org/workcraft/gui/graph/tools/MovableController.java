@@ -61,7 +61,7 @@ public interface MovableController<Node> {
 				}
 
 				@Override
-				public Point2D set(Point2D oldVal, Point2D newVal) {
+				public Point2D set(Point2D newVal) {
 					return Geometry.subtract(newVal, GlobalCache.eval(parentTransform));
 				}
 			});

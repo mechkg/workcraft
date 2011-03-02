@@ -21,84 +21,8 @@
 
 package org.workcraft.gui.propertyeditor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import pcollections.PVector;
 
 public interface Properties {
-	public Collection<PropertyDescriptor> getDescriptors();
-	
-	public class Mix implements Properties {
-		private LinkedList<PropertyDescriptor> descriptors = new LinkedList<PropertyDescriptor>();
-		
-		public Mix(PropertyDescriptor... descriptors) {
-			for (PropertyDescriptor descriptor : descriptors)
-				this.descriptors.add(descriptor);
-		}
-		
-		@Override
-		public Collection<PropertyDescriptor> getDescriptors() {
-			return descriptors;
-		}
-		
-		public void add (PropertyDescriptor descriptor) {
-			if (descriptor != null)
-				descriptors.add(descriptor);
-		}
-		
-		public void add (Properties properties) {
-			if (properties != null)
-				for (PropertyDescriptor desc : properties.getDescriptors())
-					descriptors.add(desc);
-		}
-		
-		public boolean isEmpty() {
-			return descriptors.isEmpty();
-		}
-		
-		public static Mix from (PropertyDescriptor... descriptors) {
-			return new Mix(descriptors);
-		}
-	}
-	
-	static class Merge implements Properties
-	{
-		private final Properties p1;
-		private final Properties p2;
-
-		Merge(Properties p1, Properties p2)
-		{
-			this.p1 = p1;
-			this.p2 = p2;
-		}
-
-		@Override
-		public Collection<PropertyDescriptor> getDescriptors() {
-			ArrayList<PropertyDescriptor> result = new ArrayList<PropertyDescriptor>();
-			result.addAll(p1.getDescriptors());
-			result.addAll(p2.getDescriptors());
-			return result;
-		}
-
-		public static Properties add(Properties properties, PropertyDescriptor... toAdd) {
-			if(toAdd == null || toAdd.length == 0)
-				return properties;
-			final List<PropertyDescriptor> list = Arrays.asList(toAdd);
-			
-			return merge(properties, new Properties(){ 
-				@Override public Collection<PropertyDescriptor> getDescriptors() { return list; }
-			});
-		}
-
-		public static Properties merge(Properties p1,
-				Properties p2) {
-			if(p1 == null)
-				return p2;
-			if(p2 == null)
-				return p1;
-			return new Merge(p1, p2);
-		}
-	}
+	public PVector<EditableProperty> getProperties();
 }

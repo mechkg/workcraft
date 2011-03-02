@@ -37,7 +37,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.Collection;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -47,21 +46,19 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.dom.visual.GraphicalContent;
-import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.Overlay;
 import org.workcraft.gui.PropertyEditorWindow;
 import org.workcraft.gui.ToolboxPanel;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
-import org.workcraft.gui.propertyeditor.Properties;
-import org.workcraft.gui.propertyeditor.Properties.Mix;
+import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.shared.CommonVisualSettings;
-import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
+
+import pcollections.PVector;
 
 
 public class GraphEditorPanel extends JPanel implements GraphEditor {
@@ -87,7 +84,6 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 			{
 				// WTF this code is here?
 				mainWindow.getPropertyView().repaint();
-				workspaceEntry.setChanged(true);
 			}
 			return new ImageModel();
 		}
@@ -137,12 +133,10 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	
 	private static final long serialVersionUID = 1L;
 
-	protected VisualModel visualModel;
-	protected WorkspaceEntry workspaceEntry;
-
 	protected final MainWindow mainWindow;
 	protected final ToolboxPanel toolboxPanel;
-
+	private final WorkspaceEntry workspaceEntry;
+	
 	protected Viewport view;
 	protected Grid grid;
 	protected Ruler ruler;
@@ -153,12 +147,12 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	
 	private boolean firstPaint = true;
 
-	public GraphEditorPanel(MainWindow mainWindow, WorkspaceEntry workspaceEntry) {
+	public GraphEditorPanel(MainWindow mainWindow, WorkspaceEntry workspaceEntry) throws ServiceNotAvailableException {
 		super (new BorderLayout());
 		this.mainWindow = mainWindow;
 		this.workspaceEntry = workspaceEntry;
 		
-		visualModel = workspaceEntry.getModelEntry().getVisualModel();
+		GraphEditable graphEditable = workspaceEntry.getModelEntry().getImplementation(GraphEditable.SERVICE_HANDLE);
 		
 		new Repainter();
 		
@@ -166,7 +160,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		grid = new Grid(view);
 		ruler = new Ruler(grid);
 
-		toolboxPanel = new ToolboxPanel(this, workspaceEntry.getModelEntry().getDescriptor().getVisualModelDescriptor());
+		toolboxPanel = new ToolboxPanel(graphEditable.createTools(this));
 		
 		GraphEditorPanelMouseListener mouseListener = new GraphEditorPanelMouseListener(this, toolboxPanel.selectedTool());
 		GraphEditorPanelKeyListener keyListener = new GraphEditorPanelKeyListener(this, toolboxPanel);
@@ -185,7 +179,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		
 		add(overlay, BorderLayout.CENTER);
 		
-		updatePropertyView();
+		updatePropertyView(graphEditable.properties());
 	}
 
 	private void reshape() {
@@ -212,7 +206,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 						firstPaint = false;
 					}
 
-					g2d.setBackground(CommonVisualSettings.getBackgroundColor());
+					g2d.setBackground(context.resolve(CommonVisualSettings.backgroundColor));
 					g2d.clearRect(0, 0, getWidth(), getHeight());
 					context.resolve(grid.graphicalContent()).draw(g2d);
 					g2d.setTransform(screenTransform);
@@ -239,7 +233,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 						g2d.setTransform(screenTransform);
 
 						g2d.setStroke(borderStroke);
-						g2d.setColor(CommonVisualSettings.getForegroundColor());
+						g2d.setColor(context.resolve(CommonVisualSettings.foregroundColor));
 						g2d.drawRect(0, 0, getWidth()-1, getHeight()-1);
 					}
 					
@@ -249,6 +243,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		
 	};
 	
+
 	@Override
 	public void paint(Graphics g) {
 		Graphics2D g2d = (Graphics2D)g;
@@ -258,10 +253,6 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		paintChildren(g2d);
 	}
 
-	public VisualModel getModel() {
-		return visualModel;
-	}
-
 	public Viewport getViewport() {
 		return view;
 	}
@@ -269,54 +260,15 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	public Point2D snap(Point2D point) {
 		return new Point2D.Double(grid.snapCoordinate(point.getX()), grid.snapCoordinate(point.getY()));
 	}
-
-	public WorkspaceEntry getWorkspaceEntry() {
-		return workspaceEntry;
-	}
-
+	
 	public MainWindow getMainWindow() {
 		return mainWindow;
 	}
 	
-	private void updatePropertyView() {
+	private void updatePropertyView(Expression<? extends PVector<EditableProperty>> properties) {
 		final PropertyEditorWindow propertyWindow = mainWindow.getPropertyView();
 		
-		propertyWindow.propertyObject.setValue(new ExpressionBase<Properties>() {
-
-			@Override
-			protected Properties evaluate(EvaluationContext context) {
-				Collection<? extends Node> selection = context.resolve(visualModel.selection());
-				
-				if (selection.size() == 1) {
-					Node selected = selection.iterator().next();
-
-					Mix mix = new Mix();
-
-					Properties visualModelProperties = visualModel.getProperties(selected);
-
-					mix.add(visualModelProperties);
-
-					if (selected instanceof Properties)
-						mix.add((Properties)selected);
-
-					if (selected instanceof DependentNode) {
-						for (Node n : ((DependentNode)selected).getMathReferences()) {
-							mix.add(visualModel.getMathModel().getProperties(n));
-							if (n instanceof Properties)
-								mix.add((Properties)n);
-						}
-					}
-					
-					if(mix.isEmpty())
-						return null;
-					else
-						return mix;
-				} 
-				return null;
-			}
-			
-		});
-		
+		propertyWindow.propertyObject.setValue(properties);
 	}
 
 	@Override
@@ -327,9 +279,9 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	public ToolboxPanel getToolBox() {
 		return toolboxPanel;
 	}
-	
-	@Override
-	public ModelEntry getModelEntry() {
-		return workspaceEntry.getModelEntry();
+
+	public WorkspaceEntry getWorkspaceEntry() {
+		return workspaceEntry;
 	}
+
 }

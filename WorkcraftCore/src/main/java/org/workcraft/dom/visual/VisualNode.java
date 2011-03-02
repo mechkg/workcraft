@@ -33,9 +33,11 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.PopupMenuBuilder.PopupMenuSegment;
 import org.workcraft.gui.actions.ScriptedActionListener;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.Properties;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
-import org.workcraft.gui.propertyeditor.PropertySupport;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 
 public abstract class VisualNode implements Properties, Node, Hidable {
@@ -51,7 +53,6 @@ public abstract class VisualNode implements Properties, Node, Hidable {
 	private final ModifiableExpression<Node> parent;
 	
 	private PopupMenuBuilder popupMenuBuilder = new PopupMenuBuilder();
-	private PropertySupport propertySupport = new PropertySupport();
 
 	public ModifiableExpression<Node> parent() {
 		return parent;
@@ -65,12 +66,8 @@ public abstract class VisualNode implements Properties, Node, Hidable {
 		return popupMenuBuilder.build(actionListener);
 	}
 	
-	public void addPropertyDeclaration(PropertyDescriptor declaration) {
-		propertySupport.addPropertyDeclaration(declaration);
-	}
-
-	public Collection<PropertyDescriptor> getDescriptors() {
-		return propertySupport.getPropertyDeclarations();
+	public PVector<EditableProperty> getProperties() {
+		return TreePVector.empty();
 	}
 
 	public Expression<Boolean> hidden() {

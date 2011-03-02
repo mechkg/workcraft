@@ -21,7 +21,7 @@ import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.tasks.Task;
 import org.workcraft.util.Export;
 import org.workcraft.util.Export.ExportTask;
-import org.workcraft.util.Null;
+import org.workcraft.util.Nothing;
 
 public class DrawSgTask implements Task<DrawSgResult> {
 	private Framework framework;
@@ -42,7 +42,7 @@ public class DrawSgTask implements Task<DrawSgResult> {
 			File dotG = File.createTempFile("workcraft", ".g");
 			dotG.deleteOnExit();
 
-			final Result<? extends Null> dotGResult = framework.getTaskManager().<Null>execute(new ExportTask(dotGExportJob, dotG), "Exporting to .g");
+			final Result<? extends Nothing> dotGResult = framework.getTaskManager().<Nothing>execute(new ExportTask(dotGExportJob, dotG), "Exporting to .g");
 
 			if (dotGResult.getOutcome() != Outcome.FINISHED)
 			{

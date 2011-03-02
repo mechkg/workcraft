@@ -4,14 +4,20 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import org.workcraft.Config;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.PropertyDeclaration;
 import org.workcraft.gui.propertyeditor.PropertyDescriptor;
 import org.workcraft.gui.propertyeditor.SettingsPage;
+import org.workcraft.gui.propertyeditor.bool.BooleanProperty;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class STGSettings implements SettingsPage {
-	private static LinkedList<PropertyDescriptor> properties;
-	
-	private static boolean showInstanceNumbers = false;
+	private static Variable<Boolean> showInstanceNumbers = Variable.create(false);
 
 	@Override
 	public String getName() {
@@ -25,30 +31,21 @@ public class STGSettings implements SettingsPage {
 
 	@Override
 	public void load(Config config) {
-		showInstanceNumbers = config.getBoolean("STG.showInstanceNumbers", false);
+		showInstanceNumbers.setValue(config.getBoolean("STG.showInstanceNumbers", false));
 	}
 
 	@Override
 	public void save(Config config) {
-		config.setBoolean("STG.showInstanceNumbers", showInstanceNumbers);
+		config.setBoolean("STG.showInstanceNumbers", showInstanceNumbers.getValue());
 	}
 
-	@Override
-	public Collection<PropertyDescriptor> getDescriptors() {
-		return properties;
-	}
-	
-	public STGSettings() {
-		properties = new LinkedList<PropertyDescriptor>();
-		properties.add(new PropertyDeclaration(this, "Show instance numbers", "getShowInstanceNumbers", "setShowInstanceNumbers", boolean.class));
-	}
-
-	public static void setShowInstanceNumbers(boolean showInstanceNumbers) {
-		STGSettings.showInstanceNumbers = showInstanceNumbers;
-	}
-
-	public static boolean getShowInstanceNumbers() {
+	public static ModifiableExpression<Boolean> showInstanceNumbers() {
 		return showInstanceNumbers;
 	}
 
+	@Override
+	public PVector<EditableProperty> getProperties() {
+		return TreePVector.<EditableProperty>empty()
+			.plus(BooleanProperty.create("Show instance numbers", showInstanceNumbers));
+	}
 }

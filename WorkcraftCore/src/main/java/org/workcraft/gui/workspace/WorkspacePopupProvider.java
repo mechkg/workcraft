@@ -36,9 +36,9 @@ import javax.swing.JPopupMenu;
 
 import org.workcraft.Framework;
 import org.workcraft.ToolJob;
-import org.workcraft.dom.Model;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.gui.trees.TreePopupProvider;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.PluginInfo;
 import org.workcraft.util.ListMap;
 import org.workcraft.util.Pair;
@@ -159,15 +159,14 @@ public class WorkspacePopupProvider implements TreePopupProvider<Path<String>> {
 			}
 
 			else if (openFile.getModelEntry() != null) {
-				final Model model = openFile.getModelEntry().getModel();
-				JLabel label = new JLabel (openFile.getModelEntry().getDescriptor().getDisplayName()+ " " + (model.getTitle().isEmpty()?"" : ("\"" + model.getTitle() + "\"" )));
+				JLabel label = new JLabel (openFile.getTitle());
 				popup.add(label);
 				popup.addSeparator();
 
 				JMenuItem miOpenView = new JMenuItem("Open editor");
 				miOpenView.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						framework.getMainWindow().createEditorWindow(openFile);
+						framework.getMainWindow().tryCreateEditorWindow(openFile);
 					}
 				});
 
@@ -177,6 +176,9 @@ public class WorkspacePopupProvider implements TreePopupProvider<Path<String>> {
 						try {
 							framework.getMainWindow().save(openFile);
 						} catch (OperationCancelledException e1) {
+						} catch (ServiceNotAvailableException e2) {
+							// TODO: something better
+							e2.printStackTrace();
 						}
 					}
 				});
@@ -187,6 +189,9 @@ public class WorkspacePopupProvider implements TreePopupProvider<Path<String>> {
 						try {
 							framework.getMainWindow().saveAs(openFile);
 						} catch (OperationCancelledException e1) {
+						} catch (ServiceNotAvailableException e2) {
+							// TODO: something better
+							e2.printStackTrace();
 						}
 					}
 				});

@@ -37,6 +37,7 @@ import org.workcraft.exceptions.ModelSaveFailedException;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.parsers.breeze.BreezeLibrary;
 import org.workcraft.parsers.breeze.EmptyParameterScope;
 import org.workcraft.plugins.balsa.BalsaCircuit;
@@ -59,6 +60,7 @@ import org.workcraft.plugins.interop.DotGExporter;
 import org.workcraft.plugins.interop.DotGImporter;
 import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.STG;
+import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.plugins.stg.VisualSTG;
 import org.workcraft.util.Export;
@@ -104,7 +106,7 @@ public class WhileTests {
 	}
 	
 	@Test
-	public void TestCombine() throws ModelSaveFailedException, VisualModelInstantiationException, InvalidConnectionException, ModelCheckingFailedException, IOException, LayoutFailedException, ModelValidationException, SerialisationException, DeserialisationException
+	public void TestCombine() throws ModelSaveFailedException, VisualModelInstantiationException, InvalidConnectionException, ModelCheckingFailedException, IOException, LayoutFailedException, ModelValidationException, SerialisationException, DeserialisationException, ServiceNotAvailableException
 	{
 		BalsaCircuit balsa = new BalsaCircuit(new DefaultStorageManager()); 
 		
@@ -130,9 +132,9 @@ public class WhileTests {
 		final ExtractControlSTGTask stgExtractionTask = new ExtractControlSTGTask(framework, balsa, balsaConfig, new DefaultStorageManager());
 		Export.exportToFile(new DotGExporter.ExportJob(stgExtractionTask.getSTG()), stgFile);
 		
-		final STG stg = (STG) Import.importFromFile(new DotGImporter(), stgFile).getModel();
+		final STGModel stg = Import.importFromFile(new DotGImporter(), stgFile).getImplementation(STGModel.SERVICE_HANDLE);
 		
-		VisualSTG visualStg = new VisualSTG(stg, new DefaultStorageManager());
+		VisualSTG visualStg = new VisualSTG((STG)stg, new DefaultStorageManager());
 		
 		framework.save(new ModelEntry(new STGModelDescriptor(), visualStg, new DefaultStorageManager()), "while_while.stg.work");
 	}

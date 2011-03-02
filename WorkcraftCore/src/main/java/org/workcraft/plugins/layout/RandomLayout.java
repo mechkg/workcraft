@@ -32,8 +32,9 @@ import org.workcraft.dom.visual.VisualTransformableNode;
 import org.workcraft.interop.ServiceHandle;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.interop.ServiceProvider;
-import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class RandomLayout implements Tool {
 	Random r = new Random();
@@ -45,8 +46,7 @@ public class RandomLayout implements Tool {
 
 	@Override
 	public ToolJob applyTo(WorkspaceEntry entry) throws ServiceNotAvailableException {
-		ModelEntry modelEntry = entry.getModelEntry();
-		final ServiceProvider services = modelEntry.services;
+		final ServiceProvider services = entry.getModelEntry();
 		final VisualModel model = services.getImplementation(ServiceHandle.LegacyVisualModelService);
 		return new ToolJob() {
 			
@@ -54,8 +54,8 @@ public class RandomLayout implements Tool {
 			public void run() {
 				for (Node n : GlobalCache.eval(model.getRoot().children())) {
 					if (n instanceof VisualTransformableNode) {
-						GlobalCache.setValue(((VisualTransformableNode)n).x(),(RandomLayoutSettings.startX + r.nextDouble()*RandomLayoutSettings.rangeX));
-						GlobalCache.setValue(((VisualTransformableNode)n).y(),(RandomLayoutSettings.startY + r.nextDouble()*RandomLayoutSettings.rangeY));
+						GlobalCache.setValue(((VisualTransformableNode)n).x(),(eval(RandomLayoutSettings.startX) + r.nextDouble()*eval(RandomLayoutSettings.rangeX)));
+						GlobalCache.setValue(((VisualTransformableNode)n).y(),(eval(RandomLayoutSettings.startY) + r.nextDouble()*eval(RandomLayoutSettings.rangeY)));
 					}
 				}	
 			}

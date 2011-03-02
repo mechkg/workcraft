@@ -39,8 +39,14 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
+import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.gui.propertyeditor.colour.ColorProperty;
+import org.workcraft.gui.propertyeditor.string.StringProperty;
 import org.workcraft.plugins.shared.CommonVisualSettings;
+
+import pcollections.PVector;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public abstract class VisualComponent extends VisualTransformableNode implements DependentNode {
 	private final MathNode refNode;
@@ -58,12 +64,14 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 	private final ModifiableExpression<Color> labelColor;
 	private final ModifiableExpression<Color> foregroundColor;
 	private final ModifiableExpression<Color> fillColor;
-
-	private void addPropertyDeclarations() {
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Label", label(), String.class));
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Label color", labelColor(), Color.class));
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Foreground color", foregroundColor(), Color.class));
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Fill color", fillColor(), Color.class));
+	
+	@Override
+	public PVector<EditableProperty> getProperties() {
+		return super.getProperties()
+		.plus(StringProperty.create("Label", label()))
+		.plus(ColorProperty.create("Label color", labelColor()))
+		.plus(ColorProperty.create("Foreground color", foregroundColor()))
+		.plus(ColorProperty.create("Fill color", fillColor()));
 	}
 
 	public VisualComponent(MathNode refNode, StorageManager storage) {
@@ -73,11 +81,9 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 		labelText = storage.create("");
 		label = new Label(labelFont, labelText);
 		
-		labelColor = storage.create(CommonVisualSettings.getForegroundColor());
-		foregroundColor = storage.create(CommonVisualSettings.getForegroundColor());
-		fillColor = storage.create(CommonVisualSettings.getFillColor());
-		
-		addPropertyDeclarations();
+		labelColor = storage.create(eval(CommonVisualSettings.foregroundColor));
+		foregroundColor = storage.create(eval(CommonVisualSettings.foregroundColor));
+		fillColor = storage.create(eval(CommonVisualSettings.fillColor));
 	}
 	public ModifiableExpression<String> label() {
 		return labelText;

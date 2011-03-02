@@ -36,6 +36,8 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class GUI {
 
 	public static JPanel createLabeledComponent (JComponent component, String labelText) {
@@ -154,7 +156,7 @@ public class GUI {
 	}
 	
 	public static ImageIcon createIconFromSVG(String path) {
-		int iconSize = CommonVisualSettings.getIconSize();
+		int iconSize = eval(CommonVisualSettings.iconSize);
 		return createIconFromSVG(path, iconSize, iconSize);
 	}
 
@@ -166,7 +168,7 @@ public class GUI {
 		JButton result = new JButton(icon);
 		result.setToolTipText(toolTip);
 		result.setMargin(new Insets(0,0,0,0));
-		int iconSize = CommonVisualSettings.getIconSize();
+		int iconSize = eval(CommonVisualSettings.iconSize);
 		Insets insets = result.getInsets();
 		int minSize = iconSize+Math.max(insets.left+insets.right, insets.top+insets.bottom);
 		result.setPreferredSize(new Dimension(minSize, minSize));

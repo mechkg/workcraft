@@ -12,6 +12,8 @@ import org.workcraft.tasks.Task;
 import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.util.DataAccumulator;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class PetrifyTask implements Task<ExternalProcessResult>, ExternalProcessListener {
 		private String[] args;
 		private String inputFileName;
@@ -34,9 +36,9 @@ public class PetrifyTask implements Task<ExternalProcessResult>, ExternalProcess
 			this.monitor = monitor;
 			
 			ArrayList<String> command = new ArrayList<String>();
-			command.add(PetrifyUtilitySettings.getPetrifyCommand());
+			command.add(eval(PetrifyUtilitySettings.petrifyCommand));
 			
-			for (String arg : PetrifyUtilitySettings.getPetrifyArgs().split(" "))
+			for (String arg : eval(PetrifyUtilitySettings.petrifyArgs).split(" "))
 				if (!arg.isEmpty())
 					command.add(arg);
 			

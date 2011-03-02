@@ -67,11 +67,9 @@ import org.pushingpixels.substance.api.SubstanceConstants.TabContentPaneBorderKi
 import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 import org.workcraft.Framework;
 import org.workcraft.dom.ModelDescriptor;
-import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.DeserialisationException;
-import org.workcraft.exceptions.LayoutException;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
@@ -88,8 +86,8 @@ import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
 import org.workcraft.interop.Importer;
 import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.PluginInfo;
-import org.workcraft.plugins.layout.DotLayout;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.tasks.Task;
 import org.workcraft.util.Export;
@@ -97,8 +95,7 @@ import org.workcraft.util.FileUtils;
 import org.workcraft.util.GUI;
 import org.workcraft.util.Import;
 import org.workcraft.util.ListMap;
-import org.workcraft.util.Null;
-import org.workcraft.workspace.ModelEntry;
+import org.workcraft.util.Nothing;
 import org.workcraft.workspace.Workspace;
 import org.workcraft.workspace.WorkspaceEntry;
 
@@ -227,94 +224,74 @@ public class MainWindow extends JFrame {
 		return dockable;		
 	}
 
-	public GraphEditorPanel createEditorWindow(final WorkspaceEntry we) {
+	public void tryCreateEditorWindow(final WorkspaceEntry we) {
+		try {
+			createEditorWindow(we);
+		} catch(ServiceNotAvailableException ex) {
+			JOptionPane.showMessageDialog(MainWindow.this, "A visual model could not be created for the selected model.\n" + "Model \"" 
+					+ we.getTitle() +"\" does not have visual model support.", "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+	
+	public GraphEditorPanel createEditorWindow(final WorkspaceEntry we) throws ServiceNotAvailableException {
 		if (we.getModelEntry() == null)
 			throw new RuntimeException("Cannot open editor: the selected entry is not a Workcraft model.");
 		
-		ModelEntry modelEntry = we.getModelEntry();
-		
-		ModelDescriptor descriptor = modelEntry.getDescriptor();
+			final GraphEditorPanel editor = new GraphEditorPanel(MainWindow.this, we);
 
-		VisualModel visualModel = (modelEntry.getModel() instanceof VisualModel) ? (VisualModel) modelEntry.getModel() : null;
+			String dockableTitle = we.getTitle();
 
-		if (visualModel == null)
-			try {
-				VisualModelDescriptor vmd = descriptor.getVisualModelDescriptor();
-				
-				if (vmd == null)
-					JOptionPane.showMessageDialog(MainWindow.this, "A visual model could not be created for the selected model.\n" + "Model \"" 
-							+ descriptor.getDisplayName() +"\" does not have visual model support.", "Error", JOptionPane.ERROR_MESSAGE);
-				
-				visualModel = vmd.create((MathModel)modelEntry.getModel(), modelEntry.getStorage());
-				
-				modelEntry.setModel(visualModel);
+			final DockableWindow editorWindow;
 
-				DotLayout layout = new DotLayout(framework);
-				layout.applyTo(we).run();
-			} catch (LayoutException e) {
-				// Layout failed for whatever reason, ignore
-			} catch (ServiceNotAvailableException e) {
-				// Layout failed for whatever reason, ignore
-			} catch (VisualModelInstantiationException e) {
-				JOptionPane.showMessageDialog(MainWindow.this, "A visual model could not be created for the selected model.\nPlease refer to the Problems window for details.\n", "Error", JOptionPane.ERROR_MESSAGE);
-				e.printStackTrace();
-				return null;
+			if (editorWindows.isEmpty()) {
+				editorWindow = createDockableWindow (editor, dockableTitle, documentPlaceholder,
+						DockableWindowContentPanel.CLOSE_BUTTON | DockableWindowContentPanel.MAXIMIZE_BUTTON, DockingConstants.CENTER_REGION, "Document"+we.getWorkspacePath());
+
+				DockingManager.close(documentPlaceholder);
+				DockingManager.unregisterDockable(documentPlaceholder);
+				utilityWindows.remove(documentPlaceholder);
+			}
+			else {
+				DockableWindow firstEditorWindow = editorWindows.values().iterator().next().iterator().next();
+				editorWindow = createDockableWindow (editor, dockableTitle, firstEditorWindow, 
+						DockableWindowContentPanel.CLOSE_BUTTON | DockableWindowContentPanel.MAXIMIZE_BUTTON, DockingConstants.CENTER_REGION, "Document"+we.getWorkspacePath());
 			}
 
-		final GraphEditorPanel editor = new GraphEditorPanel(MainWindow.this, we);
-		String dockableTitle = we.getTitle() + " - " + modelEntry.getDescriptor().getDisplayName();
+			editorWindow.addTabListener(new DockableWindowTabListener() {
 
-		final DockableWindow editorWindow;
+				@Override
+				public void tabSelected(JTabbedPane tabbedPane, int tabIndex) {
+					System.out.println ("Sel " + editorWindow.getTitle() + " " + tabIndex);
+					((DockableTab)tabbedPane.getTabComponentAt(tabIndex)).setSelected(true);
+					System.out.println (tabbedPane.getTabComponentAt(tabIndex).getParent());
+					requestFocus(editor);
 
-		if (editorWindows.isEmpty()) {
-			editorWindow = createDockableWindow (editor, dockableTitle, documentPlaceholder,
-					DockableWindowContentPanel.CLOSE_BUTTON | DockableWindowContentPanel.MAXIMIZE_BUTTON, DockingConstants.CENTER_REGION, "Document"+we.getWorkspacePath());
+				}
 
-			DockingManager.close(documentPlaceholder);
-			DockingManager.unregisterDockable(documentPlaceholder);
-			utilityWindows.remove(documentPlaceholder);
-		}
-		else {
-			DockableWindow firstEditorWindow = editorWindows.values().iterator().next().iterator().next();
-			editorWindow = createDockableWindow (editor, dockableTitle, firstEditorWindow, 
-					DockableWindowContentPanel.CLOSE_BUTTON | DockableWindowContentPanel.MAXIMIZE_BUTTON, DockingConstants.CENTER_REGION, "Document"+we.getWorkspacePath());
-		}
+				@Override
+				public void tabDeselected(JTabbedPane tabbedPane, int tabIndex) {
+					((DockableTab)tabbedPane.getTabComponentAt(tabIndex)).setSelected(false);
+					System.out.println ("Desel " + editorWindow.getTitle());
+				}
 
-		editorWindow.addTabListener(new DockableWindowTabListener() {
+				@Override
+				public void dockedStandalone() {
+					System.out.println ("Standalone");
+				}
 
-			@Override
-			public void tabSelected(JTabbedPane tabbedPane, int tabIndex) {
-				System.out.println ("Sel " + editorWindow.getTitle() + " " + tabIndex);
-				((DockableTab)tabbedPane.getTabComponentAt(tabIndex)).setSelected(true);
-				System.out.println (tabbedPane.getTabComponentAt(tabIndex).getParent());
-				requestFocus(editor);
+				@Override
+				public void dockedInTab(JTabbedPane tabbedPane, int tabIndex) {
+					System.out.println ("Intab");
+				}
+			});
 
-			}
+			editorWindow.setTabEventsEnabled(true);
 
-			@Override
-			public void tabDeselected(JTabbedPane tabbedPane, int tabIndex) {
-				((DockableTab)tabbedPane.getTabComponentAt(tabIndex)).setSelected(false);
-				System.out.println ("Desel " + editorWindow.getTitle());
-			}
+			editorWindows.put(we, editorWindow);
+			requestFocus(editor);
 
-			@Override
-			public void dockedStandalone() {
-				System.out.println ("Standalone");
-			}
-
-			@Override
-			public void dockedInTab(JTabbedPane tabbedPane, int tabIndex) {
-				System.out.println ("Intab");
-			}
-		});
-
-		editorWindow.setTabEventsEnabled(true);
-
-		editorWindows.put(we, editorWindow);
-		requestFocus(editor);
-
-		enableWorkActions();
-		return editor;
+			enableWorkActions();
+			return editor;
 	}
 
 	private void registerUtilityWindow(DockableWindow dockableWindow) {
@@ -480,7 +457,11 @@ public class MainWindow extends JFrame {
 						"Confirm", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE); 
 
 				if (result == JOptionPane.YES_OPTION) {
-					save(we);
+					try { save(we); }
+					catch(ServiceNotAvailableException ex) {
+						// TODO: something better
+						throw new RuntimeException(ex);
+					}
 				}
 				else if (result == JOptionPane.CANCEL_OPTION)
 					throw new OperationCancelledException("Operation cancelled by user.");
@@ -675,6 +656,7 @@ public class MainWindow extends JFrame {
 				HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
 				
 				MathModel mathModel = info.createMathModel(storage);
+				ServiceProvider modelServices = info.createServiceProvider(mathModel, storage);
 
 				String name = dialog.getModelTitle();
 
@@ -682,20 +664,17 @@ public class MainWindow extends JFrame {
 					mathModel.setTitle(dialog.getModelTitle());
 
 				if (dialog.createVisualSelected()) {
-					VisualModelDescriptor v = info.getVisualModelDescriptor();
-					
-					if (v == null)
+					try {
+						modelServices.getImplementation(VisualModel.SERVICE_HANDLE);
+						WorkspaceEntry we = framework.getWorkspace().add(path, name, modelServices, false);
+						if (dialog.openInEditorSelected())
+							createEditorWindow (we);
+					}
+					catch(ServiceNotAvailableException ex) {
 						throw new VisualModelInstantiationException("visual model is not defined for \"" + info.getDisplayName() + "\".");
-					
-					
-					VisualModel visualModel = v.create(mathModel, storage);
-					WorkspaceEntry we = framework.getWorkspace().add(path, name, new ModelEntry(info, visualModel, storage), false);
-					if (dialog.openInEditorSelected())
-						createEditorWindow (we);
-					//rootDockingPort.dock(new GraphEditorPane(visualModel), CENTER_REGION);
-					//addView(new GraphEditorPane(visualModel), mathModel.getTitle() + " - " + mathModel.getDisplayName(), DockingManager.NORTH_REGION, 0.8f);
+					}
 				} else
-					framework.getWorkspace().add(path, name, new ModelEntry(info, mathModel, storage), false);
+					framework.getWorkspace().add(path, name, modelServices, false);
 			} catch (VisualModelInstantiationException e) {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(this, "Visual model could not be created: " + e.getMessage() + "\n\nPlease see the Problems window for details.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -719,11 +698,8 @@ public class MainWindow extends JFrame {
 		mainMenu.revalidate();
 		mainMenu.repaint();
 
-		framework.deleteJavaScriptProperty("visualModel", framework.getJavaScriptGlobalScope());
-		framework.setJavaScriptProperty("visualModel", sender.getModel(), framework.getJavaScriptGlobalScope(), true);
-
 		framework.deleteJavaScriptProperty("model", framework.getJavaScriptGlobalScope());
-		framework.setJavaScriptProperty("model", sender.getModel().getMathModel(), framework.getJavaScriptGlobalScope(), true);
+		framework.setJavaScriptProperty("model", sender.getWorkspaceEntry().getModelEntry(), framework.getJavaScriptGlobalScope(), true);
 	}
 
 	public SimpleContainer getToolboxWindow() {
@@ -759,8 +735,8 @@ public class MainWindow extends JFrame {
 	public void openWork(File f) {
 		try {
 			WorkspaceEntry we = framework.getWorkspace().open(f, true);
-			if (we.getModelEntry().isVisual())
-				createEditorWindow(we);
+			try {createEditorWindow(we); }
+			catch(ServiceNotAvailableException ex) {}
 		} catch (DeserialisationException e) {
 			JOptionPane.showMessageDialog(this, "A problem was encountered while trying to load \"" + f.getPath()
 					+"\".\nPlease see Problems window for details.", "Load failed", JOptionPane.ERROR_MESSAGE);
@@ -768,21 +744,21 @@ public class MainWindow extends JFrame {
 		}
 	}
 
-	public void saveWork() throws OperationCancelledException {
+	public void saveWork() throws OperationCancelledException, ServiceNotAvailableException {
 		if (editorInFocus != null)
 			save(editorInFocus.getWorkspaceEntry());
 		else
 			System.out.println ("No editor in focus");
 	}
 
-	public void saveWorkAs() throws OperationCancelledException {
+	public void saveWorkAs() throws OperationCancelledException, ServiceNotAvailableException {
 		if (editorInFocus != null)
 			saveAs(editorInFocus.getWorkspaceEntry());
 		else
 			System.err.println ("No editor in focus");
 	}
 
-	public void save(WorkspaceEntry we) throws OperationCancelledException {
+	public void save(WorkspaceEntry we) throws OperationCancelledException, ServiceNotAvailableException {
 		if (!we.getFile().exists()) {
 			saveAs(we);
 		}
@@ -830,7 +806,7 @@ public class MainWindow extends JFrame {
 		}
 	}
 
-	public void saveAs(WorkspaceEntry we) throws OperationCancelledException {
+	public void saveAs(WorkspaceEntry we) throws OperationCancelledException, ServiceNotAvailableException {
 		JFileChooser fc = new JFileChooser();
 		fc.setDialogType(JFileChooser.SAVE_DIALOG);
 
@@ -918,13 +894,15 @@ public class MainWindow extends JFrame {
 			for (File f : fc.getSelectedFiles()) {
 				for (Importer importer : importers) {
 					if (importer.accept(f)) {
-						ModelEntry modelEntry;
+						ServiceProvider modelEntry;
 						try {
 							modelEntry = Import.importFromFile(importer, f);
-							modelEntry.getModel().setTitle(FileUtils.getFileNameWithoutExtension(f));
+							try { modelEntry.getImplementation(MathModel.SERVICE_HANDLE).setTitle(FileUtils.getFileNameWithoutExtension(f)); }
+							catch(ServiceNotAvailableException ex) {}
+							
 							WorkspaceEntry we = framework.getWorkspace().add(Path.<String>empty(), f.getName(), modelEntry, false);
-							if (we.getModelEntry().isVisual())
-								createEditorWindow(we);
+							try {createEditorWindow(we); }
+							catch(ServiceNotAvailableException ex) {}
 							break;
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -946,7 +924,7 @@ public class MainWindow extends JFrame {
 		fc.setDialogTitle("Export as " + exporter.getDescription());
 		fc.setAcceptAllFileFilterUsed(false);
 
-		String title = editorInFocus.getModel().getTitle();
+		String title = editorInFocus.getWorkspaceEntry().getTitle();
 		if (title.isEmpty())
 			title = "Untitled";
 		title = removeSpecialFileNameCharacters(title);
@@ -978,7 +956,7 @@ public class MainWindow extends JFrame {
 		}
 
 
-		Task<Null> exportTask = new Export.ExportTask (job, f);
+		Task<Nothing> exportTask = new Export.ExportTask (job, f);
 		framework.getTaskManager().queue(exportTask, "Exporting " + title, new TaskFailureNotifier());
 
 		//Export.exportToFile(exporter, editorInFocus.getModel(), path);

@@ -19,23 +19,25 @@
 *
 */
 
-package org.workcraft.gui.propertyeditor;
+package org.workcraft.gui.propertyeditor.bool;
 
 import java.awt.Component;
 
 import javax.swing.JCheckBox;
-import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
 
-@SuppressWarnings("serial")
-public class BooleanCellRenderer extends JCheckBox implements TableCellRenderer  {
+import org.workcraft.gui.propertyeditor.RendererProvider;
 
-	public Component getTableCellRendererComponent(JTable table, Object value,
-			boolean isSelected, boolean hasFocus, int row, int column) {
-		setSelected ((Boolean)value);
-		setOpaque(false);
-		setFocusable(false);
-		return this;
-	}
+public class BooleanCellRenderer {
 
+	public static RendererProvider<Boolean> INSTANCE = new RendererProvider<Boolean>() {
+
+		@Override
+		public Component createRenderer(Boolean value) {
+			final JCheckBox cb = new JCheckBox();
+			cb.setOpaque(false);
+			cb.setFocusable(false);
+			cb.setSelected(value);
+			return cb;
+		}
+	};
 }

@@ -5,8 +5,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 
+import org.workcraft.dom.HierarchyController;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.graph.tools.GraphEditor;
+import org.workcraft.gui.graph.tools.MovableController;
+import org.workcraft.util.Function;
 
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
@@ -47,12 +50,8 @@ public class VisualModelTransformer {
 
 		transformNodePosition(nodes, t);
 	}
-	
-	public static void translateSelection(VisualModel vm, double tx, double ty) {
-		translateNodes(eval(vm.selection()), tx, ty);
-	}
 
-	public static void scaleSelection(VisualModel vm, double sx, double sy) {
+	public static void scaleNodes(VisualModel vm, double sx, double sy) {
 		Rectangle2D selectionBB = getNodesCoordinateBox(eval(vm.selection()));
 		
 		AffineTransform t = new AffineTransform();
@@ -64,13 +63,13 @@ public class VisualModelTransformer {
 		transformNodePosition(eval(vm.selection()), t);
 	}
 
-	public static void rotateSelection(GraphEditor ge, VisualModel vm, double theta) {
-		Rectangle2D selectionBB = getNodesCoordinateBox(eval(vm.selection()));
+	public static void rotateNodes(Function<Point2D, Point2D> snap, MovableController<Node>mc, Collection<Node> selection, double theta) {
+		Rectangle2D selectionBB = getNodesCoordinateBox(selection);
 
 		AffineTransform t = new AffineTransform();
 		
 		//Point2D cp = (new Point2D.Double(selectionBB.getCenterX(), selectionBB.getCenterY()));
-		Point2D cp = ge.snap(new Point2D.Double(selectionBB.getCenterX(), selectionBB.getCenterY()));
+		Point2D cp = snap.apply(new Point2D.Double(selectionBB.getCenterX(), selectionBB.getCenterY()));
 
 		t.translate(cp.getX(), cp.getY());
 		t.rotate(theta);
@@ -93,7 +92,7 @@ public class VisualModelTransformer {
 		return bb1;
 	}
 	
-	public static Rectangle2D getNodesCoordinateBox(Collection<? extends Node> nodes) {
+	public static Rectangle2D getNodesCoordinateBox(TouchableProvider<Node> tp, HierarchyProvider<Node> hp, Collection<? extends Node> nodes) {
 		Rectangle2D selectionBB = null;
 
 

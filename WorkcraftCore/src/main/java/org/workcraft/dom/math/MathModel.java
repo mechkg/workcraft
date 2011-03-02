@@ -22,7 +22,10 @@
 package org.workcraft.dom.math;
 
 import org.workcraft.dom.Model;
+import org.workcraft.interop.ServiceHandle;
 
 public interface MathModel extends Model {
+
+	ServiceHandle<MathModel> SERVICE_HANDLE = ServiceHandle.createNewService(MathModel.class, "A math model");
 
 }

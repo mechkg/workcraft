@@ -41,6 +41,7 @@ import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
+import org.workcraft.util.Function;
 
 import pcollections.HashTreePSet;
 import pcollections.PSet;
@@ -104,13 +105,13 @@ public class GenericSelectionTool<Node> {
 					hitTester.boxHitTest(selBox.p1, selBox.p2);
 		}		
 	};
-	
+	private final Function<Point2D, Point2D> snap;
 
-
-	public GenericSelectionTool(ModifiableExpression<PSet<Node>> selection, HitTester<Node> hitTester, MovableController<Node> movableController) {
+	public GenericSelectionTool(ModifiableExpression<PSet<Node>> selection, HitTester<Node> hitTester, MovableController<Node> movableController, Function<Point2D, Point2D> snap) {
 		this.selection = selection;
 		this.hitTester = hitTester;
 		this.movableController = movableController;
+		this.snap = snap;
 	}
 	
 	public boolean isDragging() {
@@ -181,12 +182,12 @@ public class GenericSelectionTool<Node> {
 		
 		if(eval(drag)==DRAG_MOVE) {
 			Point2D prevPosition = e.getPrevPosition();
-			Point2D p1 = e.getEditor().snap(
+			Point2D p1 = snap.apply(
 					new Point2D.Double(prevPosition.getX()+
 							snapOffset.getX(), 
 							prevPosition.getY()+
 							snapOffset.getY()));
-			Point2D p2 = e.getEditor().snap(new Point2D.Double(e.getX()+snapOffset.getX(), e.getY()+snapOffset.getY()));
+			Point2D p2 = snap.apply(new Point2D.Double(e.getX()+snapOffset.getX(), e.getY()+snapOffset.getY()));
 			offsetSelection(p2.getX()-p1.getX(), p2.getY()-p1.getY());
 		}
 		
@@ -237,7 +238,7 @@ public class GenericSelectionTool<Node> {
 
 					Point2D nodePosValue = eval(nodePos);
 					Point2D pos = new Point2D.Double(nodePosValue.getX(), nodePosValue.getY());
-					Point2D pSnap = e.getEditor().snap(pos);
+					Point2D pSnap = snap.apply(pos);
 					offsetSelection(pSnap.getX()-pos.getX(), pSnap.getY()-pos.getY());
 					snapOffset = new Point2D.Double(pSnap.getX()-e.getStartPosition().getX(), pSnap.getY()-e.getStartPosition().getY());
 				}
@@ -277,8 +278,8 @@ public class GenericSelectionTool<Node> {
 	private void cancelDrag(GraphEditorMouseEvent e) {
 
 		if(eval(drag)==DRAG_MOVE) {
-			Point2D p1 = e.getEditor().snap(new Point2D.Double(e.getStartPosition().getX()+snapOffset.getX(), e.getStartPosition().getY()+snapOffset.getY()));
-			Point2D p2 = e.getEditor().snap(new Point2D.Double(e.getX()+snapOffset.getX(), e.getY()+snapOffset.getY()));
+			Point2D p1 = snap.apply(new Point2D.Double(e.getStartPosition().getX()+snapOffset.getX(), e.getStartPosition().getY()+snapOffset.getY()));
+			Point2D p2 = snap.apply(new Point2D.Double(e.getX()+snapOffset.getX(), e.getY()+snapOffset.getY()));
 			offsetSelection(p1.getX()-p2.getX(), p1.getY()-p2.getY());
 		}
 		else if(eval(drag) == DRAG_SELECT) {
@@ -309,5 +310,4 @@ public class GenericSelectionTool<Node> {
 			}
 		};
 	}
-	
 }

@@ -339,7 +339,7 @@ public class MainMenu extends JMenuBar {
 		mnExport.removeAll();
 		mnExport.setEnabled(false);
 
-		ServiceProvider modelServices = we.getModelEntry().services;
+		ServiceProvider modelServices = we.getModelEntry();
 		
 		for (PluginInfo<? extends Exporter> info : framework.getPluginManager().getPlugins(Exporter.class)) { 
 			Exporter exporter = info.getSingleton();

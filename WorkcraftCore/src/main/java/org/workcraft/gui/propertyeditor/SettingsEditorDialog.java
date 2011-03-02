@@ -164,7 +164,7 @@ public class SettingsEditorDialog extends JDialog {
 		if (p == null)
 			propertiesTable.setObject(null);
 		else {
-			propertiesTable.setObject(p);
+			propertiesTable.setObject(p.getProperties());
 		}
 	}
 

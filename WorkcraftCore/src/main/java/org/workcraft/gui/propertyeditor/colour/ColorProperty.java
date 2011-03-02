@@ -19,26 +19,16 @@
 *
 */
 
-package org.workcraft.gui.propertyeditor;
+package org.workcraft.gui.propertyeditor.colour;
 
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
+import java.awt.Color;
 
-public class ColorProperty implements PropertyClass {
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 
-	public Object fromCellEditorValue(Object editorComponentValue) {
-		return editorComponentValue;
-	}
+public class ColorProperty {
 
-	public TableCellEditor getCellEditor() {
-		return new ColorCellEditor();
-	}
-
-	public TableCellRenderer getCellRenderer() {
-		return new ColorCellRenderer(true);
-	}
-
-	public Object toCellRendererValue(Object value) {
-		return value;
+	public static EditableProperty create(String name, ModifiableExpression<Color> property) {
+		return EditableProperty.Util.create(name, new ColorCellEditor(), ColorCellRenderer.INSTANCE, property);
 	}
 }

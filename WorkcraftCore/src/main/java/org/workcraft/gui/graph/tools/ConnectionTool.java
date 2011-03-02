@@ -40,37 +40,34 @@ import javax.swing.Icon;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.GraphicalContent;
-import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.TouchableProvider;
-import org.workcraft.dom.visual.TransformHelper;
-import org.workcraft.dom.visual.VisualGroup;
-import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.util.GUI;
 
 public class ConnectionTool extends AbstractTool implements DecorationProvider<Colorisator> {
-	private final ModifiableExpression<VisualNode> mouseOverObject = Variable.create(null);
-	private final ModifiableExpression<VisualNode> first = Variable.create(null);
+	private final ModifiableExpression<Node> mouseOverObject = Variable.create(null);
+	private final ModifiableExpression<Node> first = Variable.create(null);
 
 	private boolean mouseExitRequiredForSelfLoop = true;
 	private boolean leftFirst = false;
 	private ModifiableExpression<Point2D> lastMouseCoords = Variable.<Point2D>create(new Point2D.Double());
 	private String warningMessage = null;
-	private final GraphEditor editor;
+	private final ConnectionManager<Node> connectionManager;
 	
 	private static Color highlightColor = new Color(99, 130, 191).brighter();
 	private final TouchableProvider<Node> touchableProvider;
+	private final HitTester<Node> hitTester; // hitTestForConnection
 
-	public ConnectionTool (GraphEditor editor, TouchableProvider<Node> touchableProvider) {
-		this.editor = editor;
+	public ConnectionTool (TouchableProvider<Node> touchableProvider, ConnectionManager<Node> connectionManager, HitTester<Node> hitTester) {
 		this.touchableProvider = touchableProvider;
+		this.connectionManager = connectionManager;
+		this.hitTester = hitTester;
 	}
 
 	public Ellipse2D getBoundingCircle(Rectangle2D boundingRect) {
@@ -84,7 +81,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 
 	@Override
 	public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
-		return connectingLineGraphicalContent();
+		return connectingLineGraphicalContent(viewport);
 	}
 
 	@Override
@@ -121,7 +118,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 		};
 	}
 
-	private Expression<? extends GraphicalContent> connectingLineGraphicalContent() {
+	private Expression<? extends GraphicalContent> connectingLineGraphicalContent(final Viewport viewport) {
 		return new ExpressionBase<GraphicalContent>(){
 
 			@Override
@@ -130,21 +127,20 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 
 					@Override
 					public void draw(Graphics2D g) {
-						g.setStroke(new BasicStroke((float)editor.getViewport().pixelSizeInUserSpace().getX()));
+						g.setStroke(new BasicStroke((float)viewport.pixelSizeInUserSpace().getX()));
 
 						if (context.resolve(first) != null) {
-							VisualGroup root = (VisualGroup)editor.getModel().getRoot();
 							warningMessage = null;
 							if (context.resolve(mouseOverObject) != null) {
 								try {
-									editor.getModel().validateConnection(context.resolve(first), context.resolve(mouseOverObject));
-									drawConnectingLine(g, root, Color.GREEN, context);
+									connectionManager.prepareConnection(context.resolve(first), context.resolve(mouseOverObject));
+									drawConnectingLine(g, Color.GREEN, context);
 								} catch (InvalidConnectionException e) {
 									warningMessage = e.getMessage();
-									drawConnectingLine(g, root, Color.RED, context);
+									drawConnectingLine(g, Color.RED, context);
 								}
 							} else {
-								drawConnectingLine(g, root, Color.BLUE, context);
+								drawConnectingLine(g, Color.BLUE, context);
 							}
 						}
 					}
@@ -154,10 +150,10 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 		};
 	}
 
-	private void drawConnectingLine(Graphics2D g, VisualGroup root, Color color, EvaluationContext context) {
+	private void drawConnectingLine(Graphics2D g, Color color, EvaluationContext context) {
 		g.setColor(color);
 		
-		Point2D center = context.resolve(TransformHelper.transform(touchableProvider.apply(context.resolve(first)), TransformHelper.getTransformToAncestor(first, Expressions.constant(root)))).getCenter();
+		Point2D center = context.resolve(touchableProvider.apply(context.resolve(first))).getCenter();
 		
 		Line2D line = new Line2D.Double(center.getX(), center.getY(), context.resolve(lastMouseCoords).getX(), context.resolve(lastMouseCoords).getY());
 		g.draw(line);
@@ -171,7 +167,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 	public void mouseMoved(GraphEditorMouseEvent e) {
 		lastMouseCoords.setValue(e.getPosition());
 		
-		VisualNode newMouseOverObject = (VisualNode) HitMan.hitTestForConnection(touchableProvider, e.getPosition(), e.getModel());
+		Node newMouseOverObject = hitTester.hitTest(e.getPosition());
 		
 		mouseOverObject.setValue(newMouseOverObject);
 
@@ -194,7 +190,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 				}
 			} else if (eval(mouseOverObject) != null) {
 				try {
-					e.getModel().connect(eval(first), eval(mouseOverObject));
+					connectionManager.prepareConnection(eval(first), eval(mouseOverObject)).run();
 
 					if ((e.getModifiers() & MouseEvent.CTRL_DOWN_MASK) != 0) {
 						assign(first, mouseOverObject);

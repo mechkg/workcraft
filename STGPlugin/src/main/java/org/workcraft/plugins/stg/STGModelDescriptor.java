@@ -5,7 +5,6 @@ import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
-import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.interop.ServiceProviderImpl;
 
@@ -31,8 +30,7 @@ public class STGModelDescriptor implements ModelDescriptor
 		return ServiceProviderImpl.createLegacyServiceProvider(model);
 	}
 
-	public static ServiceProvider getServices(STGModel model) {
-		// TODO Auto-generated method stub
-		return null;
+	public static ServiceProvider getServices(STGModel model, HistoryPreservingStorageManager storage) {
+		return ServiceProviderImpl.EMPTY.plusImplementation(STGModel.SERVICE_HANDLE, model).plusImplementation(HistoryPreservingStorageManager.SERVICE_HANDLE, storage);
 	}
 }

@@ -20,120 +20,64 @@
 */
 
 package org.workcraft.plugins.shared;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.workcraft.Config;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
+import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.SettingsPage;
+import org.workcraft.gui.propertyeditor.string.StringProperty;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class PetrifyUtilitySettings implements SettingsPage {
-	private static LinkedList<PropertyDescriptor> properties;
-	
-	private static String petrifyCommand = "petrify";
-	private static String petrifyArgs = "";
+
+	public static final Variable<String> petrifyCommand = Variable.create("petrify");
+	public static final Variable<String> petrifyArgs = Variable.create("");
+	public static final Variable<String> draw_astgCommand = Variable.create("draw_astg");
+	public static final Variable<String> draw_astgArgs = Variable.create("");
+	public static final Variable<String> write_sgCommand = Variable.create("write_sg");
+	public static final Variable<String> write_sgArgs = Variable.create("");
 	
 	private static final String petrifyCommandKey = "Tools.petrify.command";
 	private static final String petrifyArgsKey = "Tools.petrify.args";
 	
-	private static String draw_astgCommand = "draw_astg";
-	private static String draw_astgArgs = "";
-	
 	private static final String draw_astgCommandKey = "Tools.draw_astg.command";
 	private static final String draw_astgArgsKey = "Tools.draw_astg.args";
-	
-	private static String write_sgCommand = "write_sg";
-	private static String write_sgArgs = "";
 	
 	private static final String write_sgCommandKey = "Tools.write_sg.command";
 	private static final String write_sgArgsKey = "Tools.write_sg.args";
 	
-	
-
-	public PetrifyUtilitySettings() {
-		properties = new LinkedList<PropertyDescriptor>();
-		properties.add(new PropertyDeclaration(this, "petrify command", "getPetrifyCommand", "setPetrifyCommand", String.class));
-		properties.add(new PropertyDeclaration(this, "Additional petrify command line arguments", "getPetrifyArgs", "setPetrifyArgs", String.class));
-		properties.add(new PropertyDeclaration(this, "write_sg command", "getWrite_sgCommand", "setWrite_sgCommand", String.class));
-		properties.add(new PropertyDeclaration(this, "Additional write_sg command line arguments", "getWrite_sgArgs", "setWrite_sgArgs", String.class));
-		properties.add(new PropertyDeclaration(this, "draw_astg command", "getDraw_astgCommand", "setDraw_astgCommand", String.class));
-		properties.add(new PropertyDeclaration(this, "Additional draw_astg command line arguments", "getDraw_astgArgs", "setDraw_astgArgs", String.class));
-	}
-	
-	public List<PropertyDescriptor> getDescriptors() {
-		return properties;
+	@Override
+	public PVector<EditableProperty> getProperties() {
+		return TreePVector.<EditableProperty>empty()
+			.plus(StringProperty.create("petrify command", petrifyCommand))
+			.plus(StringProperty.create("Additional petrify command line arguments", petrifyArgs))
+			.plus(StringProperty.create("write_sg command", write_sgCommand))
+			.plus(StringProperty.create("Additional write_sg command line arguments", write_sgArgs))
+			.plus(StringProperty.create("draw_astg command", draw_astgCommand))
+			.plus(StringProperty.create("Additional draw_astg command line arguments", draw_astgArgs));
 	}
 
 	public void load(Config config) {
-		petrifyCommand = config.getString(petrifyCommandKey, "petrify");
-		petrifyArgs = config.getString(petrifyArgsKey, "");
-		draw_astgCommand = config.getString(draw_astgCommandKey, "draw_astg");
-		draw_astgArgs= config.getString(draw_astgArgsKey, "");
-		write_sgCommand = config.getString(write_sgCommandKey, "write_sg");
-		write_sgArgs= config.getString(write_sgArgsKey, "");
-		
+		petrifyCommand.setValue(config.getString(petrifyCommandKey, "petrify"));
+		petrifyArgs.setValue(config.getString(petrifyArgsKey, ""));
+		draw_astgCommand.setValue(config.getString(draw_astgCommandKey, "draw_astg"));
+		draw_astgArgs.setValue(config.getString(draw_astgArgsKey, ""));
+		write_sgCommand.setValue(config.getString(write_sgCommandKey, "write_sg"));
+		write_sgArgs.setValue(config.getString(write_sgArgsKey, ""));
 	}
 
 	public void save(Config config) {
-		config.set(petrifyCommandKey, petrifyCommand);
-		config.set(petrifyArgsKey, petrifyArgs);
-		config.set(draw_astgCommandKey, draw_astgCommand);
-		config.set(draw_astgArgsKey, draw_astgArgs);
-		config.set(write_sgCommandKey, write_sgCommand);
-		config.set(write_sgArgsKey, write_sgArgs);
+		config.set(petrifyCommandKey, petrifyCommand.getValue());
+		config.set(petrifyArgsKey, petrifyArgs.getValue());
+		config.set(draw_astgCommandKey, draw_astgCommand.getValue());
+		config.set(draw_astgArgsKey, draw_astgArgs.getValue());
+		config.set(write_sgCommandKey, write_sgCommand.getValue());
+		config.set(write_sgArgsKey, write_sgArgs.getValue());
 	}
 	
 	public String getSection() {
 		return "External tools";
-	}
-
-	public static String getPetrifyCommand() {
-		return petrifyCommand;
-	}
-
-	public static void setPetrifyCommand(String petrifyCommand) {
-		PetrifyUtilitySettings.petrifyCommand = petrifyCommand;
-	}
-
-	public static String getPetrifyArgs() {
-		return petrifyArgs;
-	}
-
-	public static void setPetrifyArgs(String petrifyArgs) {
-		PetrifyUtilitySettings.petrifyArgs = petrifyArgs;
-	}
-
-	public static String getDraw_astgCommand() {
-		return draw_astgCommand;
-	}
-
-	public static void setDraw_astgCommand(String draw_astgCommand) {
-		PetrifyUtilitySettings.draw_astgCommand = draw_astgCommand;
-	}
-
-	public static String getDraw_astgArgs() {
-		return draw_astgArgs;
-	}
-
-	public static void setDraw_astgArgs(String draw_astgArgs) {
-		PetrifyUtilitySettings.draw_astgArgs = draw_astgArgs;
-	}
-
-	public static String getWrite_sgCommand() {
-		return write_sgCommand;
-	}
-
-	public static void setWrite_sgCommand(String write_sgCommand) {
-		PetrifyUtilitySettings.write_sgCommand = write_sgCommand;
-	}
-
-	public static String getWrite_sgArgs() {
-		return write_sgArgs;
-	}
-
-	public static void setWrite_sgArgs(String write_sgArgs) {
-		PetrifyUtilitySettings.write_sgArgs = write_sgArgs;
 	}
 
 	@Override

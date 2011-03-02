@@ -21,62 +21,47 @@
 
 package org.workcraft.gui.propertyeditor;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-
 import javax.swing.table.AbstractTableModel;
+
+import org.workcraft.exceptions.NotSupportedException;
+
+import checkers.nullness.quals.Nullable;
+
+import pcollections.PVector;
 
 @SuppressWarnings("serial")
 public class PropertyEditorTableModel extends AbstractTableModel {
 	static final String [] columnNames = { "property", "value" };
-	PropertyDescriptor[] declarations = null;
-	PropertyClass[] rowClasses = null;
-	Properties object = null;
+	@Nullable PVector<EditableProperty> properties = null;
 
 	@Override
 	public String getColumnName(int col) {
 		return columnNames[col];
 	}
 
-	public void setObject(Properties object) {
-		if (object == null) {
-			clearObject();
-			return;
-		}
-
-		this.object = object;
-		declarations =  object.getDescriptors().toArray(new PropertyDescriptor[0]);
-		rowClasses = new PropertyClass[declarations.length];
+	public void setProperties(PVector<EditableProperty> properties) {
+		this.properties = properties;
 
 		fireTableDataChanged();
 		fireTableStructureChanged();
 	}
 
 	public void clearObject() {
-		object = null;
-		declarations = null;
-		rowClasses = null;
-
-		fireTableDataChanged();
-		fireTableStructureChanged();
-	}
-
-	public void setRowClass(int i, PropertyClass cls) {
-		rowClasses[i] = cls;
+		setProperties(null);
 	}
 
 	public int getColumnCount() {
-		if (object == null)
+		if (properties == null)
 			return 0;
 		else
 			return 2;
 	}
 
 	public int getRowCount() {
-		if (object == null)
+		if (properties == null)
 			return 0;
 		else
-			return declarations.length;
+			return properties.size();
 	}
 
 	@Override
@@ -84,49 +69,21 @@ public class PropertyEditorTableModel extends AbstractTableModel {
 		if (col == 0)
 			return false;
 		else
-			return (declarations[row].isWritable());
-	}
-
-	public PropertyDescriptor getRowDeclaration(int i) {
-		return declarations[i];
+			return true;// TODO: isWritable?
 	}
 
 	public Object getValueAt(int row, int col) {
 		if (col ==0 )
-			return declarations[row].getName();
-		else try {
-			Object value = declarations[row].getValue();
-			if (rowClasses[row] != null)
-				return rowClasses[row].toCellRendererValue(value);
-			else
-			{
-				Map<Object, String> choice = declarations[row].getChoice();
-				if(choice != null) 
-					return choice.get(value);
-				else
-					return value.toString();
-			}
-		} catch (Throwable e) {
-			e.printStackTrace();
-			return "#EXCEPTION";
-		}
+			return properties.get(row).name();
+		else 
+			return null;
 	}
 
 	@Override
 	public void setValueAt(Object value, int row, int col) {
-		PropertyDescriptor desc = declarations[row]; 
-
-		if (rowClasses[row] != null)
-			value = rowClasses[row].fromCellEditorValue(value);
-
-		try {
-			desc.setValue(value);
-		} catch (InvocationTargetException e) {
-			throw new RuntimeException(e.getCause().getMessage(), e);
-		}
-	}
-
-	public Properties getObject() {
-		return object;
+		if(value == null)
+			return;
+		else
+			throw new NotSupportedException();
 	}
 }

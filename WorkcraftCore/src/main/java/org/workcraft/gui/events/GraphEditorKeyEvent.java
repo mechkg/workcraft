@@ -24,18 +24,12 @@ package org.workcraft.gui.events;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
-import org.workcraft.dom.visual.VisualModel;
-import org.workcraft.gui.graph.tools.GraphEditor;
-
 public class GraphEditorKeyEvent {
-	GraphEditor editor;
 	char keyChar;
 	int keyCode;
 	int modifiers;
-	public GraphEditorKeyEvent(GraphEditor editor, KeyEvent event)
+	public GraphEditorKeyEvent(KeyEvent event)
 	{
-		this.editor = editor;
-		
 		keyChar = event.getKeyChar();
 		keyCode = event.getKeyCode();
 		modifiers = event.getModifiersEx();
@@ -74,14 +68,5 @@ public class GraphEditorKeyEvent {
 	public int getModifiers()
 	{
 		return modifiers;
-	}	
-	
-	public GraphEditor getEditor()
-	{
-		return editor;
-	}
-	
-	public VisualModel getModel() {
-		return editor.getModel();
 	}
 }

@@ -15,7 +15,7 @@ import org.workcraft.relational.interfaces.FieldVisitor;
 import org.workcraft.relational.interfaces.PrimitiveField;
 import org.workcraft.relational.interfaces.Relation;
 import org.workcraft.relational.interfaces.RelationField;
-import org.workcraft.util.Null;
+import org.workcraft.util.Nothing;
 import org.workcraft.util.Pair;
 
 import pcollections.HashTreePMap;
@@ -110,16 +110,16 @@ public class DatabaseEngineImpl implements DatabaseEngine {
 				throw new RuntimeException(String.format("Incompatible types for field %s: '%s' when '%s' was expected", fieldName, actualType, expectedType));
 
 			
-			field.accept(new FieldVisitor<Null>() {
+			field.accept(new FieldVisitor<Nothing>() {
 				@Override
-				public Null visit(RelationField f) {
+				public Nothing visit(RelationField f) {
 					if(!dbImpl.data.get(f.getRelation().name()).containsKey(((Id) value)))
 						throw new RuntimeException(String.format("Field %s: can't add a reference to non-existing object", fieldName));
 					return null;
 				}
 
 				@Override
-				public Null visit(PrimitiveField<?> f) {
+				public Nothing visit(PrimitiveField<?> f) {
 					return null;
 				}
 			});

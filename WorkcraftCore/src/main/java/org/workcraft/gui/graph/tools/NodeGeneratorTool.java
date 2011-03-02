@@ -23,6 +23,7 @@ package org.workcraft.gui.graph.tools;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Point2D;
 
 import javax.swing.Icon;
 
@@ -35,13 +36,16 @@ import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.util.GUI;
+import org.workcraft.util.Function;
 
 public class NodeGeneratorTool extends AbstractTool {
 	private NodeGenerator generator;
 	protected int hotKeyCode;
+	private final Function<Point2D, Point2D> snap;
 
-	public NodeGeneratorTool (NodeGenerator generator) {
+	public NodeGeneratorTool (NodeGenerator generator, Function<Point2D, Point2D> snap) {
 		this.generator = generator;
+		this.snap = snap;
 	}
 	
 	public Icon getIcon() {
@@ -54,7 +58,7 @@ public class NodeGeneratorTool extends AbstractTool {
 
 	public void mousePressed(GraphEditorMouseEvent e) {
 		try {
-			generator.generate(e.getModel(), e.getEditor().snap(e.getPosition()));
+			generator.generate(snap.apply(e.getPosition()));
 		} catch (NodeCreationException e1) {
 			throw new RuntimeException (e1);
 		}

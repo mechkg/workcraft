@@ -37,16 +37,10 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
-import org.workcraft.annotations.Annotations;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.dom.VisualModelDescriptor;
-import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
-import org.workcraft.gui.graph.GraphEditorPanel;
-import org.workcraft.gui.graph.tools.CustomToolsProvider;
-import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.plugins.shared.CommonVisualSettings;
@@ -99,7 +93,7 @@ public class ToolboxPanel extends JPanel implements GraphEditorKeyListener {
 		button.setMargin(new Insets(0,0,0,0));
 		
 		Insets insets = button.getInsets();
-		int iconSize = CommonVisualSettings.getIconSize();
+		int iconSize = eval(CommonVisualSettings.iconSize); // TODO: make the size update appropriately
 		int minSize = iconSize+Math.max(insets.left+insets.right, insets.top+insets.bottom);
 		
 		Icon icon = tool.getIcon();
@@ -174,60 +168,19 @@ public class ToolboxPanel extends JPanel implements GraphEditorKeyListener {
 		selectedTool.setValue(tool);
 	}
 
-	private void setToolsForModel (VisualModelDescriptor modelDescriptor, GraphEditor editor) {
-		setLayout(new SimpleFlowLayout (5, 5));
-		
-		try{
-			Iterable<? extends GraphEditorTool> tools = modelDescriptor.createTools(editor);
-			for(GraphEditorTool tool : tools)
-				addTool(tool, false);
-			selectTool(tools.iterator().next());
-			return;
-		}
-		catch(NotImplementedException e) {
-		}
-		
-		Class<? extends CustomToolsProvider> customTools = Annotations.getCustomToolsProvider(editor.getModel().getClass());
-		if(customTools != null)
-		{
-			boolean selected = true;
-			CustomToolsProvider provider = null;
-			try {
-				provider = customTools.getConstructor().newInstance();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			if(provider != null)
-				for(GraphEditorTool tool : provider.getTools(editor))
-				{
-					addTool(tool, selected);
-					selected = false;
-				}
-		}
-		else
-		{
-			throw new NotImplementedException();
-		}
-		
-		for (Class<? extends GraphEditorTool>  tool : Annotations.getCustomTools(editor.getModel().getClass()))
-			try {
-				addTool(tool.newInstance() , false);
-			} catch (InstantiationException e) {
-				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException(e);
-			}
-		
-		doLayout();
-		this.repaint();
-	}
-
-	public ToolboxPanel(GraphEditorPanel editor, VisualModelDescriptor descriptor) {
+	public ToolboxPanel(Iterable<? extends GraphEditorTool> tools) {
 		this.setFocusable(false);
 
 		selectedTool.setValue(null);
 
-		setToolsForModel(descriptor, editor);
+		setLayout(new SimpleFlowLayout (5, 5));
+		
+		for(GraphEditorTool tool : tools)
+			addTool(tool, false);
+		selectTool(tools.iterator().next());
+		
+		doLayout();
+		this.repaint();
 	}
 
 	public Expression<GraphEditorTool> selectedTool() {

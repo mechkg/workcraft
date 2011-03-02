@@ -41,6 +41,7 @@ import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.gui.workspace.Path;
 import org.workcraft.interop.Importer;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.util.FileUtils;
 import org.workcraft.util.Import;
 import org.workcraft.util.LinkedTwoWayMap;
@@ -101,12 +102,12 @@ public class Workspace {
 				if(we.getWorkspacePath().equals(workspacePath))
 					return we;
 
-			final ModelEntry modelEntry;
+			final ServiceProvider modelServices;
 			if (file.getName().endsWith(".work")) {
 				if (workspacePath == null)
 					workspacePath = tempMountExternalFile(file);
 				
-				modelEntry = framework.load(file.getPath());
+				modelServices = framework.load(file.getPath());
 			} else {
 				try {
 					Path<String> parent;
@@ -116,14 +117,14 @@ public class Workspace {
 						parent = workspacePath.getParent();
 					
 					final Importer importer = Import.chooseBestImporter(framework.getPluginManager(), file);
-					modelEntry = Import.importFromFile(importer, file);
+					modelServices = Import.importFromFile(importer, file);
 					
 					workspacePath = newName(parent, FileUtils.getFileNameWithoutExtension(file));
 				} catch (IOException e) {
 					throw new DeserialisationException(e);
 				}
 			}
-			WorkspaceEntry we = new WorkspaceEntry(this, modelEntry);
+			WorkspaceEntry we = new WorkspaceEntry(this, modelServices);
 			we.setTemporary(temporary);
 			we.setChanged(false);
 			openFiles.put(workspacePath, we);
@@ -184,7 +185,7 @@ public class Workspace {
 		return null;
 	}
 
-	public WorkspaceEntry add(Path<String> directory, String desiredName, ModelEntry modelEntry, boolean temporary) {
+	public WorkspaceEntry add(Path<String> directory, String desiredName, ServiceProvider modelEntry, boolean temporary) {
 		final Path<String> path = newName(directory, desiredName);
 		WorkspaceEntry we = new WorkspaceEntry(this, modelEntry);
 		we.setTemporary(temporary);

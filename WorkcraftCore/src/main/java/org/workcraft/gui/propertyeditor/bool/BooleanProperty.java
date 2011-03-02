@@ -19,16 +19,14 @@
 *
 */
 
-package org.workcraft.gui.propertyeditor;
+package org.workcraft.gui.propertyeditor.bool;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 
-public interface PropertyDescriptor {
-	public boolean isWritable();
-	public Object getValue() throws InvocationTargetException;
-	public void setValue(Object value) throws InvocationTargetException;
-	public Map<Object, String> getChoice();
-	public String getName();
-	public Class<?> getType();
+public class BooleanProperty {
+
+	public static EditableProperty create(String name, final ModifiableExpression<Boolean> expr) {
+		return EditableProperty.Util.create(name, BooleanCellEditor.INSTANCE, BooleanCellRenderer.INSTANCE, expr);
+	}
 }

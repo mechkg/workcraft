@@ -52,6 +52,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
+import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.FormatException;
@@ -60,6 +61,8 @@ import org.workcraft.exceptions.PluginInstantiationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.propertyeditor.SettingsPage;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.PluginInfo;
 import org.workcraft.plugins.serialisation.XMLModelDeserialiser;
 import org.workcraft.plugins.serialisation.XMLModelSerialiser;
@@ -77,9 +80,7 @@ import org.workcraft.tasks.TaskManager;
 import org.workcraft.util.DataAccumulator;
 import org.workcraft.util.FileUtils;
 import org.workcraft.util.XmlUtil;
-import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.Workspace;
-import org.xml.sax.SAXException;
 
 
 public class Framework {
@@ -496,7 +497,7 @@ public class Framework {
 		contextFactory.call(setargs);
 	}
 
-	public ModelEntry load(String path) throws DeserialisationException {
+	public ServiceProvider load(String path) throws DeserialisationException {
 		try {
 			FileInputStream fis = new FileInputStream(path);
 			return load(fis);
@@ -505,7 +506,7 @@ public class Framework {
 		}
 	}
 
-	private InputStream getUncompressedEntry(String name, InputStream zippedData) throws IOException {
+	private static InputStream getUncompressedEntry(String name, InputStream zippedData) throws IOException {
 		ZipInputStream zis = new ZipInputStream(zippedData);
 
 		ZipEntry ze;
@@ -523,64 +524,78 @@ public class Framework {
 		return null;
 	}
 
-	public ModelEntry load(InputStream is) throws DeserialisationException   {
+	interface ModelFileMetadata {
+		String descriptor();
+		String mathFileName();
+		String visualFileName();
+	}
+	
+	static ModelFileMetadata getMetadata(final InputStream input) throws DeserialisationException {
+		final Document metaDoc;
+		try {
+			final InputStream metadata = getUncompressedEntry("meta", input);
+	
+			if (metadata == null)
+				throw new DeserialisationException("meta entry is missing in the ZIP file");
+	
+			metaDoc = XmlUtil.loadDocument(metadata);
+			
+			metadata.close();
+		}
+		catch(Throwable e) {
+			throw new DeserialisationException(e);
+		}
+		final Element descriptorElement = XmlUtil.getChildElement("descriptor", metaDoc.getDocumentElement());
+		final Element mathElement = XmlUtil.getChildElement("math", metaDoc.getDocumentElement());
+		final Element visualElement = XmlUtil.getChildElement("visual", metaDoc.getDocumentElement());
+		
+		final String descriptorClass = XmlUtil.readStringAttr(descriptorElement, "class");
+		return new ModelFileMetadata() {
+			
+			@Override
+			public String visualFileName() {
+				return visualElement == null ? null : visualElement.getAttribute("entry-name");
+			}
+			
+			@Override
+			public String mathFileName() {
+				return mathElement.getAttribute("entry-name");
+			}
+			
+			@Override
+			public String descriptor() {
+				return descriptorClass;
+			}
+		};
+	}
+	
+	public ServiceProvider load(InputStream is) throws DeserialisationException   {
 		try {
 			byte[] bufferedInput = DataAccumulator.loadStream(is);
 
-			InputStream metadata = getUncompressedEntry("meta", new ByteArrayInputStream(bufferedInput));
-
-			if (metadata == null)
-				throw new DeserialisationException("meta entry is missing in the ZIP file");
-
-			Document metaDoc = XmlUtil.loadDocument(metadata);
-			
-			metadata.close();
+			ModelFileMetadata metadata = getMetadata(new ByteArrayInputStream(bufferedInput));
 			
 			HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager(); 
 			
-			Element descriptorElement = XmlUtil.getChildElement("descriptor", metaDoc.getDocumentElement());
 			
-			String descriptorClass = XmlUtil.readStringAttr(descriptorElement, "class");
+			ModelDescriptor descriptor = (ModelDescriptor) Class.forName(metadata.descriptor()).newInstance();
 			
-			ModelDescriptor descriptor = (ModelDescriptor) Class.forName(descriptorClass).newInstance();
-			
-			// load math model
-
-			Element mathElement = XmlUtil.getChildElement("math", metaDoc.getDocumentElement());
-			//UUID mathFormatUUID = UUID.fromString(mathElement.getAttribute("format-uuid"));
-
-			InputStream mathData = getUncompressedEntry(mathElement.getAttribute("entry-name"), new ByteArrayInputStream(bufferedInput));
-			// TODO: get proper deserialiser for format
-
-			ModelDeserialiser mathDeserialiser = new XMLModelDeserialiser(getPluginManager()); //pluginManager.getSingleton(XMLDeserialiser.class);
-
+			InputStream mathData = getUncompressedEntry(metadata.mathFileName(), new ByteArrayInputStream(bufferedInput));
+			ModelDeserialiser mathDeserialiser = new XMLModelDeserialiser(getPluginManager());
 			DeserialisationResult mathResult = mathDeserialiser.deserialise(mathData, storage, null);
-
 			mathData.close();
 
 			// load visual model if present
+			if (metadata.visualFileName() == null)
+				return descriptor.createServiceProvider(mathResult.model, storage);
 
-			Element visualElement = XmlUtil.getChildElement("visual", metaDoc.getDocumentElement());
-
-			if (visualElement == null)
-				return new ModelEntry(descriptor, mathResult.model, storage, descriptor.createServiceProvider(mathResult.model));
-
-			//UUID visualFormatUUID = UUID.fromString(visualElement.getAttribute("format-uuid"));
-			InputStream visualData = getUncompressedEntry (visualElement.getAttribute("entry-name"), new ByteArrayInputStream(bufferedInput));
-
-			//TODO:get proper deserialiser
-			XMLModelDeserialiser visualDeserialiser = new XMLModelDeserialiser(getPluginManager());//pluginManager.getSingleton(XMLDeserialiser.class);
-
+			InputStream visualData = getUncompressedEntry (metadata.visualFileName(), new ByteArrayInputStream(bufferedInput));
+			XMLModelDeserialiser visualDeserialiser = new XMLModelDeserialiser(getPluginManager());
 			DeserialisationResult visualResult = visualDeserialiser.deserialise(visualData, storage, mathResult.referenceResolver);
-			//visualResult.model.getVisualModel().setMathModel(mathResult.model.getMathModel());
-			return new ModelEntry(descriptor, visualResult.model, storage, descriptor.createServiceProvider(visualResult.model));
+			return descriptor.createServiceProvider(visualResult.model, storage);
 
 		} catch (IOException e) {
 			throw new DeserialisationException(e);
-		} catch (ParserConfigurationException e) {
-			throw new DeserialisationException(e);
-		} catch (SAXException e) {
-			throw new DeserialisationException(e);			
 		} catch (InstantiationException e) {
 			throw new DeserialisationException(e);
 		} catch (IllegalAccessException e) {
@@ -590,7 +605,7 @@ public class Framework {
 		} 
 	}
 
-	public void save(ModelEntry model, String path) throws SerialisationException {
+	public void save(ServiceProvider model, String path) throws SerialisationException, ServiceNotAvailableException {
 		File file = new File(path);
 		try {
 			FileOutputStream stream = new FileOutputStream(file);
@@ -603,8 +618,8 @@ public class Framework {
 		}
 	}
 
-	public void save(ModelEntry modelEntry, OutputStream out) throws SerialisationException {
-		Model model = modelEntry.getModel();
+	public void save(ServiceProvider modelEntry, OutputStream out) throws SerialisationException, ServiceNotAvailableException {
+		Model model = modelEntry.getImplementation(MathModel.SERVICE_HANDLE);
 		VisualModel visualModel = (model instanceof VisualModel)? (VisualModel)model : null ;
 		Model mathModel = (visualModel == null) ? model : visualModel.getMathModel();
 
@@ -646,7 +661,7 @@ public class Framework {
 			doc.appendChild(root);
 			
 			Element descriptor = doc.createElement("descriptor");
-			descriptor.setAttribute("class", modelEntry.getDescriptor().getClass().getCanonicalName());
+			descriptor.setAttribute("class", modelEntry.getImplementation(ModelDescriptor.SERVICE_HANDLE).getClass().getCanonicalName());
 			root.appendChild(descriptor);
 
 			Element math = doc.createElement("math");

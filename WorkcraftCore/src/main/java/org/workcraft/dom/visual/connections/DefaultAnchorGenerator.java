@@ -24,14 +24,22 @@ package org.workcraft.dom.visual.connections;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.TouchableProvider;
+import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.tools.DummyMouseListener;
 
 public class DefaultAnchorGenerator extends DummyMouseListener {
+	
+	private final VisualModel model;
+
+	public DefaultAnchorGenerator(VisualModel model) {
+		this.model = model;
+	}
+	
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e) {
 		if (e.getClickCount()==2) {
-			Node n = HitMan.hitTestForSelection(TouchableProvider.DEFAULT, e.getPosition(), e.getModel());
+			Node n = HitMan.hitTestForSelection(TouchableProvider.DEFAULT, e.getPosition(), model);
 			if (n instanceof VisualConnection) {
 				VisualConnection con = (VisualConnection)n;
 				if (con.getGraphic() instanceof Polyline)
@@ -39,5 +47,4 @@ public class DefaultAnchorGenerator extends DummyMouseListener {
 			}
 		}
 	}
-
 }

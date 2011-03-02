@@ -21,76 +21,48 @@
 
 package org.workcraft.plugins.layout;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.workcraft.Config;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
+import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.SettingsPage;
+import org.workcraft.gui.propertyeditor.dubble.DoubleProperty;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class RandomLayoutSettings implements SettingsPage {
-	protected static double startX = 0;
-	protected static double startY = 0;
-	protected static double rangeX = 30;
-	protected static double rangeY = 30;
+	public static final Variable<Double> startX = Variable.create(0.0);
+	public static final Variable<Double>  startY = Variable.create(0.0);
+	public static final Variable<Double>  rangeX = Variable.create(30.0);
+	public static final Variable<Double>  rangeY = Variable.create(30.0);
 	
-	
-	private static LinkedList<PropertyDescriptor> properties;
-	
-	public RandomLayoutSettings() {
-		properties = new LinkedList<PropertyDescriptor>();
-		properties.add(new PropertyDeclaration(this, "Start X", "getStartX", "setStartX", double.class));
-		properties.add(new PropertyDeclaration(this, "Start Y", "getStartY", "setStartY", double.class));
-		properties.add(new PropertyDeclaration(this, "Range X", "getRangeX", "setRangeX", double.class));		
-		properties.add(new PropertyDeclaration(this, "Range Y", "getRangeY", "setRangeY", double.class));
-		
+	@Override
+	public PVector<EditableProperty> getProperties() {
+		return TreePVector.<EditableProperty>empty()
+		.plus(DoubleProperty.create("Start X", startX))
+		.plus(DoubleProperty.create("Start Y", startY))
+		.plus(DoubleProperty.create("Range X", rangeX))
+		.plus(DoubleProperty.create("Range Y", rangeY))
+		;
 	}
-	public List<PropertyDescriptor> getDescriptors() {
-		return properties;
-	}
-
 	public void load(Config config) {
-		startX = config.getDouble("RandomLayout.startX", 0);
-		startY = config.getDouble("RandomLayout.startY", 0);
-		rangeX = config.getDouble("RandomLayout.rangeX", 30);
-		rangeY = config.getDouble("RandomLayout.rangeY", 30);
+		startX.setValue(config.getDouble("RandomLayout.startX", 0));
+		startY.setValue(config.getDouble("RandomLayout.startY", 0));
+		rangeX.setValue(config.getDouble("RandomLayout.rangeX", 30));
+		rangeY.setValue(config.getDouble("RandomLayout.rangeY", 30));
 	}
 
 	public void save(Config config) {
-		config.setDouble("RandomLayout.startX", startX);
-		config.setDouble("RandomLayout.startY", startY);
-		config.setDouble("RandomLayout.rangeX", rangeX);
-		config.setDouble("RandomLayout.rangeY", rangeY);
+		config.setDouble("RandomLayout.startX", startX.getValue());
+		config.setDouble("RandomLayout.startY", startY.getValue());
+		config.setDouble("RandomLayout.rangeX", rangeX.getValue());
+		config.setDouble("RandomLayout.rangeY", rangeY.getValue());
 	}
 	
 	public String getSection() {
 		return "Layout";
 	}
-	public static double getStartX() {
-		return startX;
-	}
-	public static void setStartX(double startX) {
-		RandomLayoutSettings.startX = startX;
-	}
-	public static double getStartY() {
-		return startY;
-	}
-	public static void setStartY(double startY) {
-		RandomLayoutSettings.startY = startY;
-	}
-	public static double getRangeX() {
-		return rangeX;
-	}
-	public static void setRangeX(double rangeX) {
-		RandomLayoutSettings.rangeX = rangeX;
-	}
-	public static double getRangeY() {
-		return rangeY;
-	}
-	public static void setRangeY(double rangeY) {
-		RandomLayoutSettings.rangeY = rangeY;
-	}
+
 	@Override
 	public String getName() {
 		return "Random";

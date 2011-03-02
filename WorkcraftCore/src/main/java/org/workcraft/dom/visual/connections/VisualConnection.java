@@ -26,7 +26,6 @@ import java.awt.Stroke;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
@@ -36,23 +35,29 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionFilter;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualNode;
-import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
+import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.gui.propertyeditor.choice.ChoiceProperty;
+import org.workcraft.gui.propertyeditor.dubble.DoubleProperty;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
+import org.workcraft.util.Pair;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class VisualConnection extends VisualNode implements
 		Node, DrawableNew, Connection,
@@ -128,6 +133,19 @@ public class VisualConnection extends VisualNode implements
 	private VisualComponent first;
 	private VisualComponent second;
 
+	private ModifiableExpression<ConnectionType> connectionTypeExpr = new ModifiableExpressionBase<ConnectionType>(){
+
+		@Override
+		public void setValue(ConnectionType newValue) {
+			setConnectionType(newValue);
+		}
+
+		@Override
+		protected ConnectionType evaluate(EvaluationContext context) {
+			return getConnectionType();
+		}
+	};
+	
 	private ConnectionType connectionType = ConnectionType.POLYLINE;
 	private final ModifiableExpression<ScaleMode> scaleMode;
 	
@@ -172,40 +190,43 @@ public class VisualConnection extends VisualNode implements
 	public final StorageManager storage;
 	
 	protected void initialise() {
-
 		children = new CachedHashSet<Node>(storage);
 
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Line width", lineWidth(), lineWidth(), Double.class));
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Arrow width", arrowWidth(), Double.class));
-
-		LinkedHashMap<String, Object> arrowLengths = new LinkedHashMap<String, Object>();
-		arrowLengths.put("short", 0.2);
-		arrowLengths.put("medium", 0.4);
-		arrowLengths.put("long", 0.8);
-
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Arrow length", arrowLength(), arrowLength(), Double.class, arrowLengths));
-
-		LinkedHashMap<String, Object> hm = new LinkedHashMap<String, Object>();
-
-		hm.put("Polyline", ConnectionType.POLYLINE);
-		hm.put("Bezier", ConnectionType.BEZIER);
-
-		addPropertyDeclaration(new PropertyDeclaration(this, "Connection type", "getConnectionType", "setConnectionType", ConnectionType.class, hm));
-
-		LinkedHashMap<String, Object> hm2 = new LinkedHashMap<String, Object>();
-
-		hm2.put("Lock anchors", ScaleMode.NONE);
-		hm2.put("Bind to components", ScaleMode.LOCK_RELATIVELY);
-		hm2.put("Proportional", ScaleMode.SCALE);
-		hm2.put("Stretch", ScaleMode.STRETCH);
-		hm2.put("Adaptive", ScaleMode.ADAPTIVE);
-
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Scale mode", scaleMode(), scaleMode(), ScaleMode.class, hm2));
-		
 		transformedShape1 = ComponentsTransformer.transform(first, this);
 		transformedShape2 = ComponentsTransformer.transform(second, this);
 		
 		children.add(graphic);
+	}
+	
+	@Override
+	public PVector<EditableProperty> getProperties() {
+
+		PVector<Pair<String,Double>> arrowLengths = TreePVector.<Pair<String, Double>>empty()
+		.plus(Pair.of("short", 0.2))
+		.plus(Pair.of("medium", 0.4))
+		.plus(Pair.of("long", 0.8))
+		;
+	
+		PVector<Pair<String,ConnectionType>> connectionTypes = TreePVector.<Pair<String, ConnectionType>>empty()
+		.plus(Pair.of("Polyline", ConnectionType.POLYLINE))
+		.plus(Pair.of("Bezier", ConnectionType.BEZIER))
+		;
+		
+		PVector<Pair<String,ScaleMode>> scaleModes = TreePVector.<Pair<String, ScaleMode>>empty()
+		.plus(Pair.of("Lock anchors", ScaleMode.NONE))
+		.plus(Pair.of("Bind to components", ScaleMode.LOCK_RELATIVELY))
+		.plus(Pair.of("Proportional", ScaleMode.SCALE))
+		.plus(Pair.of("Stretch", ScaleMode.STRETCH))
+		.plus(Pair.of("Adaptive", ScaleMode.ADAPTIVE))
+		;
+		
+		return super.getProperties()
+			.plus(DoubleProperty.create("Line width", lineWidth))
+			.plus(DoubleProperty.create("Arrow width", arrowWidth))
+			.plus(ChoiceProperty.create("Arrow length", arrowLengths, arrowLength))
+			.plus(ChoiceProperty.create("Connection type", connectionTypes, connectionTypeExpr))
+			.plus(ChoiceProperty.create("Scale mode", scaleModes, scaleMode))
+			;
 	}
 
 	public VisualConnection(StorageManager storage) {

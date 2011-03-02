@@ -8,6 +8,7 @@ import org.workcraft.dom.math.MathModel;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.interop.ServiceProviderImpl;
 import org.workcraft.plugins.balsa.BalsaCircuit;
+import org.workcraft.plugins.stg.DefaultStorageManager;
 
 public class BalsaModelDescriptor implements ModelDescriptor {
 	@Override
@@ -23,6 +24,10 @@ public class BalsaModelDescriptor implements ModelDescriptor {
 	@Override
 	public VisualModelDescriptor getVisualModelDescriptor() {
 		return new BalsaVisualModelDescriptor();
+	}
+
+	public static ServiceProvider createServiceProvider(BalsaCircuit circuit, DefaultStorageManager storage) {
+		return ServiceProviderImpl.EMPTY.plusImplementation(BalsaCircuit.SERVICE_HANDLE, circuit);
 	}
 
 	@Override

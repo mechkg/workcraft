@@ -28,10 +28,13 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.visual.VisualModel;
-import org.workcraft.gui.propertyeditor.Properties;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.observation.HierarchySupervisor;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 /**
  * A base class for all interpreted graph models. 
@@ -145,8 +148,8 @@ public abstract class AbstractModel implements Model {
 	}
 	
 	@Override
-	public Properties getProperties(Node node) {
-		return null;
+	public PVector<EditableProperty> getProperties(Node node) {
+		return TreePVector.empty();
 	}
 
 	@Override

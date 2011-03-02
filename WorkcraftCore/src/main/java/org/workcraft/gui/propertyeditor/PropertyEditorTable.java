@@ -21,27 +21,29 @@
 
 package org.workcraft.gui.propertyeditor;
 
-import java.awt.Color;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.awt.Component;
+import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.swing.JOptionPane;
+import javax.swing.AbstractCellEditor;
 import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 import org.workcraft.Framework;
-import org.workcraft.gui.ExceptionDialog;
-import org.workcraft.plugins.PluginInfo;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
+import org.workcraft.util.Action;
+
+import pcollections.PVector;
 
 @SuppressWarnings("serial")
 public class PropertyEditorTable extends JTable implements PropertyEditor {
-	HashMap<Class<?>, PropertyClass> propertyClasses;
-	TableCellRenderer cellRenderers[];
-	TableCellEditor cellEditors[];
+	HashMap<Class<?>, EditableProperty> propertyClasses;
+	ArrayList<ReactiveComponent> cellRenderers;
+	ArrayList<Expression<? extends EditorProvider>> cellEditors;
 
 	PropertyEditorTableModel model;
 
@@ -55,28 +57,36 @@ public class PropertyEditorTable extends JTable implements PropertyEditor {
 		setTableHeader(null);
 		setFocusable(false);
 
-		propertyClasses = new HashMap<Class<?>, PropertyClass>();
-		propertyClasses.put(int.class, new IntegerProperty());
-		propertyClasses.put(Integer.class, new IntegerProperty());
-		propertyClasses.put(double.class, new DoubleProperty());
-		propertyClasses.put(Double.class, new DoubleProperty());
-		propertyClasses.put(String.class, new StringProperty());
-		propertyClasses.put(boolean.class, new BooleanProperty());
-		propertyClasses.put(Boolean.class, new BooleanProperty());
-		propertyClasses.put(Color.class, new ColorProperty());
-
-		for(PluginInfo<? extends PropertyClassProvider> plugin : framework.getPluginManager().getPlugins(PropertyClassProvider.class)) {
-			PropertyClassProvider instance = plugin.newInstance();
-			propertyClasses.put(instance.getPropertyType(), instance.getPropertyGui());
-		}
 	}
 
+	abstract class AbstractTableCellEditor extends AbstractCellEditor implements TableCellEditor {
+	}
+	
 	@Override
 	public TableCellEditor getCellEditor(int row, int col) {
 		if (col == 0)
 			return super.getCellEditor(row, col);
-		else
-			return cellEditors[row];
+		else {
+			final EditorProvider editorProvider = GlobalCache.eval(cellEditors.get(row));
+			
+			return new AbstractTableCellEditor(){
+				SimpleCellEditor editor = editorProvider.getEditor(new Action(){
+					@Override
+					public void run() {
+						cancelCellEditing();
+					}
+				});
+				
+				@Override
+				public Object getCellEditorValue() {
+					return null;
+				}
+				@Override
+				public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+					return editor.getComponent();
+				}
+			};
+		}
 	}
 
 
@@ -85,79 +95,34 @@ public class PropertyEditorTable extends JTable implements PropertyEditor {
 		if (col == 0)
 			return super.getCellRenderer(row, col);
 		else
-			return cellRenderers[row];
+			return new TableCellRenderer(){
+
+				@Override
+				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+					GlobalCache.eval(cellRenderers.get(row).updateExpression());
+					return cellRenderers.get(row).component();
+				}
+			};
 	}
 
 	public void clearObject() {
 		model.clearObject();
 	}
 
-	public void setObject(Properties o) {
-		model.setObject(o);
+	public void setObject(PVector<EditableProperty> o) {
+		model.setProperties(o);
 
-		cellRenderers = new TableCellRenderer[model.getRowCount()];
-		cellEditors = new TableCellEditor[model.getRowCount()];
+		cellRenderers = new ArrayList<ReactiveComponent>();
+		cellEditors = new ArrayList<Expression<? extends EditorProvider>>();
 		
 
-		for (int i = 0; i < model.getRowCount(); i++) {
-			PropertyDescriptor decl = model.getRowDeclaration(i);
-			
-			// If object declares a predefined set of values, use a ComboBox to edit the property regardless of class
-			if (decl.getChoice() != null) {
-				model.setRowClass(i, null);
-				
-				cellRenderers[i] = new DefaultTableCellRenderer();
-				ChoiceCellEditor ce = new ChoiceCellEditor(decl);
-				cellEditors[i] = ce;
-			} else {
-				// otherwise, try to get a corresponding PropertyClass object, that knows how to edit a property of this class
-				PropertyClass cls = propertyClasses.get(decl.getType());
-				model.setRowClass(i, cls);
-				
-				if (cls == null) {
-					// no PropertyClass exists for this class, fall back to read-only mode using Object.toString()
-					
-					System.err
-					.println("Data class \""
-							+ decl.getType().getName()
-							+ "\" is not supported by the Property Editor.");
-					
-					cellRenderers[i] = new DefaultTableCellRenderer();
-					cellEditors[i] = null;
-				} else {
-					cellRenderers[i] = cls.getCellRenderer();
-					cellEditors[i] = cls.getCellEditor();
-				}
-				
-				
-			}
-
+		for (EditableProperty p : o) {
+			cellEditors.add(p.editorMaker());
+			cellRenderers.add(p.renderer(Expressions.constant(false), Expressions.constant(false)));
 		}
-	}
-
-	public Properties getObject() {
-		return model.getObject();
 	}
 
 	@Override
 	public void editingStopped(ChangeEvent e) {  
-        TableCellEditor editor = getCellEditor();
-        if (editor != null) {
-        	Object value = editor.getCellEditorValue();
-            try
-            {
-                setValueAt(value, editingRow, editingColumn);
-                removeEditor();
-            }
-            catch(Throwable t)
-            {
-            	ExceptionDialog.show(null, "Cannot change property", t);
-            	PrintStream p = null;
-            	PrintWriter w = null;
-            	t.printStackTrace(p);
-            	t.printStackTrace(w);
-            	JOptionPane.showMessageDialog(null, t.getMessage() + "\n", "Cannot change property", JOptionPane.WARNING_MESSAGE);
-            }
-        }
     }  
 }

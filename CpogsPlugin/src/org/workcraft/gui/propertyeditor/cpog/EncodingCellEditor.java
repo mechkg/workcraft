@@ -4,10 +4,10 @@ import java.awt.Component;
 
 import javax.swing.JTable;
 
-import org.workcraft.gui.propertyeditor.GenericCellEditor;
+import org.workcraft.gui.propertyeditor.string.TextCellEditor;
 import org.workcraft.plugins.cpog.Encoding;
 
-class EncodingCellEditor extends GenericCellEditor
+class EncodingCellEditor extends TextCellEditor
 {
 	private static final long serialVersionUID = 8L;
 	private Encoding encoding;

@@ -2,9 +2,9 @@ package org.workcraft;
 
 import java.io.File;
 
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.serialisation.Format;
 import org.workcraft.util.Export;
-import org.workcraft.workspace.ModelEntry;
 
 public class WriteSvg {
 
@@ -22,8 +22,8 @@ public class WriteSvg {
 		else {
 			Framework framework = new Framework();
 			framework.initPlugins();
-			ModelEntry loaded = framework.load(args[0]);
-			Export.exportToFile(loaded.services, new File(args[1]), Format.SVG, framework.getPluginManager());
+			ServiceProvider loaded = framework.load(args[0]);
+			Export.exportToFile(loaded, new File(args[1]), Format.SVG, framework.getPluginManager());
 			System.out.println("svg saved to '" + args[1]+"'");
 			return 0;
 		}

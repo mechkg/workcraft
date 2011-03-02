@@ -21,29 +21,15 @@
 
 package org.workcraft.dom.visual;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
-
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.workcraft.NodeFactory;
 import org.workcraft.annotations.MouseListeners;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.AbstractModel;
-import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultMathNodeRemover;
 import org.workcraft.dom.ModelSpecification;
 import org.workcraft.dom.Node;
@@ -55,25 +41,15 @@ import org.workcraft.dom.visual.connections.DefaultAnchorGenerator;
 import org.workcraft.dom.visual.connections.Polyline;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.exceptions.NodeCreationException;
-import org.workcraft.exceptions.PasteException;
-import org.workcraft.gui.propertyeditor.Properties;
-import org.workcraft.util.Hierarchy;
-import org.workcraft.util.XmlUtil;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 
 import pcollections.HashTreePSet;
 import pcollections.PSet;
+import pcollections.PVector;
 
 @MouseListeners ({ DefaultAnchorGenerator.class })
 public abstract class AbstractVisualModel extends AbstractModel implements VisualModel {
 	private MathModel mathModel;
-	private ModifiableExpression<Container> currentLevel = new Variable<Container>(null){
-		@Override
-		public void setValue(Container value) {
-			selection.setValue(HashTreePSet.<Node>empty());
-			super.setValue(value);
-		};
-	};
-	private final ModifiableExpression<PSet<Node>> selection;
 
 	public AbstractVisualModel(VisualGroup root, StorageManager storage) {
 		this (null, root, storage);
@@ -118,9 +94,6 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		super(param.spec);
 		this.mathModel = param.mathModel;
 		this.storage = param.storage;
-		selection = storage.<PSet<Node>>create(HashTreePSet.<Node>empty());
-		
-		currentLevel.setValue(param.root);
 	}
 
 	protected final void createDefaultFlatStructure() throws NodeCreationException {
@@ -153,33 +126,6 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 			add(vc);
 		}
 	}
-	
-	@Override
-	public ModifiableExpression<PSet<Node>> selection() {
-		return selection;
-	}
-
-	/**
-	 * Select all components, connections and groups from the <code>root</code> group.
-	 */
-/*	@Override
-	public void selectAll() {
-		Collection<? extends Node> children = GlobalCache.eval(getRoot().children());
-		if(GlobalCache.eval(selection).size()==children.size())
-			return;
-		
-		selection.clear();
-		selection.addAll(children);
-	}*/
-
-	private void validateSelection (Node node) {
-		if (!Hierarchy.isDescendant(node, eval(currentLevel())))
-			throw new RuntimeException ("Cannot select a node that is not in the current editing level (" + node + "), parent (" + GlobalCache.eval(node.parent()) +")");
-	}
-
-	public boolean isSelected(Node node) {
-		return GlobalCache.eval(selection).contains(node);
-	}
 
 	@Override
 	public MathModel getMathModel() {
@@ -191,153 +137,9 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 		return this;
 	}
 	
-	public Collection<Node> getOrderedCurrentLevelSelection() {
-		List<Node> result = new ArrayList<Node>();
-		for(Node node : GlobalCache.eval(eval(currentLevel).children()))
-		{
-			if(GlobalCache.eval(selection).contains(node) && node instanceof VisualNode)
-				result.add((VisualNode)node);
-		}
-		return result;
-	}
-
-	public ModifiableExpression<Container> currentLevel() {
-		return currentLevel;
-	}
-
-	private Collection<Node> getGroupableSelection()
-	{
-		ArrayList<Node> result = new ArrayList<Node>();
-		for(Node node : getOrderedCurrentLevelSelection())
-			if(node instanceof VisualTransformableNode)
-				result.add((VisualTransformableNode)node);
-		return result;
-	}
-
-	
-	/**
-	 * Groups the selection, and selects the newly created group.
-	 * @author Arseniy Alekseyev
-	 */
-	@Override
-	public void groupSelection() {
-		Collection<Node> selected = getGroupableSelection();
-		VisualGroup vg = groupCollection(selected);
-		if (vg!=null) selection.setValue(HashTreePSet.<Node>singleton(vg));
-	}
-	
 	protected final StorageManager storage;
-	
-	public VisualGroup groupCollection(Collection<Node> selected) {
 
-		if(selected.size() <= 1)
-			return null;
-		
-		VisualGroup group = new VisualGroup(storage);
-		
-		Container currentLevel = eval(this.currentLevel);
-
-		currentLevel.add(group);
-
-		currentLevel.reparent(selected, group);
-
-		ArrayList<Node> connectionsToGroup = new ArrayList<Node>();
-
-		for(VisualConnection connection : Hierarchy.getChildrenOfType(currentLevel, VisualConnection.class))
-		{
-			if(Hierarchy.isDescendant(connection.getFirst(), group) && 
-					Hierarchy.isDescendant(connection.getSecond(), group)) {
-				connectionsToGroup.add(connection);
-			}
-		}
-		
-		currentLevel.reparent(connectionsToGroup, group);
-		
-		return group;
-		
-	}
-
-	/**
-	 * Ungroups all groups in the current selection and adds the ungrouped components to the selection.
-	 * @author Arseniy Alekseyev
-	 */
-	@Override
-	public void ungroupSelection() {
-		ArrayList<Node> toSelect = new ArrayList<Node>();
-		
-		for(Node node : getOrderedCurrentLevelSelection())
-		{
-			if(node instanceof VisualGroup)
-			{
-				VisualGroup group = (VisualGroup)node;
-				for(Node subNode : group.unGroup())
-					toSelect.add(subNode);
-				eval(currentLevel).remove(group);
-			}
-			else
-				toSelect.add(node);
-		}
-		
-		selection.setValue(HashTreePSet.from(toSelect));
-	}
-
-	@Override
-	public void deleteSelection() {
-		remove(eval(selection()));
-	}
-
-	/**
-	 * @param clipboard
-	 * @param clipboardOwner
-	 * @author Ivan Poliakov
-	 * @throws ParserConfigurationException 
-	 */
-	public void copy(Clipboard clipboard, ClipboardOwner clipboardOwner) throws ParserConfigurationException {
-		Document doc = XmlUtil.createDocument();
-
-		Element root = doc.createElement("workcraft-clipboard-contents");
-
-		doc.appendChild(root);
-		root = doc.getDocumentElement();
-		//selectionToXML(root);		
-		clipboard.setContents(new TransferableDocument(doc), clipboardOwner);
-	}
-
-	public Collection<Node> paste(Collection<Node> what, Point2D where) throws PasteException {
-		/*try {
-			Document doc = (Document)clipboard.getData(TransferableDocument.DOCUMENT_FLAVOR);
-
-			Element root = doc.getDocumentElement();
-			if (!root.getTagName().equals("workcraft-clipboard-contents"))
-				return null;
-
-			Element mathModelElement = XmlUtil.getChildElement("model", root);
-			Element visualModelElement = XmlUtil.getChildElement("visual-model", root);
-
-			if (mathModelElement == null || visualModelElement == null)
-				throw new PasteException("Structure of clipboard XML is invalid.");
-
-			mathModel.pasteFromXML(mathModelElement);
-			//return pasteFromXML(visualModelElement, where);			 
-		} catch (UnsupportedFlavorException e) {
-		} catch (IOException e) {
-			throw new PasteException (e);
-		} catch (LoadFromXMLException e) {
-			throw new PasteException (e);
-		}*/
-
+	@Override public PVector<EditableProperty> getProperties(Node node) {
 		return null;
 	}
-
-
-
-	public void cut(Clipboard clipboard, ClipboardOwner clipboardOwner) throws ParserConfigurationException {
-		copy(clipboard, clipboardOwner);
-		deleteSelection();
-	}
-
-	@Override public Properties getProperties(Node node) {
-		return null;
-	}
-	
 }

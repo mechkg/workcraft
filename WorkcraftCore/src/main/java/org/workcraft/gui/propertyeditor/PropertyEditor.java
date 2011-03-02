@@ -21,7 +21,9 @@
 
 package org.workcraft.gui.propertyeditor;
 
+import pcollections.PVector;
+
 public interface PropertyEditor {
-	public void setObject(Properties o);
+	public void setObject(PVector<EditableProperty> o);
 	public void clearObject();
 }

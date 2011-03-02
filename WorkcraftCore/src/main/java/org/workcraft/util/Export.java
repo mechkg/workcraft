@@ -40,7 +40,7 @@ import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.tasks.Task;
 
 public class Export {
-	public static class ExportTask implements Task<Null> {
+	public static class ExportTask implements Task<Nothing> {
 		ExportJob exporter;
 		File file;
 		
@@ -50,14 +50,14 @@ public class Export {
 		}
 		
 		@Override
-		public Result<? extends Null> run(ProgressMonitor<? super Null> monitor) {
+		public Result<? extends Nothing> run(ProgressMonitor<? super Nothing> monitor) {
 			try {
 				exportToFile(exporter, file);
 			} catch (Throwable e) {
-				return new Result<Null>(e);
+				return new Result<Nothing>(e);
 			}
 			
-			return new Result<Null>(Outcome.FINISHED);
+			return new Result<Nothing>(Outcome.FINISHED);
 		}
 	}
 	

@@ -158,13 +158,7 @@ public class VisualCircuitComponent extends VisualComponent implements Container
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Name", name(), String.class));
 		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Treat as environment", isEnvironment(), Boolean.class));
 		
-		LinkedHashMap<String, Object> types = new LinkedHashMap<String, Object>();
-		
-		types.put("Box", RenderType.BOX);
-		types.put("Gate", RenderType.GATE);
-		types.put("C-Element", RenderType.C_ELEMENT);
-		
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Render type", renderType(), renderType(), RenderType.class, types));
+		addPropertyDeclaration(RenderType.EditorProperty.create("Render type", renderType()));
 		
 	}
 	

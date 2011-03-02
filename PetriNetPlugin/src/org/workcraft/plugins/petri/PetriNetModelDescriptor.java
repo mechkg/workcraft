@@ -25,8 +25,16 @@ public class PetriNetModelDescriptor implements ModelDescriptor
 		return new PetriNetVisualModelDescriptor();
 	}
 
+	public ServiceProvider createServiceProvider(PetriNet model) {
+		
+	}
+	
 	@Override
 	public ServiceProvider createServiceProvider(Model model) {
-		return ServiceProviderImpl.createLegacyServiceProvider(model);
+		if (model instanceof PetriNet)
+			return createServiceProvider((PetriNet)model);
+		if (model instanceof VisualPetriNet)
+			return createServiceProvider((VisualPetriNet)model);
+		return ServiceProviderImpl.EMPTY;
 	}
 }

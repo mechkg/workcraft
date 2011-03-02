@@ -33,6 +33,7 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.interop.Importer;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.parsers.breeze.BreezeDefinition;
 import org.workcraft.parsers.breeze.BreezeLibrary;
 import org.workcraft.parsers.breeze.DefaultBreezeFactory;
@@ -40,7 +41,6 @@ import org.workcraft.parsers.breeze.EmptyValueList;
 import org.workcraft.parsers.breeze.dom.BreezePart;
 import org.workcraft.plugins.balsa.BalsaCircuit;
 import org.workcraft.plugins.stg.DefaultStorageManager;
-import org.workcraft.workspace.ModelEntry;
 
 public class BreezeImporter implements Importer 
 {
@@ -106,11 +106,11 @@ public class BreezeImporter implements Importer
 	}
 	
 	@Override
-	public ModelEntry importFrom(InputStream in) throws DeserialisationException, IOException 
+	public ServiceProvider importFrom(InputStream in) throws DeserialisationException, IOException 
 	{
 		try {
 			DefaultStorageManager storage = new DefaultStorageManager();
-			return new ModelEntry (new BalsaModelDescriptor(), importFromBreeze(in, null, storage), storage);
+			return BalsaModelDescriptor.createServiceProvider(importFromBreeze(in, null, storage), storage);
 		} catch (OperationCancelledException e) {
 			throw new java.lang.RuntimeException(e);
 		}

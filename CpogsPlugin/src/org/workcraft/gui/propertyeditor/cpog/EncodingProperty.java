@@ -25,10 +25,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
-import org.workcraft.gui.propertyeditor.PropertyClass;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.plugins.cpog.Encoding;
 
-public class EncodingProperty implements PropertyClass {
+public class EncodingProperty implements EditableProperty {
 
 	public Object fromCellEditorValue(Object editorComponentValue)
 	{

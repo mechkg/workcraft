@@ -39,7 +39,7 @@ public class ExtractControlSTG implements Tool {
 	@Override
 	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
 		
-		final BalsaCircuit balsaCircuit = we.getModelEntry().services.getImplementation(BalsaCircuit.SERVICE_HANDLE);
+		final BalsaCircuit balsaCircuit = we.getModelEntry().getImplementation(BalsaCircuit.SERVICE_HANDLE);
 		
 		return new ToolJob() {
 			
@@ -72,7 +72,7 @@ public class ExtractControlSTG implements Tool {
 													
 													STGModel model = result.getReturnValue().getResult();
 													final WorkspaceEntry resolved = framework.getWorkspace().add(path.getParent(), fileName + "_resolved", new ModelEntry (new STGModelDescriptor(), model, storage), true);
-													framework.getMainWindow().createEditorWindow(resolved);
+													framework.getMainWindow().tryCreateEditorWindow(resolved);
 												}
 												else
 												{

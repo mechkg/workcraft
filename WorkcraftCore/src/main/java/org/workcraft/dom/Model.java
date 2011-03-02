@@ -25,7 +25,9 @@ import java.util.Collection;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.references.ReferenceManager;
-import org.workcraft.gui.propertyeditor.Properties;
+import org.workcraft.gui.propertyeditor.EditableProperty;
+
+import pcollections.PVector;
 
 
 public interface Model {
@@ -41,7 +43,7 @@ public interface Model {
 	public void remove (Node node);
 	public void remove (Collection<? extends Node> nodes);
 	
-	public Properties getProperties(Node node);
+	public PVector<EditableProperty> getProperties(Node node);
 	
 	public Expression<? extends NodeContext> nodeContext();
 }

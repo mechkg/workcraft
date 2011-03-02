@@ -31,7 +31,7 @@ import java.util.Map;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dom.Node;
-import org.workcraft.util.Null;
+import org.workcraft.util.Nothing;
 
 import pcollections.HashTreePMap;
 
@@ -49,7 +49,7 @@ public class HierarchySupervisor<STATE> extends ExpressionBase<STATE> {
 	
 	private SupervisingNode rootSupervisor;
 	
-	class SupervisingNode extends ExpressionBase<Null> {
+	class SupervisingNode extends ExpressionBase<Nothing> {
 		Map<Node, SupervisingNode> latest = HashTreePMap.empty();
 		final Node node;
 
@@ -60,7 +60,7 @@ public class HierarchySupervisor<STATE> extends ExpressionBase<STATE> {
 		}
 		
 		@Override
-		public Null evaluate(EvaluationContext resolver) {
+		public Nothing evaluate(EvaluationContext resolver) {
 			Collection<? extends Node> newChildren = resolver.resolve(node.children());
 			final List<Node> added = new ArrayList<Node>(newChildren);
 			added.removeAll(latest.keySet());
@@ -79,7 +79,7 @@ public class HierarchySupervisor<STATE> extends ExpressionBase<STATE> {
 			
 			latest = newMap;
 			
-			return Null.Null;
+			return Nothing.VALUE;
 		}
 	}
 	

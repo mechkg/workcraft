@@ -31,10 +31,6 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -81,7 +77,7 @@ public class VisualBreezeComponent extends VisualComponent implements DrawableNe
 		handshakes = refComponent.getHandshakes();
 		layout = MainLayouter.getLayout(balsaComponent, handshakes);
 		buildVisualHandshakes();
-		makeProperties();
+		// TODO: makeProperties()
 		
 		//TODO : replace PropertyChangeListener with StateObserver
 		/*addPropertyChangeListener(
@@ -101,18 +97,6 @@ public class VisualBreezeComponent extends VisualComponent implements DrawableNe
 		this.refComponent = refComponent;
 		this.storage = storage;
 		init();
-	}
-
-	private void makeProperties() {
-		try {
-			BeanInfo info = Introspector.getBeanInfo(balsaComponent.getClass());
-			PropertyDescriptor[] descriptors = info.getPropertyDescriptors();
-			for(int i=0;i<descriptors.length;i++)
-				if(!descriptors[i].getName().equals("class"))
-					addPropertyDeclaration(new BreezePropertyDescriptor(descriptors[i], this));
-		} catch (IntrospectionException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	Collection<Node> subNodes;

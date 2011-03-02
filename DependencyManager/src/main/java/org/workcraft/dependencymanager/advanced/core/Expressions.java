@@ -6,6 +6,8 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleT
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dependencymanager.advanced.user.PickyModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.PickyModifiableExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.Unfold;
 import org.workcraft.dependencymanager.util.listeners.Listener;
 import org.workcraft.util.Function;
@@ -117,7 +119,36 @@ public class Expressions {
 
 			@Override
 			public void setValue(B newValue) {
-				expr1.setValue(combinator.set(GlobalCache.eval(expr1), newValue));
+				expr1.setValue(combinator.set(newValue));
+			}
+
+			@Override
+			protected B evaluate(EvaluationContext context) {
+				return context.resolve(combinator.get(context.resolve(expr1)));
+			}
+		};
+	}
+
+	public static <A, B, S> PickyModifiableExpression<B,S> bind(final ModifiableExpression<A> expr1, final PickyModifiableExpressionCombinator<A, B, S> combinator) {
+		return new PickyModifiableExpressionBase<B,S>(){
+
+			@Override
+			public Maybe<S> setValue(B newValue) {
+				return combinator.set(newValue).accept(
+						new EitherVisitor<S, A, Maybe<S>>() {
+
+							@Override
+							public Maybe<S> visit1(S value) {
+								return Maybe.Util.just(value);
+							}
+
+							@Override
+							public Maybe<S> visit2(A value) {
+								expr1.setValue(value);
+								return Maybe.Util.nothing();
+							}
+						}
+				);
 			}
 
 			@Override

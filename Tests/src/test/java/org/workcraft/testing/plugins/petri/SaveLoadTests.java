@@ -45,6 +45,8 @@ import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.MovableHelper;
 import org.workcraft.dom.visual.MovableNew;
 import org.workcraft.exceptions.SerialisationException;
+import org.workcraft.interop.ServiceHandle;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.petri.PetriNet;
 import org.workcraft.plugins.petri.PetriNetModelDescriptor;
 import org.workcraft.plugins.petri.Place;
@@ -53,7 +55,6 @@ import org.workcraft.plugins.petri.VisualPetriNet;
 import org.workcraft.plugins.stg.DefaultStorageManager;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.util.Hierarchy;
-import org.workcraft.workspace.ModelEntry;
 
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
@@ -78,8 +79,8 @@ public class SaveLoadTests {
 		Framework framework = new Framework();
 		framework.getPluginManager().loadManifest();
 		
-		ModelEntry modelEntry = framework.load(new Base16Reader(testDataMathModel));
-		PetriNet petri = (PetriNet)modelEntry.getModel();
+		ServiceProvider modelEntry = framework.load(new Base16Reader(testDataMathModel));
+		PetriNet petri = (PetriNet)modelEntry.getImplementation(ServiceHandle.LegacyMathModelService);
 
 		Assert.assertNotNull(petri);
 		
@@ -92,8 +93,8 @@ public class SaveLoadTests {
 		Framework framework = new Framework();
 		framework.getPluginManager().loadManifest();
 		
-		ModelEntry modelEntry = framework.load(new Base16Reader(testDataVisualModel));
-		VisualPetriNet petriVisual = (VisualPetriNet)modelEntry.getModel();
+		ServiceProvider modelEntry = framework.load(new Base16Reader(testDataVisualModel));
+		VisualPetriNet petriVisual = (VisualPetriNet)modelEntry.getImplementation(ServiceHandle.LegacyVisualModelService);
 		PetriNet petri = (PetriNet)petriVisual.getMathModel();
 		
 		Assert.assertNotNull(petriVisual);
@@ -121,7 +122,7 @@ public class SaveLoadTests {
 		Framework f = new Framework();
 		f.getPluginManager().loadManifest();
 		StringWriter writer = new StringWriter();
-		f.save(new ModelEntry(new PetriNetModelDescriptor(), model, new HistoryPreservingStorageManager()), new Base16Writer(writer));
+		f.save(new PetriNetModelDescriptor().createServiceProvider(model, new HistoryPreservingStorageManager()), new Base16Writer(writer));
 		String generatedValue = writer.toString();
 		if(currentValue.equals(generatedValue))
 			return;

@@ -61,6 +61,7 @@ import org.workcraft.exceptions.PluginInstantiationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.propertyeditor.SettingsPage;
+import org.workcraft.interop.ServiceHandle;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.PluginInfo;
@@ -619,7 +620,7 @@ public class Framework {
 	}
 
 	public void save(ServiceProvider modelEntry, OutputStream out) throws SerialisationException, ServiceNotAvailableException {
-		Model model = modelEntry.getImplementation(MathModel.SERVICE_HANDLE);
+		Model model = modelEntry.getImplementation(ServiceHandle.LegacyMathModelService);
 		VisualModel visualModel = (model instanceof VisualModel)? (VisualModel)model : null ;
 		Model mathModel = (visualModel == null) ? model : visualModel.getMathModel();
 

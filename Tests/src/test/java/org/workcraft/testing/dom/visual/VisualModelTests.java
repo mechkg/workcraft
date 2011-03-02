@@ -34,6 +34,7 @@ import java.util.Collection;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
@@ -76,7 +77,6 @@ public class VisualModelTests {
 		public void connect(Node first, Node second)
 				throws InvalidConnectionException {
 		}
-
 	}
 
 	@Test

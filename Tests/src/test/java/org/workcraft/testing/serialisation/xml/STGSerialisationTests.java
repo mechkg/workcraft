@@ -33,7 +33,6 @@ import org.workcraft.serialisation.DeserialisationResult;
 import org.workcraft.serialisation.ReferenceProducer;
 import org.workcraft.testing.serialisation.SerialisationTestingUtils;
 import org.workcraft.util.DataAccumulator;
-import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class STGSerialisationTests {
@@ -44,7 +43,7 @@ public class STGSerialisationTests {
 		VisualSTG stg = XMLSerialisationTestingUtils.createTestSTG3();
 
 		RandomLayout layout = new RandomLayout();
-		WorkspaceEntry we = new WorkspaceEntry(null, new ModelEntry(new STGModelDescriptor(), stg, null));
+		WorkspaceEntry we = new WorkspaceEntry(null, STGModelDescriptor.getServices(stg, null));
 		layout.applyTo(we).run();
 
 		// serialise

@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.petri;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -37,19 +39,24 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
+import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.gui.propertyeditor.colour.ColorProperty;
+import org.workcraft.gui.propertyeditor.integer.IntegerProperty;
 import org.workcraft.plugins.shared.CommonVisualSettings;
+import org.workcraft.util.Function;
+
+import pcollections.PVector;
 
 public class VisualPlace extends VisualComponent implements DrawableNew, ReflectiveTouchable {
-	protected static double singleTokenSize = CommonVisualSettings.getSize() / 1.9;
-	protected static double multipleTokenSeparation = CommonVisualSettings.getStrokeWidth() / 8;
+	protected static double singleTokenSize = eval(CommonVisualSettings.size) / 1.9;
+	protected static double multipleTokenSeparation = eval(CommonVisualSettings.strokeWidth) / 8;
 	
 	private final Variable<Color> tokenColor;
 	
@@ -63,13 +70,15 @@ public class VisualPlace extends VisualComponent implements DrawableNew, Reflect
 
 	public VisualPlace(Place place, StorageManager storage) {
 		super(place, storage);
-		tokenColor = new Variable<Color>(CommonVisualSettings.getForegroundColor());
-		addPropertyDeclarations();
+		tokenColor = new Variable<Color>(eval(CommonVisualSettings.foregroundColor));
 	}
 	
-	private void addPropertyDeclarations() {
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Tokens", tokens(), tokens(), Integer.class));
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Token color", tokenColor(), tokenColor(), Color.class));
+	
+	@Override
+	public PVector<EditableProperty> getProperties() {
+		return super.getProperties()
+				.plus(IntegerProperty.create("Tokens", tokens()))
+				.plus(ColorProperty.create("Tokens", tokenColor()));
 	}
 
 	public static void drawTokens(int tokens, double singleTokenSize, double multipleTokenSeparation, 
@@ -115,7 +124,7 @@ public class VisualPlace extends VisualComponent implements DrawableNew, Reflect
 			else if (tokens > 7)
 			{
 				String out = Integer.toString(tokens);
-				Font superFont = g.getFont().deriveFont((float)CommonVisualSettings.getSize()/2);
+				Font superFont = g.getFont().deriveFont((float)(eval(CommonVisualSettings.size)/2));
 
 				Rectangle2D rect = superFont.getStringBounds(out, g.getFontRenderContext());
 				g.setFont(superFont);
@@ -136,8 +145,8 @@ public class VisualPlace extends VisualComponent implements DrawableNew, Reflect
 						
 						context.resolve(labelGraphics()).draw(r);
 						
-						double size = CommonVisualSettings.getSize();
-						double strokeWidth = CommonVisualSettings.getStrokeWidth();
+						double size = context.resolve(CommonVisualSettings.size);
+						double strokeWidth = context.resolve(CommonVisualSettings.strokeWidth);
 						
 						Shape shape = new Ellipse2D.Double(
 								-size / 2 + strokeWidth / 2,
@@ -169,23 +178,26 @@ public class VisualPlace extends VisualComponent implements DrawableNew, Reflect
 
 	@Override
 	public Expression<? extends Touchable> shape() {
-		return Expressions.constant(new Touchable(){
-
+		return Expressions.bindFunc(CommonVisualSettings.size, new Function<Double, Touchable>() {
 			@Override
-			public boolean hitTest(Point2D point) {
-				double size = CommonVisualSettings.getSize();
-				return point.distanceSq(0, 0) < size*size/4;
-			}
+			public Touchable apply(final Double size) {
+				return new Touchable() {
 
-			@Override
-			public Rectangle2D getBoundingBox() {
-				double size = CommonVisualSettings.getSize();
-				return new Rectangle2D.Double(-size/2, -size/2, size, size);	
-			}
+					@Override
+					public boolean hitTest(Point2D point) {
+						return point.distanceSq(0, 0) < size * size / 4;
+					}
 
-			@Override
-			public Point2D getCenter() {
-				return new Point2D.Double(0, 0);
+					@Override
+					public Rectangle2D getBoundingBox() {
+						return new Rectangle2D.Double(-size / 2, -size / 2, size, size);
+					}
+
+					@Override
+					public Point2D getCenter() {
+						return new Point2D.Double(0, 0);
+					};
+				};
 			}
 		});
 	}

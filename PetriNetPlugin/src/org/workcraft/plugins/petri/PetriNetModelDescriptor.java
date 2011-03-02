@@ -5,8 +5,10 @@ import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
+import org.workcraft.interop.ServiceHandle;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.interop.ServiceProviderImpl;
+import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 
 public class PetriNetModelDescriptor implements ModelDescriptor
 {
@@ -25,16 +27,24 @@ public class PetriNetModelDescriptor implements ModelDescriptor
 		return new PetriNetVisualModelDescriptor();
 	}
 
-	public ServiceProvider createServiceProvider(PetriNet model) {
-		
-	}
-	
 	@Override
-	public ServiceProvider createServiceProvider(Model model) {
+	public ServiceProvider createServiceProvider(Model model, StorageManager storage) {
 		if (model instanceof PetriNet)
-			return createServiceProvider((PetriNet)model);
+			return getServices((PetriNet)model, (HistoryPreservingStorageManager)storage);
 		if (model instanceof VisualPetriNet)
-			return createServiceProvider((VisualPetriNet)model);
+			return getServices((VisualPetriNet)model, (HistoryPreservingStorageManager)storage);
 		return ServiceProviderImpl.EMPTY;
+	}
+
+	public static ServiceProviderImpl getServices(VisualPetriNet model, HistoryPreservingStorageManager historyPreservingStorageManager) {
+		return getServices((PetriNet)model.getMathModel(), historyPreservingStorageManager)
+			.plusImplementation(ServiceHandle.LegacyVisualModelService, model);
+	}
+
+	public static ServiceProviderImpl getServices(PetriNet model, HistoryPreservingStorageManager historyPreservingStorageManager) {
+		return ServiceProviderImpl.EMPTY
+		.plusImplementation(ModelDescriptor.SERVICE_HANDLE, new PetriNetModelDescriptor())
+		.plusImplementation(ServiceHandle.LegacyMathModelService, model)
+			;
 	}
 }

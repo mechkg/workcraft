@@ -21,10 +21,6 @@
 
 package org.workcraft.dom.visual;
 
-import java.util.Collection;
-
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dom.Container;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathModel;
@@ -34,12 +30,8 @@ import org.workcraft.interop.ServiceHandle;
 
 public interface VisualModel extends Model {
 	ServiceHandle<VisualModel> SERVICE_HANDLE = ServiceHandle.createNewService(VisualModel.class, "A visual model");
-	public ModifiableExpression<Container> currentLevel();
 	public MathModel getMathModel();
 	
 	public void connect(Node first, Node second) throws InvalidConnectionException;
 	public void validateConnection(Node first, Node second) throws InvalidConnectionException;
-	
-	public Node group(Collection<Node> nodes);
-	public Collection<Node> ungroup(Collection<Node> nodes);
 }

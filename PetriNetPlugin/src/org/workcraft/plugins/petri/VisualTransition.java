@@ -62,8 +62,8 @@ public class VisualTransition extends VisualComponent implements DrawableNew, Re
 						
 						Graphics2D g = r.getGraphics();
 						
-						double size = CommonVisualSettings.getSize();
-						double strokeWidth = CommonVisualSettings.getStrokeWidth();
+						double size = context.resolve(CommonVisualSettings.size);
+						double strokeWidth = context.resolve(CommonVisualSettings.strokeWidth);
 						
 						Shape shape = new Rectangle2D.Double(
 								-size / 2 + strokeWidth / 2,
@@ -73,7 +73,7 @@ public class VisualTransition extends VisualComponent implements DrawableNew, Re
 						g.setColor(Coloriser.colorise(Coloriser.colorise(context.resolve(fillColor()), r.getColorisation().getBackground()), r.getColorisation().getColorisation()));
 						g.fill(shape);
 						g.setColor(Coloriser.colorise(Coloriser.colorise(context.resolve(foregroundColor()), r.getColorisation().getBackground()), r.getColorisation().getColorisation()));
-						g.setStroke(new BasicStroke((float)CommonVisualSettings.getStrokeWidth()));
+						g.setStroke(new BasicStroke((float)(double)context.resolve(CommonVisualSettings.strokeWidth)));
 						g.draw(shape);
 
 					}
@@ -87,7 +87,7 @@ public class VisualTransition extends VisualComponent implements DrawableNew, Re
 		return new ExpressionBase<Touchable>() {
 
 			@Override
-			protected Touchable evaluate(EvaluationContext context) {
+			protected Touchable evaluate(final EvaluationContext context) {
 				return new Touchable() {
 
 					@Override
@@ -97,7 +97,7 @@ public class VisualTransition extends VisualComponent implements DrawableNew, Re
 
 					@Override
 					public Rectangle2D getBoundingBox() {
-						double size = CommonVisualSettings.getSize(); 
+						double size = context.resolve(CommonVisualSettings.size); 
 						return new Rectangle2D.Double(-size/2, -size/2, size, size);
 					}
 

@@ -70,12 +70,10 @@ public class ConnectionRemoverTests {
 				toDeleteThen.add(n);
 		}
 		
-		vstg.selection().setValue(HashTreePSet.from(toDelete));
-		vstg.deleteSelection();
+		vstg.remove(HashTreePSet.from(toDelete));
 		
 		//System.out.println ("O_O");
 		
-		vstg.selection().setValue(HashTreePSet.from(toDeleteThen));
-		vstg.deleteSelection();
+		vstg.remove(HashTreePSet.from(toDeleteThen));
 	}
 }

@@ -1,51 +1,26 @@
 
 package org.workcraft.plugins.petri;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
 import org.workcraft.dom.Node;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
+import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.gui.propertyeditor.string.StringProperty;
 
-final class NamePropertyDescriptor implements PropertyDescriptor {
+final class NamePropertyDescriptor {
 
-	private final PetriNet petriNet;
+	public static EditableProperty create(final PetriNet petriNet, final Node node) {
+		return StringProperty.create("Name", new ModifiableExpressionBase<String>(){
 
-	public NamePropertyDescriptor(PetriNet petriNet, Node node)
-	{
-		this.petriNet = petriNet;
-		this.node = node;
-	}
-	
-	private final Node node;
-	
-	@Override
-	public Map<Object, String> getChoice() {
-		return null;
-	}
+			@Override
+			public void setValue(String newValue) {
+				petriNet.setName(node, newValue);
+			}
 
-	@Override
-	public String getName() {
-		return "Name";
-	}
-
-	@Override
-	public Class<?> getType() {
-		return String.class;
-	}
-
-	@Override
-	public Object getValue() throws InvocationTargetException {
-		return this.petriNet.getName(node);
-	}
-
-	@Override
-	public boolean isWritable() {
-		return true;
-	}
-
-	@Override
-	public void setValue(Object value) throws InvocationTargetException {
-		this.petriNet.setName(node, (String)value);
+			@Override
+			protected String evaluate(EvaluationContext context) {
+				return petriNet.getName(node);
+			}
+		});
 	}
 }

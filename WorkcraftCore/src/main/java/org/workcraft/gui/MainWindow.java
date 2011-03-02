@@ -85,6 +85,7 @@ import org.workcraft.gui.workspace.WorkspaceWindow;
 import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
 import org.workcraft.interop.Importer;
+import org.workcraft.interop.ServiceHandle;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.PluginInfo;
@@ -665,7 +666,7 @@ public class MainWindow extends JFrame {
 
 				if (dialog.createVisualSelected()) {
 					try {
-						modelServices.getImplementation(VisualModel.SERVICE_HANDLE);
+						modelServices.getImplementation(ServiceHandle.LegacyVisualModelService);
 						WorkspaceEntry we = framework.getWorkspace().add(path, name, modelServices, false);
 						if (dialog.openInEditorSelected())
 							createEditorWindow (we);
@@ -897,7 +898,7 @@ public class MainWindow extends JFrame {
 						ServiceProvider modelEntry;
 						try {
 							modelEntry = Import.importFromFile(importer, f);
-							try { modelEntry.getImplementation(MathModel.SERVICE_HANDLE).setTitle(FileUtils.getFileNameWithoutExtension(f)); }
+							try { modelEntry.getImplementation(ServiceHandle.LegacyMathModelService).setTitle(FileUtils.getFileNameWithoutExtension(f)); }
 							catch(ServiceNotAvailableException ex) {}
 							
 							WorkspaceEntry we = framework.getWorkspace().add(Path.<String>empty(), f.getName(), modelEntry, false);

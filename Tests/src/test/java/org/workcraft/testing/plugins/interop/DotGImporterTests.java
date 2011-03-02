@@ -37,6 +37,8 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.workcraft.dom.Connection;
 import org.workcraft.exceptions.DeserialisationException;
+import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.interop.DotGImporter;
 import org.workcraft.plugins.petri.Place;
 import org.workcraft.plugins.petri.Transition;
@@ -52,11 +54,10 @@ import org.workcraft.plugins.stg.javacc.generated.DotGParser;
 import org.workcraft.plugins.stg.javacc.generated.ParseException;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.util.Import;
-import org.workcraft.workspace.ModelEntry;
 
 public class DotGImporterTests {
 	@Test
-	public void Test1() throws IOException, DeserialisationException
+	public void Test1() throws IOException, DeserialisationException, ServiceNotAvailableException
 	{
 		File tempFile = File.createTempFile("test", ".g");
 		
@@ -86,8 +87,8 @@ public class DotGImporterTests {
 		writer.close();
 		fileStream.close();
 		
-		ModelEntry importedEntry =  Import.importFromFile(new DotGImporter(), tempFile);
-		STG imported = (STG)importedEntry.getModel();
+		ServiceProvider importedEntry =  Import.importFromFile(new DotGImporter(), tempFile);
+		STG imported = (STG)importedEntry.getImplementation(STGModel.SERVICE_HANDLE);
 		
 		Assert.assertEquals(6, Hierarchy.getChildrenOfType(imported.getRoot(), Transition.class).size());
 		Assert.assertEquals(2, Hierarchy.getChildrenOfType(imported.getRoot(), Place.class).size());

@@ -43,7 +43,7 @@ public final class ServiceHandle<T> {
 	
 	@Override
 	public String toString() {
-		return serviceName;
+		return serviceName + " (of type " + type + ")";
 	}
 	
 	

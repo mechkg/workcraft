@@ -36,7 +36,6 @@ import org.workcraft.serialisation.DeserialisationResult;
 import org.workcraft.serialisation.ReferenceProducer;
 import org.workcraft.testing.serialisation.SerialisationTestingUtils;
 import org.workcraft.util.DataAccumulator;
-import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class VisualModelSerialisation {
@@ -48,7 +47,7 @@ public class VisualModelSerialisation {
 		VisualSTG visualstg = new VisualSTG(stg, new HistoryPreservingStorageManager());
 
 		RandomLayout layout = new RandomLayout();
-		WorkspaceEntry we = new WorkspaceEntry(null, new ModelEntry(new STGModelDescriptor(), visualstg, new HistoryPreservingStorageManager()));
+		WorkspaceEntry we = new WorkspaceEntry(null, new STGModelDescriptor().createServiceProvider(visualstg, new HistoryPreservingStorageManager()));
 		
 		layout.applyTo(we).run();
 

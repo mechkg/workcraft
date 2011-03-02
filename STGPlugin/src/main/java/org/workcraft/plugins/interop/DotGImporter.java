@@ -34,7 +34,6 @@ import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.plugins.stg.javacc.generated.DotGParser;
 import org.workcraft.plugins.stg.javacc.generated.ParseException;
-import org.workcraft.workspace.ModelEntry;
 
 public class DotGImporter implements Importer {
 	@Override

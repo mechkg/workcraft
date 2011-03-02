@@ -41,9 +41,12 @@ import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
+import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.gui.propertyeditor.integer.IntegerProperty;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
+
+import pcollections.PVector;
 
 public class VisualImplicitPlaceArc extends VisualConnection {
 	
@@ -71,30 +74,16 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 	private static double multipleTokenSeparation = 0.0125;
 	private static Color tokenColor = Color.BLACK;
 	
-	private void addPropertyDeclarations() {
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Tokens", tokens(), Integer.class));
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Capacity", capacity(), Integer.class));
-		
-		/*addPopupMenuSegment(new PopupMenuBuilder.PopupMenuSegment() {
-			public void addItems(JPopupMenu menu,
-					ScriptedActionListener actionListener) {
-				ScriptedActionMenuItem addToken = new ScriptedActionMenuItem(new VisualPlace.AddTokenAction(implicitPlace));
-				addToken.addScriptedActionListener(actionListener);
-				
-				ScriptedActionMenuItem removeToken = new ScriptedActionMenuItem(new VisualPlace.RemoveTokenAction(implicitPlace));
-				removeToken.addScriptedActionListener(actionListener);
-				
-				menu.add(new JLabel ("Implicit place"));
-				menu.addSeparator();
-				menu.add(addToken);
-				menu.add(removeToken);				
-			}
-		});*/
+	@Override
+	public PVector<EditableProperty> getProperties() {
+		return super.getProperties()
+			.plus(IntegerProperty.create("Tokens", tokens()))
+			.plus(IntegerProperty.create("Capacity", capacity()))
+			;
 	}
 	
 	public VisualImplicitPlaceArc (StorageManager storage) {
 		super(storage);
-		addPropertyDeclarations();
 		implicitPlace = storage.create(null);
 		refCon1 = storage.create(null);
 		refCon2 = storage.create(null);
@@ -112,8 +101,6 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 		this.refCon1 = storage.create(refCon1);
 		this.refCon2 = storage.create(refCon2);
 		this.implicitPlace  = storage.create(implicitPlace);
-		
-		addPropertyDeclarations();
 	}
 
 	@Override

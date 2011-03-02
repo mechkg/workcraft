@@ -41,11 +41,14 @@ import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.references.UniqueNameReferenceManager;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.ModelValidationException;
-import org.workcraft.gui.propertyeditor.Properties;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.observation.HierarchySupervisor;
 import org.workcraft.serialisation.References;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class PetriNet extends AbstractModel implements PetriNetModel {
 	
@@ -243,7 +246,7 @@ public class PetriNet extends AbstractModel implements PetriNetModel {
 	}
 
 	@Override
-	public Properties getProperties(Node node) {
-		return Properties.Mix.from(new NamePropertyDescriptor(this, node));
+	public PVector<EditableProperty> getProperties(Node node) {
+		return TreePVector.<EditableProperty>singleton(NamePropertyDescriptor.create(this, node));
 	}
 }

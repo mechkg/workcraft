@@ -11,9 +11,9 @@ import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.tools.GraphEditor;
-import org.workcraft.gui.graph.tools.SelectionToolConfig;
+import org.workcraft.gui.graph.tools.selection.SelectionToolConfig;
 
-public class SelectionTool extends org.workcraft.gui.graph.tools.SelectionTool
+public class SelectionTool extends org.workcraft.gui.graph.tools.selection.SelectionTool
 {
 	public SelectionTool(GraphEditor editor) {
 		super(new SelectionToolConfig.Default(editor.getModel(), TouchableProvider.DEFAULT));

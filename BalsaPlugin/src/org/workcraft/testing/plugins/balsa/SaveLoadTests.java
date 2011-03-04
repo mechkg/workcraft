@@ -21,6 +21,8 @@
 
 package org.workcraft.testing.plugins.balsa;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -55,8 +57,6 @@ import org.workcraft.plugins.balsa.VisualBreezeComponent;
 import org.workcraft.plugins.balsa.VisualHandshake;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
 import org.workcraft.plugins.stg.DefaultStorageManager;
-import org.workcraft.workspace.ModelEntry;
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class SaveLoadTests {
 	//TODO: Re-write tests
@@ -71,7 +71,7 @@ public class SaveLoadTests {
 		Framework framework = new Framework();
 		framework.getPluginManager().loadManifest();
 		
-		BalsaCircuit circuit = framework.load(input).services.getImplementation(BalsaCircuit.SERVICE_HANDLE);
+		BalsaCircuit circuit = framework.load(input).getImplementation(BalsaCircuit.SERVICE_HANDLE);
 
 		Assert.assertNotNull(circuit);
 		
@@ -175,19 +175,19 @@ public class SaveLoadTests {
 	}
 	
 	//@Test
-	public void TestMathModelSaveLoad() throws InvalidConnectionException, ModelSaveFailedException, LoadFromXMLException, IOException, ModelValidationException, SerialisationException
+	public void TestMathModelSaveLoad() throws InvalidConnectionException, ModelSaveFailedException, LoadFromXMLException, IOException, ModelValidationException, SerialisationException, ServiceNotAvailableException
 	{
 		BalsaCircuit circuit = createWhileWhileMathCircuit();
 		
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		
-		new Framework().save(new ModelEntry(new BalsaModelDescriptor(), circuit, new DefaultStorageManager()), stream);
+		new Framework().save(BalsaModelDescriptor.getServices(circuit, new DefaultStorageManager()), stream);
 		
 		//testMathModelLoadWhileWhile(new ByteArrayInputStream(stream.toByteArray()));
 	}
 
 	//@Test
-	public void TestVisualModelSaveLoad() throws InvalidConnectionException, ModelSaveFailedException, LoadFromXMLException, VisualModelInstantiationException, IOException, ModelValidationException, SerialisationException
+	public void TestVisualModelSaveLoad() throws InvalidConnectionException, ModelSaveFailedException, LoadFromXMLException, VisualModelInstantiationException, IOException, ModelValidationException, SerialisationException, ServiceNotAvailableException
 	{
 		VisualBalsaCircuit circuit = createLoopWhileVisualCircuit();
 		
@@ -196,7 +196,7 @@ public class SaveLoadTests {
 		//FileOutputStream temp = new FileOutputStream("temp.work");
 		//new Framework().save(circuit, temp);
 		//temp.close();
-		new Framework().save(new ModelEntry(new BalsaModelDescriptor(), circuit, new DefaultStorageManager()), stream);
+		new Framework().save(BalsaModelDescriptor.getServices(circuit, new DefaultStorageManager()), stream);
 		testVisualModelLoopWhile(circuit);
 		/*testVisualModelLoopWhile(
 				Framework.load(
@@ -270,13 +270,13 @@ public class SaveLoadTests {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		
 		StorageManager storage = new DefaultStorageManager();
-		f.save(new ModelEntry(new BalsaModelDescriptor(), circuit, storage ), stream);
+		f.save(BalsaModelDescriptor.getServices(circuit, storage), stream);
 		
-		BalsaCircuit loaded = f.load(new ByteArrayInputStream(stream.toByteArray())).services.getImplementation(BalsaCircuit.SERVICE_HANDLE);
+		BalsaCircuit loaded = f.load(new ByteArrayInputStream(stream.toByteArray())).getImplementation(BalsaCircuit.SERVICE_HANDLE);
 		
 		stream = new ByteArrayOutputStream();
 		
-		f.save(new ModelEntry(new BalsaModelDescriptor(), loaded, storage), stream);
+		f.save(BalsaModelDescriptor.getServices(loaded, storage), stream);
 		
 		testMathModelLoadWhileWhile(new ByteArrayInputStream(stream.toByteArray()));
 	}

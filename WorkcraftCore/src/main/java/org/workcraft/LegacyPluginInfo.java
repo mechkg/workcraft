@@ -29,6 +29,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.workcraft.annotations.DisplayName;
 import org.workcraft.exceptions.FormatException;
+import org.workcraft.util.Initialiser;
 import org.workcraft.util.XmlUtil;
 
 public class LegacyPluginInfo implements Initialiser<Object> {

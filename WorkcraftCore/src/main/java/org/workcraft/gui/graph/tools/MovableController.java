@@ -49,7 +49,10 @@ public interface MovableController<Node> {
 			
 			final Expression<? extends Point2D> parentTransform = Expressions.bind(node.parent(), Util.asCombinator(REFLECTIVE_HIERARCHICAL));
 			
-			return Expressions.bind(REFLECTIVE.position(node), new ModifiableExpressionCombinator<Point2D, Point2D>(){
+			ModifiableExpression<Point2D> position = REFLECTIVE.position(node);
+			if(position == null)
+				return null;
+			return Expressions.bind(position, new ModifiableExpressionCombinator<Point2D, Point2D>(){
 				@Override
 				public Expression<? extends Point2D> get(final Point2D localPosition) {
 					return Expressions.bindFunc(parentTransform, new Function<Point2D, Point2D>(){

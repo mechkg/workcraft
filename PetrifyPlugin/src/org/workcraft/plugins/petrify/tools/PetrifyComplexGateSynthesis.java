@@ -41,7 +41,7 @@ public class PetrifyComplexGateSynthesis implements Tool {
 
 	@Override
 	public ToolJob applyTo(WorkspaceEntry we) throws ServiceNotAvailableException {
-		ServiceProvider services = we.getModelEntry().services;
+		ServiceProvider services = we.getModelEntry();
 		final ExportJob dotGExportJob = Export.chooseBestExporter(framework.getPluginManager(), services, Format.STG);
 		
 		return new ToolJob(){

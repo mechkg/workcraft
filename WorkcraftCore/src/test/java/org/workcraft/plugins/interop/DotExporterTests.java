@@ -108,7 +108,7 @@ public class DotExporterTests {
 		DotExporter exporter = new DotExporter(TouchableProvider.DEFAULT);
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		final MockModel model = new MockModel(new MockNode(null, TreePVector.<MockNode>empty()));
-		ServiceProviderImpl serviceProviderImpl = ServiceProviderImpl.EMPTY.plusImplementation(DotExportableService.SERVICE_HANDLE, new DotExportableService(){
+		ServiceProviderImpl serviceProviderImpl = ServiceProviderImpl.EMPTY.plus(DotExportableService.SERVICE_HANDLE, new DotExportableService(){
 			@Override
 			public Model getModel() {
 				return model;

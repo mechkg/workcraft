@@ -49,7 +49,7 @@ public class CheckCircuitTool implements Tool {
 
 	@Override
 	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
-		final VisualCircuit circuit = we.getModelEntry().services.getImplementation(VisualCircuit.SERVICE_HANDLE);
+		final VisualCircuit circuit = we.getModelEntry().getImplementation(VisualCircuit.SERVICE_HANDLE);
 		
 		return new ToolJob() {
 			

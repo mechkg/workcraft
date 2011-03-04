@@ -243,6 +243,40 @@ MiscellaneousModelActions: implement them
 DefaultAnchorGenerator: make sure it works
 
 
+
+HitTester: stick this logic somewhere?
+			/*return new HitTester<Node>() {
+				@Override
+				public Node hitTest(Point2D point) {
+					return HitMan.hitTestForSelection(tp, point, model);
+				}
+
+				private Point2D transformToCurrentSpace(Point2D pointInRootSpace)
+				{
+					Point2D newPoint = new Point2D.Double();
+					TransformHelper.getTransform(model.getRoot(), eval(model.currentLevel())).transform(pointInRootSpace, newPoint);
+					return newPoint;
+				}
+				
+				@Override
+				public PSet<Node> boxHitTest(Point2D boxStart, Point2D boxEnd) {
+					boxStart = transformToCurrentSpace(boxStart); // TODO: find out why current
+					boxEnd = transformToCurrentSpace(boxEnd);
+					return HashTreePSet.from(HitMan.boxHitTest(tp, eval(model.currentLevel()), boxStart, boxEnd));
+				}
+			};*/
+
+
+
+
+
+p.registerClass(Exporter.class, AbstractSVGExporter.class);
+
+
+
+
+visual connection: DrawableNew, ReflectiveTouchable
+
 	
 }
 */

@@ -1,7 +1,6 @@
 package org.workcraft.relational.petrinet.model;
 
 import org.workcraft.Framework;
-import org.workcraft.Initialiser;
 import org.workcraft.Module;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Model;
@@ -15,10 +14,11 @@ import org.workcraft.gui.DefaultReflectiveModelPainter;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.GraphEditorToolUtil;
-import org.workcraft.gui.graph.tools.SelectionTool;
-import org.workcraft.gui.graph.tools.SelectionToolConfig;
+import org.workcraft.gui.graph.tools.selection.SelectionTool;
+import org.workcraft.gui.graph.tools.selection.SelectionToolConfig;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.interop.ServiceProviderImpl;
+import org.workcraft.util.Initialiser;
 
 import pcollections.TreePVector;
 

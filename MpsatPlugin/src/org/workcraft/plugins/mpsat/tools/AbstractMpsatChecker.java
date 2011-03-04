@@ -25,7 +25,7 @@ public abstract class AbstractMpsatChecker {
 
 	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
 
-		final STGModel model = we.getModelEntry().services.getImplementation(STGModel.SERVICE_HANDLE);
+		final STGModel model = we.getModelEntry().getImplementation(STGModel.SERVICE_HANDLE);
 		final MpsatChainTask mpsatTask = MpsatChainTask.create(we, getSettings(), framework);
 
 		return new ToolJob() {

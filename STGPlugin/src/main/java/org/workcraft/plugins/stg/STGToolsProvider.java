@@ -15,9 +15,10 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TouchableProvider;
-import org.workcraft.dom.visual.VisualModel;
+import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.DefaultReflectiveModelPainter;
 import org.workcraft.gui.graph.tools.Colorisator;
@@ -25,6 +26,7 @@ import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
+import org.workcraft.gui.graph.tools.HitTester;
 import org.workcraft.gui.graph.tools.NodeGenerator;
 import org.workcraft.gui.graph.tools.NodeGeneratorTool;
 import org.workcraft.gui.graph.tools.NodePainter;
@@ -34,9 +36,13 @@ import org.workcraft.util.Func;
 import org.workcraft.util.Function;
 import org.workcraft.util.GUI;
 
+import pcollections.PCollection;
+
 public class STGToolsProvider implements CustomToolsProvider {
 
-	private final static class PlaceGenerator implements NodeGenerator {
+	private final VisualSTG visualStg;
+
+	private final class PlaceGenerator implements NodeGenerator {
 		Icon icon = GUI.createIconFromSVG("images/icons/svg/place.svg");
 
 		@Override
@@ -50,8 +56,8 @@ public class STGToolsProvider implements CustomToolsProvider {
 		}
 
 		@Override
-		public void generate(VisualModel model, Point2D where) throws NodeCreationException {
-			VisualPlace place = ((VisualSTG)model).createPlace();
+		public void generate(Point2D where) throws NodeCreationException {
+			VisualPlace place = visualStg.createPlace();
 			place.position().setValue(where);
 		}
 
@@ -61,7 +67,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 		}
 	}
 
-	private final static class SignalTransitionGenerator implements NodeGenerator {
+	private final class SignalTransitionGenerator implements NodeGenerator {
 		Icon icon = GUI.createIconFromSVG("images/icons/svg/signal-transition.svg");
 
 		@Override
@@ -75,8 +81,8 @@ public class STGToolsProvider implements CustomToolsProvider {
 		}
 
 		@Override
-		public void generate(VisualModel model, Point2D where) throws NodeCreationException {
-			VisualSignalTransition transition = ((VisualSTG)model).createSignalTransition();
+		public void generate(Point2D where) throws NodeCreationException {
+			VisualSignalTransition transition = visualStg.createSignalTransition();
 			transition.position().setValue(where);
 		}
 
@@ -86,7 +92,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 		}
 	}
 	
-	private final static class DummyTransitionGenerator implements NodeGenerator {
+	private final class DummyTransitionGenerator implements NodeGenerator {
 		Icon icon = GUI.createIconFromSVG("images/icons/svg/transition.svg");
 
 		@Override
@@ -100,8 +106,8 @@ public class STGToolsProvider implements CustomToolsProvider {
 		}
 
 		@Override
-		public void generate(VisualModel model, Point2D where) throws NodeCreationException {
-			VisualDummyTransition transition = ((VisualSTG)model).createDummyTransition();
+		public void generate(Point2D where) throws NodeCreationException {
+			VisualDummyTransition transition = visualStg.createDummyTransition();
 			transition.position().setValue(where);
 		}
 
@@ -111,6 +117,10 @@ public class STGToolsProvider implements CustomToolsProvider {
 		}
 	}
 	
+
+	public STGToolsProvider(VisualSTG visualStg) {
+		this.visualStg = visualStg;
+	}
 
 	private Expression<? extends String> transitionName(final STG stg, final VisualSignalTransition vst) {
 		return Expressions.bindFunc(stg.referenceManager(), new Function<ReferenceManager, String>() {
@@ -124,7 +134,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 	@Override
 	public Iterable<GraphEditorTool> getTools(final GraphEditor editor) {
 
-		final STG stg = ((VisualSTG)editor.getModel()).stg;
+		final STG stg = visualStg.stg;
 		
 		TouchableProvider<Node> localTP = new TouchableProvider<Node>(){
 			@Override
@@ -162,18 +172,57 @@ public class STGToolsProvider implements CustomToolsProvider {
 					}
 				};
 				
-				return DrawMan.graphicalContent(editor.getModel().getRoot(), myNodePainter);
+				return DrawMan.graphicalContent(visualStg.getRoot(), myNodePainter);
 			}
 		};
 		final Expression<? extends GraphicalContent> simpleModelPainter = painterProvider.eval(Colorisator.EMPTY);
 		
+		Function<Point2D, Node> connectionHitTester = new Function<Point2D, Node>(){
+			@Override
+			public Node apply(Point2D argument) {
+				return HitMan.hitTestForConnection(tp, argument, visualStg.getRoot());
+			}
+		};
+		
+		Function<Node, Expression<? extends Point2D>> connectionCenterProvider = new Function<Node, Expression<? extends Point2D>>(){
+			@Override
+			public Expression<? extends Point2D> apply(Node argument) {
+				return Expressions.bindFunc(tp.apply(argument), new Function<Touchable, Point2D>(){
+
+					@Override
+					public Point2D apply(Touchable node) {
+						return node.getCenter();
+					}
+				});
+			}
+		};
+		
+		HitTester<VisualNode> selectionHitTester = new HitTester<VisualNode>() {
+
+			@Override
+			public VisualNode hitTest(Point2D point) {
+				return (VisualNode)HitMan.hitTestForSelection(tp, point, visualStg.getRoot());
+			}
+
+			@Override
+			public PCollection<VisualNode> boxHitTest(Point2D boxStart, Point2D boxEnd) {
+				return (PCollection<VisualNode>)(PCollection<?>)HitMan.boxHitTest(tp, visualStg.getRoot(), boxStart, boxEnd);
+			}
+		};
+		
+		Function<Point2D, Point2D> snap = new Function<Point2D, Point2D>() {
+			@Override
+			public Point2D apply(Point2D argument) {
+				return editor.snap(argument);
+			}
+		};	
+		
 		return asList(
-				attachParameterisedPainter(new STGSelectionTool(editor, tp), painterProvider),
-				attachParameterisedPainter(new ConnectionTool(editor, tp), painterProvider),
-				attachPainter(new NodeGeneratorTool(new PlaceGenerator()), simpleModelPainter),
-				attachPainter(new NodeGeneratorTool(new SignalTransitionGenerator()), simpleModelPainter),
-				attachPainter(new NodeGeneratorTool(new DummyTransitionGenerator()), simpleModelPainter),
+				attachParameterisedPainter(new STGSelectionTool(editor, tp, selectionHitTester), painterProvider),
+				attachParameterisedPainter(new ConnectionTool(connectionCenterProvider, visualStg.connectionManager(), connectionHitTester), painterProvider),
+				attachPainter(new NodeGeneratorTool(new PlaceGenerator(), snap), simpleModelPainter),
+				attachPainter(new NodeGeneratorTool(new SignalTransitionGenerator(), snap), simpleModelPainter),
+				attachPainter(new NodeGeneratorTool(new DummyTransitionGenerator(), snap), simpleModelPainter),
 				attachParameterisedPainter(new STGSimulationTool(editor, tp), painterProvider));
 	}
-
 }

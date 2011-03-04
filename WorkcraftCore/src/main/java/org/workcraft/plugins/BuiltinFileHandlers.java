@@ -1,11 +1,11 @@
 package org.workcraft.plugins;
 
 import org.workcraft.Framework;
-import org.workcraft.Initialiser;
 import org.workcraft.Module;
 import org.workcraft.PluginManager;
 import org.workcraft.plugins.workspace.handlers.SystemOpen;
 import org.workcraft.plugins.workspace.handlers.WorkcraftOpen;
+import org.workcraft.util.Initialiser;
 import org.workcraft.workspace.FileHandler;
 
 public class BuiltinFileHandlers implements Module {

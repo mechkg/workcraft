@@ -35,16 +35,18 @@ public class PetriNetModelDescriptor implements ModelDescriptor
 			return getServices((VisualPetriNet)model, (HistoryPreservingStorageManager)storage);
 		return ServiceProviderImpl.EMPTY;
 	}
+	
+//	ServiceProviderImpl 
 
 	public static ServiceProviderImpl getServices(VisualPetriNet model, HistoryPreservingStorageManager historyPreservingStorageManager) {
 		return getServices((PetriNet)model.getMathModel(), historyPreservingStorageManager)
-			.plusImplementation(ServiceHandle.LegacyVisualModelService, model);
+			.plus(ServiceHandle.LegacyVisualModelService, model);
 	}
 
 	public static ServiceProviderImpl getServices(PetriNet model, HistoryPreservingStorageManager historyPreservingStorageManager) {
 		return ServiceProviderImpl.EMPTY
-		.plusImplementation(ModelDescriptor.SERVICE_HANDLE, new PetriNetModelDescriptor())
-		.plusImplementation(ServiceHandle.LegacyMathModelService, model)
+		.plus(ModelDescriptor.SERVICE_HANDLE, new PetriNetModelDescriptor())
+		.plus(ServiceHandle.LegacyMathModelService, model)
 			;
 	}
 }

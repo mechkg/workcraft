@@ -78,7 +78,15 @@ public class Expressions {
 		};
 	}
 	
+	static void notNull(Object... objects) {
+		for(Object o : objects) {
+			if (o==null)
+				throw new NullPointerException();
+		}
+	}
+	
 	public static <A,B> Expression<? extends B> bindFunc(final Expression<? extends A> expr1, final Function<? super A, ? extends B> func) {
+		notNull(expr1, func);
 		return new ExpressionBase<B>(){
 			@Override
 			protected B evaluate(EvaluationContext context) {
@@ -88,6 +96,7 @@ public class Expressions {
 	}
 	
 	public static <A,B> Expression<? extends B> bind(final Expression<? extends A> expr1, final Combinator<? super A, ? extends B> func) {
+		notNull(expr1, func);
 		return new ExpressionBase<B>(){
 			@Override
 			protected B evaluate(EvaluationContext context) {
@@ -97,6 +106,7 @@ public class Expressions {
 	}
 	
 	public static <A,B,C> Expression<? extends C> bind(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Combinator2<? super A, ? super B, ? extends C> func) {
+		notNull(expr1, expr2, func);
 		return new ExpressionBase<C>(){
 			@Override
 			protected C evaluate(EvaluationContext context) {
@@ -106,6 +116,7 @@ public class Expressions {
 	}
 
 	public static <A,B,C> Expression<? extends C> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Function2<? super A, ? super B, ? extends C> func) {
+		notNull(expr1, func); 
 		return new ExpressionBase<C>(){
 			@Override
 			protected C evaluate(EvaluationContext context) {
@@ -115,8 +126,8 @@ public class Expressions {
 	}
 
 	public static <A,B> ModifiableExpression<B> bind(final ModifiableExpression<A> expr1, final ModifiableExpressionCombinator<A, B> combinator) {
+		notNull(expr1, combinator); 
 		return new ModifiableExpressionBase<B>(){
-
 			@Override
 			public void setValue(B newValue) {
 				expr1.setValue(combinator.set(newValue));

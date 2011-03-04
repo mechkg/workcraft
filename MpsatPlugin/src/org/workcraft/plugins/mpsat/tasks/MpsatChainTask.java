@@ -23,7 +23,7 @@ public class MpsatChainTask implements Task<MpsatChainResult> {
 	private ExportJob dotGExportJob;
 
 	public static MpsatChainTask create(WorkspaceEntry we, MpsatSettings settings, Framework framework) throws ServiceNotAvailableException {
-		ExportJob dotGExportJob = Export.chooseBestExporter(framework.getPluginManager(), we.getModelEntry().services, Format.STG);
+		ExportJob dotGExportJob = Export.chooseBestExporter(framework.getPluginManager(), we.getModelEntry(), Format.STG);
 		return new MpsatChainTask(dotGExportJob, settings, framework);
 	}
 	

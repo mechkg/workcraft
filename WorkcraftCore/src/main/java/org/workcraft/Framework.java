@@ -52,7 +52,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
-import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.FormatException;
@@ -620,9 +619,7 @@ public class Framework {
 	}
 
 	public void save(ServiceProvider modelEntry, OutputStream out) throws SerialisationException, ServiceNotAvailableException {
-		Model model = modelEntry.getImplementation(ServiceHandle.LegacyMathModelService);
-		VisualModel visualModel = (model instanceof VisualModel)? (VisualModel)model : null ;
-		Model mathModel = (visualModel == null) ? model : visualModel.getMathModel();
+		Model mathModel = modelEntry.getImplementation(ServiceHandle.LegacyMathModelService);
 
 		ZipOutputStream zos = new ZipOutputStream(out);
 
@@ -642,19 +639,6 @@ public class Framework {
 			String visualEntryName = null;
 			ModelSerialiser visualSerialiser = null;
 
-			if (visualModel != null) {
-				visualSerialiser = new XMLModelSerialiser(getPluginManager());
-
-				visualEntryName = "visualModel" + visualSerialiser.getExtension();
-				ze = new ZipEntry(visualEntryName);
-				zos.putNextEntry(ze);
-				visualSerialiser.serialise(visualModel, zos, refResolver);
-				zos.closeEntry();
-			}
-
-			ze = new ZipEntry("meta");
-			zos.putNextEntry(ze);
-
 			Document doc;
 			doc = XmlUtil.createDocument();
 
@@ -670,12 +654,25 @@ public class Framework {
 			math.setAttribute("format-uuid", mathSerialiser.getFormat().toString());
 			root.appendChild(math);
 
-			if (visualModel != null) {
+			try {
+				VisualModel visualModel = modelEntry.getImplementation(ServiceHandle.LegacyVisualModelService);
+				visualSerialiser = new XMLModelSerialiser(getPluginManager());
+
+				visualEntryName = "visualModel" + visualSerialiser.getExtension();
+				ze = new ZipEntry(visualEntryName);
+				zos.putNextEntry(ze);
+				visualSerialiser.serialise(visualModel, zos, refResolver);
+				zos.closeEntry();
+
 				Element visual = doc.createElement("visual");
 				visual.setAttribute("entry-name", visualEntryName);
 				visual.setAttribute("format-uuid", visualSerialiser.getFormat().toString());
 				root.appendChild(visual);
+			} catch (ServiceNotAvailableException ex) {
 			}
+
+			ze = new ZipEntry("meta");
+			zos.putNextEntry(ze);
 
 			XmlUtil.writeDocument(doc, zos);
 

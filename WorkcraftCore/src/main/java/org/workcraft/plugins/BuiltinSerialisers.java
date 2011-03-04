@@ -1,7 +1,6 @@
 package org.workcraft.plugins;
 
 import org.workcraft.Framework;
-import org.workcraft.Initialiser;
 import org.workcraft.Module;
 import org.workcraft.PluginManager;
 import org.workcraft.plugins.serialisation.XMLModelDeserialiser;
@@ -26,6 +25,7 @@ import org.workcraft.plugins.serialisation.xml.VisualConnectionDeserialiser;
 import org.workcraft.plugins.serialisation.xml.VisualConnectionSerialiser;
 import org.workcraft.serialisation.ModelDeserialiser;
 import org.workcraft.serialisation.ModelSerialiser;
+import org.workcraft.util.Initialiser;
 
 public class BuiltinSerialisers implements Module {
 	@Override

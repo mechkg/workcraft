@@ -44,10 +44,10 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.GraphicalContent;
-import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
+import org.workcraft.util.Function;
 import org.workcraft.util.GUI;
 
 public class ConnectionTool extends AbstractTool implements DecorationProvider<Colorisator> {
@@ -58,14 +58,14 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 	private boolean leftFirst = false;
 	private ModifiableExpression<Point2D> lastMouseCoords = Variable.<Point2D>create(new Point2D.Double());
 	private String warningMessage = null;
-	private final ConnectionManager<Node> connectionManager;
+	private final ConnectionManager<? super Node> connectionManager;
 	
 	private static Color highlightColor = new Color(99, 130, 191).brighter();
-	private final TouchableProvider<Node> touchableProvider;
-	private final HitTester<Node> hitTester; // hitTestForConnection
+	private final Function<? super Point2D, ? extends Node> hitTester; // hitTestForConnection
+	private final Function<? super Node, ? extends Expression<? extends Point2D>> centerProvider;
 
-	public ConnectionTool (TouchableProvider<Node> touchableProvider, ConnectionManager<Node> connectionManager, HitTester<Node> hitTester) {
-		this.touchableProvider = touchableProvider;
+	public ConnectionTool (Function<? super Node, ? extends Expression<? extends Point2D>> centerProvider, ConnectionManager<? super Node> connectionManager, Function<? super Point2D, ? extends Node> hitTester) {
+		this.centerProvider = centerProvider;
 		this.connectionManager = connectionManager;
 		this.hitTester = hitTester;
 	}
@@ -133,7 +133,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 							warningMessage = null;
 							if (context.resolve(mouseOverObject) != null) {
 								try {
-									connectionManager.prepareConnection(context.resolve(first), context.resolve(mouseOverObject));
+									connectionManager.validateConnection(context.resolve(first), context.resolve(mouseOverObject));
 									drawConnectingLine(g, Color.GREEN, context);
 								} catch (InvalidConnectionException e) {
 									warningMessage = e.getMessage();
@@ -153,7 +153,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 	private void drawConnectingLine(Graphics2D g, Color color, EvaluationContext context) {
 		g.setColor(color);
 		
-		Point2D center = context.resolve(touchableProvider.apply(context.resolve(first))).getCenter();
+		Point2D center = context.resolve(centerProvider.apply(context.resolve(first)));
 		
 		Line2D line = new Line2D.Double(center.getX(), center.getY(), context.resolve(lastMouseCoords).getX(), context.resolve(lastMouseCoords).getY());
 		g.draw(line);
@@ -167,7 +167,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 	public void mouseMoved(GraphEditorMouseEvent e) {
 		lastMouseCoords.setValue(e.getPosition());
 		
-		Node newMouseOverObject = hitTester.hitTest(e.getPosition());
+		Node newMouseOverObject = hitTester.apply(e.getPosition());
 		
 		mouseOverObject.setValue(newMouseOverObject);
 
@@ -190,7 +190,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 				}
 			} else if (eval(mouseOverObject) != null) {
 				try {
-					connectionManager.prepareConnection(eval(first), eval(mouseOverObject)).run();
+					connectionManager.connect(eval(first), eval(mouseOverObject));
 
 					if ((e.getModifiers() & MouseEvent.CTRL_DOWN_MASK) != 0) {
 						assign(first, mouseOverObject);

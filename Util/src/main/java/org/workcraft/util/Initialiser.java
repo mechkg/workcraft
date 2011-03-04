@@ -1,4 +1,4 @@
-package org.workcraft;
+package org.workcraft.util;
 
 public interface Initialiser<T>
 {

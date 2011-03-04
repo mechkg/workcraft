@@ -31,9 +31,10 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.ReflectiveTouchable;
@@ -52,14 +53,17 @@ public class HitmanTests {
 		public DummyNode(Node[] children)
 		{
 			this.children = new ArrayList<Node>(Arrays.asList(children));
+			for(Node node : children)
+				node.parent().setValue(this);
 		}
 		public DummyNode(Collection<Node> children)
 		{
 			this.children = children;
 		}
+		Variable<Node> parent = Variable.create(null);
 		@Override
 		public ModifiableExpression<Node> parent() {
-			throw new NotSupportedException();
+			return parent;
 		}
 		@Override
 		public Expression<? extends Collection<? extends Node>> children() {

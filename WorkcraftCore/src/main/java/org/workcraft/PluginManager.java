@@ -38,6 +38,7 @@ import org.workcraft.exceptions.FormatException;
 import org.workcraft.exceptions.PluginInstantiationException;
 import org.workcraft.plugins.PluginInfo;
 import org.workcraft.util.ConstructorParametersMatcher;
+import org.workcraft.util.Initialiser;
 import org.workcraft.util.ListMap;
 import org.workcraft.util.XmlUtil;
 

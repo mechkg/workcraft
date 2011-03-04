@@ -1,7 +1,6 @@
 package org.workcraft.plugins.stg;
 
 import org.workcraft.Framework;
-import org.workcraft.Initialiser;
 import org.workcraft.Module;
 import org.workcraft.PluginManager;
 import org.workcraft.dom.ModelDescriptor;
@@ -14,6 +13,7 @@ import org.workcraft.plugins.stg.serialisation.ImplicitPlaceArcDeserialiser;
 import org.workcraft.plugins.stg.serialisation.ImplicitPlaceArcSerialiser;
 import org.workcraft.serialisation.xml.XMLDeserialiser;
 import org.workcraft.serialisation.xml.XMLSerialiser;
+import org.workcraft.util.Initialiser;
 
 public class STGModule implements Module {
 

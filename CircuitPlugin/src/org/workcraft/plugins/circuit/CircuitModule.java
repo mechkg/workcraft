@@ -1,7 +1,6 @@
 package org.workcraft.plugins.circuit;
 
 import org.workcraft.Framework;
-import org.workcraft.Initialiser;
 import org.workcraft.Module;
 import org.workcraft.PluginManager;
 import org.workcraft.Tool;
@@ -13,6 +12,7 @@ import org.workcraft.plugins.circuit.tools.CheckCircuitTool;
 import org.workcraft.plugins.circuit.tools.GenerateCircuitPetriNetTool;
 import org.workcraft.serialisation.xml.XMLDeserialiser;
 import org.workcraft.serialisation.xml.XMLSerialiser;
+import org.workcraft.util.Initialiser;
 
 
 public class CircuitModule implements Module {

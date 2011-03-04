@@ -73,9 +73,8 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 			
 			selection = Expressions.modifiableExpression(new RemovedNodeDeselector(this.root, rawSelection), rawSelection);
 			this.spec = new ModelSpecification(defaultSpec.root, defaultSpec.referenceManager, 
-					new SelectionEventPropagator(selection,
-							new TeeHierarchyController(defaultSpec.hierarchyController,
-							new DefaultMathNodeRemover(this.root, mathModel))
+						new TeeHierarchyController(defaultSpec.hierarchyController,
+							new DefaultMathNodeRemover(this.root, mathModel)
 					), defaultSpec.nodeContext);
 		}
 		final ModelSpecification spec;

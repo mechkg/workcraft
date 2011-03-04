@@ -29,7 +29,7 @@ public class DesiJCustomFunction implements Tool {
 
 	@Override
 	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
-		final ExportJob stgExporter = Export.chooseBestExporter(framework.getPluginManager(), we.getModelEntry().services, Format.STG);
+		final ExportJob stgExporter = Export.chooseBestExporter(framework.getPluginManager(), we.getModelEntry(), Format.STG);
 
 		return new ToolJob() {
 			@Override

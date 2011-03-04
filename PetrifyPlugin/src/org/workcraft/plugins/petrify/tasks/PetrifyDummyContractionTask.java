@@ -7,6 +7,7 @@ import org.workcraft.Framework;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.ServiceNotAvailableException;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.interop.DotGImporter;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
 import org.workcraft.plugins.shared.tasks.PetrifyTask;
@@ -18,7 +19,6 @@ import org.workcraft.tasks.Task;
 import org.workcraft.tasks.TaskManager;
 import org.workcraft.util.Export;
 import org.workcraft.util.Export.ExportTask;
-import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class PetrifyDummyContractionTask implements Task<PetrifyDummyContractionResult>{
@@ -27,7 +27,7 @@ public class PetrifyDummyContractionTask implements Task<PetrifyDummyContraction
 
 	public PetrifyDummyContractionTask(Framework framework, WorkspaceEntry workspaceEntry) throws ServiceNotAvailableException {
 		this.taskManager = framework.getTaskManager();
-		this.dotGExportJob = Export.chooseBestExporter(framework.getPluginManager(), workspaceEntry.getModelEntry().services, Format.STG);
+		this.dotGExportJob = Export.chooseBestExporter(framework.getPluginManager(), workspaceEntry.getModelEntry(), Format.STG);
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class PetrifyDummyContractionTask implements Task<PetrifyDummyContraction
 			if (petrifyResult.getOutcome() == Outcome.FINISHED)
 			{
 				try {
-					final ModelEntry stg = new DotGImporter().importFrom(new ByteArrayInputStream(petrifyResult.getReturnValue().getOutput()));
+					final ServiceProvider stg = new DotGImporter().importFrom(new ByteArrayInputStream(petrifyResult.getReturnValue().getOutput()));
 					return Result.finished(new PetrifyDummyContractionResult(null, stg));
 				} catch (DeserialisationException e) {
 					return Result.exception(e);

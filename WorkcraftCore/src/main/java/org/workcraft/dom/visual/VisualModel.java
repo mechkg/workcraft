@@ -22,16 +22,11 @@
 package org.workcraft.dom.visual;
 
 import org.workcraft.dom.Model;
-import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathModel;
-import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.interop.ServiceHandle;
 
 
 public interface VisualModel extends Model {
 	ServiceHandle<VisualModel> SERVICE_HANDLE = ServiceHandle.createNewService(VisualModel.class, "A visual model");
 	public MathModel getMathModel();
-	
-	public void connect(Node first, Node second) throws InvalidConnectionException;
-	public void validateConnection(Node first, Node second) throws InvalidConnectionException;
 }

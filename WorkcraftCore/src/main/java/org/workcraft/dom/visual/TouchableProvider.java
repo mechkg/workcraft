@@ -45,6 +45,9 @@ public interface TouchableProvider<N> extends Combinator<N,Touchable> {
 						return null;
 					ModifiableExpression<Point2D> position = movable.position(node);
 					
+					if(position == null)
+						return localTouchable;
+					
 					return Expressions.bindFunc(localTouchable, position, new Function2<Touchable, Point2D, Touchable>() {
 						@Override
 						public Touchable apply(Touchable arg1, Point2D arg2) {

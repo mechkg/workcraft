@@ -20,100 +20,36 @@
 
 package org.workcraft.dom.visual.connections;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Stroke;
-import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionFilter;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DependentNode;
-import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.ReflectiveTouchable;
-import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualNode;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty;
 import org.workcraft.gui.propertyeditor.dubble.DoubleProperty;
-import org.workcraft.serialisation.xml.NoAutoSerialisation;
 import org.workcraft.util.Pair;
 
 import pcollections.PVector;
 import pcollections.TreePVector;
 
 public class VisualConnection extends VisualNode implements
-		Node, DrawableNew, Connection,
-		DependentNode, ReflectiveTouchable {
+		Node, Connection,
+		DependentNode {
 	
-	private final class Properties extends ExpressionBase<VisualConnectionProperties> {
-		@Override
-		public VisualConnectionProperties evaluate(final EvaluationContext resolver) {
-			final Touchable firstShape = resolver.resolve(transformedShape1);
-			final Touchable secondShape = resolver.resolve(transformedShape2);
-			return new VisualConnectionProperties() {
-
-				@Override
-				public Color getDrawColor() {
-					return resolver.resolve(color());
-				}
-
-				@Override
-				public double getArrowWidth() {
-					return resolver.resolve(arrowWidth());
-				}
-
-				@Override
-				public boolean hasArrow() {
-					return true;
-				}
-
-				@Override
-				public Touchable getFirstShape() {
-					return firstShape;
-				}
-
-				@Override
-				public Touchable getSecondShape() {
-					return secondShape;
-				}
-
-				@Override
-				public Stroke getStroke()
-				{
-					return new BasicStroke((float)resolver.resolve(lineWidth()).doubleValue());
-				}
-
-				@Override
-				public double getArrowLength() {
-					return resolver.resolve(arrowLength());
-				}
-
-				@Override
-				public ScaleMode getScaleMode() {
-					return resolver.resolve(scaleMode());
-				}
-			};
-		}
-	}
-
 	public enum ConnectionType 
 	{
 		POLYLINE,
@@ -133,23 +69,10 @@ public class VisualConnection extends VisualNode implements
 	private VisualComponent first;
 	private VisualComponent second;
 
-	private ModifiableExpression<ConnectionType> connectionTypeExpr = new ModifiableExpressionBase<ConnectionType>(){
-
-		@Override
-		public void setValue(ConnectionType newValue) {
-			setConnectionType(newValue);
-		}
-
-		@Override
-		protected ConnectionType evaluate(EvaluationContext context) {
-			return getConnectionType();
-		}
-	};
-	
 	private ConnectionType connectionType = ConnectionType.POLYLINE;
 	private final ModifiableExpression<ScaleMode> scaleMode;
 	
-	private ConnectionGraphic graphic = null;
+	private ConnectionGraphicConfiguration graphic = null;
 
 	static class BoundedVariable extends ModifiableExpressionFilter<Double, Double>
 	{	
@@ -185,16 +108,10 @@ public class VisualConnection extends VisualNode implements
 	private final ModifiableExpression<Double> arrowLength;
 	
 	private CachedHashSet<Node> children;
-	private ExpressionBase<Touchable> transformedShape1;
-	private ExpressionBase<Touchable> transformedShape2;
 	public final StorageManager storage;
 	
 	protected void initialise() {
 		children = new CachedHashSet<Node>(storage);
-
-		transformedShape1 = ComponentsTransformer.transform(first, this);
-		transformedShape2 = ComponentsTransformer.transform(second, this);
-		
 		children.add(graphic);
 	}
 	
@@ -224,7 +141,7 @@ public class VisualConnection extends VisualNode implements
 			.plus(DoubleProperty.create("Line width", lineWidth))
 			.plus(DoubleProperty.create("Arrow width", arrowWidth))
 			.plus(ChoiceProperty.create("Arrow length", arrowLengths, arrowLength))
-			.plus(ChoiceProperty.create("Connection type", connectionTypes, connectionTypeExpr))
+//			.plus(ChoiceProperty.create("Connection type", connectionTypes, connectionTypeExpr))
 			.plus(ChoiceProperty.create("Scale mode", scaleModes, scaleMode))
 			;
 	}
@@ -239,7 +156,7 @@ public class VisualConnection extends VisualNode implements
 		arrowLength = new BoundedVariable(0.1, 1, storage.create(defaultArrowLength));
 	}
 	
-	public void setVisualConnectionDependencies(VisualComponent first, VisualComponent second, ConnectionGraphic graphic, MathConnection refConnection) {
+	public void setVisualConnectionDependencies(VisualComponent first, VisualComponent second, ConnectionGraphicConfiguration graphic, MathConnection refConnection) {
 		if(first == null)
 			throw new NullPointerException("first");
 		if(second == null)
@@ -270,31 +187,6 @@ public class VisualConnection extends VisualNode implements
 		initialise();
 	}
 
-	@NoAutoSerialisation
-	public ConnectionType getConnectionType() {
-		return connectionType;
-	}
-
-	@NoAutoSerialisation
-	public void setConnectionType(ConnectionType t) {
-		if (connectionType!=t) {
-			children.remove(graphic);
-			
-			if (t==ConnectionType.POLYLINE) { 
-				graphic = new Polyline(this, storage);
-			}
-			if (t==ConnectionType.BEZIER) { 
-				Bezier b = new Bezier(this, storage);
-				b.setDefaultControlPoints();
-				graphic = b;
-			}
-			
-			children.add(graphic);
-			
-			connectionType = t;
-		}
-	}
-
 	public ModifiableExpression<Color> color() {
 		return color;
 	}
@@ -310,22 +202,9 @@ public class VisualConnection extends VisualNode implements
 	public ModifiableExpression<Double> arrowLength() {
 		return arrowLength;
 	}
-
-	public Point2D getPointOnConnection(double t) {
-		return GlobalCache.eval(graphic.curve()).getPointOnCurve(t);
-	}
-
-	public Point2D getNearestPointOnConnection(Point2D pt) {
-		return GlobalCache.eval(graphic.curve()).getNearestPointOnCurve(pt);
-	}
 	
 	public MathConnection getReferencedConnection() {
 		return refConnection;
-	}
-	
-	@Override
-	public Expression<? extends Touchable> shape() {
-		return graphic.shape();
 	}
 	
 	@Override
@@ -347,7 +226,7 @@ public class VisualConnection extends VisualNode implements
 		return ret;
 	}
 
-	public ConnectionGraphic getGraphic() {
+	public Node getGraphic() {
 		return graphic;
 	}
 	
@@ -359,18 +238,8 @@ public class VisualConnection extends VisualNode implements
 	public ModifiableExpression<ScaleMode> scaleMode() {
 		return scaleMode;
 	}
-	
-	public ExpressionBase<VisualConnectionProperties> properties() {
-		return new Properties();
-	}
 
-	@Override
-	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
-		return Expressions.constant(new ColorisableGraphicalContent() {
-			@Override
-			public void draw(DrawRequest request) {
-				
-			}
-		});
+	public void setConnectionType(ConnectionType polyline) {
+		throw new NotImplementedException();
 	}
 }

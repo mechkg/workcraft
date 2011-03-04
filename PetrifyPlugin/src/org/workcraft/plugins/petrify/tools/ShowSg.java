@@ -30,7 +30,7 @@ public class ShowSg implements Tool {
 
 	@Override
 	public ToolJob applyTo(WorkspaceEntry we) throws ServiceNotAvailableException {
-		final DrawSgTask task = new DrawSgTask(we.getModelEntry().services, framework);
+		final DrawSgTask task = new DrawSgTask(we.getModelEntry(), framework);
 		return new ToolJob(){
 
 			@Override

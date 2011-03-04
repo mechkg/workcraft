@@ -33,7 +33,7 @@ public class CustomPropertyMpsatChecker implements Tool {
 	
 	@Override
 	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
-		final ExportJob dotGExporter = Export.chooseBestExporter(framework.getPluginManager(), we.getModelEntry().services, Format.STG);
+		final ExportJob dotGExporter = Export.chooseBestExporter(framework.getPluginManager(), we.getModelEntry(), Format.STG);
 		return new ToolJob(){
 			@Override
 			public void run() {

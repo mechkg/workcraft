@@ -68,7 +68,6 @@ import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 import org.workcraft.Framework;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.math.MathModel;
-import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.exceptions.SerialisationException;
@@ -664,18 +663,17 @@ public class MainWindow extends JFrame {
 				if (!dialog.getModelTitle().isEmpty())
 					mathModel.setTitle(dialog.getModelTitle());
 
-				if (dialog.createVisualSelected()) {
-					try {
-						modelServices.getImplementation(ServiceHandle.LegacyVisualModelService);
-						WorkspaceEntry we = framework.getWorkspace().add(path, name, modelServices, false);
-						if (dialog.openInEditorSelected())
-							createEditorWindow (we);
-					}
-					catch(ServiceNotAvailableException ex) {
-						throw new VisualModelInstantiationException("visual model is not defined for \"" + info.getDisplayName() + "\".");
-					}
-				} else
-					framework.getWorkspace().add(path, name, modelServices, false);
+				WorkspaceEntry we = framework.getWorkspace().add(path, name, modelServices, false);
+				if (dialog.createVisualSelected()) { 
+					// TODO: actually do something or remove this option 
+				}
+				try{
+					if (dialog.openInEditorSelected())
+						createEditorWindow (we);
+				}
+				catch(ServiceNotAvailableException ex) {
+					throw new VisualModelInstantiationException("visual model is not defined for \"" + info.getDisplayName() + "\".", ex);
+				}
 			} catch (VisualModelInstantiationException e) {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(this, "Visual model could not be created: " + e.getMessage() + "\n\nPlease see the Problems window for details.", "Error", JOptionPane.ERROR_MESSAGE);

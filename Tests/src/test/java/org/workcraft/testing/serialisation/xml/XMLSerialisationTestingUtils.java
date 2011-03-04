@@ -24,7 +24,6 @@ package org.workcraft.testing.serialisation.xml;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.workcraft.Initialiser;
 import org.workcraft.LegacyPluginInfo;
 import org.workcraft.PluginManager;
 import org.workcraft.PluginProvider;
@@ -56,6 +55,7 @@ import org.workcraft.plugins.stg.VisualSTG;
 import org.workcraft.plugins.stg.VisualSignalTransition;
 import org.workcraft.plugins.stg.serialisation.ImplicitPlaceArcDeserialiser;
 import org.workcraft.plugins.stg.serialisation.ImplicitPlaceArcSerialiser;
+import org.workcraft.util.Initialiser;
 
 public class XMLSerialisationTestingUtils {
 	static class MockPluginManager implements PluginProvider {
@@ -185,10 +185,10 @@ public class XMLSerialisationTestingUtils {
 			
 			visualSTG.add(vt1);visualSTG.add(vt2);visualSTG.add(vt3);visualSTG.add(vt4);
 			
-			visualSTG.connect(vt1, vt2);
-			visualSTG.connect(vt2, vt3);
-			visualSTG.connect(vt3, vt4);
-			visualSTG.connect(vt4, vt1);
+			visualSTG.connectionManager().connect(vt1, vt2);
+			visualSTG.connectionManager().connect(vt2, vt3);
+			visualSTG.connectionManager().connect(vt3, vt4);
+			visualSTG.connectionManager().connect(vt4, vt1);
 			
 			
 			

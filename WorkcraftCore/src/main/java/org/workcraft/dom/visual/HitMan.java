@@ -23,13 +23,11 @@ package org.workcraft.dom.visual;
 
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
@@ -40,6 +38,9 @@ import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.util.Func;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Hierarchy;
+
+import pcollections.PCollection;
+import pcollections.TreePVector;
 
 public class HitMan
 {
@@ -246,24 +247,7 @@ public class HitMan
 		return nd;
 	}
 
-	public static Node hitTestForConnection (TouchableProvider<Node> tp, Point2D point, VisualModel model) {
-		Point2D pt = transformToCurrentLevel(point, model);
-		return hitTestForConnection(tp, pt, eval(model.currentLevel()));
-	}
-
-	public static Node hitTestForSelection (TouchableProvider<Node> tp, Point2D point, VisualModel model) {
-		Point2D pt = transformToCurrentLevel(point, model);
-		return hitTestForSelection(tp, pt, eval(model.currentLevel()));
-	}
-
-	private static Point2D transformToCurrentLevel(Point2D point, VisualModel model) {
-		AffineTransform t = TransformHelper.getTransform(model.getRoot(), eval(model.currentLevel()));
-		Point2D pt = new Point2D.Double();
-		t.transform(point, pt);
-		return pt;
-	}
-
-	public static Collection<? extends Node> boxHitTest (TouchableProvider<Node> touchableProvider, Node container, Point2D p1, Point2D p2) {
+	public static PCollection<Node> boxHitTest (TouchableProvider<Node> touchableProvider, Node container, Point2D p1, Point2D p2) {
 		return boxHitTest(touchableProvider, eval(container.children()), p1, p2);
 	}
 
@@ -274,8 +258,8 @@ public class HitMan
 	 * @param p2 		The bottom-right corner of the rectangle
 	 * @return 			The collection of nodes fitting completely inside the rectangle
 	 */
-	public static <N> Collection<? extends N> boxHitTest (TouchableProvider<? super N> t, Collection<? extends N> nodes, Point2D p1, Point2D p2) {
-		LinkedList<N> hit = new LinkedList<N>();
+	public static <N> PCollection<N> boxHitTest (TouchableProvider<? super N> t, Collection<? extends N> nodes, Point2D p1, Point2D p2) {
+		PCollection<N> hit = TreePVector.<N>empty();
 
 		Rectangle2D rect = Geometry.createRectangle(p1, p2);
 
@@ -285,10 +269,10 @@ public class HitMan
 				Touchable touchable = eval(tt);
 				if (p1.getX()<=p2.getX()) {
 					if (TouchableHelper.insideRectangle(touchable, rect))
-						hit.add(n);
+						hit.plus(n);
 				} else {
 					if (TouchableHelper.touchesRectangle(touchable, rect))
-						hit.add(n);
+						hit.plus(n);
 				}
 			}
 		}

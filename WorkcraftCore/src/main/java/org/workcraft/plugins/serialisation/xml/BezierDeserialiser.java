@@ -68,8 +68,8 @@ public class BezierDeserialiser implements CustomXMLDeserialiser {
 
 		Bezier bezier = (Bezier)instance;
 		
-		BezierControlPoint cp1 = (BezierControlPoint)nodeInitialiser.initInstance(cp1e, bezier.origin1(), bezier.storage);
-		BezierControlPoint cp2 = (BezierControlPoint)nodeInitialiser.initInstance(cp2e, bezier.origin2(), bezier.storage);
+		BezierControlPoint cp1 = (BezierControlPoint)nodeInitialiser.initInstance(cp1e, bezier.storage);
+		BezierControlPoint cp2 = (BezierControlPoint)nodeInitialiser.initInstance(cp2e, bezier.storage);
 
 		bezier.initControlPoints(cp1, cp2);
 	}

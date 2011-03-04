@@ -1,4 +1,4 @@
-package org.workcraft.gui.graph.tools;
+package org.workcraft.gui.graph.tools.selection;
 
 import java.awt.Color;
 import java.awt.event.KeyEvent;
@@ -13,13 +13,17 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
+import org.workcraft.gui.graph.tools.AbstractTool;
+import org.workcraft.gui.graph.tools.Colorisation;
+import org.workcraft.gui.graph.tools.Colorisator;
+import org.workcraft.gui.graph.tools.DecorationProvider;
+import org.workcraft.gui.graph.tools.HierarchicalColorisator;
 import org.workcraft.util.GUI;
 
 public class SelectionTool extends AbstractTool implements DecorationProvider<Colorisator> {
 
 	private final GenericSelectionTool<Node> selectionTool;
-	private final Expression<Node> currentLevel;
-
+	private final Expression<? extends Node> currentLevel;
 	
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e) {
@@ -31,10 +35,9 @@ public class SelectionTool extends AbstractTool implements DecorationProvider<Co
 		selectionTool = new GenericSelectionTool<Node>(
 				config.selection(),
 				config.hitTester(),
-				config.movableController(), 
-				config.snap());
+				new MoveDragHandler<Node>(config.selection(), config.movableController(), config.snap())
+			);
 	}
-	
 
 	protected Color grayOutColor = Color.LIGHT_GRAY; 
 

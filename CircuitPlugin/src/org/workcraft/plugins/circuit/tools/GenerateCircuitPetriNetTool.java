@@ -8,7 +8,6 @@ import org.workcraft.plugins.circuit.stg.CircuitPetriNetGenerator;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.plugins.stg.STGModelDescriptor;
 import org.workcraft.plugins.stg.VisualSTG;
-import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.Workspace;
 import org.workcraft.workspace.WorkspaceEntry;
 
@@ -34,7 +33,7 @@ public class GenerateCircuitPetriNetTool implements Tool {
 	@Override
 	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
 
-		final VisualCircuit circuit = we.getModelEntry().services.getImplementation(VisualCircuit.SERVICE_HANDLE);
+		final VisualCircuit circuit = we.getModelEntry().getImplementation(VisualCircuit.SERVICE_HANDLE);
 		
 		return new ToolJob(){
 			@Override
@@ -42,7 +41,7 @@ public class GenerateCircuitPetriNetTool implements Tool {
 				HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
 				VisualSTG vstg = CircuitPetriNetGenerator.generate(circuit, storage);
 				ws.add(we.getWorkspacePath().getParent(), we.getWorkspacePath().getNode(), 
-						new ModelEntry(new STGModelDescriptor(), vstg, storage), false);
+						STGModelDescriptor.getServices(vstg, storage), false);
 			}
 		};
 	}

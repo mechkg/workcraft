@@ -6,5 +6,16 @@ package org.workcraft.util;
  * The type of the function result.
  */
 public interface Function0<R> {
-    public R apply();
+    class Util {
+    	public static <R> Function0<R> constant(final R value) {
+    		return new Function0<R>(){
+    			@Override
+    			public R apply() {
+        			return value;
+    			}
+    		};
+    	}
+    }
+
+	public R apply();
 }

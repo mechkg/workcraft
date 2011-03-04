@@ -42,6 +42,7 @@ import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.NodeCreationException;
+import org.workcraft.gui.graph.tools.ConnectionManager;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.plugins.petri.VisualTransition;
 import org.workcraft.plugins.stg.SignalTransition.Direction;
@@ -56,46 +57,50 @@ public class VisualSTG extends AbstractVisualModel {
 	public final STG stg;
 	public StorageManager storage;
 
-	@Override
-	public void validateConnection(Node first, Node second)	throws InvalidConnectionException {
-		if (first==second) {
-			throw new InvalidConnectionException ("Connections are only valid between different objects");
-		}
-		
-		if (first instanceof VisualPlace) {
-			if (second instanceof VisualPlace)
-				throw new InvalidConnectionException ("Arcs between places are not allowed");
-			if (second instanceof VisualConnection)
-				throw new InvalidConnectionException ("Arcs between places and implicit places are not allowed");
-		}
+	public ConnectionManager<Node> connectionManager() {
+		return new ConnectionManager<Node>() {
+			@Override
+			public void validateConnection(Node first, Node second)	throws InvalidConnectionException {
+				if (first==second) {
+					throw new InvalidConnectionException ("Connections are only valid between different objects");
+				}
+				
+				if (first instanceof VisualPlace) {
+					if (second instanceof VisualPlace)
+						throw new InvalidConnectionException ("Arcs between places are not allowed");
+					if (second instanceof VisualConnection)
+						throw new InvalidConnectionException ("Arcs between places and implicit places are not allowed");
+				}
 
-		if (first instanceof VisualTransition) {
-			if (second instanceof VisualConnection)
-				if (! (second  instanceof VisualImplicitPlaceArc))
-					throw new InvalidConnectionException ("Only connections with arcs having implicit places are allowed");
-		}
+				if (first instanceof VisualTransition) {
+					if (second instanceof VisualConnection)
+						if (! (second  instanceof VisualImplicitPlaceArc))
+							throw new InvalidConnectionException ("Only connections with arcs having implicit places are allowed");
+				}
 
-		if (first instanceof VisualConnection) {
-			if (!(first instanceof VisualImplicitPlaceArc))
-				throw new InvalidConnectionException ("Only connections with arcs having implicit places are allowed");
-			if (second instanceof VisualConnection)
-				throw new InvalidConnectionException ("Arcs between places are not allowed");
-			if (second instanceof VisualPlace)
-				throw new InvalidConnectionException ("Arcs between places are not allowed");
+				if (first instanceof VisualConnection) {
+					if (!(first instanceof VisualImplicitPlaceArc))
+						throw new InvalidConnectionException ("Only connections with arcs having implicit places are allowed");
+					if (second instanceof VisualConnection)
+						throw new InvalidConnectionException ("Arcs between places are not allowed");
+					if (second instanceof VisualPlace)
+						throw new InvalidConnectionException ("Arcs between places are not allowed");
 
-			VisualImplicitPlaceArc con = (VisualImplicitPlaceArc) first;
-			if (con.getFirst() == second || con.getSecond() == second)
-				throw new InvalidConnectionException ("Arc already exists");
-		}
-	}
+					VisualImplicitPlaceArc con = (VisualImplicitPlaceArc) first;
+					if (con.getFirst() == second || con.getSecond() == second)
+						throw new InvalidConnectionException ("Arc already exists");
+				}
+			}
 
-	@Override
-	public void connect(Node first,	Node second)  throws InvalidConnectionException {
-		createConnection(first, second);
+			@Override
+			public void connect(Node first,	Node second)  throws InvalidConnectionException {
+				createConnection(first, second);
+			}
+		};
 	}
 	
 	public VisualConnection createConnection(Node first,	Node second) throws InvalidConnectionException {
-		validateConnection(first, second);
+		connectionManager().validateConnection(first, second);
 
 		if (first instanceof VisualStgTransition) {
 			if (second instanceof VisualStgTransition) {

@@ -10,8 +10,6 @@ public class BuiltinExporters implements Module {
 	@Override
 	public void init(final Framework framework) {
 		final PluginManager p = framework.getPluginManager();
-		
-		p.registerClass(Exporter.class, AbstractSVGExporter.class);
 	}
 
 	@Override

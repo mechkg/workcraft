@@ -40,7 +40,7 @@ import pcollections.PVector;
 import pcollections.TreePVector;
 
 
-public abstract class VisualNode implements Properties, Node, Hidable {
+public abstract class VisualNode implements Properties, Node {
 
 	public VisualNode(StorageManager storage) {
 		parent = storage.create(null);

@@ -8,6 +8,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.JLabel;
@@ -17,64 +18,75 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualComponent;
-import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.ArgumentException;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
+import org.workcraft.gui.graph.EditorOverlay;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.GraphEditor;
-import org.workcraft.gui.graph.tools.SelectionTool;
-import org.workcraft.gui.graph.tools.SelectionToolConfig;
+import org.workcraft.gui.graph.tools.HitTester;
+import org.workcraft.gui.graph.tools.selection.SelectionTool;
+import org.workcraft.gui.graph.tools.selection.SelectionToolConfig;
 import org.workcraft.plugins.petri.VisualPlace;
+import org.workcraft.util.Function;
 
 public class STGSelectionTool extends SelectionTool
 {
 	private final TouchableProvider<Node> touchableProvider;
+	private final HitTester<VisualNode> hitTester;
+	private final GraphEditor editor;
+	private STG visualStg;
 
-	public STGSelectionTool(GraphEditor editor, TouchableProvider<Node> touchableProvider) {
-		super(new SelectionToolConfig.Default(editor.getModel(), touchableProvider));
+	public STGSelectionTool(final GraphEditor editor, TouchableProvider<Node> touchableProvider, HitTester<VisualNode> hitTester) {
+		super(new SelectionToolConfig.Default(hitTester, new Function<Point2D, Point2D>() {
+			@Override
+			public Point2D apply(Point2D argument) {
+				return editor.snap(argument);
+			}
+		}));
+		this.editor = editor;
 		this.touchableProvider = touchableProvider;
+		this.hitTester = hitTester;
 	}
 
-	private boolean cancelEdit = false;
 	
-	private void editInPlace (final GraphEditor editor, final VisualComponent t, String initialText) {
-		final Viewport viewport = editor.getViewport();
-		final STG model = (STG)editor.getModel().getMathModel();
-
-		Rectangle2D bb = eval(touchableProvider.apply(t)).getBoundingBox();
+	private static void editInPlace (final EditorOverlay overlay, final STG model, final Viewport viewport, final TouchableProvider<Node> touchable, final VisualComponent t, String initialText) {
+		Rectangle2D bb = eval(touchable.apply(t)).getBoundingBox();
 		Rectangle r = viewport.userToScreen(bb);
-
 
 		final JTextField text = new JTextField();
 
 		if (initialText != null)
 			text.setText(initialText);
 		else
-			text.setText(eval(editor.getModel().getMathModel().referenceManager()).getNodeReference(t.getReferencedComponent()));
+			text.setText(eval(model.referenceManager()).getNodeReference(t.getReferencedComponent()));
 
 		text.setFont(text.getFont().deriveFont( Math.max(12.0f, (float)r.getHeight()*0.7f)));
 		text.selectAll();
 
 		text.setBounds(r.x, r.y, Math.max(r.width, 60), Math.max(r.height, 18));
 
-		editor.getOverlay().add(text);
+		overlay.add(text);
 		text.requestFocusInWindow();
+		
+		final boolean [] cancelEdit = new boolean [1];;
+		cancelEdit[0] = false;
+		
+
 
 		text.addKeyListener( new KeyListener() {
 
 			@Override
 			public void keyPressed(KeyEvent arg0) {
 				if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
-					cancelEdit = false;
+					cancelEdit[0] = false;
 					text.getParent().remove(text);
 				}
 				else if (arg0.getKeyCode() == KeyEvent.VK_ESCAPE) {
-					cancelEdit = true;
+					cancelEdit[0] = true;
 					text.getParent().remove(text);
 				}
 			}
@@ -101,15 +113,15 @@ public class STGSelectionTool extends SelectionTool
 
 				final String newName = text.getText();
 
-				if (!cancelEdit)
+				if (!cancelEdit[0])
 					try {
 						model.setName(t.getReferencedComponent(), newName);
 					} catch (ArgumentException e) {
 						JOptionPane.showMessageDialog(null, e.getMessage());
-						editInPlace(editor, t, newName);
+						editInPlace(overlay, model, viewport, touchable, t, newName);
 					}
 				
-				editor.repaint();
+				//editor.repaint();
 			}
 		});
 	}
@@ -119,10 +131,8 @@ public class STGSelectionTool extends SelectionTool
 	{
 		super.mouseClicked(e);
 
-		VisualModel model = e.getEditor().getModel();
-
 		if(e.getButton()==MouseEvent.BUTTON1 && e.getClickCount() > 1) {
-			VisualNode node = (VisualNode) HitMan.hitTestForSelection(touchableProvider, e.getPosition(), model);
+			VisualNode node = hitTester.hitTest(e.getPosition());
 			if (node != null)
 			{
 				if(node instanceof VisualPlace)
@@ -139,13 +149,13 @@ public class STGSelectionTool extends SelectionTool
 					else if (eval(place.tokens())==0)
 						place.tokens().setValue(1);
 				} else if (node instanceof VisualSignalTransition || node instanceof VisualDummyTransition) {
-					editInPlace(e.getEditor(), (VisualComponent)node, null);
+					editInPlace(editor.getOverlay(), visualStg, editor.getViewport(), touchableProvider, (VisualComponent)node, null);
 				}
 
 			}
 
 		} else if (e.getButton() == MouseEvent.BUTTON3 && e.getClickCount() == 1) {
-			VisualNode node = (VisualNode) HitMan.hitTestForSelection(touchableProvider, e.getPosition(), model);
+			VisualNode node = hitTester.hitTest(e.getPosition());
 			JPopupMenu popup = createPopupMenu(node);
 			if (popup!=null)
 				popup.show(e.getSystemEvent().getComponent(), e.getSystemEvent().getX(), e.getSystemEvent().getY());

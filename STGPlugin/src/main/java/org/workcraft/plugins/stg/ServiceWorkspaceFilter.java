@@ -21,7 +21,7 @@ public class ServiceWorkspaceFilter<T> implements WorkspaceFilter<T> {
 	@Override
 	public @Nullable T interpret(Path<String> arg) {
 		WorkspaceEntry entry = framework.getWorkspace().getOpenFile(arg);
-		try { return entry.getModelEntry().services.getImplementation(serviceHandle); }
+		try { return entry.getModelEntry().getImplementation(serviceHandle); }
 		catch(ServiceNotAvailableException e) {return null;} 
 	}
 }

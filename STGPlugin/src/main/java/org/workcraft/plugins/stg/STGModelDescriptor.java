@@ -50,7 +50,6 @@ public class STGModelDescriptor implements ModelDescriptor
 				return visualStg.apply().stg;
 			}})
 		.plusDeferred(GraphEditable.SERVICE_HANDLE, new Initialiser<GraphEditable>() {
-
 			@Override
 			public GraphEditable create() {
 				VisualSTG visualModel = visualStg.apply();

@@ -198,7 +198,6 @@ public class STGToolsProvider implements CustomToolsProvider {
 		};
 		
 		HitTester<VisualNode> selectionHitTester = new HitTester<VisualNode>() {
-
 			@Override
 			public VisualNode hitTest(Point2D point) {
 				return (VisualNode)HitMan.hitTestForSelection(tp, point, visualStg.getRoot());

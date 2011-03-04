@@ -22,6 +22,7 @@
 package org.workcraft.testing.dom.visual;
 
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -29,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 import org.junit.Test;
 import org.workcraft.dependencymanager.advanced.core.Expression;
@@ -40,7 +43,8 @@ import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TouchableProvider;
-import org.workcraft.exceptions.NotSupportedException;
+
+import pcollections.PCollection;
 
 public class HitmanTests {
 	class DummyNode implements Node
@@ -73,6 +77,16 @@ public class HitmanTests {
 	
 	class HitableNode extends DummyNode implements ReflectiveTouchable
 	{
+		private final Point2D point;
+
+		public HitableNode(Point2D point) {
+			this.point = point;
+		}
+
+		public HitableNode() {
+			this(new Point2D.Double(0, 0));
+		}
+		
 		@Override
 		public Expression<? extends Touchable> shape() {
 			return Expressions.constant(new Touchable() {
@@ -83,12 +97,12 @@ public class HitmanTests {
 
 				@Override
 				public Rectangle2D getBoundingBox() {
-					return new Rectangle2D.Double(0, 0, 1, 1);
+					return new Rectangle2D.Double(point.getX(), point.getY(), 1, 1);
 				}
 
 				@Override
 				public Point2D getCenter() {
-					return new Point2D.Double(0, 0);
+					return point;
 				}
 				
 			});
@@ -96,7 +110,7 @@ public class HitmanTests {
 	}
 	
 	@Test
-	public void TestHitDeepestSkipNulls()
+	public void testHitDeepestSkipNulls()
 	{
 		final HitableNode toHit = new HitableNode();
 		Node node = new DummyNode(
@@ -106,5 +120,27 @@ public class HitmanTests {
 			}
 		);
 		assertSame(toHit, HitMan.hitDeepestNodeOfType(TouchableProvider.DEFAULT, new Point2D.Double(0.5, 0.5), node, HitableNode.class));
+	}
+	
+	@Test
+	public void testBoxHitTest() {
+		final HitableNode toHit1 = new HitableNode(new Point2D.Double(0,0));
+		final HitableNode toHit2 = new HitableNode(new Point2D.Double(1,1));
+		final HitableNode toHit3 = new HitableNode(new Point2D.Double(2,2));
+		List<HitableNode> nodes = Arrays.asList(toHit1, toHit2, toHit3);
+		
+		assertCollectionsEqual(Arrays.asList(toHit1, toHit2), HitMan.boxHitTest(TouchableProvider.LOCAL_REFLECTIVE, nodes, new Point2D.Double(-0.5, -0.5), new Point2D.Double(2.5, 2.5)));
+		
+	}
+
+	private void assertCollectionsEqual(List<HitableNode> asList, PCollection<HitableNode> boxHitTest) {
+		assertSubSet(asList, boxHitTest);
+		assertSubSet(boxHitTest, asList);
+	}
+
+	private void assertSubSet(Collection<HitableNode> subset, Collection<HitableNode> superset) {
+		HashSet<HitableNode> ht = new HashSet<HitableNode>(subset);
+		ht.removeAll(superset);
+		assertTrue(ht.isEmpty());
 	}
 }

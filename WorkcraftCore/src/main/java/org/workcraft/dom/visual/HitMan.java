@@ -259,6 +259,7 @@ public class HitMan
 	 * @return 			The collection of nodes fitting completely inside the rectangle
 	 */
 	public static <N> PCollection<N> boxHitTest (TouchableProvider<? super N> t, Collection<? extends N> nodes, Point2D p1, Point2D p2) {
+		
 		PCollection<N> hit = TreePVector.<N>empty();
 
 		Rectangle2D rect = Geometry.createRectangle(p1, p2);
@@ -269,10 +270,10 @@ public class HitMan
 				Touchable touchable = eval(tt);
 				if (p1.getX()<=p2.getX()) {
 					if (TouchableHelper.insideRectangle(touchable, rect))
-						hit.plus(n);
+						hit = hit.plus(n);
 				} else {
 					if (TouchableHelper.touchesRectangle(touchable, rect))
-						hit.plus(n);
+						hit = hit.plus(n);
 				}
 			}
 		}

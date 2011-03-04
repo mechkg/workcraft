@@ -27,19 +27,15 @@ import java.awt.geom.Point2D;
 import org.workcraft.gui.graph.tools.GraphEditor;
 
 public class GraphEditorMouseEvent {
-	MouseEvent event;
-	Point2D position;
-	Point2D prevPosition;
-	Point2D startPosition;
-
-	public GraphEditorMouseEvent(GraphEditor editor, MouseEvent e) {
-		event = e;
-		position = editor.getViewport().screenToUser(e.getPoint());
-	}
+	final MouseEvent event;
+	final Point2D position;
+	final Point2D prevPosition;
+	final Point2D startPosition;
 
 	public GraphEditorMouseEvent(GraphEditor editor, MouseEvent e, Point2D startPosition, Point2D prevPosition) {
-		this(editor, e);
-		this.startPosition = startPosition;
+		event = e;
+		position = editor.getViewport().screenToUser(e.getPoint());
+		this.startPosition = startPosition == null ? position : startPosition;
 		this.prevPosition = prevPosition;
 	}
 	

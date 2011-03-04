@@ -58,7 +58,7 @@ public class DefaultMathNodeRemover implements HierarchyObserver {
 		}
 		
 		private void nodeAdded(Node node) {
-			System.out.println("math node remover: node added: " + node);
+			//System.out.println("math node remover: node added: " + node);
 			if (node instanceof DependentNode)
 				for (MathNode mn : ((DependentNode)node).getMathReferences())
 					incRef(mn);
@@ -68,7 +68,7 @@ public class DefaultMathNodeRemover implements HierarchyObserver {
 		}
 
 		private void nodeRemoved(Node node) {
-			System.out.println("math node remover: node removed: " + node);
+			//System.out.println("math node remover: node removed: " + node);
 			if (node instanceof DependentNode)
 				for (MathNode mn : ((DependentNode)node).getMathReferences())
 					decRef(mn);

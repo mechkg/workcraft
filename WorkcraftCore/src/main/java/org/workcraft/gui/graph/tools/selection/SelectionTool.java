@@ -84,7 +84,7 @@ public class SelectionTool extends AbstractTool implements DecorationProvider<Co
 							}
 						};
 						
-						if(context.resolve(selectionTool.effectiveSelection).contains(node))
+						if(context.resolve(selectionTool.effectiveSelection()).contains(node))
 							return selectedDecoration;
 						else
 							return null;

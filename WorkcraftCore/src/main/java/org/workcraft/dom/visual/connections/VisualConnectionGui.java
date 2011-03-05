@@ -7,7 +7,10 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
+import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.connections.VisualConnection.ConnectionType;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
@@ -64,5 +67,21 @@ public class VisualConnectionGui {
 			return getConnectionType();
 		}
 	};
+	public static Expression<? extends ColorisableGraphicalContent> getGraphicalContent(final TouchableProvider<Node> tp, final VisualConnection connection, ConnectionGraphicConfiguration connectionGraphic) {
+		return connectionGraphic.accept(new ConnectionGraphicConfigurationVisitor<Expression<? extends ColorisableGraphicalContent>>() {
+
+
+			@Override
+			public Expression<? extends ColorisableGraphicalContent> visitPolyline(PolylineConfiguration polyline) {
+				return PolylineGui.getGraphicalContent(new VisualConnectionGraphicalPropertiesImpl(tp.apply(connection.getFirst()), tp.apply(connection.getSecond()), connection), polyline);
+			}
+
+			@Override
+			public Expression<? extends ColorisableGraphicalContent> visitBezier(BezierConfiguration bezier) {
+				// TODO Auto-generated method stub
+				return BezierGui.getGraphicalContent(bezier);
+			}
+		});
+	}
 	
 }

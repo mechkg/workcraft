@@ -1,59 +1,61 @@
 package org.workcraft.dom.visual.connections;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.workcraft.dependencymanager.advanced.core.Combinator;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.BoundingBoxHelper;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawHelper;
+import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.Touchable;
+import org.workcraft.gui.Coloriser;
+import org.workcraft.util.Function;
 import org.workcraft.util.Geometry;
 
-public class PolylineGui implements ConnectionGraphic {
-	private Expression<? extends VisualConnectionProperties> connectionInfo;
-	
-	public PolylineGui (Expression<? extends VisualConnectionProperties> properties) {
-		connectionInfo = properties;
-	}
-	
-	
-	private final class CurveExpression extends ExpressionBase<Curve> {
-		@Override
-		public Curve evaluate(final EvaluationContext resolver) {
-			return new Curve(resolver);
-		}
-	}
+import pcollections.PVector;
 
-	private final class Curve implements ParametricCurve {
-		
-		AnchorPointsExpression anchorPoints = new AnchorPointsExpression();
-		private final class AnchorPointsExpression extends ExpressionBase<List<Point2D>> {
+public class PolylineGui {
+
+
+	public static ExpressionBase<List<Point2D>> createAnchorPointsExpression(final Point2D first, final Point2D second, final Expression<? extends List<? extends Point2D>> controlPoints) {
+		return new ExpressionBase<List<Point2D>>(){
 
 			@Override
-			public List<Point2D> evaluate(EvaluationContext resolver) {
+			protected List<Point2D> evaluate(EvaluationContext context) {
 				List<Point2D> result = new ArrayList<Point2D>();
-				result.add(resolver.resolve(connectionInfo).getFirstShape().getCenter());
-				LinkedList<Node> children = resolver.resolve(groupImpl.children());
-				for(Node child : children)
-					result.add(resolver.resolve(((ControlPoint) child).position()));
-				result.add(resolver.resolve(connectionInfo).getSecondShape().getCenter());
+				result.add(first);
+				List<? extends Point2D> children = context.resolve(controlPoints);
+				for(Point2D child : children)
+					result.add(child);
+				result.add(second);
 				return result;
 			}
-		}
+		};
+	}
+	
+	private static final class Curve implements ParametricCurve {
+		private List<Point2D> anchorPoints;
 
-		private final EvaluationContext resolver;
-
-		private Curve(EvaluationContext resolver) {
-			this.resolver = resolver;
+		private Curve(List<Point2D> anchorPoints) {
+			this.anchorPoints = anchorPoints;
 		}
 
 		private int getSegmentCount() {
-			return controlPoints().size() + 1;
+			return anchorPoints.size() - 1;
 		}
 
 		private Line2D getSegment(final int index) {
@@ -62,12 +64,7 @@ public class PolylineGui implements ConnectionGraphic {
 			if (index > segments-1)
 				throw new RuntimeException ("Segment index is greater than number of segments");
 
-			List<Point2D> anchorPoints = resolver.resolve(this.anchorPoints);
 			return new Line2D.Double(anchorPoints.get(index), anchorPoints.get(index+1));
-		}
-
-		private List<Node> controlPoints() {
-			return resolver.resolve(groupImpl.children());
 		}
 
 		private int getSegmentIndex(final double t) {
@@ -209,65 +206,18 @@ public class PolylineGui implements ConnectionGraphic {
 				result = BoundingBoxHelper.union(result, getSegmentBoundsWithThreshold(seg));
 			}
 			return result;
+
 		}
 	}
 
-	private final class CurveInfo extends ExpressionBase<PartialCurveInfo> {
+	private final static Function<List<Point2D>, Curve> curveMaker = new Function<List<Point2D>, Curve>(){
+
 		@Override
-		public PartialCurveInfo evaluate(EvaluationContext resolver) {
-			return Geometry.buildConnectionCurveInfo(resolver.resolve(connectionInfo), resolver.resolve(curve), 0);
+		public Curve apply(List<Point2D> anchorPoints) {
+			return new Curve(anchorPoints);
 		}
-	}
+	};
 
-
-	@Override
-	public ExpressionBase<ColorisableGraphicalContent> graphicalContent() {
-		return new ExpressionBase<ColorisableGraphicalContent>() {
-			@Override
-			public ColorisableGraphicalContent evaluate(EvaluationContext resolver) {
-				
-				final Path2D connectionPath = new Path2D.Double();
-
-				final PartialCurveInfo cInfo = resolver.resolve(curveInfo);
-				
-				Curve curve = resolver.resolve(curve());
-				
-				int start = curve.getSegmentIndex(cInfo.tStart);
-				int end = curve.getSegmentIndex(cInfo.tEnd);
-
-				Point2D startPt = curve.getPointOnCurve(cInfo.tStart);
-				Point2D endPt = curve.getPointOnCurve(cInfo.tEnd);
-
-				connectionPath.moveTo(startPt.getX(), startPt.getY());
-
-				for (int i=start; i<end; i++) {
-					Line2D segment = curve.getSegment(i);
-					connectionPath.lineTo(segment.getX2(), segment.getY2());
-				}
-
-				connectionPath.lineTo(endPt.getX(), endPt.getY());
-				
-				final VisualConnectionProperties connInfo = resolver.resolve(connectionInfo);
-
-				return new ColorisableGraphicalContent() {
-					
-					@Override
-					public void draw(DrawRequest r) {
-						Graphics2D g = r.getGraphics();
-						
-						Color color = Coloriser.colorise(connInfo.getDrawColor(), r.getColorisation().getColorisation());
-						g.setColor(color);
-						g.setStroke(connInfo.getStroke());
-						g.draw(connectionPath);
-						
-						if (connInfo.hasArrow())
-							DrawHelper.drawArrowHead(g, color, cInfo.arrowHeadPosition, cInfo.arrowOrientation, 
-									connInfo.getArrowLength(), connInfo.getArrowWidth());
-					}
-				};
-			}
-		};
-	}
 
 	@Override
 	public Expression<? extends Touchable> shape() {
@@ -297,34 +247,82 @@ public class PolylineGui implements ConnectionGraphic {
 		};
 	}
 
-	private ExpressionBase<PartialCurveInfo> curveInfo = new CurveInfo();
+	private static ExpressionBase<PartialCurveInfo> curveInfo (final Expression<? extends Curve> curve, final Expression<? extends VisualConnectionProperties> connectionInfo) { 
+		return new ExpressionBase<PartialCurveInfo>() {
+			@Override
+			public PartialCurveInfo evaluate(EvaluationContext resolver) {
+				return Geometry.buildConnectionCurveInfo(resolver.resolve(connectionInfo), resolver.resolve(curve), 0);
+			}
+		};
+	}
 	
-	private ExpressionBase<VisualConnectionProperties> connectionInfo;
-	connectionInfo = parent.properties();
-	ControlPointScaler scaler;
+/*	ControlPointScaler scaler;
 	scaler = new ControlPointScaler(connectionInfo, controlPoints());
-
-	
 
 	public void createControlPoint(Point2D point) {
 		Point2D pointOnConnection = new Point2D.Double();
 		int segment = GlobalCache.eval(curve()).getNearestSegment(userLocation, pointOnConnection);
 
 		createControlPoint(segment, pointOnConnection);
-	}
+	}*/
 
 
-	private Expression<? extends Collection<? extends ControlPoint>> controlPoints() {
-		return new ExpressionBase<Collection<? extends ControlPoint>>() {
+	public static Expression<? extends ColorisableGraphicalContent> getGraphicalContent(final Expression<? extends VisualConnectionProperties>properties, final PolylineConfiguration polyline) {
+
+		
+		Expression<? extends List<Point2D>> anchorPoints = Expressions.bind(properties, new Combinator<VisualConnectionProperties, List<Point2D>>() {
 			@Override
-			protected Collection<? extends ControlPoint> evaluate(EvaluationContext context) {
-				ArrayList<ControlPoint> points = new ArrayList<ControlPoint>();
-				for(Node n : context.resolve(children())) {
-					points.add((ControlPoint)n);
+			public Expression<? extends List<Point2D>> apply(VisualConnectionProperties argument) {
+				return createAnchorPointsExpression(argument.getFirstShape().getCenter(), argument.getSecondShape().getCenter(), polyline.controlPoints());
+			}
+		});
+		
+		final Expression<? extends Curve> curveExpr = Expressions.bindFunc(anchorPoints, curveMaker);
+		
+		return new ExpressionBase<ColorisableGraphicalContent>() {
+			@Override
+			public ColorisableGraphicalContent evaluate(EvaluationContext resolver) {
+				
+				final Path2D connectionPath = new Path2D.Double();
+
+				final PartialCurveInfo cInfo = resolver.resolve(curveInfo(curveExpr, properties));
+				
+				Curve curve = resolver.resolve(curveExpr);
+				
+				int start = curve.getSegmentIndex(cInfo.tStart);
+				int end = curve.getSegmentIndex(cInfo.tEnd);
+
+				Point2D startPt = curve.getPointOnCurve(cInfo.tStart);
+				Point2D endPt = curve.getPointOnCurve(cInfo.tEnd);
+
+				connectionPath.moveTo(startPt.getX(), startPt.getY());
+
+				for (int i=start; i<end; i++) {
+					Line2D segment = curve.getSegment(i);
+					connectionPath.lineTo(segment.getX2(), segment.getY2());
 				}
-				return points;
+
+				connectionPath.lineTo(endPt.getX(), endPt.getY());
+				
+				final VisualConnectionProperties connInfo = resolver.resolve(properties);
+
+				return new ColorisableGraphicalContent() {
+					
+					@Override
+					public void draw(DrawRequest r) {
+						Graphics2D g = r.getGraphics();
+						
+						Color color = Coloriser.colorise(connInfo.getDrawColor(), r.getColorisation().getColorisation());
+						g.setColor(color);
+						g.setStroke(connInfo.getStroke());
+						g.draw(connectionPath);
+						
+						if (connInfo.hasArrow())
+							DrawHelper.drawArrowHead(g, color, cInfo.arrowHeadPosition, cInfo.arrowOrientation, 
+									connInfo.getArrowLength(), connInfo.getArrowWidth());
+					}
+				};
 			}
 		};
 	}
-	
 }

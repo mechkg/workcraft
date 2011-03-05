@@ -21,40 +21,20 @@
 
 package org.workcraft.dom.visual.connections;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.geom.Line2D;
-import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.ArbitraryInsertionGroupImpl;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.BoundingBoxHelper;
-import org.workcraft.dom.visual.DrawHelper;
-import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.ColorisableGraphicalContent;
-import org.workcraft.dom.visual.ReflectiveTouchable;
-import org.workcraft.dom.visual.Touchable;
-import org.workcraft.exceptions.NotImplementedException;
-import org.workcraft.gui.Coloriser;
-import org.workcraft.util.Geometry;
-
-import pcollections.PCollection;
 
 public class Polyline implements Node, Container, ConnectionGraphicConfiguration {
 	
@@ -111,13 +91,39 @@ public class Polyline implements Node, Container, ConnectionGraphicConfiguration
 		groupImpl.reparent(nodes);
 	}
 
+	
+
+	private Expression<? extends List<? extends ControlPoint>> controlPoints() {
+		return new ExpressionBase<List<? extends ControlPoint>>() {
+			@Override
+			protected List<? extends ControlPoint> evaluate(EvaluationContext context) {
+				ArrayList<ControlPoint> points = new ArrayList<ControlPoint>();
+				for(Node n : context.resolve(children())) {
+					points.add((ControlPoint)n);
+				}
+				return points;
+			}
+		};
+	}
+	
 	@Override
 	public <T> T accept(ConnectionGraphicConfigurationVisitor<T> visitor) {
 		return visitor.visitPolyline(new PolylineConfiguration() {
 			
 			@Override
-			public Expression<? extends PCollection<Point2D>> controlPoints() {
-				throw new NotImplementedException();
+			public Expression<? extends List<? extends Point2D>> controlPoints() {
+				
+				final Expression<? extends List<? extends ControlPoint>> controlPointControls = Polyline.this.controlPoints();
+				return new ExpressionBase<List<? extends Point2D>>(){
+
+					@Override
+					protected List<? extends Point2D> evaluate(EvaluationContext context) {
+						ArrayList<Point2D> result = new ArrayList<Point2D>();
+						for(ControlPoint p : context.resolve(controlPointControls))
+							result.add(context.resolve(p.position()));
+						return result;
+					}
+				};
 			}
 		});
 	}

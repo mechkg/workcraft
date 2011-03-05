@@ -19,6 +19,7 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawHelper;
 import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.connections.Bezier.Curve;
 import org.workcraft.exceptions.NotImplementedException;
@@ -253,6 +254,10 @@ public class BezierGui {
 		cp2.position().setValue(Geometry.lerp(c1, c2, 0.6));
 		
 		finaliseControlPoints();
+	}
+
+	public static Expression<? extends ColorisableGraphicalContent> getGraphicalContent(BezierConfiguration bezier) {
+		throw new NotImplementedException();
 	}
 
 	

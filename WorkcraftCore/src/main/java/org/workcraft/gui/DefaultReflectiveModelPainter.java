@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawMan;
@@ -12,6 +13,9 @@ import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualGroup;
+import org.workcraft.dom.visual.connections.ConnectionGraphicConfiguration;
+import org.workcraft.dom.visual.connections.VisualConnection;
+import org.workcraft.dom.visual.connections.VisualConnectionGui;
 import org.workcraft.gui.graph.tools.Colorisation;
 import org.workcraft.gui.graph.tools.Colorisator;
 import org.workcraft.gui.graph.tools.NodePainter;
@@ -65,6 +69,10 @@ public class DefaultReflectiveModelPainter {
 				if(node instanceof VisualGroup) {
 					return colorise(VisualGroup.graphicalContent(tp, ((VisualGroup)node)), colorisation);
 				}
+				else
+					if(node instanceof ConnectionGraphicConfiguration) {
+						return colorise(VisualConnectionGui.getGraphicalContent(tp, (VisualConnection)GlobalCache.eval((node.parent())), (ConnectionGraphicConfiguration)node), colorisation);
+					}
 			else
 				return Expressions.constant(GraphicalContent.EMPTY);
 		}

@@ -8,6 +8,7 @@ import javax.swing.SwingUtilities;
 import org.workcraft.Framework;
 import org.workcraft.gui.ExceptionDialog;
 import org.workcraft.gui.workspace.Path;
+import org.workcraft.interop.ServiceProvider;
 import org.workcraft.tasks.DummyProgressMonitor;
 import org.workcraft.tasks.Result;
 import org.workcraft.tasks.Result.Outcome;
@@ -35,7 +36,7 @@ public class PetrifyDummyContractionResultHandler extends DummyProgressMonitor<P
 				
 				if (result.getOutcome() == Outcome.FINISHED)
 				{
-					ModelEntry model = result.getReturnValue().getResult();
+					ServiceProvider model = result.getReturnValue().getResult();
 					final WorkspaceEntry resolved = framework.getWorkspace().add(path.getParent(), fileName + "_contracted", model, true);
 					framework.getMainWindow().createEditorWindow(resolved);
 				} else

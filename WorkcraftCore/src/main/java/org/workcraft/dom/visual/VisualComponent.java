@@ -54,8 +54,9 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 	private final static Font labelFont = new Font("Sans-serif", Font.PLAIN, 1)
 			.deriveFont(0.5f);
 
+	private static FontRenderContext podgonFontRenderContext = new FontRenderContext(AffineTransform.getScaleInstance(1000, 1000), true, true);
 	public static FontRenderContext podgonFontRenderContext() {
-		return new FontRenderContext(AffineTransform.getScaleInstance(1000, 1000), true, true);
+		return podgonFontRenderContext;
 	}
 	
 	private final ModifiableExpression<String> labelText;

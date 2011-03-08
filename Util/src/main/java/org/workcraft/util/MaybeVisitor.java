@@ -1,4 +1,4 @@
-package org.workcraft.dependencymanager.advanced.core;
+package org.workcraft.util;
 
 public interface MaybeVisitor<T, R> {
 	R visitJust(T just);

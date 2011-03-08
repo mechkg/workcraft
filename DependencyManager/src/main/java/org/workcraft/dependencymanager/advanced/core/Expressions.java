@@ -8,10 +8,10 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.PickyModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.PickyModifiableExpressionBase;
-import org.workcraft.dependencymanager.advanced.user.Unfold;
 import org.workcraft.dependencymanager.util.listeners.Listener;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
+import org.workcraft.util.Maybe;
 
 public class Expressions {
 	public static <T> Expression<T> constant(final T value) {
@@ -41,10 +41,6 @@ public class Expressions {
 		};
 	}
 	
-	public static <T> Expression<T> unfold(Expression<? extends Expression<? extends T>> indirect) {
-		return new Unfold<T>(indirect);
-	}
-
 	public static <T2, T1  extends T2>ModifiableExpression<T2> cast(
 			final ModifiableExpression<T1> expr,
 			final Class<T1> cls,
@@ -84,7 +80,7 @@ public class Expressions {
 				throw new NullPointerException();
 		}
 	}
-	
+
 	public static <A,B> Expression<? extends B> bindFunc(final Expression<? extends A> expr1, final Function<? super A, ? extends B> func) {
 		notNull(expr1, func);
 		return new ExpressionBase<B>(){
@@ -95,12 +91,34 @@ public class Expressions {
 		};
 	}
 	
-	public static <A,B> Expression<? extends B> bind(final Expression<? extends A> expr1, final Combinator<? super A, ? extends B> func) {
-		notNull(expr1, func);
+	public static <A,B> Expression<? extends B> bind_tightly(final Expression<? extends A> expr1, final Function<? super A, ? extends Expression<? extends B>> func) {
 		return new ExpressionBase<B>(){
 			@Override
 			protected B evaluate(EvaluationContext context) {
 				return context.resolve(func.apply(context.resolve(expr1)));
+			}
+		};
+	}
+
+	public static <A,B> Expression<? extends B> bind(final Expression<? extends A> expr1, final Combinator<? super A, ? extends B> func) {
+		return join(bindFunc(expr1, func));
+	}
+
+	public static <A,B,C> Expression<? extends C> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Function2<? super A, ? super B, ? extends C> func) {
+		notNull(expr1, func); 
+		return new ExpressionBase<C>(){
+			@Override
+			protected C evaluate(EvaluationContext context) {
+				return func.apply(context.resolve(expr1),context.resolve(expr2));
+			}
+		};
+	}
+
+	public static <A> Expression<A> join(final Expression<? extends Expression<? extends A>> boundFunc) {
+		return new ExpressionBase<A>(){
+			@Override
+			protected A evaluate(EvaluationContext context) {
+				return context.resolve(context.resolve(boundFunc));
 			}
 		};
 	}
@@ -111,16 +129,6 @@ public class Expressions {
 			@Override
 			protected C evaluate(EvaluationContext context) {
 				return context.resolve(func.apply(context.resolve(expr1),context.resolve(expr2)));
-			}
-		};
-	}
-
-	public static <A,B,C> Expression<? extends C> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Function2<? super A, ? super B, ? extends C> func) {
-		notNull(expr1, func); 
-		return new ExpressionBase<C>(){
-			@Override
-			protected C evaluate(EvaluationContext context) {
-				return func.apply(context.resolve(expr1),context.resolve(expr2));
 			}
 		};
 	}
@@ -167,5 +175,19 @@ public class Expressions {
 				return context.resolve(combinator.get(context.resolve(expr1)));
 			}
 		};
+	}
+	
+	public static <A,F,R> Expression<? extends R> bindApply(Expression<? extends Function<? super A, ? extends R>> func, final Expression<? extends A> arg) {
+		return Expressions.bind(func, new Combinator<Function<? super A, ? extends R>, R>(){
+			@Override
+			public Expression<? extends R> apply(final Function<? super A, ? extends R> funcValue) {
+				return bindFunc(arg, new Function<A, R>(){
+					@Override
+					public R apply(A argument) {
+						return funcValue.apply(argument);
+					}
+				});
+			}
+		});
 	}
 }

@@ -20,7 +20,7 @@ public abstract class ExpressionBase<T> implements Expression<T> {
 		}
 	}
 	
-	Exception creationStackTrace = new RuntimeException("Expression creation stack trace");
+	Exception creationStackTrace = null;//new RuntimeException("Expression creation stack trace");
 	
 	static class Cache<T> implements Listener, Handle {
 		public T value;
@@ -108,6 +108,7 @@ public abstract class ExpressionBase<T> implements Expression<T> {
 		}
 		catch(RuntimeException t) {
 			System.err.println("the failed expression was constructed at:");
+			if(creationStackTrace != null)
 			creationStackTrace.printStackTrace();
 			throw t;
 		}

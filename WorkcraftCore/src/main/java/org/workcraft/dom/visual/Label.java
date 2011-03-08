@@ -1,5 +1,7 @@
 package org.workcraft.dom.visual;
 
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
@@ -10,10 +12,7 @@ import java.awt.geom.Rectangle2D;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dom.visual.BoundingBoxHelper;
-import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.ColorisableGraphicalContent;
-import org.workcraft.dom.visual.VisualComponent;
+import org.workcraft.util.Function;
 
 public class Label {
 
@@ -26,13 +25,13 @@ public class Label {
 	
 	public Label(final Font font, final Expression<? extends String> text) {
 		
-		final Expression<GlyphVector> glyphVector = new ExpressionBase<GlyphVector>() {
-			@Override
-			protected GlyphVector evaluate(EvaluationContext context) {
-				return font.createGlyphVector(podgonFontRenderContext(), context.resolve(text));
-			}
-		};
-		
+		final Expression<? extends GlyphVector> glyphVector = bindFunc(text, new Function<String, GlyphVector>(){
+					@Override
+					public GlyphVector apply(String textValue) {
+						return font.createGlyphVector(podgonFontRenderContext(), textValue);
+					}
+				});
+
 		final Expression<Rectangle2D> textBB = new ExpressionBase<Rectangle2D>() {
 			@Override
 			protected Rectangle2D evaluate(EvaluationContext context) {

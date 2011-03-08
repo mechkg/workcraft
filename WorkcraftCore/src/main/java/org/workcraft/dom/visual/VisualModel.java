@@ -23,10 +23,8 @@ package org.workcraft.dom.visual;
 
 import org.workcraft.dom.Model;
 import org.workcraft.dom.math.MathModel;
-import org.workcraft.interop.ServiceHandle;
 
 
 public interface VisualModel extends Model {
-	ServiceHandle<VisualModel> SERVICE_HANDLE = ServiceHandle.createNewService(VisualModel.class, "A visual model");
 	public MathModel getMathModel();
 }

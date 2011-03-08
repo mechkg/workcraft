@@ -53,6 +53,9 @@ public class VisualSignalTransition extends VisualStgTransition{
 	}
 	
 	public Expression<? extends ColorisableGraphicalContent> getGraphicalContent(final Expression<? extends String> text) {
+		final Label label = label(text);
+		final Expression<Touchable> shapeExpr = localSpaceTouchable(text);
+		final Expression<Color> colorExpr = color();
 		return new ExpressionBase<ColorisableGraphicalContent>() {
 			@Override
 			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
@@ -61,9 +64,9 @@ public class VisualSignalTransition extends VisualStgTransition{
 					public void draw(DrawRequest r) {
 						
 						final ColorisableGraphicalContent labelGraphics = context.resolve(labelGraphics());
-						final ColorisableGraphicalContent nameLabelGraphics = context.resolve(label(text).graphics);
-						final Color color = context.resolve(color());
-						final Touchable shape = context.resolve(localSpaceTouchable(text));
+						final ColorisableGraphicalContent nameLabelGraphics = context.resolve(label.graphics);
+						final Color color = context.resolve(colorExpr);
+						final Touchable shape = context.resolve(shapeExpr);
 						
 						labelGraphics.draw(r);
 						
@@ -90,13 +93,14 @@ public class VisualSignalTransition extends VisualStgTransition{
 	}
 	
 	public Expression<Touchable> localSpaceTouchable(final Expression<? extends String> text) {
+		final Label label = label(text);
 		return new ExpressionBase<Touchable>() {
 			@Override
 			protected Touchable evaluate(final EvaluationContext context) {
 				return new Touchable() {
 					@Override
 					public Rectangle2D getBoundingBox() {
-						return context.resolve(label(text).centeredBB);
+						return context.resolve(label.centeredBB);
 					}
 					
 					@Override

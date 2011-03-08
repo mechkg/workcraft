@@ -1,6 +1,6 @@
 package org.workcraft.dependencymanager.advanced.user;
 
-import org.workcraft.dependencymanager.advanced.core.Maybe;
+import org.workcraft.util.Maybe;
 
 public interface PickySetter<T,S> {
 	/** haskell type: t -> IO Maybe s

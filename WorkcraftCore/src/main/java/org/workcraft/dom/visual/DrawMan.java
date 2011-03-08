@@ -30,6 +30,7 @@ import java.util.List;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.graph.tools.NodePainter;
 import org.workcraft.util.Graphics;
@@ -69,24 +70,26 @@ public class DrawMan
 		};
 	}
 
-	private static ExpressionBase<GraphicalContent> decorated(final Node node, final NodePainter gcProvider)
+	private static Expression<? extends GraphicalContent> decorated(final Node node, final NodePainter gcProvider)
 	{
-		return new ExpressionBase<GraphicalContent>() {
-				@Override
-				public GraphicalContent evaluate(final EvaluationContext resolver) {
-					
-					Collection<? extends Node> children = resolver.resolve(node.children());
-					final List<ExpressionBase<GraphicalContent>> childrenGraphics = new ArrayList<ExpressionBase<GraphicalContent>>();
-					for(Node n : children)
-						childrenGraphics.add(graphicalContent(n, gcProvider));
-					
-					Expression<? extends GraphicalContent> graphicalContent = gcProvider.getGraphicalContent(node);
-					
-					for(ExpressionBase<GraphicalContent> child : childrenGraphics)
-						graphicalContent = Graphics.compose(graphicalContent, child);
-					
-					return resolver.resolve(graphicalContent);
-				}
-		};
+		final Expression<? extends GraphicalContent> graphicalContent = gcProvider.getGraphicalContent(node);
+		Expression<? extends Expression<? extends GraphicalContent>> childrenGc = new ExpressionBase<Expression<? extends GraphicalContent>>(){
+
+			@Override
+			protected Expression<? extends GraphicalContent> evaluate(EvaluationContext context) {
+				Collection<? extends Node> children = context.resolve(node.children());
+				final List<ExpressionBase<GraphicalContent>> childrenGraphics = new ArrayList<ExpressionBase<GraphicalContent>>();
+				for(Node n : children)
+					childrenGraphics.add(graphicalContent(n, gcProvider));
+				
+				Expression<? extends GraphicalContent> result = graphicalContent;
+				for(ExpressionBase<GraphicalContent> child : childrenGraphics)
+					result = Graphics.compose(result, child);
+				
+				return result;
+			}
+		}; 
+		
+		return Expressions.join(childrenGc);
 	}
 }

@@ -11,6 +11,7 @@ import org.workcraft.dependencymanager.advanced.user.PickyModifiableExpressionBa
 import org.workcraft.dependencymanager.util.listeners.Listener;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
+import org.workcraft.util.Function3;
 import org.workcraft.util.Maybe;
 
 public class Expressions {
@@ -86,11 +87,40 @@ public class Expressions {
 		return new ExpressionBase<B>(){
 			@Override
 			protected B evaluate(EvaluationContext context) {
-				return func.apply(context.resolve(expr1));
+				B result = func.apply(context.resolve(expr1));
+				if(result == null)
+					throw new RuntimeException(func + " returned null!");
+				return result;
 			}
 		};
 	}
-	
+
+	public static <A,B,C> Expression<? extends C> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Function2<? super A, ? super B, ? extends C> func) {
+		notNull(expr1, expr2, func); 
+		return new ExpressionBase<C>(){
+			@Override
+			protected C evaluate(EvaluationContext context) {
+				C result = func.apply(context.resolve(expr1),context.resolve(expr2));
+				if(result == null)
+					throw new RuntimeException(func + " returned null!");
+				return result;
+			}
+		};
+	}
+
+	public static <A,B,C,R> Expression<? extends R> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Expression<? extends C> expr3, final Function3<? super A, ? super B, ? super C, ? extends R> func) {
+		notNull(expr1, expr2, expr3, func); 
+		return new ExpressionBase<R>(){
+			@Override
+			protected R evaluate(EvaluationContext context) {
+				R result = func.apply(context.resolve(expr1), context.resolve(expr2), context.resolve(expr3));
+				if(result == null)
+					throw new RuntimeException(func + " returned null!");
+				return result;
+			}
+		};
+	}
+
 	public static <A,B> Expression<? extends B> bind_tightly(final Expression<? extends A> expr1, final Function<? super A, ? extends Expression<? extends B>> func) {
 		return new ExpressionBase<B>(){
 			@Override
@@ -104,21 +134,15 @@ public class Expressions {
 		return join(bindFunc(expr1, func));
 	}
 
-	public static <A,B,C> Expression<? extends C> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Function2<? super A, ? super B, ? extends C> func) {
-		notNull(expr1, func); 
-		return new ExpressionBase<C>(){
-			@Override
-			protected C evaluate(EvaluationContext context) {
-				return func.apply(context.resolve(expr1),context.resolve(expr2));
-			}
-		};
-	}
-
 	public static <A> Expression<A> join(final Expression<? extends Expression<? extends A>> boundFunc) {
+		notNull(boundFunc);
 		return new ExpressionBase<A>(){
 			@Override
 			protected A evaluate(EvaluationContext context) {
-				return context.resolve(context.resolve(boundFunc));
+				Expression<? extends A> res = context.resolve(boundFunc);
+				if(res == null)
+					throw new RuntimeException(boundFunc + " returned null!");
+				return context.resolve(res);
 			}
 		};
 	}

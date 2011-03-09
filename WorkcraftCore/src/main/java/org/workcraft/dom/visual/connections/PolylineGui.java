@@ -24,9 +24,13 @@ import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.util.Function;
+import org.workcraft.util.Function2;
+import org.workcraft.util.Function3;
 import org.workcraft.util.Geometry;
 
 import pcollections.PVector;
+
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 
 public class PolylineGui {
 
@@ -247,13 +251,15 @@ public class PolylineGui {
 		};
 	}
 
-	private static ExpressionBase<PartialCurveInfo> curveInfo (final Expression<? extends Curve> curve, final Expression<? extends VisualConnectionProperties> connectionInfo) { 
-		return new ExpressionBase<PartialCurveInfo>() {
-			@Override
-			public PartialCurveInfo evaluate(EvaluationContext resolver) {
-				return Geometry.buildConnectionCurveInfo(resolver.resolve(connectionInfo), resolver.resolve(curve), 0);
-			}
-		};
+	private static final Function2<Curve, VisualConnectionProperties, PartialCurveInfo> curveInfoConstructor = new Function2<Curve, VisualConnectionProperties, PartialCurveInfo>(){
+		@Override
+		public PartialCurveInfo apply(Curve curve, VisualConnectionProperties props) {
+			return Geometry.buildConnectionCurveInfo(props, curve, 0);
+		}
+		
+	};
+	private static Expression<? extends PartialCurveInfo> curveInfo (final Expression<? extends Curve> curve, final Expression<? extends VisualConnectionProperties> connectionInfo) { 
+		return bindFunc(curve, connectionInfo, curveInfoConstructor);
 	}
 	
 /*	ControlPointScaler scaler;
@@ -278,51 +284,48 @@ public class PolylineGui {
 		});
 		
 		final Expression<? extends Curve> curveExpr = Expressions.bindFunc(anchorPoints, curveMaker);
-		
-		return new ExpressionBase<ColorisableGraphicalContent>() {
+		final Expression<? extends PartialCurveInfo> curveInfo = curveInfo(curveExpr, properties);
+		final Expression<? extends Path2D> connectionPathExpr = bindFunc(curveInfo, curveExpr,new Function2<PartialCurveInfo, Curve, Path2D>(){
 			@Override
-			public ColorisableGraphicalContent evaluate(EvaluationContext resolver) {
-				
-				final Path2D connectionPath = new Path2D.Double();
-
-				final PartialCurveInfo cInfo = resolver.resolve(curveInfo(curveExpr, properties));
-				
-				Curve curve = resolver.resolve(curveExpr);
-				
+			public Path2D apply(PartialCurveInfo cInfo, Curve curve) {
 				int start = curve.getSegmentIndex(cInfo.tStart);
 				int end = curve.getSegmentIndex(cInfo.tEnd);
 
 				Point2D startPt = curve.getPointOnCurve(cInfo.tStart);
 				Point2D endPt = curve.getPointOnCurve(cInfo.tEnd);
 
+				final Path2D connectionPath = new Path2D.Double();
 				connectionPath.moveTo(startPt.getX(), startPt.getY());
-
 				for (int i=start; i<end; i++) {
 					Line2D segment = curve.getSegment(i);
 					connectionPath.lineTo(segment.getX2(), segment.getY2());
 				}
-
 				connectionPath.lineTo(endPt.getX(), endPt.getY());
-				
-				final VisualConnectionProperties connInfo = resolver.resolve(properties);
+				return connectionPath;
+			}
+		});
+		
+		return bindFunc(curveInfo, properties, connectionPathExpr, new Function3<PartialCurveInfo, VisualConnectionProperties, Path2D, ColorisableGraphicalContent>(){
 
+			@Override
+			public ColorisableGraphicalContent apply(final PartialCurveInfo cInfo, final VisualConnectionProperties connProps, final Path2D connectionPath) {
 				return new ColorisableGraphicalContent() {
-					
 					@Override
 					public void draw(DrawRequest r) {
 						Graphics2D g = r.getGraphics();
 						
-						Color color = Coloriser.colorise(connInfo.getDrawColor(), r.getColorisation().getColorisation());
+						Color color = Coloriser.colorise(connProps.getDrawColor(), r.getColorisation().getColorisation());
 						g.setColor(color);
-						g.setStroke(connInfo.getStroke());
+						g.setStroke(connProps.getStroke());
 						g.draw(connectionPath);
 						
-						if (connInfo.hasArrow())
+						if (connProps.hasArrow())
 							DrawHelper.drawArrowHead(g, color, cInfo.arrowHeadPosition, cInfo.arrowOrientation, 
-									connInfo.getArrowLength(), connInfo.getArrowWidth());
+									connProps.getArrowLength(), connProps.getArrowWidth());
 					}
 				};
 			}
-		};
+			
+		});
 	}
 }

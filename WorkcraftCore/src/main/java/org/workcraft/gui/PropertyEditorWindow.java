@@ -36,6 +36,7 @@ import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.PropertyEditorTable;
 
 import pcollections.PVector;
+import pcollections.TreePVector;
 
 @SuppressWarnings("serial")
 public class PropertyEditorWindow extends JPanel {
@@ -67,7 +68,7 @@ public class PropertyEditorWindow extends JPanel {
 		};
 	}
 	
-	public final Variable<Expression<? extends PVector<EditableProperty>>> propertyObject = new Variable<Expression<? extends PVector<EditableProperty>>>(null);
+	public final Variable<Expression<? extends PVector<EditableProperty>>> propertyObject = new Variable<Expression<? extends PVector<EditableProperty>>>(Expressions.constant(TreePVector.<EditableProperty>empty()));
 	final Expression<PVector<EditableProperty>> prop = Expressions.join(propertyObject);
 	
 	public void setObject (PVector<EditableProperty> o) {

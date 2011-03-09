@@ -138,7 +138,7 @@ public abstract class AbstractModel implements Model {
 		this.title = title;
 	}
 
-	public final Node getRoot() {
+	public Node getRoot() {
 		return root;	
 	}
 

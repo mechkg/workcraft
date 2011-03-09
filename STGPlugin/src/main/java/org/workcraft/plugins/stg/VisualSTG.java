@@ -262,5 +262,8 @@ public class VisualSTG extends AbstractVisualModel {
 		add(visualTransition);
 		return visualTransition;
 	}
-
+	
+	public final VisualGroup getRoot() {
+		return (VisualGroup) super.getRoot();
+	}
 }

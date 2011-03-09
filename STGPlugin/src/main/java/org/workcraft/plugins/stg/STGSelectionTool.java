@@ -40,13 +40,13 @@ public class STGSelectionTool extends SelectionTool
 	private final GraphEditor editor;
 	private STG visualStg;
 
-	public STGSelectionTool(final GraphEditor editor, TouchableProvider<Node> touchableProvider, HitTester<VisualNode> hitTester) {
+	public STGSelectionTool(final GraphEditor editor, TouchableProvider<Node> touchableProvider, HitTester<VisualNode> hitTester, StgEditorState editorState) {
 		super(new SelectionToolConfig.Default(hitTester, new Function<Point2D, Point2D>() {
 			@Override
 			public Point2D apply(Point2D argument) {
 				return editor.snap(argument);
 			}
-		}));
+		}, editorState.selection, editorState.currentLevel));
 		this.editor = editor;
 		this.touchableProvider = touchableProvider;
 		this.hitTester = hitTester;

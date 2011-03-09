@@ -1,7 +1,5 @@
 package org.workcraft.dom.visual.connections;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.CubicCurve2D;
@@ -19,9 +17,7 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawHelper;
 import org.workcraft.dom.visual.DrawRequest;
-import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.Touchable;
-import org.workcraft.dom.visual.connections.Bezier.Curve;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.util.Geometry;
@@ -29,7 +25,6 @@ import org.workcraft.util.Geometry.CurveSplitResult;
 
 public class BezierGui {
 	
-	@Override
 	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
 		return new ExpressionBase<ColorisableGraphicalContent>() {
 			@Override
@@ -59,7 +54,6 @@ public class BezierGui {
 		};
 	}
 
-	@Override
 	public Expression<? extends Touchable> shape() {
 		return new ExpressionBase<Touchable>() {
 
@@ -88,9 +82,14 @@ public class BezierGui {
 	}
 	
 
+	private final BezierControlPoint cp1;
+	private final BezierControlPoint cp2;
 	private final Expression<VisualConnectionProperties> connectionInfo;
 	
-	public BezierGui(){
+	public BezierGui(final BezierControlPoint cp1, final BezierControlPoint cp2, final Expression<VisualConnectionProperties> connectionInfo) {
+		this.cp1 = cp1;
+		this.cp2 = cp2;
+		this.connectionInfo = connectionInfo;
 		this.curveInfo = new ExpressionBase<PartialCurveInfo>() {
 			@Override
 			protected PartialCurveInfo evaluate(EvaluationContext context) {
@@ -101,7 +100,7 @@ public class BezierGui {
 			@Override
 			public CubicCurve2D evaluate(org.workcraft.dependencymanager.advanced.core.EvaluationContext resolver) {
 				CubicCurve2D result = new CubicCurve2D.Double();
-				result.setCurve(resolver.resolve(connectionInfo).getFirstShape().getCenter(), resolver.resolve(resolver.resolve(cp1).position()), resolver.resolve(resolver.resolve(cp2).position()), resolver.resolve(connectionInfo).getSecondShape().getCenter());
+				result.setCurve(resolver.resolve(connectionInfo).getFirstShape().getCenter(), resolver.resolve(cp1.position()), resolver.resolve(cp2.position()), resolver.resolve(connectionInfo).getSecondShape().getCenter());
 				return result;
 			};
 		};
@@ -222,20 +221,7 @@ public class BezierGui {
 
 	Variable<Expression<? extends Collection<? extends Node>>> selectionTracker = new Variable<Expression<? extends Collection<? extends Node>>>(Expressions.constant(Collections.<Node>emptyList()));
 	
-	Expression<Boolean> controlsHidden = new ExpressionBase<Boolean>(){
-		@Override
-		protected Boolean evaluate(EvaluationContext context) {
-			boolean controlsVisible = true;
-			for (Node n : context.resolve(context.resolve(selectionTracker)))
-				if (n==context.resolve(cp1) || n == context.resolve(cp2) || n == parent) {
-					controlsVisible = false;
-					break;
-				}
-			return controlsVisible;
-		}
-	};
-	
-	public void setDefaultControlPoints() {
+/*	public void setDefaultControlPoints() {
 		Expression<Point2D> p1 = origin1();
 		Expression<Point2D> p2 = new ExpressionBase<Point2D>() {
 			@Override
@@ -254,7 +240,7 @@ public class BezierGui {
 		cp2.position().setValue(Geometry.lerp(c1, c2, 0.6));
 		
 		finaliseControlPoints();
-	}
+	}*/
 
 	public static Expression<? extends ColorisableGraphicalContent> getGraphicalContent(BezierConfiguration bezier) {
 		throw new NotImplementedException();

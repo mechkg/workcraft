@@ -14,9 +14,8 @@ import org.workcraft.dom.visual.DrawRequest;
 
 public class BezierControlPointGui {
 
-	@Override
-	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
-		final Expression<? extends ColorisableGraphicalContent> superContentExpr = super.graphicalContent();
+	public static Expression<? extends ColorisableGraphicalContent> graphicalContent(BezierControlPoint cp) {
+		final Expression<? extends ColorisableGraphicalContent> superContentExpr = ControlPointGui.graphicalContent();
 		return new ExpressionBase<ColorisableGraphicalContent>() {
 			@Override
 			protected ColorisableGraphicalContent evaluate(EvaluationContext context) {

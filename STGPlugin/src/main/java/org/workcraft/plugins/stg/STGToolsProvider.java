@@ -41,6 +41,7 @@ import pcollections.PCollection;
 public class STGToolsProvider implements CustomToolsProvider {
 
 	private final VisualSTG visualStg;
+	private final StgEditorState editorState;
 
 	private final class PlaceGenerator implements NodeGenerator {
 		Icon icon = GUI.createIconFromSVG("images/icons/svg/place.svg");
@@ -118,8 +119,9 @@ public class STGToolsProvider implements CustomToolsProvider {
 	}
 	
 
-	public STGToolsProvider(VisualSTG visualStg) {
+	public STGToolsProvider(VisualSTG visualStg, StgEditorState editorState) {
 		this.visualStg = visualStg;
+		this.editorState = editorState;
 	}
 
 	private Expression<? extends String> transitionName(final STG stg, final VisualSignalTransition vst) {
@@ -217,7 +219,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 		};	
 		
 		return asList(
-				attachParameterisedPainter(new STGSelectionTool(editor, tp, selectionHitTester), painterProvider),
+				attachParameterisedPainter(new STGSelectionTool(editor, tp, selectionHitTester, editorState), painterProvider),
 				attachParameterisedPainter(new ConnectionTool(connectionCenterProvider, visualStg.connectionManager(), connectionHitTester), painterProvider),
 				attachPainter(new NodeGeneratorTool(new PlaceGenerator(), snap), simpleModelPainter),
 				attachPainter(new NodeGeneratorTool(new SignalTransitionGenerator(), snap), simpleModelPainter),

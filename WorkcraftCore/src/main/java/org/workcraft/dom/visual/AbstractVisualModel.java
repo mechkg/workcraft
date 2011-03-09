@@ -42,10 +42,12 @@ import org.workcraft.dom.visual.connections.Polyline;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.gui.propertyeditor.Properties;
 
 import pcollections.HashTreePSet;
 import pcollections.PSet;
 import pcollections.PVector;
+import pcollections.TreePVector;
 
 @MouseListeners ({ DefaultAnchorGenerator.class })
 public abstract class AbstractVisualModel extends AbstractModel implements VisualModel {
@@ -139,6 +141,9 @@ public abstract class AbstractVisualModel extends AbstractModel implements Visua
 	protected final StorageManager storage;
 
 	@Override public PVector<EditableProperty> getProperties(Node node) {
-		return null;
+		if(node instanceof Properties)
+			return ((Properties)node).getProperties();
+		else
+			return TreePVector.empty();
 	}
 }

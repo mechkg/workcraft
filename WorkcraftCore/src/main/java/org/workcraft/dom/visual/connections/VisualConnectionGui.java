@@ -10,8 +10,10 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.GraphicalContent;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.connections.VisualConnection.ConnectionType;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 
 public class VisualConnectionGui {
@@ -82,6 +84,25 @@ public class VisualConnectionGui {
 				return BezierGui.getGraphicalContent(bezier);
 			}
 		});
+	}
+	
+	public static Expression<? extends Touchable> getShape(final TouchableProvider<Node> tp, final VisualConnection connection, ConnectionGraphicConfiguration connectionGraphic) {
+		return connectionGraphic.accept(new ConnectionGraphicConfigurationVisitor<Expression<? extends Touchable>>() {
+
+			@Override
+			public Expression<? extends Touchable> visitPolyline(PolylineConfiguration polyline) {
+				return PolylineGui.shape(polyline, new VisualConnectionGraphicalPropertiesImpl(tp.apply(connection.getFirst()), tp.apply(connection.getSecond()), connection));
+			}
+
+			@Override
+			public Expression<? extends Touchable> visitBezier(BezierConfiguration bezier) {
+				// TODO Auto-generated method stub
+				throw new NotImplementedException();
+				//return null;
+			}
+			
+		});
+		
 	}
 	
 }

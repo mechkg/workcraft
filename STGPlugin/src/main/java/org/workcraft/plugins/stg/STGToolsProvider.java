@@ -151,7 +151,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 			}
 		};
 		
-		final TouchableProvider<Node> tp = TouchableProvider.Util.applyTransformAndAddVisualGroups(localTP);
+		final TouchableProvider<Node> tp = TouchableProvider.Util.applyTransformAndAddVisualGroupsAndConnections(localTP);
 
 		final Func<Colorisator, Expression<? extends GraphicalContent>> painterProvider = new Func<Colorisator, Expression<? extends GraphicalContent>>() {
 			@Override

@@ -88,7 +88,7 @@ public class DrawMan
 				
 				return result;
 			}
-		}; 
+		};
 		
 		return Expressions.join(childrenGc);
 	}

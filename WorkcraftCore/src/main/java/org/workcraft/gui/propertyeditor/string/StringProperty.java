@@ -25,6 +25,7 @@ import java.awt.Component;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.gui.propertyeditor.EditableProperty;
@@ -36,7 +37,6 @@ import org.workcraft.util.Action;
 public class StringProperty {
 
 	private static final GenericEditorProvider<String> EDITOR_PROVIDER = new GenericEditorProvider<String>() {
-		
 		@Override
 		public GenericCellEditor<String> createEditor(String initialValue, Action accept, Action cancel) {
 			final JTextField textField = new JTextField();
@@ -44,7 +44,6 @@ public class StringProperty {
 			textField.setText(initialValue);
 			
 			return new GenericCellEditor<String>() {
-
 				@Override
 				public Component component() {
 					return textField;
@@ -62,7 +61,8 @@ public class StringProperty {
 		
 		@Override
 		public Component createRenderer(String value) {
-			// TODO: think about missing features from DefaultTableCellRenderer 
+			// TODO: think about missing features from DefaultTableCellRenderer
+			DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer();
 			return new JLabel(value);
 		}
 	};

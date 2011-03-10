@@ -40,19 +40,19 @@ public class ChoiceCellEditor<T> implements GenericCellEditor<T> {
 		comboBox = new JComboBox();
 		comboBox.setEditable(false);
 		comboBox.setFocusable(false);
+
+		for (Pair<String,T> p : choice) {
+			ComboboxItemWrapper comboBoxItem = new ComboboxItemWrapper(p);
+			comboBox.addItem(comboBoxItem);
+			if(p.getSecond().equals(initialValue))
+				comboBox.setSelectedItem(comboBoxItem);
+		}
 		comboBox.addItemListener(new ItemListener() {
-			
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				accept.run();
 			}
 		});
-		
-		for (Pair<String,T> p : choice) {
-			comboBox.addItem(p);
-			if(p.getSecond().equals(initialValue))
-				comboBox.setSelectedItem(p.getSecond());
-		}
 	}
 
 	@Override
@@ -63,6 +63,6 @@ public class ChoiceCellEditor<T> implements GenericCellEditor<T> {
 	@SuppressWarnings("unchecked") // ComboBoxModel forces cast to an object. We cast back, hoping for the best.
 	@Override
 	public T getValue() {
-		return ((Pair<String,T>)comboBox.getSelectedItem()).getSecond();
+		return (T)((ComboboxItemWrapper)comboBox.getSelectedItem()).getValue();
 	}
 }

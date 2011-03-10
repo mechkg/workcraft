@@ -78,7 +78,7 @@ public class VisualPlace extends VisualComponent implements DrawableNew, Reflect
 	public PVector<EditableProperty> getProperties() {
 		return super.getProperties()
 				.plus(IntegerProperty.create("Tokens", tokens()))
-				.plus(ColorProperty.create("Tokens", tokenColor()));
+				.plus(ColorProperty.create("Token color", tokenColor()));
 	}
 
 	public static void drawTokens(int tokens, double singleTokenSize, double multipleTokenSeparation, 

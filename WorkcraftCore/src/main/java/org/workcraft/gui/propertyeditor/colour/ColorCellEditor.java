@@ -37,65 +37,56 @@ import org.workcraft.util.Action;
 
 public class ColorCellEditor implements GenericEditorProvider<Color>{
 	
-	Color currentColor;  
-	JButton button;
-	
-	static JColorChooser colorChooser = null;
-	static JDialog dialog = null;
-	
-	public  ColorCellEditor() {
-
-		button = new JButton();
-		button.addActionListener(new ActionListener() {
+	private static final class GenericCellEditorImplementation implements GenericCellEditor<Color> {
+		final JButton button;
+		final JColorChooser colorChooser;
+		public GenericCellEditorImplementation(final Color initialValue, final Action accept, final Action cancel) {
+			button = new JButton();
+			button.setBorderPainted(false);
+			button.setFocusable(false);
+			button.setBackground(initialValue);
 			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				cellClicked();
-			}
-		});
-		button.setBorderPainted(false);
-		button.setFocusable(false);
+			colorChooser = new JColorChooser();
+			colorChooser.setColor(initialValue);
+			final JDialog dialog = JColorChooser.createDialog(null,
+					"Pick a Color",
+					true,  //modal
+					colorChooser,
+					new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							accept.run();
+						}
+					},  //OK button handler
+					new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							cancel.run();
+						}
+					}); //CANCEL button handler
+			button.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+//					The user has clicked the cell, so
+//					bring up the dialog.
+					dialog.setVisible(true);
+				}
+			});
+		}
 
-//		Set up the dialog that the button brings up.
+		@Override
+		public Component component() {
+			return button;
+		}
 
-		colorChooser = new JColorChooser();
-		ActionListener okListener = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {//User pressed dialog's "OK" button.
-				currentColor = colorChooser.getColor();
-			}
-		};
-		dialog = JColorChooser.createDialog(null,
-				"Pick a Color",
-				true,  //modal
-				colorChooser,
-				okListener,  //OK button handler
-				null); //no CANCEL button handler
-	}
-
-	public void cellClicked() {
-//			The user has clicked the cell, so
-//			bring up the dialog.
-
-			button.setBackground(currentColor);
-			colorChooser.setColor(currentColor);
-			dialog.setVisible(true);
-	//		TODO: fireEditingStopped(); //Make the renderer reappear.
+		@Override
+		public Color getValue() {
+			return colorChooser.getColor();
+		}
 	}
 
 	@Override
 	public GenericCellEditor<Color> createEditor(Color initialValue, Action accept, Action cancel) {
-		return new GenericCellEditor<Color>(){
-
-			@Override
-			public Component component() {
-				return button;
-			}
-
-			@Override
-			public Color getValue() {
-				return currentColor;
-			}
-		};
+		return new GenericCellEditorImplementation(initialValue, accept, cancel);
 	}
 }

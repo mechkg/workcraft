@@ -21,6 +21,7 @@
 
 package org.workcraft.gui.propertyeditor;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 
 import javax.swing.JPanel;
@@ -47,7 +48,8 @@ public interface EditableProperty {
 								@Override
 								public Nothing apply(T value) {
 									panel.removeAll();
-									panel.add(renderer.createRenderer(value));
+									panel.setLayout(new BorderLayout());
+									panel.add(renderer.createRenderer(value), BorderLayout.CENTER);
 									return Nothing.VALUE;
 								}
 							});
@@ -78,7 +80,6 @@ public interface EditableProperty {
 												commit();
 												close.run();
 											}
-											
 										}, close);
 										
 										@Override

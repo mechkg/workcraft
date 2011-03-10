@@ -41,9 +41,9 @@ public class ColorCellRenderer {
 			label.setOpaque(true); //MUST do this for background to show up.
 			label.setFocusable(false);
 
-	        label.setBackground((Color)value);
+	        label.setBackground(value);
 	        if (isBordered) {
-	        	Color borderBackground = Color.GREEN; // TODO: label.isSelected ? table.getSelectionBackground() : table.getBackground()
+	        	Color borderBackground = Color.WHITE; // TODO: label.isSelected ? table.getSelectionBackground() : table.getBackground()
                 label.setBorder(BorderFactory.createMatteBorder(2,5,2,5,borderBackground));
 	        }
 	        

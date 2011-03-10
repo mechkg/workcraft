@@ -27,7 +27,6 @@ import java.util.HashMap;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JTable;
-import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -49,14 +48,12 @@ public class PropertyEditorTable extends JTable implements PropertyEditor {
 
 	public PropertyEditorTable(Framework framework) {
 		super();
-		
 
 		model = new PropertyEditorTableModel();
 		setModel(model);
 		
 		setTableHeader(null);
 		setFocusable(false);
-
 	}
 
 	abstract class AbstractTableCellEditor extends AbstractCellEditor implements TableCellEditor {
@@ -68,9 +65,8 @@ public class PropertyEditorTable extends JTable implements PropertyEditor {
 			return super.getCellEditor(row, col);
 		else {
 			final EditorProvider editorProvider = GlobalCache.eval(cellEditors.get(row));
-			
 			return new AbstractTableCellEditor(){
-				SimpleCellEditor editor = editorProvider.getEditor(new Action(){
+				SimpleCellEditor editor = editorProvider.getEditor(new Action() {
 					@Override
 					public void run() {
 						cancelCellEditing();
@@ -81,6 +77,14 @@ public class PropertyEditorTable extends JTable implements PropertyEditor {
 				public Object getCellEditorValue() {
 					return null;
 				}
+				
+				@Override
+				public boolean stopCellEditing() {
+					editor.commit();
+					//TODO: think about commit failing
+					return super.stopCellEditing();
+				}
+				
 				@Override
 				public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 					return editor.getComponent();
@@ -96,7 +100,6 @@ public class PropertyEditorTable extends JTable implements PropertyEditor {
 			return super.getCellRenderer(row, col);
 		else
 			return new TableCellRenderer(){
-
 				@Override
 				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 					GlobalCache.eval(cellRenderers.get(row).updateExpression());
@@ -121,8 +124,4 @@ public class PropertyEditorTable extends JTable implements PropertyEditor {
 			cellRenderers.add(p.renderer(Expressions.constant(false), Expressions.constant(false)));
 		}
 	}
-
-	@Override
-	public void editingStopped(ChangeEvent e) {  
-    }  
 }

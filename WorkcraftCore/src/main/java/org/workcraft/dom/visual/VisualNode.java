@@ -46,7 +46,7 @@ public abstract class VisualNode implements Properties, Node {
 		parent = storage.create(null);
 	}
 	
-	public Expression<? extends Collection<Node>> children() {
+	public Expression<? extends Collection<? extends Node>> children() {
 		return Expressions.constant(Collections.<Node>emptyList());
 	}
 	

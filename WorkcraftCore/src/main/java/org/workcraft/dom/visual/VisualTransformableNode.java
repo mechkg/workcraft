@@ -21,12 +21,13 @@
 
 package org.workcraft.dom.visual;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 import org.w3c.dom.Element;
+import org.workcraft.dependencymanager.advanced.core.Combinator;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
@@ -174,4 +175,11 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 	public ModifiableExpression<AffineTransform> transform() {
 		return localToParentTransform;
 	}
+	
+	public static Combinator<VisualTransformableNode, Point2D> positionGetter = new Combinator<VisualTransformableNode, Point2D>() {
+		@Override
+		public Expression<? extends Point2D> apply(VisualTransformableNode argument) {
+			return argument.position();
+		}
+	}; 
 }

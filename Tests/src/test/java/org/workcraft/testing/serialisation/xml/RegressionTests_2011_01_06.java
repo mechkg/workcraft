@@ -132,7 +132,7 @@ public class RegressionTests_2011_01_06 {
 		visual.add(vp1);
 		VisualConnection vConn = visual.createConnection(vt1, vp1);
 		vConn.setConnectionType(ConnectionType.BEZIER);
-		Bezier graphic = (Bezier) vConn.getGraphic();
+		Bezier graphic = (Bezier) vConn.graphic();
 		// visual.ensureConsistency();
 		BezierControlPoint[] cpoints = eval(graphic.getControlPoints());
 		Assert.assertEquals(2, cpoints.length);

@@ -1,9 +1,8 @@
 package org.workcraft.dom.visual.connections;
 
 import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+import static org.workcraft.dom.visual.connections.VisualConnectionGui.*;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
@@ -18,13 +17,9 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
-import org.workcraft.dom.visual.DrawHelper;
-import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.Touchable;
-import org.workcraft.gui.Coloriser;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
-import org.workcraft.util.Function3;
 import org.workcraft.util.Geometry;
 
 public class PolylineGui {
@@ -219,44 +214,9 @@ public class PolylineGui {
 
 
 	public static Expression<? extends Touchable> shape(PolylineConfiguration poly, Expression<? extends VisualConnectionProperties> properties) {
-		
-		Expression<? extends Curve> curveExpr = getCurveExpr(properties, poly);
-		
-		return bindFunc(curveExpr, new Function<Curve, Touchable>(){
-			@Override
-			public Touchable apply(final Curve curve) {
-				return new Touchable() {
-					@Override
-					public boolean hitTest(Point2D point) {
-						return curve.getDistanceToCurve(point) < VisualConnection.HIT_THRESHOLD;
-					}
-					@Override
-					public Point2D getCenter()
-					{
-						return curve.getPointOnCurve(0.5);
-					}
-					
-					@Override
-					public Rectangle2D getBoundingBox() {
-						return curve.getBoundingBox();
-					}
-				};
-			}
-			
-		});
+		return bindFunc(getCurveExpr(properties, poly), connectionTouchableMaker);
 	}
 
-	private static final Function2<Curve, VisualConnectionProperties, PartialCurveInfo> curveInfoConstructor = new Function2<Curve, VisualConnectionProperties, PartialCurveInfo>(){
-		@Override
-		public PartialCurveInfo apply(Curve curve, VisualConnectionProperties props) {
-			return Geometry.buildConnectionCurveInfo(props, curve, 0);
-		}
-		
-	};
-	private static Expression<? extends PartialCurveInfo> curveInfo (final Expression<? extends Curve> curve, final Expression<? extends VisualConnectionProperties> connectionInfo) { 
-		return bindFunc(curve, connectionInfo, curveInfoConstructor);
-	}
-	
 /*	ControlPointScaler scaler;
 	scaler = new ControlPointScaler(connectionInfo, controlPoints());
 
@@ -270,7 +230,7 @@ public class PolylineGui {
 
 	public static Expression<? extends ColorisableGraphicalContent> getGraphicalContent(final Expression<? extends VisualConnectionProperties>properties, final PolylineConfiguration polyline) {
 		final Expression<? extends Curve> curveExpr = getCurveExpr(properties, polyline);
-		final Expression<? extends PartialCurveInfo> curveInfo = curveInfo(curveExpr, properties);
+		final Expression<? extends PartialCurveInfo> curveInfo = bindFunc(properties, curveExpr, curveInfoMaker);
 		final Expression<? extends Path2D> connectionPathExpr = bindFunc(curveInfo, curveExpr,new Function2<PartialCurveInfo, Curve, Path2D>(){
 			@Override
 			public Path2D apply(PartialCurveInfo cInfo, Curve curve) {
@@ -291,28 +251,7 @@ public class PolylineGui {
 			}
 		});
 		
-		return bindFunc(curveInfo, properties, connectionPathExpr, new Function3<PartialCurveInfo, VisualConnectionProperties, Path2D, ColorisableGraphicalContent>(){
-
-			@Override
-			public ColorisableGraphicalContent apply(final PartialCurveInfo cInfo, final VisualConnectionProperties connProps, final Path2D connectionPath) {
-				return new ColorisableGraphicalContent() {
-					@Override
-					public void draw(DrawRequest r) {
-						Graphics2D g = r.getGraphics();
-						
-						Color color = Coloriser.colorise(connProps.getDrawColor(), r.getColorisation().getColorisation());
-						g.setColor(color);
-						g.setStroke(connProps.getStroke());
-						g.draw(connectionPath);
-						
-						if (connProps.hasArrow())
-							DrawHelper.drawArrowHead(g, color, cInfo.arrowHeadPosition, cInfo.arrowOrientation, 
-									connProps.getArrowLength(), connProps.getArrowWidth());
-					}
-				};
-			}
-			
-		});
+		return bindFunc(curveInfo, properties, connectionPathExpr, VisualConnectionGui.connectionGraphicalContentMaker);
 	}
 
 	private static Expression<? extends Curve> getCurveExpr(final Expression<? extends VisualConnectionProperties> properties, final PolylineConfiguration polyline) {

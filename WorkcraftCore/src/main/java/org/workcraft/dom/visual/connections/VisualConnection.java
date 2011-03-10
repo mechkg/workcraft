@@ -20,14 +20,18 @@
 
 package org.workcraft.dom.visual.connections;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 import java.awt.Color;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionFilter;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
@@ -37,10 +41,11 @@ import org.workcraft.dom.math.MathNode;
 import org.workcraft.dom.visual.DependentNode;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.VisualNode;
-import org.workcraft.exceptions.NotImplementedException;
+import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty;
 import org.workcraft.gui.propertyeditor.dubble.DoubleProperty;
+import org.workcraft.serialisation.xml.NoAutoSerialisation;
 import org.workcraft.util.Pair;
 
 import pcollections.PVector;
@@ -69,10 +74,19 @@ public class VisualConnection extends VisualNode implements
 	private VisualComponent first;
 	private VisualComponent second;
 
-	private ConnectionType connectionType = ConnectionType.POLYLINE;
 	private final ModifiableExpression<ScaleMode> scaleMode;
 	
-	private ConnectionGraphicConfiguration graphic = null;
+	private final ModifiableExpression<ConnectionGraphicConfiguration> graphic = new ModifiableExpressionBase<ConnectionGraphicConfiguration>(){
+		@Override
+		protected ConnectionGraphicConfiguration evaluate(EvaluationContext context) {
+			return context.resolve(children).iterator().next();
+		};
+		@Override
+		public void setValue(ConnectionGraphicConfiguration newValue) {
+			children.clear();
+			children.add(newValue);
+		};
+	};
 
 	static class BoundedVariable extends ModifiableExpressionFilter<Double, Double>
 	{	
@@ -107,13 +121,40 @@ public class VisualConnection extends VisualNode implements
 	private final ModifiableExpression<Double> arrowWidth;
 	private final ModifiableExpression<Double> arrowLength;
 	
-	private CachedHashSet<Node> children;
+	private CachedHashSet<ConnectionGraphicConfiguration> children;
 	public final StorageManager storage;
-	
-	protected void initialise() {
-		children = new CachedHashSet<Node>(storage);
-		children.add(graphic);
-	}
+	public final ModifiableExpression<ConnectionType> connectionType = new ModifiableExpressionBase<ConnectionType>(){
+		@Override
+		public void setValue(ConnectionType newValue) {
+			if(eval(this) != newValue)
+				graphic.setValue(newGraphicsConfiguration(newValue));
+		}
+		private ConnectionGraphicConfiguration newGraphicsConfiguration(ConnectionType newValue) {
+			switch(newValue) {
+			case POLYLINE:
+				return new Polyline(VisualConnection.this, storage);
+			case BEZIER:
+				return new Bezier(VisualConnection.this, storage);
+			default:
+				throw new NotSupportedException();
+			}
+		}
+		@Override
+		protected ConnectionType evaluate(EvaluationContext context) {
+			return context.resolve(graphic).accept(new ConnectionGraphicConfigurationVisitor<ConnectionType>() {
+
+				@Override
+				public ConnectionType visitPolyline(PolylineConfiguration polyline) {
+					return ConnectionType.POLYLINE;
+				}
+
+				@Override
+				public ConnectionType visitBezier(BezierConfiguration bezier) {
+					return ConnectionType.BEZIER;
+				}
+			});
+		}
+	};
 	
 	@Override
 	public PVector<EditableProperty> getProperties() {
@@ -141,7 +182,7 @@ public class VisualConnection extends VisualNode implements
 			.plus(DoubleProperty.create("Line width", lineWidth))
 			.plus(DoubleProperty.create("Arrow width", arrowWidth))
 			.plus(ChoiceProperty.create("Arrow length", arrowLengths, arrowLength))
-//			.plus(ChoiceProperty.create("Connection type", connectionTypes, connectionTypeExpr))
+			.plus(ChoiceProperty.create("Connection type", connectionTypes, connectionType ))
 			.plus(ChoiceProperty.create("Scale mode", scaleModes, scaleMode))
 			;
 	}
@@ -167,14 +208,8 @@ public class VisualConnection extends VisualNode implements
 		this.first = first;
 		this.second = second;
 		this.refConnection = refConnection;
-		this.graphic = graphic;
-		
-		if (graphic instanceof Polyline)
-			this.connectionType = ConnectionType.POLYLINE;
-		else if (graphic instanceof Bezier)
-			this.connectionType = ConnectionType.BEZIER;
-
-		initialise();
+		this.children = new CachedHashSet<ConnectionGraphicConfiguration>(storage);
+		this.children.add(graphic);
 	}
 	
 	public VisualConnection(MathConnection refConnection, VisualComponent first, VisualComponent second, StorageManager storage) {
@@ -182,9 +217,8 @@ public class VisualConnection extends VisualNode implements
 		this.refConnection = refConnection;
 		this.first = first;
 		this.second = second;
-		this.graphic = new Polyline(this, storage);
-		
-		initialise();
+		this.children = new CachedHashSet<ConnectionGraphicConfiguration>(storage);
+		this.children.add(new Polyline(this, storage));
 	}
 
 	public ModifiableExpression<Color> color() {
@@ -226,20 +260,18 @@ public class VisualConnection extends VisualNode implements
 		return ret;
 	}
 
-	public Node getGraphic() {
+	@NoAutoSerialisation
+	public Expression<ConnectionGraphicConfiguration> graphic() {
 		return graphic;
 	}
 	
 	@Override
-	public ExpressionBase<? extends Collection<Node>> children() {
+	public Expression<? extends Collection<? extends Node>> children() {
 		return children;
 	}
 	
+	@NoAutoSerialisation
 	public ModifiableExpression<ScaleMode> scaleMode() {
 		return scaleMode;
-	}
-
-	public void setConnectionType(ConnectionType polyline) {
-		throw new NotImplementedException();
 	}
 }

@@ -22,7 +22,6 @@ public class ControlPointGui {
 				return context.resolve(parent.scaler()).get(ControlPoint.this);
 			}
 		};
-		
 		return unfold(expr);
 	}
 

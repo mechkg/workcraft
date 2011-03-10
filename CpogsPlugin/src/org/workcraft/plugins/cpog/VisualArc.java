@@ -92,7 +92,7 @@ public class VisualArc extends VisualConnection
 
 					@Override
 					public AffineTransform eval(Rectangle2D labelBB) {
-						ParametricCurve graphic = context.resolve(getGraphic().curve());
+						ParametricCurve graphic = context.resolve(context.resolve(graphic()).curve());
 						
 						Point2D p = graphic.getPointOnCurve(0.5);
 						Point2D d = graphic.getDerivativeAt(0.5);

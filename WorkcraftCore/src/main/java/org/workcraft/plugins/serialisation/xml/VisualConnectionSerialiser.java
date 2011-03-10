@@ -29,6 +29,8 @@ import org.workcraft.serialisation.xml.CustomXMLSerialiser;
 import org.workcraft.serialisation.xml.NodeSerialiser;
 import org.workcraft.util.XmlUtil;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class VisualConnectionSerialiser implements CustomXMLSerialiser {
 	public void serialise(Element element, Object object,
 			ReferenceProducer internalReferences,
@@ -43,7 +45,7 @@ public class VisualConnectionSerialiser implements CustomXMLSerialiser {
 		
 		Element graphicElement = XmlUtil.createChildElement("graphic", element);
 		
-		nodeSerialiser.serialise(graphicElement, vcon.getGraphic());
+		nodeSerialiser.serialise(graphicElement, eval(vcon.graphic()));
 	}
 
 	public String getClassName() {

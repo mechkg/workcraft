@@ -34,6 +34,8 @@ import org.workcraft.serialisation.xml.NodeFinaliser;
 import org.workcraft.serialisation.xml.NodeInitialiser;
 import org.workcraft.util.XmlUtil;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class VisualConnectionDeserialiser implements CustomXMLDeserialiser {
 	@Override
 	public String getClassName() {
@@ -55,7 +57,7 @@ public class VisualConnectionDeserialiser implements CustomXMLDeserialiser {
 				(MathConnection)externalReferenceResolver.getObject(element.getAttribute("ref"))
 		);
 		
-		nodeFinaliser.finaliseInstance(vcon.getGraphic());
+		nodeFinaliser.finaliseInstance(eval(vcon.graphic()));
 	}
 
 	@Override

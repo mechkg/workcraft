@@ -21,7 +21,7 @@
 
 package org.workcraft.serialisation.xml;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
@@ -145,9 +145,9 @@ public class DefaultNodeSerialiser {
 			IllegalArgumentException, IntrospectionException,
 			SerialisationException, InvocationTargetException {
 		
-		Element curLevelElement = parentElement.getOwnerDocument()
-				.createElement(currentLevel.getSimpleName());
 		
+		final Element curLevelElement = parentElement.getOwnerDocument()
+				.createElement(currentLevel.getSimpleName());
 		
 		autoSerialiseProperties(curLevelElement, object, currentLevel);
 		

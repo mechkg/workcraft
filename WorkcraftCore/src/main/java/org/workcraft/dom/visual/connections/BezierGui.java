@@ -1,175 +1,92 @@
 package org.workcraft.dom.visual.connections;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+import static org.workcraft.dom.visual.connections.VisualConnectionGui.*;
+
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Collection;
-import java.util.Collections;
 
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
-import org.workcraft.dom.visual.DrawHelper;
-import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.Touchable;
-import org.workcraft.exceptions.NotImplementedException;
-import org.workcraft.gui.Coloriser;
+import org.workcraft.util.Function;
+import org.workcraft.util.Function3;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Geometry.CurveSplitResult;
 
 public class BezierGui {
 	
-	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
-		return new ExpressionBase<ColorisableGraphicalContent>() {
-			@Override
-			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
-				return new ColorisableGraphicalContent() {
-					@Override
-					public void draw(DrawRequest r) {
-						Graphics2D g = r.getGraphics();
-						
-						VisualConnectionProperties cinfo = context.resolve(connectionInfo);
-						Color color = Coloriser.colorise(cinfo.getDrawColor(), r.getColorisation().getColorisation());
-						g.setColor(color);
-//						g.setStroke(new BasicStroke((float)connectionInfo.getLineWidth()));
-						g.setStroke(cinfo.getStroke());
-						
-						g.draw(context.resolve(visibleCurve2D));
-						PartialCurveInfo cvInfo = context.resolve(curveInfo);
-						if (cinfo.hasArrow())
-							DrawHelper.drawArrowHead(g, color,
-									cvInfo.arrowHeadPosition,
-									cvInfo.arrowOrientation,
-									cinfo.getArrowLength(),
-									cinfo.getArrowWidth());
-					}
-				};
-			}
-		};
-	}
+	private static final Function<BezierGui, ColorisableGraphicalContent> graphicalContentGetter = new Function<BezierGui, ColorisableGraphicalContent>(){
+		@Override
+		public ColorisableGraphicalContent apply(BezierGui argument) {
+			return argument.graphicalContent;
+		}
+	};
+	
+	private static final Function<BezierGui, Touchable> touchableGetter = new Function<BezierGui, Touchable>(){
+		@Override
+		public Touchable apply(BezierGui argument) {
+			return argument.touchable;
+		}
+	};
 
-	public Expression<? extends Touchable> shape() {
-		return new ExpressionBase<Touchable>() {
+	static Function3<VisualConnectionProperties, Point2D, Point2D, CubicCurve2D> fullCurve2DMaker = new Function3<VisualConnectionProperties, Point2D, Point2D, CubicCurve2D>(){
+		@Override
+		public CubicCurve2D apply(VisualConnectionProperties connectionInfo, Point2D cp1, Point2D cp2) {
+			CubicCurve2D result = new CubicCurve2D.Double();
+			result.setCurve(connectionInfo.getFirstShape().getCenter(), cp1, cp2, connectionInfo.getSecondShape().getCenter());
+			return result;
+		}
+	};
+	
+	final ColorisableGraphicalContent graphicalContent;
+	final Touchable touchable;
 
-			@Override
-			protected Touchable evaluate(final EvaluationContext context) {
-				return new Touchable() {
-
-					@Override
-					public boolean hitTest(Point2D point) {
-						return context.resolve(parametricCurve).getDistanceToCurve(point) < VisualConnection.HIT_THRESHOLD;
-					}
-
-					@Override
-					public Rectangle2D getBoundingBox() {
-						return context.resolve(parametricCurve).getBoundingBox();
-					}
-
-					@Override
-					public Point2D getCenter() {
-						return context.resolve(parametricCurve).getPointOnCurve(0.5);
-					}
-					
-				};
-			}
-		};
+	public static Function3<Point2D, Point2D, VisualConnectionProperties, BezierGui> constuctor = new Function3<Point2D, Point2D, VisualConnectionProperties, BezierGui>() {
+		@Override
+		public BezierGui apply(Point2D argument1, Point2D argument2, VisualConnectionProperties argument3) {
+			return new BezierGui(argument1, argument2, argument3);
+		}
+	};  
+	
+	public BezierGui(final Point2D cp1, final Point2D cp2, final VisualConnectionProperties connectionInfo) {
+		final CubicCurve2D fullCurve2D = fullCurve2DMaker.apply(connectionInfo, cp1, cp2);
+		final ParametricCurve parametricCurve = Curve.constructor.apply(fullCurve2D);
+		final PartialCurveInfo curveInfo = curveInfoMaker.apply(connectionInfo, parametricCurve);
+		final CubicCurve2D visibleCurve2D = getPartialCurve(fullCurve2D, curveInfo);
+		graphicalContent = connectionGraphicalContentMaker.apply(curveInfo, connectionInfo, visibleCurve2D);
+		touchable = connectionTouchableMaker.apply(parametricCurve);
 	}
 	
-
-	private final BezierControlPoint cp1;
-	private final BezierControlPoint cp2;
-	private final Expression<VisualConnectionProperties> connectionInfo;
-	
-	public BezierGui(final BezierControlPoint cp1, final BezierControlPoint cp2, final Expression<VisualConnectionProperties> connectionInfo) {
-		this.cp1 = cp1;
-		this.cp2 = cp2;
-		this.connectionInfo = connectionInfo;
-		this.curveInfo = new ExpressionBase<PartialCurveInfo>() {
-			@Override
-			protected PartialCurveInfo evaluate(EvaluationContext context) {
-				return Geometry.buildConnectionCurveInfo(context.resolve(connectionInfo), context.resolve(parametricCurve), 0); }
-		};
-
-		this.fullCurve2D = new ExpressionBase<CubicCurve2D>(){
-			@Override
-			public CubicCurve2D evaluate(org.workcraft.dependencymanager.advanced.core.EvaluationContext resolver) {
-				CubicCurve2D result = new CubicCurve2D.Double();
-				result.setCurve(resolver.resolve(connectionInfo).getFirstShape().getCenter(), resolver.resolve(cp1.position()), resolver.resolve(cp2.position()), resolver.resolve(connectionInfo).getSecondShape().getCenter());
-				return result;
-			};
-		};
-		this.visibleCurve2D = getPartialCurve(fullCurve2D, curveInfo);
+	private static CubicCurve2D getPartialCurve(
+			final CubicCurve2D fullCurve2D,
+			final PartialCurveInfo curve) {
 		
+			double tEnd = curve.tEnd;
+			double tStart = curve.tStart;
 		
-		parametricCurve = new ExpressionBase<ParametricCurve>() {
+			CubicCurve2D fullCurve = fullCurve2D;
+			
+			CurveSplitResult firstSplit = Geometry.splitCubicCurve(fullCurve, tStart);
+			CurveSplitResult secondSplit = Geometry.splitCubicCurve(firstSplit.curve2, (tEnd-tStart)/(1-tStart));
+			return secondSplit.curve1;
+	}
+	
+	private final static class Curve implements ParametricCurve {
+
+		public static Function<CubicCurve2D, Curve> constructor = new Function<CubicCurve2D, Curve>(){
 			@Override
-			protected ParametricCurve evaluate(EvaluationContext context) {
-				return new Curve(context);
+			public Curve apply(CubicCurve2D argument) {
+				return new Curve(argument);
 			}
-		};
+		}; 
 		
-	}
-	private static Expression<CubicCurve2D> getPartialCurve(
-			final Expression<? extends CubicCurve2D> fullCurve2D,
-			final Expression<? extends PartialCurveInfo> curveInfo) {
-		
-		return new ExpressionBase<CubicCurve2D>() {
-			@Override
-				protected CubicCurve2D evaluate(EvaluationContext context) {
-					PartialCurveInfo curve = context.resolve(curveInfo);
-					double tEnd = curve.tEnd;
-					double tStart = curve.tStart;
-				
-					CubicCurve2D fullCurve = context.resolve(fullCurve2D);
-					
-					CurveSplitResult firstSplit = Geometry.splitCubicCurve(fullCurve, tStart);
-					CurveSplitResult secondSplit = Geometry.splitCubicCurve(firstSplit.curve2, (tEnd-tStart)/(1-tStart));
-					return secondSplit.curve1;
-				}
-		};
-	}
-	
-
-	
-	public ExpressionBase<Point2D> origin1() {
-		return new ExpressionBase<Point2D>() {
-			@Override
-			protected Point2D evaluate(EvaluationContext context) {
-				return context.resolve(connectionInfo).getFirstShape().getCenter();
-			}
-		};
-	}
-	
-	public ExpressionBase<Point2D> origin2() {
-		return new ExpressionBase<Point2D>() {
-			@Override
-			protected Point2D evaluate(EvaluationContext context) {
-				return context.resolve(connectionInfo).getSecondShape().getCenter();
-			}
-		};
-	}
-	
-	
-	private final Expression<PartialCurveInfo> curveInfo;
-	private final Expression<CubicCurve2D> fullCurve2D;
-	private final Expression<CubicCurve2D> visibleCurve2D;
-	private final Expression<? extends ParametricCurve> parametricCurve;
-	
-
-	
-	private final class Curve implements ParametricCurve {
-
-		public Curve(EvaluationContext resolver) {
-			this.resolver = resolver;
+		public Curve(CubicCurve2D fullCurve2D) {
+			this.fullCurve2D = fullCurve2D;
 		}
 		
-		private final EvaluationContext resolver;
+		private final CubicCurve2D fullCurve2D;
 		
 		@Override
 		public double getDistanceToCurve(Point2D pt) {
@@ -179,11 +96,11 @@ public class BezierGui {
 		@Override
 		public Point2D getNearestPointOnCurve(Point2D pt) {
 			// FIXME: should be done using some proper algorithm
-			Point2D nearest = new Point2D.Double(resolver.resolve(fullCurve2D).getX1(), resolver.resolve(fullCurve2D).getY1());
+			Point2D nearest = new Point2D.Double(fullCurve2D.getX1(), fullCurve2D.getY1());
 			double nearestDist = Double.MAX_VALUE;
 			
 			for (double t=0.01; t<=1.0; t+=0.01) {
-				Point2D samplePoint = Geometry.getPointOnCubicCurve(resolver.resolve(fullCurve2D), t);
+				Point2D samplePoint = Geometry.getPointOnCubicCurve(fullCurve2D, t);
 				double distance = pt.distance(samplePoint);
 				if (distance < nearestDist)	{
 					nearestDist = distance;
@@ -196,21 +113,21 @@ public class BezierGui {
 
 		@Override
 		public Point2D getPointOnCurve(double t) {
-			return Geometry.getPointOnCubicCurve(resolver.resolve(fullCurve2D), t);
+			return Geometry.getPointOnCubicCurve(fullCurve2D, t);
 		}
 		@Override
 		public Point2D getDerivativeAt(double t) {
-			return Geometry.getDerivativeOfCubicCurve(resolver.resolve(fullCurve2D), t);
+			return Geometry.getDerivativeOfCubicCurve(fullCurve2D, t);
 		}
 
 		@Override
 		public Point2D getSecondDerivativeAt(double t) {
-			return Geometry.getSecondDerivativeOfCubicCurve(resolver.resolve(fullCurve2D), t);
+			return Geometry.getSecondDerivativeOfCubicCurve(fullCurve2D, t);
 		}
 		
 		@Override
 		public Rectangle2D getBoundingBox() {
-			Rectangle2D boundingBox = resolver.resolve(fullCurve2D).getBounds2D();
+			Rectangle2D boundingBox = fullCurve2D.getBounds2D();
 			boundingBox.add(boundingBox.getMinX()-VisualConnection.HIT_THRESHOLD, boundingBox.getMinY()-VisualConnection.HIT_THRESHOLD);
 			boundingBox.add(boundingBox.getMinX()-VisualConnection.HIT_THRESHOLD, boundingBox.getMaxY()+VisualConnection.HIT_THRESHOLD);
 			boundingBox.add(boundingBox.getMaxX()+VisualConnection.HIT_THRESHOLD, boundingBox.getMinY()-VisualConnection.HIT_THRESHOLD);
@@ -219,8 +136,6 @@ public class BezierGui {
 		}
 	}
 
-	Variable<Expression<? extends Collection<? extends Node>>> selectionTracker = new Variable<Expression<? extends Collection<? extends Node>>>(Expressions.constant(Collections.<Node>emptyList()));
-	
 /*	public void setDefaultControlPoints() {
 		Expression<Point2D> p1 = origin1();
 		Expression<Point2D> p2 = new ExpressionBase<Point2D>() {
@@ -242,9 +157,11 @@ public class BezierGui {
 		finaliseControlPoints();
 	}*/
 
-	public static Expression<? extends ColorisableGraphicalContent> getGraphicalContent(BezierConfiguration bezier) {
-		throw new NotImplementedException();
+	public static Expression<? extends ColorisableGraphicalContent> getGraphicalContent(BezierConfiguration bezier, Expression<? extends VisualConnectionProperties> connectionProperties) {
+		return bindFunc(bindFunc(bezier.controlPoint1(), bezier.controlPoint2(), connectionProperties, constuctor), graphicalContentGetter);
 	}
 
-	
+	public static Expression<? extends Touchable> shape(BezierConfiguration bezier, Expression<VisualConnectionProperties> properties) {
+		return bindFunc(bindFunc(bezier.controlPoint1(), bezier.controlPoint2(), properties, constuctor), touchableGetter);
+	}
 }

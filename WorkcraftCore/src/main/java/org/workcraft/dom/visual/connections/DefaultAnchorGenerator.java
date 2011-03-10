@@ -42,8 +42,8 @@ public class DefaultAnchorGenerator extends DummyMouseListener {
 			Node n = HitMan.hitTestForSelection(TouchableProvider.DEFAULT, e.getPosition(), model);
 			if (n instanceof VisualConnection) {
 				VisualConnection con = (VisualConnection)n;
-				if (con.getGraphic() instanceof Polyline)
-					((Polyline)con.getGraphic()).createControlPoint(e.getPosition());
+				if (con.graphic() instanceof Polyline)
+					((Polyline)eval(con.graphic())).createControlPoint(e.getPosition());
 			}
 		}
 	}

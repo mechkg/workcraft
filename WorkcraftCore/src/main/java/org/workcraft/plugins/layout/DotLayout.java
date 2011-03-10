@@ -177,10 +177,10 @@ public class DotLayout implements Tool {
 						if(con!=null)
 						{
 							VisualConnection vc = (VisualConnection)con;
-							vc.setConnectionType(ConnectionType.POLYLINE);
+							vc.connectionType.setValue(ConnectionType.POLYLINE);
 							vc.scaleMode().setValue(ScaleMode.ADAPTIVE);
 							
-							Polyline poly = (Polyline)vc.getGraphic();
+							Polyline poly = (Polyline)eval(vc.graphic());
 							poly.remove(eval(poly.children()));
 							List<Point2D> points;
 							try {

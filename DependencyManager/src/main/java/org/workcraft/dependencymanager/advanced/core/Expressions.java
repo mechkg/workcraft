@@ -82,7 +82,7 @@ public class Expressions {
 		}
 	}
 
-	public static <A,B> Expression<? extends B> bindFunc(final Expression<? extends A> expr1, final Function<? super A, ? extends B> func) {
+	public static <A,B> Expression<B> bindFunc(final Expression<? extends A> expr1, final Function<? super A, ? extends B> func) {
 		notNull(expr1, func);
 		return new ExpressionBase<B>(){
 			@Override
@@ -95,7 +95,7 @@ public class Expressions {
 		};
 	}
 
-	public static <A,B,C> Expression<? extends C> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Function2<? super A, ? super B, ? extends C> func) {
+	public static <A,B,C> Expression<C> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Function2<? super A, ? super B, ? extends C> func) {
 		notNull(expr1, expr2, func); 
 		return new ExpressionBase<C>(){
 			@Override
@@ -108,7 +108,7 @@ public class Expressions {
 		};
 	}
 
-	public static <A,B,C,R> Expression<? extends R> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Expression<? extends C> expr3, final Function3<? super A, ? super B, ? super C, ? extends R> func) {
+	public static <A,B,C,R> Expression<R> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Expression<? extends C> expr3, final Function3<? super A, ? super B, ? super C, ? extends R> func) {
 		notNull(expr1, expr2, expr3, func); 
 		return new ExpressionBase<R>(){
 			@Override
@@ -201,17 +201,12 @@ public class Expressions {
 		};
 	}
 	
-	public static <A,F,R> Expression<? extends R> bindApply(Expression<? extends Function<? super A, ? extends R>> func, final Expression<? extends A> arg) {
-		return Expressions.bind(func, new Combinator<Function<? super A, ? extends R>, R>(){
+	public static <A,F,R> Expression<? extends R> apply(final Expression<? extends Function<? super A, ? extends R>> func, final Expression<? extends A> arg) {
+		return new ExpressionBase<R>(){
 			@Override
-			public Expression<? extends R> apply(final Function<? super A, ? extends R> funcValue) {
-				return bindFunc(arg, new Function<A, R>(){
-					@Override
-					public R apply(A argument) {
-						return funcValue.apply(argument);
-					}
-				});
+			protected R evaluate(EvaluationContext context) {
+				return context.resolve(func).apply(context.resolve(arg));
 			}
-		});
+		};
 	}
 }

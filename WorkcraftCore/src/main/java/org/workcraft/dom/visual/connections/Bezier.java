@@ -21,7 +21,9 @@
 
 package org.workcraft.dom.visual.connections;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import static org.workcraft.dom.visual.VisualTransformableNode.*;
 
 import java.awt.geom.Point2D;
 import java.util.Arrays;
@@ -34,7 +36,6 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
-import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.util.ExpressionUtil;
 
 public class Bezier implements ConnectionGraphicConfiguration {
@@ -46,8 +47,8 @@ public class Bezier implements ConnectionGraphicConfiguration {
 	
 	public Bezier(VisualConnection parent, StorageManager storage) {
 		this.storage = storage;
-		cp1 = storage.create(null);
-		cp2 = storage.create(null);
+		cp1 = storage.create(new BezierControlPoint(storage));
+		cp2 = storage.create(new BezierControlPoint(storage));
 		
 		this.parent = parent;
 	}
@@ -89,8 +90,7 @@ public class Bezier implements ConnectionGraphicConfiguration {
 	public Expression<? extends Collection<? extends ControlPoint>> children() {
 		return new ExpressionBase<List<BezierControlPoint>>(){
 			@Override
-			protected List<BezierControlPoint> evaluate(
-					EvaluationContext context) {
+			protected List<BezierControlPoint> evaluate(EvaluationContext context) {
 				return Arrays.asList(context.resolve(getControlPoints()));
 			}
 		};
@@ -102,12 +102,12 @@ public class Bezier implements ConnectionGraphicConfiguration {
 			
 			@Override
 			public Expression<? extends Point2D> controlPoint2() {
-				throw new NotImplementedException();
+				return bind(cp2, positionGetter);
 			}
 			
 			@Override
 			public Expression<? extends Point2D> controlPoint1() {
-				throw new NotImplementedException();
+				return bind(cp1, positionGetter);
 			}
 		});
 	}

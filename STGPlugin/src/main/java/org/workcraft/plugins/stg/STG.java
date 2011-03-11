@@ -21,13 +21,12 @@
 
 package org.workcraft.plugins.stg;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
@@ -48,8 +47,8 @@ import org.workcraft.dom.math.MathGroup;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.gui.propertyeditor.EditableProperty;
-import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty;
+import org.workcraft.gui.propertyeditor.integer.IntegerProperty;
 import org.workcraft.gui.propertyeditor.string.StringProperty;
 import org.workcraft.plugins.petri.PetriNet;
 import org.workcraft.plugins.petri.Place;
@@ -63,6 +62,7 @@ import org.workcraft.util.Pair;
 import org.workcraft.util.Triple;
 
 import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class STG extends AbstractModel implements STGModel {
 	
@@ -296,40 +296,41 @@ public class STG extends AbstractModel implements STGModel {
 	@Override
 	public PVector<EditableProperty> getProperties(Node node) {
 		PVector<EditableProperty> superProperties = super.getProperties(node);
-		return superProperties;
 		if (node instanceof STGPlace) {
 			if (!eval(((STGPlace) node).implicit()))
 				return superProperties.plus(StringProperty.create("Name", name((STGPlace)node)));
 			else
 				return superProperties;
 		}
-		if (node instanceof SignalTransition) {
+		else if (node instanceof SignalTransition) {
 			SignalTransition transition = (SignalTransition)node;
+
+			final PVector<Pair<String, Direction>> directions = TreePVector.<Pair<String, Direction>>empty()
+				.plus(Pair.of("+", Direction.PLUS))
+				.plus(Pair.of("-", Direction.MINUS))
+				.plus(Pair.of("~", Direction.TOGGLE));
+			
+			final PVector<Pair<String, Type>> signalTypes = TreePVector.<Pair<String, Type>>empty()
+				.plus(Pair.of("Input", Type.INPUT))
+				.plus(Pair.of("Output", Type.OUTPUT))
+				.plus(Pair.of("Internal", Type.INTERNAL));
+		
 			return superProperties
 				.plus(StringProperty.create("Signal name", signalName(transition)))
-				.plus(ChoiceProperty.create("Transition direction", signalName(transition)))
-
-			LinkedHashMap<String, Object> directions = new LinkedHashMap<String, Object>();
-			directions.put("+", SignalTransition.Direction.PLUS);
-			directions.put("-", SignalTransition.Direction.MINUS);
-			directions.put("", SignalTransition.Direction.TOGGLE);
-			
-			result.add(ExpressionPropertyDeclaration.create("Transition direction", direction(transition), direction(transition), SignalTransition.Direction.class, directions));
-			
-			result.add(ExpressionPropertyDeclaration.create("Instance", instanceNumber(transition), Integer.class));
-					
-			LinkedHashMap<String, Object> types = new LinkedHashMap<String, Object>();
-			types.put("Input", SignalTransition.Type.INPUT);
-			types.put("Output", SignalTransition.Type.OUTPUT);
-			types.put("Internal", SignalTransition.Type.INTERNAL);
-			
-			ModifiableExpression<Type> signalType = signalType(transition);
-			result.add(ExpressionPropertyDeclaration.create("Signal type", signalType, signalType, SignalTransition.Type.class, types));
-		} if (node instanceof DummyTransition) {
-			result.add (ExpressionPropertyDeclaration.create("Name", name((DummyTransition)node), String.class));
-			result.add(ExpressionPropertyDeclaration.create("Instance", instanceNumber((DummyTransition)node), Integer.class));
+				.plus(ChoiceProperty.create("Transition direction", directions, direction(transition)))
+				.plus(IntegerProperty.create("Instance number", instanceNumber(transition)))
+				.plus(ChoiceProperty.create("Signal type", signalTypes, signalType(transition)))
+				;
+		} 
+		else if (node instanceof DummyTransition) {
+			DummyTransition dummy = (DummyTransition)node;
+			return superProperties
+				.plus(StringProperty.create("Name", name(dummy)))
+				.plus(IntegerProperty.create("Instance", instanceNumber(dummy)))
+				;
 		}
-		return result;
+		else 
+			return superProperties;
 	}
 
 	public ModifiableExpression<String> signalName(final SignalTransition transition) {

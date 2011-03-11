@@ -158,28 +158,6 @@ public class VisualSTG extends AbstractVisualModel {
 		return result;
 	}
 
-	private VisualPlace makeExplicit(VisualImplicitPlaceArc con) {
-		Container group = Hierarchy.getNearestAncestor(con, Container.class);
-
-		STGPlace implicitPlace = con.getImplicitPlace();
-		
-		stg.makeExplicit(implicitPlace);
-		
-		VisualPlace place = new VisualPlace(implicitPlace, storage);
-		Point2D p = con.getPointOnConnection(0.5);
-		place.position().setValue(p);
-
-		VisualConnection con1 = new VisualConnection(con.getRefCon1(), con.getFirst(), place, storage);
-		VisualConnection con2 = new VisualConnection(con.getRefCon2(), place, con.getSecond(), storage);
-
-		group.add(place);
-		group.add(con1);
-		group.add(con2);
-
-		remove(con);
-		return place;
-	}
-
 	private void maybeMakeImplicit (VisualPlace place) {
 		final STGPlace stgPlace = (STGPlace)place.getReferencedPlace();
 		if ( eval(stgPlace.implicit()) ) {

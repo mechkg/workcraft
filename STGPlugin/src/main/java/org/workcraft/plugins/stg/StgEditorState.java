@@ -10,7 +10,7 @@ import pcollections.PSet;
 
 public class StgEditorState {
 	public StgEditorState(VisualGroup root) {
-		this.currentLevel = Variable.create(null);
+		this.currentLevel = Variable.create(root);
 	}
 	public final ModifiableExpression<PSet<Node>> selection = Variable.<PSet<Node>>create(HashTreePSet.<Node>empty());
 	public final ModifiableExpression<VisualGroup> currentLevel;

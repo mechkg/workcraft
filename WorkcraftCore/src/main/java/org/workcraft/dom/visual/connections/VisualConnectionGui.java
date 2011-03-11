@@ -50,9 +50,7 @@ public class VisualConnectionGui {
 			}
 			
 		});
-		
 	}
-
 	
 	public static Function<ParametricCurve, Touchable> connectionTouchableMaker = new Function<ParametricCurve, Touchable>(){
 		@Override
@@ -103,4 +101,8 @@ public class VisualConnectionGui {
 			return Geometry.buildConnectionCurveInfo(connectionProperties, curve, 0);
 		}
 	};
+	
+	public static Point2D getPointOnConnection(VisualConnection c, Point2D p) {
+		
+	}
 }

@@ -48,7 +48,7 @@ public class BezierGui {
 		public BezierGui apply(Point2D argument1, Point2D argument2, VisualConnectionProperties argument3) {
 			return new BezierGui(argument1, argument2, argument3);
 		}
-	};  
+	};
 	
 	public BezierGui(final Point2D cp1, final Point2D cp2, final VisualConnectionProperties connectionInfo) {
 		final CubicCurve2D fullCurve2D = fullCurve2DMaker.apply(connectionInfo, cp1, cp2);

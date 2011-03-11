@@ -29,6 +29,7 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.references.ReferenceManager;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.gui.propertyeditor.Properties;
 import org.workcraft.observation.HierarchySupervisor;
 import org.workcraft.util.Func;
 import org.workcraft.util.Hierarchy;
@@ -149,7 +150,10 @@ public abstract class AbstractModel implements Model {
 	
 	@Override
 	public PVector<EditableProperty> getProperties(Node node) {
-		return TreePVector.empty();
+		if(node instanceof Properties)
+			return ((Properties)node).getProperties();
+		else
+			return TreePVector.empty();
 	}
 
 	@Override

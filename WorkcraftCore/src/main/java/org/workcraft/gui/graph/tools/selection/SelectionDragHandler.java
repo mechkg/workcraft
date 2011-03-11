@@ -77,9 +77,9 @@ public final class SelectionDragHandler<Node> {
 		}
 	};
 	
-	private Variable<SelectionMode> selectionMode = Variable.create(SelectionMode.NONE);
-	private ModifiableExpression<PSet<Node>> selection;
-	private HitTester<? extends Node> hitTester;
+	private final Variable<SelectionMode> selectionMode = Variable.create(SelectionMode.NONE);
+	private final ModifiableExpression<PSet<Node>> selection;
+	private final HitTester<? extends Node> hitTester;
 
 	private final Expression<PSet<Node>> selectionBoxContents = new ExpressionBase<PSet<Node>>(){
 		@Override

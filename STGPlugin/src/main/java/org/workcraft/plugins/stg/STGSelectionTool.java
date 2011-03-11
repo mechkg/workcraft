@@ -38,15 +38,16 @@ public class STGSelectionTool extends SelectionTool
 	private final TouchableProvider<Node> touchableProvider;
 	private final HitTester<VisualNode> hitTester;
 	private final GraphEditor editor;
-	private STG visualStg;
+	private STG stg;
 
-	public STGSelectionTool(final GraphEditor editor, TouchableProvider<Node> touchableProvider, HitTester<VisualNode> hitTester, StgEditorState editorState) {
+	public STGSelectionTool(STG stg, final GraphEditor editor, TouchableProvider<Node> touchableProvider, HitTester<VisualNode> hitTester, StgEditorState editorState) {
 		super(new SelectionToolConfig.Default(hitTester, new Function<Point2D, Point2D>() {
 			@Override
 			public Point2D apply(Point2D argument) {
 				return editor.snap(argument);
 			}
 		}, editorState.selection, editorState.currentLevel));
+		this.stg = stg;
 		this.editor = editor;
 		this.touchableProvider = touchableProvider;
 		this.hitTester = hitTester;
@@ -149,7 +150,7 @@ public class STGSelectionTool extends SelectionTool
 					else if (eval(place.tokens())==0)
 						place.tokens().setValue(1);
 				} else if (node instanceof VisualSignalTransition || node instanceof VisualDummyTransition) {
-					editInPlace(editor.getOverlay(), visualStg, editor.getViewport(), touchableProvider, (VisualComponent)node, null);
+					editInPlace(editor.getOverlay(), stg, editor.getViewport(), touchableProvider, (VisualComponent)node, null);
 				}
 
 			}

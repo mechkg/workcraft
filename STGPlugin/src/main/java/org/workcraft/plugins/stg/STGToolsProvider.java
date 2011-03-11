@@ -219,7 +219,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 		};	
 		
 		return asList(
-				attachParameterisedPainter(new STGSelectionTool(editor, tp, selectionHitTester, editorState), painterProvider),
+				attachParameterisedPainter(new STGSelectionTool(visualStg.stg, editor, tp, selectionHitTester, editorState), painterProvider),
 				attachParameterisedPainter(new ConnectionTool(connectionCenterProvider, visualStg.connectionManager(), connectionHitTester), painterProvider),
 				attachPainter(new NodeGeneratorTool(new PlaceGenerator(), snap), simpleModelPainter),
 				attachPainter(new NodeGeneratorTool(new SignalTransitionGenerator(), snap), simpleModelPainter),

@@ -108,23 +108,16 @@ public class Polyline implements Node, Container, ConnectionGraphicConfiguration
 	
 	@Override
 	public <T> T accept(ConnectionGraphicConfigurationVisitor<T> visitor) {
-		return visitor.visitPolyline(new PolylineConfiguration() {
-			
+		final Expression<? extends List<? extends ControlPoint>> controlPointControls = Polyline.this.controlPoints();
+		ExpressionBase<List<? extends Point2D>> controlPoints = new ExpressionBase<List<? extends Point2D>>(){
 			@Override
-			public Expression<? extends List<? extends Point2D>> controlPoints() {
-				
-				final Expression<? extends List<? extends ControlPoint>> controlPointControls = Polyline.this.controlPoints();
-				return new ExpressionBase<List<? extends Point2D>>(){
-
-					@Override
-					protected List<? extends Point2D> evaluate(EvaluationContext context) {
-						ArrayList<Point2D> result = new ArrayList<Point2D>();
-						for(ControlPoint p : context.resolve(controlPointControls))
-							result.add(context.resolve(p.position()));
-						return result;
-					}
-				};
+			protected List<? extends Point2D> evaluate(EvaluationContext context) {
+				ArrayList<Point2D> result = new ArrayList<Point2D>();
+				for(ControlPoint p : context.resolve(controlPointControls))
+					result.add(context.resolve(p.position()));
+				return result;
 			}
-		});
+		};
+		return visitor.visitPolyline(controlPoints);
 	}
 }

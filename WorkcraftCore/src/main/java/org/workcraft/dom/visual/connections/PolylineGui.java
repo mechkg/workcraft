@@ -1,8 +1,6 @@
 package org.workcraft.dom.visual.connections;
 
-import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
-import static org.workcraft.dom.visual.connections.VisualConnectionGui.*;
-
+import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
@@ -10,35 +8,21 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.workcraft.dependencymanager.advanced.core.Combinator;
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
-import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.visual.BoundingBoxHelper;
-import org.workcraft.dom.visual.ColorisableGraphicalContent;
-import org.workcraft.dom.visual.Touchable;
-import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
 import org.workcraft.util.Geometry;
 
 public class PolylineGui {
 
 
-	public static ExpressionBase<List<Point2D>> createAnchorPointsExpression(final Point2D first, final Point2D second, final Expression<? extends List<? extends Point2D>> controlPoints) {
-		return new ExpressionBase<List<Point2D>>(){
-
-			@Override
-			protected List<Point2D> evaluate(EvaluationContext context) {
-				List<Point2D> result = new ArrayList<Point2D>();
-				result.add(first);
-				List<? extends Point2D> children = context.resolve(controlPoints);
-				for(Point2D child : children)
-					result.add(child);
-				result.add(second);
-				return result;
-			}
-		};
+	public static List<Point2D> createAnchorPoints(final Point2D first, final Point2D second, final List<? extends Point2D> controlPoints) {
+		List<Point2D> result = new ArrayList<Point2D>();
+		result.add(first);
+		List<? extends Point2D> children = controlPoints;
+		for(Point2D child : children)
+			result.add(child);
+		result.add(second);
+		return result;
 	}
 	
 	private static final class Curve implements ParametricCurve {
@@ -200,22 +184,34 @@ public class PolylineGui {
 				result = BoundingBoxHelper.union(result, getSegmentBoundsWithThreshold(seg));
 			}
 			return result;
+		}
+		
+		@Override
+		public Shape getShape(double tStart, double tEnd) {
+			int start = getSegmentIndex(tStart);
+			int end = getSegmentIndex(tEnd);
 
+			Point2D startPt = getPointOnCurve(tStart);
+			Point2D endPt = getPointOnCurve(tEnd);
+
+			final Path2D connectionPath = new Path2D.Double();
+			connectionPath.moveTo(startPt.getX(), startPt.getY());
+			for (int i=start; i<end; i++) {
+				Line2D segment = getSegment(i);
+				connectionPath.lineTo(segment.getX2(), segment.getY2());
+			}
+			connectionPath.lineTo(endPt.getX(), endPt.getY());
+			return connectionPath;
 		}
 	}
 
-	private final static Function<List<Point2D>, Curve> curveMaker = new Function<List<Point2D>, Curve>(){
-
+	public final static Function2<List<? extends Point2D>, VisualConnectionProperties, Curve> curveMaker = new  Function2<List<? extends Point2D>, VisualConnectionProperties, Curve>(){
 		@Override
-		public Curve apply(List<Point2D> anchorPoints) {
-			return new Curve(anchorPoints);
+		public Curve apply(List<? extends Point2D> controlPoints, VisualConnectionProperties props) {
+			return new Curve(createAnchorPoints(props.getFirstShape().getCenter(), props.getSecondShape().getCenter(), controlPoints));
 		}
 	};
 
-
-	public static Expression<? extends Touchable> shape(PolylineConfiguration poly, Expression<? extends VisualConnectionProperties> properties) {
-		return bindFunc(getCurveExpr(properties, poly), connectionTouchableMaker);
-	}
 
 /*	ControlPointScaler scaler;
 	scaler = new ControlPointScaler(connectionInfo, controlPoints());
@@ -226,42 +222,4 @@ public class PolylineGui {
 
 		createControlPoint(segment, pointOnConnection);
 	}*/
-
-
-	public static Expression<? extends ColorisableGraphicalContent> getGraphicalContent(final Expression<? extends VisualConnectionProperties>properties, final PolylineConfiguration polyline) {
-		final Expression<? extends Curve> curveExpr = getCurveExpr(properties, polyline);
-		final Expression<? extends PartialCurveInfo> curveInfo = bindFunc(properties, curveExpr, curveInfoMaker);
-		final Expression<? extends Path2D> connectionPathExpr = bindFunc(curveInfo, curveExpr,new Function2<PartialCurveInfo, Curve, Path2D>(){
-			@Override
-			public Path2D apply(PartialCurveInfo cInfo, Curve curve) {
-				int start = curve.getSegmentIndex(cInfo.tStart);
-				int end = curve.getSegmentIndex(cInfo.tEnd);
-
-				Point2D startPt = curve.getPointOnCurve(cInfo.tStart);
-				Point2D endPt = curve.getPointOnCurve(cInfo.tEnd);
-
-				final Path2D connectionPath = new Path2D.Double();
-				connectionPath.moveTo(startPt.getX(), startPt.getY());
-				for (int i=start; i<end; i++) {
-					Line2D segment = curve.getSegment(i);
-					connectionPath.lineTo(segment.getX2(), segment.getY2());
-				}
-				connectionPath.lineTo(endPt.getX(), endPt.getY());
-				return connectionPath;
-			}
-		});
-		
-		return bindFunc(curveInfo, properties, connectionPathExpr, VisualConnectionGui.connectionGraphicalContentMaker);
-	}
-
-	private static Expression<? extends Curve> getCurveExpr(final Expression<? extends VisualConnectionProperties> properties, final PolylineConfiguration polyline) {
-		Expression<? extends List<Point2D>> anchorPoints = Expressions.bind(properties, new Combinator<VisualConnectionProperties, List<Point2D>>() {
-			@Override
-			public Expression<? extends List<Point2D>> apply(VisualConnectionProperties argument) {
-				return createAnchorPointsExpression(argument.getFirstShape().getCenter(), argument.getSecondShape().getCenter(), polyline.controlPoints());
-			}
-		});
-		
-		return Expressions.bindFunc(anchorPoints, curveMaker);
-	}
 }

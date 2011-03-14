@@ -1,13 +1,14 @@
 package org.workcraft.util;
 
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+import static org.workcraft.dom.visual.ColorisableGraphicalContent.Util.*;
+
 import java.awt.Graphics2D;
 
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.GraphicalContent;
-
-import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+import org.workcraft.gui.graph.tools.Colorisation;
 
 public class Graphics {
 	public static Graphics2D cloneGraphics(Graphics2D g) {
@@ -37,24 +38,46 @@ public class Graphics {
 		return bindFunc(content, statePreserver);
 	}
 	
-	public static Expression<? extends GraphicalContent> compose(final Expression<? extends GraphicalContent> bottom, final Expression<? extends GraphicalContent> top) {
-		return new ExpressionBase<GraphicalContent>(){
+	public static ColorisableGraphicalContent compose(final ColorisableGraphicalContent bottom, final ColorisableGraphicalContent top) {
+		return fromFunc(new Function<Colorisation, GraphicalContent>() {
 			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
-				return new GraphicalContent(){
-					@Override
-					public void draw(Graphics2D graphics) {
-						Graphics2D clonedGraphics = cloneGraphics(graphics);
-						try {
-							context.resolve(bottom).draw(clonedGraphics);
-							context.resolve(top).draw(graphics);
-						}
-						finally {
-							clonedGraphics.dispose();
-						}
-					}
-				};
+			public GraphicalContent apply(Colorisation colour) {
+				return compose(applyColourisation(bottom, colour), applyColourisation(top, colour));
+			}
+		});
+	}
+
+	public static GraphicalContent compose(final GraphicalContent bottom, final GraphicalContent top) {
+		return new GraphicalContent(){
+			@Override
+			public void draw(Graphics2D graphics) {
+				Graphics2D clonedGraphics = cloneGraphics(graphics);
+				try {
+					bottom.draw(clonedGraphics);
+					top.draw(graphics);
+				}
+				finally {
+					clonedGraphics.dispose();
+				}
 			}
 		};
+	}
+	
+	public static Function2<GraphicalContent, GraphicalContent, GraphicalContent> compose = new Function2<GraphicalContent, GraphicalContent, GraphicalContent>(){
+		@Override
+		public GraphicalContent apply(GraphicalContent bottom, GraphicalContent top) {
+			return compose(bottom, top);
+		}
+	};
+
+	public static Function2<ColorisableGraphicalContent, ColorisableGraphicalContent, ColorisableGraphicalContent> composeColorisable = new Function2<ColorisableGraphicalContent, ColorisableGraphicalContent, ColorisableGraphicalContent>(){
+		@Override
+		public ColorisableGraphicalContent apply(ColorisableGraphicalContent bottom, ColorisableGraphicalContent top) {
+			return compose(bottom, top);
+		}
+	};
+
+	public static Expression<? extends GraphicalContent> compose(final Expression<? extends GraphicalContent> bottom, final Expression<? extends GraphicalContent> top) {
+		return bindFunc(bottom, top, compose);
 	}
 }

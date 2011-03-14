@@ -25,7 +25,6 @@ import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 import static org.workcraft.dom.visual.VisualTransformableNode.*;
 
-import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -47,6 +46,29 @@ public class Bezier implements ConnectionGraphicConfiguration {
 	
 	public Bezier(VisualConnection parent, StorageManager storage) {
 		this.storage = storage;
+		
+
+		/*	public void setDefaultControlPoints() {
+				Expression<Point2D> p1 = origin1();
+				Expression<Point2D> p2 = new ExpressionBase<Point2D>() {
+					@Override
+					protected Point2D evaluate(EvaluationContext context) {
+						return context.resolve(connectionInfo).getSecondShape().getCenter();
+					}
+				};
+				
+				BezierControlPoint cp1 = new BezierControlPoint(p1, storage);
+				BezierControlPoint cp2 = new BezierControlPoint(p2, storage);
+				initControlPoints (cp1, cp2);
+
+				Point2D c1 = eval(p1);
+				Point2D c2 = eval(p2);
+				cp1.position().setValue(Geometry.lerp(c1, c2, 0.3));
+				cp2.position().setValue(Geometry.lerp(c1, c2, 0.6));
+				
+				finaliseControlPoints();
+			}*/
+		
 		cp1 = storage.create(new BezierControlPoint(storage));
 		cp2 = storage.create(new BezierControlPoint(storage));
 		
@@ -98,17 +120,6 @@ public class Bezier implements ConnectionGraphicConfiguration {
 
 	@Override
 	public <T> T accept(ConnectionGraphicConfigurationVisitor<T> visitor) {
-		return visitor.visitBezier(new BezierConfiguration() {
-			
-			@Override
-			public Expression<? extends Point2D> controlPoint2() {
-				return bind(cp2, positionGetter);
-			}
-			
-			@Override
-			public Expression<? extends Point2D> controlPoint1() {
-				return bind(cp1, positionGetter);
-			}
-		});
+		return visitor.visitBezier(bind(cp2, positionGetter), bind(cp1, positionGetter));
 	}
 }

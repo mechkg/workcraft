@@ -23,8 +23,10 @@ package org.workcraft.dom.visual.connections;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 import java.awt.Color;
+import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
@@ -144,12 +146,12 @@ public class VisualConnection extends VisualNode implements
 			return context.resolve(graphic).accept(new ConnectionGraphicConfigurationVisitor<ConnectionType>() {
 
 				@Override
-				public ConnectionType visitPolyline(PolylineConfiguration polyline) {
+				public ConnectionType visitPolyline(Expression<? extends List<? extends Point2D>> controlPoints) {
 					return ConnectionType.POLYLINE;
 				}
 
 				@Override
-				public ConnectionType visitBezier(BezierConfiguration bezier) {
+				public ConnectionType visitBezier(Expression<? extends Point2D> controlPoint1, Expression<? extends Point2D> controlPoint2) {
 					return ConnectionType.BEZIER;
 				}
 			});

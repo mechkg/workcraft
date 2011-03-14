@@ -1,8 +1,7 @@
 package org.workcraft.plugins.stg;
 
-import static java.util.Arrays.asList;
-import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.attachPainter;
-import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.attachParameterisedPainter;
+import static java.util.Arrays.*;
+import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.*;
 
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
@@ -13,6 +12,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.references.ReferenceManager;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
@@ -22,6 +22,7 @@ import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.DefaultReflectiveModelPainter;
 import org.workcraft.gui.graph.tools.Colorisator;
+import org.workcraft.gui.graph.tools.ConnectionManager;
 import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
 import org.workcraft.gui.graph.tools.GraphEditor;
@@ -37,6 +38,9 @@ import org.workcraft.util.Function;
 import org.workcraft.util.GUI;
 
 import pcollections.PCollection;
+
+import static org.workcraft.dom.visual.ColorisableGraphicalContent.Util.*;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 
 public class STGToolsProvider implements CustomToolsProvider {
 
@@ -162,15 +166,21 @@ public class STGToolsProvider implements CustomToolsProvider {
 				final NodePainter myNodePainter = new NodePainter() {
 					@Override
 					public Expression<? extends GraphicalContent> getGraphicalContent(Node node) {
+						final Expression<? extends ColorisableGraphicalContent> colorisable;
 						if(node instanceof VisualSignalTransition) {
 							final VisualSignalTransition vst = (VisualSignalTransition)node;
-							return DefaultReflectiveModelPainter.ReflectiveNodePainter.colorise(vst.getGraphicalContent(transitionName(stg, vst)), colorisator.getColorisation(node));
-						} else
-							if(node instanceof VisualDummyTransition) {
+							colorisable = vst.getGraphicalContent(transitionName(stg, vst));
+						} 
+						else if(node instanceof VisualDummyTransition) {
 								final VisualDummyTransition vdt = (VisualDummyTransition)node;
-								return DefaultReflectiveModelPainter.ReflectiveNodePainter.colorise(vdt.graphicalContent(stg.name(vdt.getReferencedTransition())), colorisator.getColorisation(node));
-							} else
+								colorisable = vdt.graphicalContent(stg.name(vdt.getReferencedTransition()));
+							}
+							else if(node instanceof VisualImplicitPlaceArc) {
+								colorisable = VisualImplicitPlaceArc.graphicalContent(tp, (VisualImplicitPlaceArc)node);
+							}
+							else
 							return new DefaultReflectiveModelPainter.ReflectiveNodePainter(tp, colorisator).getGraphicalContent(node);
+						return bindFunc(colorisable, colorisator.getColorisation(node), applyColourisation);
 					}
 				};
 				
@@ -218,9 +228,11 @@ public class STGToolsProvider implements CustomToolsProvider {
 			}
 		};	
 		
+		ConnectionManager<Node> connectionManager = new VisualStgConnectionManager(visualStg, visualStg.storage, tp);
+		
 		return asList(
 				attachParameterisedPainter(new STGSelectionTool(visualStg.stg, editor, tp, selectionHitTester, editorState), painterProvider),
-				attachParameterisedPainter(new ConnectionTool(connectionCenterProvider, visualStg.connectionManager(), connectionHitTester), painterProvider),
+				attachParameterisedPainter(new ConnectionTool(connectionCenterProvider, connectionManager, connectionHitTester), painterProvider),
 				attachPainter(new NodeGeneratorTool(new PlaceGenerator(), snap), simpleModelPainter),
 				attachPainter(new NodeGeneratorTool(new SignalTransitionGenerator(), snap), simpleModelPainter),
 				attachPainter(new NodeGeneratorTool(new DummyTransitionGenerator(), snap), simpleModelPainter),

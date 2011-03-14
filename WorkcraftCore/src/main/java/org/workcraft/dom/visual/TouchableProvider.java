@@ -6,10 +6,8 @@ import java.awt.geom.Point2D;
 import org.workcraft.dependencymanager.advanced.core.Combinator;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.connections.ConnectionGraphicConfiguration;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.dom.visual.connections.VisualConnectionGui;
 import org.workcraft.gui.graph.tools.MovableController;
@@ -41,8 +39,8 @@ public interface TouchableProvider<N> extends Combinator<N,Touchable> {
 					if(node instanceof VisualGroup)
 						return VisualGroup.screenSpaceBounds(this, (VisualGroup)node);
 					else
-						if(node instanceof ConnectionGraphicConfiguration) 
-							return VisualConnectionGui.getShape(this, (VisualConnection)GlobalCache.eval((node.parent())), (ConnectionGraphicConfiguration)node);
+						if(node instanceof VisualConnection) 
+							return VisualConnectionGui.getConnectionGui(this, (VisualConnection)node).shape();
 						localTouchable = localTP.apply(node);
 					
 					if(localTouchable == null) // fuck you java :D

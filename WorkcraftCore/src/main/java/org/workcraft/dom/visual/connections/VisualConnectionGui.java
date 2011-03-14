@@ -5,7 +5,9 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
+import org.workcraft.dependencymanager.advanced.core.Combinator2;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
@@ -19,38 +21,34 @@ import org.workcraft.util.Function2;
 import org.workcraft.util.Function3;
 import org.workcraft.util.Geometry;
 
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+
 public class VisualConnectionGui {
 
-	public static Expression<? extends ColorisableGraphicalContent> getGraphicalContent(final TouchableProvider<Node> tp, final VisualConnection connection, ConnectionGraphicConfiguration connectionGraphic) {
-		final VisualConnectionGraphicalPropertiesImpl connectionProperties = new VisualConnectionGraphicalPropertiesImpl(tp.apply(connection.getFirst()), tp.apply(connection.getSecond()), connection);
-		return connectionGraphic.accept(new ConnectionGraphicConfigurationVisitor<Expression<? extends ColorisableGraphicalContent>>() {
-			@Override
-			public Expression<? extends ColorisableGraphicalContent> visitPolyline(PolylineConfiguration polyline) {
-				return PolylineGui.getGraphicalContent(connectionProperties, polyline);
-			}
-
-			@Override
-			public Expression<? extends ColorisableGraphicalContent> visitBezier(BezierConfiguration bezier) {
-				return BezierGui.getGraphicalContent(bezier, connectionProperties);
-			}
-		});
+	public interface ConnectionGui {
+		Expression<? extends Touchable> shape();
+		Expression<? extends ColorisableGraphicalContent> graphicalContent();
+		Expression<? extends ParametricCurve> parametricCurve();
 	}
-	
-	public static Expression<? extends Touchable> getShape(final TouchableProvider<Node> tp, final VisualConnection connection, ConnectionGraphicConfiguration connectionGraphic) {
-		final Expression<VisualConnectionProperties> properties = new VisualConnectionGraphicalPropertiesImpl(tp.apply(connection.getFirst()), tp.apply(connection.getSecond()), connection);
-		return connectionGraphic.accept(new ConnectionGraphicConfigurationVisitor<Expression<? extends Touchable>>() {
-			@Override
-			public Expression<? extends Touchable> visitPolyline(PolylineConfiguration polyline) {
-				return PolylineGui.shape(polyline, properties);
-			}
 
-			@Override
-			public Expression<? extends Touchable> visitBezier(BezierConfiguration bezier) {
-				return BezierGui.shape(bezier, properties);
-			}
-			
-		});
-	}
+	private static final Combinator2<ConnectionGraphicConfiguration, Expression<VisualConnectionProperties>, ParametricCurve> curveMaker = new Combinator2<ConnectionGraphicConfiguration, Expression<VisualConnectionProperties>, ParametricCurve>() {
+		
+		@Override
+		public Expression<? extends ParametricCurve> apply(ConnectionGraphicConfiguration config, final Expression<VisualConnectionProperties> connProps) {
+			return config.accept(new ConnectionGraphicConfigurationVisitor<Expression<? extends ParametricCurve>>() {
+
+				@Override
+				public Expression<? extends ParametricCurve> visitPolyline(Expression<? extends List<? extends Point2D>> controlPoints) {
+					return bindFunc(controlPoints, connProps, PolylineGui.curveMaker);
+				}
+
+				@Override
+				public Expression<ParametricCurve> visitBezier(Expression<? extends Point2D> controlPoint1, Expression<? extends Point2D> controlPoint2) {
+					return bindFunc(connProps, controlPoint1, controlPoint2, BezierGui.curveMaker);
+				}
+			});
+		}
+	};
 	
 	public static Function<ParametricCurve, Touchable> connectionTouchableMaker = new Function<ParametricCurve, Touchable>(){
 		@Override
@@ -102,7 +100,32 @@ public class VisualConnectionGui {
 		}
 	};
 	
-	public static Point2D getPointOnConnection(VisualConnection c, Point2D p) {
+	public static ConnectionGui getConnectionGui(final TouchableProvider<Node> tp, final VisualConnection connection){
+		final Expression<VisualConnectionProperties> properties = new VisualConnectionGraphicalPropertiesImpl(tp.apply(connection.getFirst()), tp.apply(connection.getSecond()), connection);
+		final Expression<? extends ParametricCurve> curveExpr = bind(connection.graphic(), constant(properties), curveMaker);
+		final Expression<? extends PartialCurveInfo> curveInfo = bindFunc(properties, curveExpr, curveInfoMaker);
+		final Expression<? extends Shape> connectionPathExpr = bindFunc(curveInfo, curveExpr,new Function2<PartialCurveInfo, ParametricCurve, Shape>(){
+			@Override
+			public Shape apply(PartialCurveInfo cInfo, ParametricCurve curve) {
+				return curve.getShape(cInfo.tStart, cInfo.tEnd);
+			}
+		});
 		
+		final Expression<ColorisableGraphicalContent> graphicalContent = bindFunc(curveInfo, properties, connectionPathExpr, VisualConnectionGui.connectionGraphicalContentMaker);
+		final Expression<Touchable> touchable = bindFunc(curveExpr, VisualConnectionGui.connectionTouchableMaker);
+		return new ConnectionGui(){
+			@Override
+			public Expression<? extends Touchable> shape() {
+				return touchable;
+			}
+			@Override
+			public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+				return graphicalContent;
+			}
+			@Override
+			public Expression<? extends ParametricCurve> parametricCurve() {
+				return curveExpr;
+			}
+		};
 	}
 }

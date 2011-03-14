@@ -1,26 +1,22 @@
 package org.workcraft.gui;
 
-import java.awt.Graphics2D;
+import static org.workcraft.dom.visual.ColorisableGraphicalContent.Util.*;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawMan;
-import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualGroup;
-import org.workcraft.dom.visual.connections.ConnectionGraphicConfiguration;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.dom.visual.connections.VisualConnectionGui;
 import org.workcraft.gui.graph.tools.Colorisation;
 import org.workcraft.gui.graph.tools.Colorisator;
 import org.workcraft.gui.graph.tools.NodePainter;
 import org.workcraft.util.Func;
-import org.workcraft.util.Function2;
 
 public class DefaultReflectiveModelPainter {
 	
@@ -34,44 +30,24 @@ public class DefaultReflectiveModelPainter {
 		}
 
 		public static Expression<? extends GraphicalContent> colorise(Expression<? extends ColorisableGraphicalContent> gc, Expression<? extends Colorisation> colorisation) {
-			return Expressions.bindFunc(colorisation, gc, new Function2<Colorisation, ColorisableGraphicalContent, GraphicalContent>() {
-				@Override
-				public GraphicalContent apply(final Colorisation colorisation, final ColorisableGraphicalContent content) {
-					return new GraphicalContent() {
-						@Override
-						public void draw(final Graphics2D graphics) {
-							DrawRequest request = new DrawRequest(){
-								@Override
-								public Colorisation getColorisation() {
-									return colorisation;
-								}
-								@Override
-								public Graphics2D getGraphics() {
-									return graphics;
-								}
-							};									
-							content.draw(request);
-						}
-					};
-				}
-			});
+			return Expressions.bindFunc(gc, colorisation, applyColourisation);
 		}
 
 		@Override
 		public Expression<? extends GraphicalContent> getGraphicalContent(Node node) {
 			final Expression<? extends Colorisation> colorisation = colorisator.getColorisation(node);
-			if(node instanceof DrawableNew) {
-				final DrawableNew drawable = (DrawableNew) node; 
-				final Expression<? extends ColorisableGraphicalContent> gc = drawable.graphicalContent();
-				return colorise(gc, colorisation);
+			if(node instanceof VisualGroup) {
+				return colorise(VisualGroup.graphicalContent(tp, ((VisualGroup)node)), colorisation);
 			}
 			else
-				if(node instanceof VisualGroup) {
-					return colorise(VisualGroup.graphicalContent(tp, ((VisualGroup)node)), colorisation);
+				if(node instanceof VisualConnection) {
+					return colorise(VisualConnectionGui.getConnectionGui(tp, (VisualConnection)node).graphicalContent(), colorisation);
 				}
 				else
-					if(node instanceof ConnectionGraphicConfiguration) {
-						return colorise(VisualConnectionGui.getGraphicalContent(tp, (VisualConnection)GlobalCache.eval((node.parent())), (ConnectionGraphicConfiguration)node), colorisation);
+					if(node instanceof DrawableNew) {
+						final DrawableNew drawable = (DrawableNew) node; 
+						final Expression<? extends ColorisableGraphicalContent> gc = drawable.graphicalContent();
+						return colorise(gc, colorisation);
 					}
 			else
 				return Expressions.constant(GraphicalContent.EMPTY);

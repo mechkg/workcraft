@@ -21,7 +21,9 @@
 
 package org.workcraft.plugins.stg;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import static org.workcraft.util.Graphics.*;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
@@ -34,17 +36,23 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.Node;
 import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualComponent;
+import org.workcraft.dom.visual.connections.ParametricCurve;
 import org.workcraft.dom.visual.connections.VisualConnection;
+import org.workcraft.dom.visual.connections.VisualConnectionGui;
+import org.workcraft.dom.visual.connections.VisualConnectionGui.ConnectionGui;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.integer.IntegerProperty;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
+import org.workcraft.util.Function2;
 
 import pcollections.PVector;
 
@@ -103,33 +111,24 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 		this.implicitPlace  = storage.create(implicitPlace);
 	}
 
-	@Override
-	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+	public static Expression<? extends ColorisableGraphicalContent> graphicalContent(TouchableProvider<Node> tp, VisualImplicitPlaceArc arc) {
 		
-		final Expression<? extends ColorisableGraphicalContent> superGraphicalContent = super.graphicalContent();
-		return new ExpressionBase<ColorisableGraphicalContent>() {
-
+		ConnectionGui gui = VisualConnectionGui.getConnectionGui(tp, arc);
+		return bindFunc(gui.graphicalContent(), bindFunc(gui.parametricCurve(), arc.tokens(), new Function2<ParametricCurve, Integer, ColorisableGraphicalContent>(){
 			@Override
-			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
-				final int tokens = context.resolve(tokens());
-				
+			public ColorisableGraphicalContent apply(final ParametricCurve curve, final Integer tokens) {
 				return new ColorisableGraphicalContent() {
-
+					
 					@Override
 					public void draw(DrawRequest r) {
-						
-						Point2D p = getPointOnConnection(0.5);
+						Point2D p = curve.getPointOnCurve(0.5);
 						
 						r.getGraphics().translate(p.getX(), p.getY());		
 						VisualPlace.drawTokens(tokens, singleTokenSize, multipleTokenSeparation, tokenSpaceSize, 0, Coloriser.colorise(tokenColor, r.getColorisation().getColorisation()), r.getGraphics());
-						
-						context.resolve(superGraphicalContent).draw(r);
 					}
-					
 				};
 			}
-			
-		};
+		}), composeColorisable);
 	}
 	
 	@NoAutoSerialisation

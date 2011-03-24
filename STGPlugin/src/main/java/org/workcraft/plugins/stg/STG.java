@@ -279,7 +279,6 @@ public class STG extends AbstractModel implements STGModel {
 
 	public ModifiableExpression<String> name(final DummyTransition dt) {
 		return new ModifiableExpressionBase<String>() {
-
 			@Override
 			public void setValue(String newValue) {
 				Integer newInstanceNumber = null;

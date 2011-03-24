@@ -61,7 +61,7 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 	private final ConnectionManager<? super Node> connectionManager;
 	
 	private static Color highlightColor = new Color(99, 130, 191).brighter();
-	private final Function<? super Point2D, ? extends Node> hitTester; // hitTestForConnection
+	private final Function<? super Point2D, ? extends Node> hitTester;
 	private final Function<? super Node, ? extends Expression<? extends Point2D>> centerProvider;
 
 	public ConnectionTool (Function<? super Node, ? extends Expression<? extends Point2D>> centerProvider, ConnectionManager<? super Node> connectionManager, Function<? super Point2D, ? extends Node> hitTester) {

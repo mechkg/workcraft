@@ -9,10 +9,15 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.PickyModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.PickyModifiableExpressionBase;
 import org.workcraft.dependencymanager.util.listeners.Listener;
+import org.workcraft.util.Collections;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
 import org.workcraft.util.Function3;
 import org.workcraft.util.Maybe;
+import org.workcraft.util.TwoWayFunction;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class Expressions {
 	public static <T> Expression<T> constant(final T value) {
@@ -130,7 +135,7 @@ public class Expressions {
 		};
 	}
 
-	public static <A,B> Expression<? extends B> bind(final Expression<? extends A> expr1, final Combinator<? super A, ? extends B> func) {
+	public static <A,B> Expression<B> bind(final Expression<? extends A> expr1, final Function<? super A, ? extends Expression<? extends B>> func) {
 		return join(bindFunc(expr1, func));
 	}
 
@@ -168,6 +173,25 @@ public class Expressions {
 			@Override
 			protected B evaluate(EvaluationContext context) {
 				return context.resolve(combinator.get(context.resolve(expr1)));
+			}
+		};
+	}
+	
+	public static <A,B,R> ModifiableExpression<R> bind(final ModifiableExpression<A> exprA, final Expression<? extends B> additionalInfo, final Function<B, TwoWayFunction<A, R>> func) {
+		Expression<TwoWayFunction<A, R>> ff = bindFunc(additionalInfo, func);
+		return bind(exprA, ff);
+	}
+	
+	public static <A,R> ModifiableExpression<R> bind(final ModifiableExpression<A> exprA, final Expression<TwoWayFunction<A, R>> func) {
+		return new ModifiableExpressionBase<R>() {
+			@Override
+			public void setValue(R newValue) {
+				exprA.setValue(GlobalCache.eval(func).reverse(newValue));
+			}
+
+			@Override
+			protected R evaluate(EvaluationContext context) {
+				return context.resolve(func).apply(context.resolve(exprA));
 			}
 		};
 	}
@@ -209,4 +233,40 @@ public class Expressions {
 			}
 		};
 	}
+	
+	public static <A,B> Function<Collection<? extends A>, Expression<PVector<B>>>mapM(final Function<A, Expression<? extends B>> func) {
+		return new Function<Collection<? extends A>, Expression<PVector<B>>>() {
+			@Override
+			public Expression<PVector<B>> apply(Collection<? extends A> arg) {
+				Function<Collection<? extends Expression<? extends B>>, Expression<PVector<B>>> join = joinCollection();
+				return join.apply(Collections.mapWith(func).apply(arg));
+			}
+		};
+	}
+	
+	public static <A> Function<Collection<? extends Expression<? extends A>>, Expression<PVector<A>>> joinCollection(){ 
+		return new Function<Collection<? extends Expression<? extends A>>, Expression<PVector<A>>>(){
+			@Override
+			public Expression<pcollections.PVector<A>> apply(final Collection<? extends org.workcraft.dependencymanager.advanced.core.Expression<? extends A>> collection) {
+				return new ExpressionBase<PVector<A>>(){
+					@Override
+					protected PVector<A> evaluate(EvaluationContext context) {
+						PVector<A> res = TreePVector.empty();
+						for(Expression<? extends A> ea : collection)
+							res =res.plus(context.resolve(ea));
+						return res;
+					}
+				};
+			};
+		};
+	}
+
+	public static <A,B> Function<Expression<? extends A>, Expression<B>> lift(final Function<? super A, ? extends B> func) {
+		return new Function<Expression<? extends A>, Expression<B>>(){
+			@Override
+			public Expression<B> apply(Expression<? extends A> exprA) {
+				return bindFunc(exprA, func);
+			}
+		};
+	};
 }

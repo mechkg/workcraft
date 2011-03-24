@@ -237,4 +237,19 @@ public class Geometry {
 		
 		return x1 * y2 - y1 * x2;
 	}
+
+	public static TwoWayFunction<Point2D, Point2D> addFunc(final Point2D shift) {
+		return new TwoWayFunction<Point2D, Point2D>() {
+			
+			@Override
+			public Point2D reverse(Point2D b) {
+				return subtract(b, shift);
+			}
+			
+			@Override
+			public Point2D apply(Point2D a) {
+				return add(a, shift);
+			}
+		};
+	}
 }

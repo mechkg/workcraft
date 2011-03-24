@@ -21,9 +21,7 @@
 
 package org.workcraft.dom.visual.connections;
 
-import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-import static org.workcraft.dom.visual.VisualTransformableNode.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,8 +38,8 @@ import org.workcraft.util.ExpressionUtil;
 public class Bezier implements ConnectionGraphicConfiguration {
 
 	private Node parent;
-	private final ModifiableExpression<BezierControlPoint> cp1;
-	private final ModifiableExpression<BezierControlPoint> cp2;
+	public final ModifiableExpression<BezierControlPoint> cp1;
+	public final ModifiableExpression<BezierControlPoint> cp2;
 	public final StorageManager storage;
 	
 	public Bezier(VisualConnection parent, StorageManager storage) {
@@ -120,6 +118,6 @@ public class Bezier implements ConnectionGraphicConfiguration {
 
 	@Override
 	public <T> T accept(ConnectionGraphicConfigurationVisitor<T> visitor) {
-		return visitor.visitBezier(bind(cp2, positionGetter), bind(cp1, positionGetter));
+		return visitor.visitBezier(this);
 	}
 }

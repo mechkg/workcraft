@@ -24,7 +24,22 @@ package org.workcraft.dom.visual;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+import org.workcraft.util.Function;
+
 public interface Touchable {
+	Function<Touchable, Rectangle2D> boundingBoxGetter = new Function<Touchable, Rectangle2D>(){
+		@Override
+		public Rectangle2D apply(Touchable argument) {
+			return argument.getBoundingBox();
+		}
+	};
+	Function<Touchable, Point2D> centerGetter = new Function<Touchable, Point2D>() {
+
+		@Override
+		public Point2D apply(Touchable argument) {
+			return argument.getCenter();
+		}
+	};
 	public boolean hitTest(Point2D point);
 	public Rectangle2D getBoundingBox();
 	public Point2D getCenter();

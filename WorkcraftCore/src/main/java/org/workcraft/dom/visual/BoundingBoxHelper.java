@@ -26,7 +26,19 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 
+import org.workcraft.util.Function;
+
 public class BoundingBoxHelper {
+
+	public static final Function<Collection<? extends Rectangle2D>, Rectangle2D> mergeBoundingBoxes = new Function<Collection<? extends Rectangle2D>, Rectangle2D>() {
+		@Override
+		public Rectangle2D apply(Collection<? extends Rectangle2D> argument) {
+			Rectangle2D bb = null;
+			for(Rectangle2D rect : argument)
+				bb = union(bb, rect);
+			return bb;
+		}
+	};
 
 	public static Rectangle2D union(Rectangle2D rect1, Rectangle2D rect2)
 	{

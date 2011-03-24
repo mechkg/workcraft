@@ -21,29 +21,51 @@
 
 package org.workcraft.dom.visual.connections;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
+import java.awt.geom.Point2D;
+
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.HitMan;
-import org.workcraft.dom.visual.TouchableProvider;
-import org.workcraft.dom.visual.VisualModel;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.tools.DummyMouseListener;
+import org.workcraft.gui.graph.tools.HitTester;
+import org.workcraft.util.Function;
+import org.workcraft.util.Nothing;
 
 public class DefaultAnchorGenerator extends DummyMouseListener {
 	
-	private final VisualModel model;
+	Function<? super Node, ? extends Expression<? extends Touchable>>tp;
+	HitTester<Node> hitTester;
 
-	public DefaultAnchorGenerator(VisualModel model) {
-		this.model = model;
+	public DefaultAnchorGenerator(HitTester<Node> hitTester, Function<? super Node, ? extends Expression<? extends Touchable>> tp) {
+		this.hitTester = hitTester;
+		this.tp = tp;
 	}
 	
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e) {
 		if (e.getClickCount()==2) {
-			Node n = HitMan.hitTestForSelection(TouchableProvider.DEFAULT, e.getPosition(), model);
-			if (n instanceof VisualConnection) {
-				VisualConnection con = (VisualConnection)n;
-				if (con.graphic() instanceof Polyline)
-					((Polyline)eval(con.graphic())).createControlPoint(e.getPosition());
+			final Point2D location = e.getPosition();
+			Node hitNode = hitTester.hitTest(location);
+			if (hitNode instanceof VisualConnection) {
+				VisualConnection con = (VisualConnection)hitNode;
+				final VisualConnectionProperties connectionProps = eval(VisualConnectionGui.getConnectionProperties(tp, con));
+				ConnectionGraphicConfiguration g = eval(con.graphic());
+				g.accept(new ConnectionGraphicConfigurationVisitor<Nothing>() {
+
+					@Override
+					public Nothing visitPolyline(Polyline polyline) {
+						PolylineGui.createPolylineControlPoint(connectionProps, polyline, location);
+						return Nothing.VALUE;
+					}
+
+					@Override
+					public Nothing visitBezier(Bezier bezier) {
+						return Nothing.VALUE;
+					}
+				});
 			}
 		}
 	}

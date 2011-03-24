@@ -1,5 +1,8 @@
 package org.workcraft.dom.visual.connections;
 
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
@@ -11,6 +14,9 @@ import java.util.List;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.util.Function2;
 import org.workcraft.util.Geometry;
+import org.workcraft.util.Pair;
+
+import pcollections.PVector;
 
 public class PolylineGui {
 
@@ -25,11 +31,27 @@ public class PolylineGui {
 		return result;
 	}
 	
-	private static final class Curve implements ParametricCurve {
-		private List<Point2D> anchorPoints;
+	public static void createPolylineControlPoint(VisualConnectionProperties connectionProps, Polyline polyline, Point2D userLocation) {
+		PVector<Point2D> controlPoints = eval(mapM(ControlPoint.positionGetter).apply(eval(polyline.controlPoints())));
+		Curve curve = PolylineGui.curveMaker.apply(controlPoints, connectionProps);
+		Pair<Integer, Double> lt = curve.getNearestPointTLocal(userLocation);
+		polyline.createControlPoint(lt.getFirst(), curve.getPoint(lt));
+	}
+	
+	public static final class Curve implements ParametricCurve {
+		public List<Point2D> anchorPoints;
 
 		private Curve(List<Point2D> anchorPoints) {
 			this.anchorPoints = anchorPoints;
+		}
+
+		public Pair<Integer, Double> getLocalT(double t) {
+			int segments = getSegmentCount();
+			
+			int segmentIndex = (int)Math.floor(t*segments);
+			if (segmentIndex==segments) segmentIndex -= 1;
+			
+			return Pair.of(segmentIndex, t * getSegmentCount() - segmentIndex);
 		}
 
 		private int getSegmentCount() {
@@ -45,27 +67,13 @@ public class PolylineGui {
 			return new Line2D.Double(anchorPoints.get(index), anchorPoints.get(index+1));
 		}
 
-		private int getSegmentIndex(final double t) {
-			int segments = getSegmentCount();
-			double l = 1.0 / segments;
-			double t_l = t/l;
-
-			int n = (int)Math.floor(t_l);
-			if (n==segments) n -= 1;
-			return n;
-		}
-
-		private double getParameterOnSegment (double t, int segmentIndex) {
-			return t * getSegmentCount() - segmentIndex;
-		}
-
 		@Override
 		public Point2D getDerivativeAt(double t)
 		{
 			if (t < 0) t = 0;
 			if (t > 1) t = 1;
 			
-			int segmentIndex = getSegmentIndex(t);
+			int segmentIndex = getLocalT(t).getFirst();
 			Line2D segment = getSegment(segmentIndex);
 
 			return Geometry.subtract(segment.getP2(), segment.getP1());
@@ -82,96 +90,71 @@ public class PolylineGui {
 
 		@Override
 		public Point2D getPointOnCurve(double t) {
-			int segmentIndex = getSegmentIndex(t);
-			double t2 = getParameterOnSegment(t, segmentIndex);
+			Pair<Integer, Double> localTI = getLocalT(t);
+			return getPoint(localTI);
+		}
+		
+		private Point2D getPoint(Pair<Integer, Double> localTI) {
+			int i = localTI.getFirst();
+			double t = localTI.getSecond();
 
-			Line2D segment = getSegment(segmentIndex);
+			Line2D segment = getSegment(i);
+			return Geometry.lerp(segment.getP1(), segment.getP2(), t);
+		}
 
-			return new Point2D.Double(segment.getP1().getX() * (1-t2) + segment.getP2().getX() * t2,
-					segment.getP1().getY() * (1-t2) + segment.getP2().getY() * t2);
+		public double toGlobalT(Pair<Integer, Double> pt) {
+			return (pt.getFirst() + pt.getSecond()) / getSegmentCount();
 		}
 
 		@Override
-		public Point2D getNearestPointOnCurve(Point2D pt) {
-			Point2D result = new Point2D.Double();
-			getNearestSegment(pt, result);
-			return result;	
+		public double getNearestPointT(Point2D pt) {
+			return toGlobalT(getNearestPointTLocal(pt));
 		}
-
-		private int getNearestSegment (Point2D pt, Point2D out_pointOnSegment) {
+		
+		public Pair<Integer,Double> getNearestPointTLocal(Point2D pt) {
 			double min = Double.MAX_VALUE;
-			int nearest = -1;
-
-			for (int i=0; i<getSegmentCount(); i++) {
+			Pair<Integer, Double> bestT = Pair.of(0, 0.0);
+			
+			int segmentCount = getSegmentCount();
+			for (int i=0; i<segmentCount; i++) {
 				Line2D segment = getSegment(i);
 
-				Point2D a = new Point2D.Double ( pt.getX() - segment.getX1(), pt.getY() - segment.getY1() );
-				Point2D b = new Point2D.Double ( segment.getX2() - segment.getX1(), segment.getY2() - segment.getY1() );
+				// We want to find a projection of a point PT onto a segment (P1, P2)
+				// To do that, we shift the universe so that P1 == 0 and project the vector A = PT-P1 onto the vector B = P2-P1
+				// We do that by dividing the dot product (A * B) by the squared magnitude of the vector B
+				Point2D a = Geometry.subtract(pt, segment.getP1());
+				Point2D b = Geometry.subtract(segment.getP2(), segment.getP1());
 
-				double magB = b.distance(0, 0);
+				double magBSq = b.distanceSq(0, 0);
 
 				double dist;
+				double t;
 
-				if (magB < 0.0000001) {
-					dist = pt.distance(segment.getP1());
+				// To avoid division by zero, we have a special case here
+				if (magBSq < 0.0000001) {
+					t = 0;
 				} else {
-					b.setLocation(b.getX() / magB, b.getY() / magB);
-
-					double magAonB = a.getX() * b.getX() + a.getY() * b.getY();
-
-					if (magAonB < 0)
-						magAonB = 0;
-					if (magAonB > magB)
-						magAonB = magB;
-
-					a.setLocation(segment.getX1() + b.getX() * magAonB, segment.getY1() + b.getY() * magAonB);
-
-					dist = new Point2D.Double(pt.getX() - a.getX(), pt.getY() - a.getY()).distance(0,0);
+					t = Geometry.dotProduct(a, b) / magBSq;
+					if (t < 0)
+						t = 0;
+					if (t > 1)
+						t = 1;
 				}
-
+				
+				Point2D projected = Geometry.multiply(b, t);
+				dist = a.distance(projected);
+				
 				if (dist < min) {
 					min = dist;
-					if (out_pointOnSegment != null)
-						out_pointOnSegment.setLocation(a);
-					nearest = i;
+					bestT = Pair.of(i, t);
 				}
 			}
 
-			return nearest;
+			return bestT;
 		}
-
-		private Rectangle2D getSegmentBoundsWithThreshold (Line2D segment) {
-			Point2D pt1 = segment.getP1();
-			Point2D pt2 = segment.getP2();
-
-			Rectangle2D bb = new Rectangle2D.Double(pt1.getX(), pt1.getY(), 0, 0);
-			bb.add(pt2);
-			Point2D lineVec = new Point2D.Double(pt2.getX() - pt1.getX(), pt2.getY() - pt1.getY());
-
-			double mag = lineVec.distance(0, 0);
-
-			if (mag==0)
-				return bb;
-
-			lineVec.setLocation(lineVec.getY()*VisualConnection.HIT_THRESHOLD/mag, -lineVec.getX()*VisualConnection.HIT_THRESHOLD/mag);
-			bb.add(pt1.getX() + lineVec.getX(), pt1.getY() + lineVec.getY());
-			bb.add(pt2.getX() + lineVec.getX(), pt2.getY() + lineVec.getY());
-			bb.add(pt1.getX() - lineVec.getX(), pt1.getY() - lineVec.getY());
-			bb.add(pt2.getX() - lineVec.getX(), pt2.getY() - lineVec.getY());
-
-			return bb;
-		}
-
-		@Override
-		public double getDistanceToCurve(Point2D pt) {
-			double min = Double.MAX_VALUE;
-			for (int i=0; i<getSegmentCount(); i++) {
-				Line2D segment = getSegment(i);
-				double dist = segment.ptSegDist(pt);
-				if (dist < min)
-					min = dist;
-			}
-			return min;
+		
+		private static Rectangle2D getSegmentBounds (Line2D segment) {
+			return Geometry.createRectangle(segment.getP1(), segment.getP2());
 		}
 
 		@Override
@@ -180,28 +163,33 @@ public class PolylineGui {
 
 			Rectangle2D result = null;
 			for (int i=0; i < segments; i++) {
-				Line2D seg = getSegment(i);
-				result = BoundingBoxHelper.union(result, getSegmentBoundsWithThreshold(seg));
+				result = BoundingBoxHelper.union(result, getSegmentBounds(getSegment(i)));
 			}
 			return result;
 		}
 		
 		@Override
 		public Shape getShape(double tStart, double tEnd) {
-			int start = getSegmentIndex(tStart);
-			int end = getSegmentIndex(tEnd);
+			return getShape(getLocalT(tStart), getLocalT(tEnd));
+		}
 
-			Point2D startPt = getPointOnCurve(tStart);
-			Point2D endPt = getPointOnCurve(tEnd);
-
-			final Path2D connectionPath = new Path2D.Double();
-			connectionPath.moveTo(startPt.getX(), startPt.getY());
-			for (int i=start; i<end; i++) {
+		void moveTo(Path2D path, Point2D point) {
+			path.moveTo(point.getX(), point.getY());
+		}
+		
+		void lineTo(Path2D path, Point2D point) {
+			path.lineTo(point.getX(), point.getY());
+		}
+		
+		private Shape getShape(Pair<Integer, Double> start, Pair<Integer, Double> end) {
+			final Path2D path = new Path2D.Double();
+			moveTo(path, getPoint(start));
+			for (int i=start.getFirst(); i<end.getFirst(); i++) {
 				Line2D segment = getSegment(i);
-				connectionPath.lineTo(segment.getX2(), segment.getY2());
+				lineTo(path, segment.getP2());
 			}
-			connectionPath.lineTo(endPt.getX(), endPt.getY());
-			return connectionPath;
+			lineTo(path, getPoint(end));
+			return path;		
 		}
 	}
 
@@ -211,15 +199,4 @@ public class PolylineGui {
 			return new Curve(createAnchorPoints(props.getFirstShape().getCenter(), props.getSecondShape().getCenter(), controlPoints));
 		}
 	};
-
-
-/*	ControlPointScaler scaler;
-	scaler = new ControlPointScaler(connectionInfo, controlPoints());
-
-	public void createControlPoint(Point2D point) {
-		Point2D pointOnConnection = new Point2D.Double();
-		int segment = GlobalCache.eval(curve()).getNearestSegment(userLocation, pointOnConnection);
-
-		createControlPoint(segment, pointOnConnection);
-	}*/
 }

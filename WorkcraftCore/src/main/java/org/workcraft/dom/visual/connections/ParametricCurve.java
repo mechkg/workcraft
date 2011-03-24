@@ -27,8 +27,7 @@ import java.awt.geom.Rectangle2D;
 
 public interface ParametricCurve {
 	public Point2D getPointOnCurve (double t);
-	public Point2D getNearestPointOnCurve(Point2D pt);
-	public double getDistanceToCurve(Point2D pt);
+	public double getNearestPointT (Point2D pt);
 	public Rectangle2D getBoundingBox();
 	
 	// TODO: subdivide the parametric curve automatically, removing the need for manual Shape creation

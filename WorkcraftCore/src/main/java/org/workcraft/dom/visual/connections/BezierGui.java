@@ -36,14 +36,9 @@ public class BezierGui {
 		private final CubicCurve2D fullCurve2D;
 		
 		@Override
-		public double getDistanceToCurve(Point2D pt) {
-			return pt.distance(getNearestPointOnCurve(pt));
-		}
-
-		@Override
-		public Point2D getNearestPointOnCurve(Point2D pt) {
+		public double getNearestPointT(Point2D pt) {
 			// FIXME: should be done using some proper algorithm
-			Point2D nearest = new Point2D.Double(fullCurve2D.getX1(), fullCurve2D.getY1());
+			Double nearest = 0.0;
 			double nearestDist = Double.MAX_VALUE;
 			
 			for (double t=0.01; t<=1.0; t+=0.01) {
@@ -51,7 +46,7 @@ public class BezierGui {
 				double distance = pt.distance(samplePoint);
 				if (distance < nearestDist)	{
 					nearestDist = distance;
-					nearest = samplePoint;
+					nearest = t;
 				}
 			}
 			

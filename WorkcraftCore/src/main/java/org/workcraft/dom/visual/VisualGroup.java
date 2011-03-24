@@ -21,7 +21,8 @@
 
 package org.workcraft.dom.visual;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -40,7 +41,9 @@ import org.workcraft.dom.Container;
 import org.workcraft.dom.DefaultGroupImpl;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.Coloriser;
+import org.workcraft.util.Function;
 import org.workcraft.util.Hierarchy;
+import org.workcraft.util.Maybe;
 
 public class VisualGroup extends VisualTransformableNode implements Container{
 	public static final int HIT_COMPONENT = 1;
@@ -78,38 +81,31 @@ public class VisualGroup extends VisualTransformableNode implements Container{
 	}
 
 	public static Expression<Touchable> screenSpaceBounds(final TouchableProvider<Node> tp, final VisualGroup group) {
-		return new ExpressionBase<Touchable>() {
+		Expression<? extends Collection<Maybe<? extends Touchable>>> maybeTouchables = bind(group.children(), mapM(tp));
+		Expression<? extends Collection<? extends Touchable>> touchableChildren = bindFunc(maybeTouchables, Maybe.Util.<Touchable>filterJust());
+		
+		return bindFunc(touchableChildren, new Function<Collection<? extends Touchable>, Touchable>(){
 			@Override
-			protected Touchable evaluate(final EvaluationContext context) {
+			public Touchable apply(Collection<? extends Touchable> children) {
+				final Rectangle2D boundingBox = BoundingBoxHelper.mergeBoundingBoxes(children);
 				return new Touchable() {
-					
 					@Override
 					public boolean hitTest(Point2D point) {
 						return false;
 					}
-					
+
 					@Override
 					public Point2D getCenter() {
 						return new Point2D.Double(0, 0);
 					}
-					
+
 					@Override
 					public Rectangle2D getBoundingBox() {
-						Rectangle2D result = null;
-						for(Node n : context.resolve(group.children())) {
-							Expression<? extends Touchable> child = tp.apply(n);
-							if(child!=null) { // fuck you java
-								Touchable shape = context.resolve(child);
-								if(shape!=null) { // fuck you java
-									result = BoundingBoxHelper.union(result, shape.getBoundingBox());
-								}
-							}
-						}
-						return result;
+						return boundingBox;
 					}
 				};
 			}
-		};
+		}); 
 	}
 
 	public List<Node> unGroup() {

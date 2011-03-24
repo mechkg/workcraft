@@ -46,7 +46,7 @@ public class Polyline implements Node, Container, ConnectionGraphicConfiguration
 		this.storage = storage;
 		groupImpl = new ArbitraryInsertionGroupImpl(this, parent, storage);
 	}
-
+	
 	public void createControlPoint(int index, Point2D userLocation) {
 		ControlPoint ap = new ControlPoint(storage);
 		GlobalCache.setValue(ap.position(), userLocation);
@@ -91,9 +91,12 @@ public class Polyline implements Node, Container, ConnectionGraphicConfiguration
 		groupImpl.reparent(nodes);
 	}
 
+	@Override
+	public <T> T accept(ConnectionGraphicConfigurationVisitor<T> visitor) {
+		return visitor.visitPolyline(this);
+	}
 	
-
-	private Expression<? extends List<? extends ControlPoint>> controlPoints() {
+	public Expression<? extends List<? extends ControlPoint>> controlPoints() {
 		return new ExpressionBase<List<? extends ControlPoint>>() {
 			@Override
 			protected List<? extends ControlPoint> evaluate(EvaluationContext context) {
@@ -104,20 +107,5 @@ public class Polyline implements Node, Container, ConnectionGraphicConfiguration
 				return points;
 			}
 		};
-	}
-	
-	@Override
-	public <T> T accept(ConnectionGraphicConfigurationVisitor<T> visitor) {
-		final Expression<? extends List<? extends ControlPoint>> controlPointControls = Polyline.this.controlPoints();
-		ExpressionBase<List<? extends Point2D>> controlPoints = new ExpressionBase<List<? extends Point2D>>(){
-			@Override
-			protected List<? extends Point2D> evaluate(EvaluationContext context) {
-				ArrayList<Point2D> result = new ArrayList<Point2D>();
-				for(ControlPoint p : context.resolve(controlPointControls))
-					result.add(context.resolve(p.position()));
-				return result;
-			}
-		};
-		return visitor.visitPolyline(controlPoints);
 	}
 }

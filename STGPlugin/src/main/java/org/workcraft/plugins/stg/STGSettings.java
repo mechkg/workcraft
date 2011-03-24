@@ -1,15 +1,9 @@
 package org.workcraft.plugins.stg;
 
-import java.util.Collection;
-import java.util.LinkedList;
-
 import org.workcraft.Config;
-import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.gui.propertyeditor.EditableProperty;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
 import org.workcraft.gui.propertyeditor.SettingsPage;
 import org.workcraft.gui.propertyeditor.bool.BooleanProperty;
 

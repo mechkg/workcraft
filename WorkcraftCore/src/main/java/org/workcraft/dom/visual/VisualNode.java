@@ -69,8 +69,4 @@ public abstract class VisualNode implements Properties, Node {
 	public PVector<EditableProperty> getProperties() {
 		return TreePVector.empty();
 	}
-
-	public Expression<Boolean> hidden() {
-		return Expressions.constant(false);
-	}
 }

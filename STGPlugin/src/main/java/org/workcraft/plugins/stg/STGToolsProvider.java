@@ -1,6 +1,9 @@
 package org.workcraft.plugins.stg;
 
 import static java.util.Arrays.*;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import static org.workcraft.dom.visual.ColorisableGraphicalContent.Util.*;
 import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.*;
 
 import java.awt.event.KeyEvent;
@@ -36,11 +39,9 @@ import org.workcraft.plugins.stg.tools.STGSimulationTool;
 import org.workcraft.util.Func;
 import org.workcraft.util.Function;
 import org.workcraft.util.GUI;
+import org.workcraft.util.Maybe;
 
 import pcollections.PCollection;
-
-import static org.workcraft.dom.visual.ColorisableGraphicalContent.Util.*;
-import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 
 public class STGToolsProvider implements CustomToolsProvider {
 
@@ -144,16 +145,18 @@ public class STGToolsProvider implements CustomToolsProvider {
 		
 		TouchableProvider<Node> localTP = new TouchableProvider<Node>(){
 			@Override
-			public Expression<? extends Touchable> apply(Node node) {
+			public Expression<? extends Maybe<? extends Touchable>> apply(Node node) {
+				final Expression<Touchable> res;
 				if(node instanceof VisualSignalTransition) {
 					final VisualSignalTransition vst = (VisualSignalTransition)node;
-					return vst.localSpaceTouchable(transitionName(stg, vst));
+					res = vst.localSpaceTouchable(transitionName(stg, vst));
 				} else 
 					if(node instanceof VisualDummyTransition) {
 						final VisualDummyTransition vdt = (VisualDummyTransition)node;
-						return vdt.shape(stg.name(vdt.getReferencedTransition()));
+						res = vdt.shape(stg.name(vdt.getReferencedTransition()));
 					} else
-				return LOCAL_REFLECTIVE.apply(node);
+						return LOCAL_REFLECTIVE.apply(node);
+				return bindFunc(res, Maybe.Util.<Touchable>just());
 			}
 		};
 		
@@ -189,32 +192,31 @@ public class STGToolsProvider implements CustomToolsProvider {
 		};
 		final Expression<? extends GraphicalContent> simpleModelPainter = painterProvider.eval(Colorisator.EMPTY);
 		
+		final Function<Node, Maybe<? extends Touchable>> unsafeWholeTp = eval(TouchableProvider.Util.asAWhole(tp));
+		
 		Function<Point2D, Node> connectionHitTester = new Function<Point2D, Node>(){
 			@Override
 			public Node apply(Point2D argument) {
-				return HitMan.hitTestForConnection(tp, argument, visualStg.getRoot());
+				return HitMan.hitTestForConnection(unsafeWholeTp, argument, visualStg.getRoot());
 			}
 		};
 		
 		Function<Node, Expression<? extends Point2D>> connectionCenterProvider = new Function<Node, Expression<? extends Point2D>>(){
 			@Override
 			public Expression<? extends Point2D> apply(Node argument) {
-				return Expressions.bindFunc(tp.apply(argument), new Function<Touchable, Point2D>(){
-
-					@Override
-					public Point2D apply(Touchable node) {
-						return node.getCenter();
-					}
-				});
+				return bindFunc(tp.apply(argument), new Function<Maybe<? extends Touchable>, Point2D>() { 
+						public Point2D apply(Maybe<? extends Touchable> maybe) {
+							return Maybe.Util.orElse(Maybe.Util.applyFunc(maybe, Touchable.centerGetter), new Point2D.Double(0,0));
+						}
+					});
 			}
 		};
 		
 		HitTester<VisualNode> selectionHitTester = new HitTester<VisualNode>() {
 			@Override
 			public VisualNode hitTest(Point2D point) {
-				return (VisualNode)HitMan.hitTestForSelection(tp, point, visualStg.getRoot());
+				return (VisualNode)HitMan.hitTestForSelection(unsafeWholeTp, point, visualStg.getRoot());
 			}
-
 			@Override
 			public PCollection<VisualNode> boxHitTest(Point2D boxStart, Point2D boxEnd) {
 				return (PCollection<VisualNode>)(PCollection<?>)HitMan.boxHitTest(tp, visualStg.getRoot(), boxStart, boxEnd);
@@ -227,6 +229,8 @@ public class STGToolsProvider implements CustomToolsProvider {
 				return editor.snap(argument);
 			}
 		};	
+		
+		
 		
 		ConnectionManager<Node> connectionManager = new VisualStgConnectionManager(visualStg, visualStg.storage, tp);
 		

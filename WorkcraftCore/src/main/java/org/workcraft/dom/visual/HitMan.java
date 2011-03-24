@@ -21,7 +21,8 @@
 
 package org.workcraft.dom.visual;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import static org.workcraft.util.Maybe.Util.*;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -29,38 +30,33 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.util.Func;
+import org.workcraft.util.Function;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Hierarchy;
+import org.workcraft.util.Maybe;
 
 import pcollections.PCollection;
 import pcollections.TreePVector;
 
 public class HitMan
 {
-	private static <T extends Node> Iterable<T> filterByBB(final TouchableProvider<? super T> tp, Iterable<? extends T> nodes, final Point2D point) {
+	private static <T extends Node> Iterable<T> filterByBB(final Function<? super T, ? extends Maybe<? extends Touchable>> tp, Iterable<? extends T> nodes, final Point2D point) {
 		return filter(nodes, new Func<T, Boolean>()
 				{
 			private static final long serialVersionUID = -7790168871113424836L;
 
 			@Override
 			public Boolean eval(T arg) {
-				if(tp.apply(arg) == null)
-					return true;
-				if(arg == null)
-					throw new RuntimeException("wtf");
-
-				Rectangle2D boundingBox = GlobalCache.eval(tp.apply(arg)).getBoundingBox();
-
+				Rectangle2D boundingBox = orElse(applyFunc(tp.apply(arg), Touchable.boundingBoxGetter), null); 
 				return 
-				boundingBox != null &&
-				boundingBox.contains(point);
+					boundingBox != null &&
+					boundingBox.contains(point);
 			}
 			}
 		);
@@ -74,12 +70,12 @@ public class HitMan
 		return result;
 	}
 
-	private static Iterable<? extends Node> getFilteredChildren(final TouchableProvider<Node> tp, Point2D point, Node node)
+	private static Iterable<? extends Node> getFilteredChildren(final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node)
 	{
 		return reverse(filterByBB(tp, GlobalCache.eval(node.children()), point));
 	}
 
-	public static Node hitDeepest(final TouchableProvider<Node> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
+	public static Node hitDeepest(final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
 		
 		for (Node n : getFilteredChildren(tp, point, node)) {
 			Node result = hitDeepest(tp, point, n, filter);
@@ -92,13 +88,10 @@ public class HitMan
 		return null;
 	}
 
-	public static boolean isBranchHit (final TouchableProvider<Node> tp, Point2D point, Node node) {
+	public static boolean isBranchHit (final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
 
-		Expression<? extends Touchable> touchable = tp.apply(node);
-		if (touchable != null && GlobalCache.eval(touchable).hitTest(point))	{
-			if (node instanceof Hidable)
-				return !GlobalCache.eval(((Hidable)node).hidden());
-			else
+		Touchable touchable = orElse(tp.apply(node), null);
+		if (touchable != null && touchable.hitTest(point))	{
 				return true;
 		}
 
@@ -110,7 +103,7 @@ public class HitMan
 		return false;
 	}
 
-	public static Node hitFirst(final TouchableProvider<Node> tp, Point2D point, Node node) {
+	public static Node hitFirst(final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
 		return hitFirst(tp, point, node, new Func<Node, Boolean>(){
 			public Boolean eval(Node arg0) {
 				return true;
@@ -118,7 +111,7 @@ public class HitMan
 		});
 	}
 
-	public static Node hitFirst(final TouchableProvider<Node> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
+	public static Node hitFirst(final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
 		if (filter.eval(node)) {
 			return hitBranch(tp, point, node);
 		} else {
@@ -126,7 +119,7 @@ public class HitMan
 		}
 	}
 
-	private static Node hitBranch(final TouchableProvider<Node> tp, Point2D point, Node node) {
+	private static Node hitBranch(final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
 		if(node instanceof CustomTouchable) {
 			if(true)throw new NotImplementedException("Get rid of CustomTouchable in favor of custom hitman");
 			return ((CustomTouchable)node).customHitTest(point);
@@ -138,11 +131,11 @@ public class HitMan
 			return null;
 	}
 
-	public static <T extends Node> T hitFirstNodeOfType(TouchableProvider<Node> tp, Point2D point, Node node, Class<T> type) {
+	public static <T extends Node> T hitFirstNodeOfType(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node, Class<T> type) {
 		return type.cast(hitFirst(tp, point, node, Hierarchy.getTypeFilter(type)));
 	}
 
-	public static Node hitFirstChild(TouchableProvider<Node> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
+	public static Node hitFirstChild(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
 		for (Node n : getFilteredChildren(tp, point, node)) {
 			Node hit = hitFirst(tp, point, n, filter);
 			if (hit != null)
@@ -152,7 +145,7 @@ public class HitMan
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Node> T hitFirstChildOfType(TouchableProvider<Node> tp, Point2D point, Node node, Class<T> type) {
+	public static <T extends Node> T hitFirstChildOfType(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node, Class<T> type) {
 		return (T) hitFirstChild(tp, point, node, Hierarchy.getTypeFilter(type));
 	}
 
@@ -182,11 +175,11 @@ public class HitMan
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends Node> T hitDeepestNodeOfType(TouchableProvider<Node> tp, Point2D point, Node group, final Class<T> type) {
+	public static <T extends Node> T hitDeepestNodeOfType(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node group, final Class<T> type) {
 		return (T)hitDeepest(tp, point, group, Hierarchy.getTypeFilter(type));
 	}
 
-	public static Node hitTestForSelection(TouchableProvider<Node> tp, Point2D point, Node node) {
+	public static Node hitTestForSelection(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
 		Node nd = HitMan.hitFirstChild(tp, point, node, new Func<Node, Boolean>() {
 			public Boolean eval(Node n) {
 				if (!(n instanceof MovableNew))
@@ -216,7 +209,7 @@ public class HitMan
 		return nd;
 	}
 
-	public static Node hitTestForConnection(TouchableProvider<Node> tp, Point2D point, Node node) {
+	public static Node hitTestForConnection(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
 		Node nd = HitMan.hitDeepest(tp, point, node, new Func<Node, Boolean>() {
 			public Boolean eval(Node n) {
 				if (n instanceof MovableNew && ! (n instanceof Container)) {
@@ -248,7 +241,7 @@ public class HitMan
 	}
 
 	public static PCollection<Node> boxHitTest (TouchableProvider<Node> touchableProvider, Node container, Point2D p1, Point2D p2) {
-		return boxHitTest(touchableProvider, eval(container.children()), p1, p2);
+		return boxHitTest(eval(TouchableProvider.Util.asAWhole(touchableProvider)), eval(container.children()), p1, p2);
 	}
 
 	/**
@@ -258,16 +251,15 @@ public class HitMan
 	 * @param p2 		The bottom-right corner of the rectangle
 	 * @return 			The collection of nodes fitting completely inside the rectangle
 	 */
-	public static <N> PCollection<N> boxHitTest (TouchableProvider<? super N> t, Collection<? extends N> nodes, Point2D p1, Point2D p2) {
+	public static <N> PCollection<N> boxHitTest (Function<? super N, ? extends Maybe<? extends Touchable>> t, Collection<? extends N> nodes, Point2D p1, Point2D p2) {
 		
 		PCollection<N> hit = TreePVector.<N>empty();
 
 		Rectangle2D rect = Geometry.createRectangle(p1, p2);
 
 		for (N n : nodes) {
-			Expression<? extends Touchable> tt = t.apply(n);
-			if(tt != null) {
-				Touchable touchable = eval(tt);
+			Touchable touchable = Maybe.Util.orElse(t.apply(n), null);
+			if(touchable != null) {
 				if (p1.getX()<=p2.getX()) {
 					if (TouchableHelper.insideRectangle(touchable, rect))
 						hit = hit.plus(n);

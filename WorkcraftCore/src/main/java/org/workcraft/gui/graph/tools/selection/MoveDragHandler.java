@@ -1,5 +1,8 @@
 package org.workcraft.gui.graph.tools.selection;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import static org.workcraft.util.Maybe.Util.*;
+
 import java.awt.geom.Point2D;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
@@ -15,8 +18,6 @@ import org.workcraft.util.Geometry;
 
 import pcollections.PCollection;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-
 public class MoveDragHandler<Node> implements DragHandler<Node> {
 	private final Function<Point2D, Point2D> snap;
 	private final MovableController<Node> movableController;
@@ -28,12 +29,10 @@ public class MoveDragHandler<Node> implements DragHandler<Node> {
 		this.movableController = movableController;
 	}
 
-	private void offsetSelection (Point2D offset) {
+	private void offsetSelection (final Point2D offset) {
 		for(Node node : GlobalCache.eval(selection)) {
-			ModifiableExpression<Point2D> pos = movableController.position(node);
-			if(pos != null) {
-				pos.setValue(Geometry.add(eval(pos), offset));
-			}
+			ModifiableExpression<Point2D> pos = nodePos(node, movableController);
+			pos.setValue(Geometry.add(eval(pos), offset));
 		}
 	}
 	
@@ -74,8 +73,6 @@ public class MoveDragHandler<Node> implements DragHandler<Node> {
 	}
 
 	private static <Node> ModifiableExpression<Point2D> nodePos(Node hitNode, MovableController<Node> movableController) {
-		ModifiableExpression<Point2D> tmp = movableController.position(hitNode);
-		final ModifiableExpression<Point2D> nodePos = tmp != null ? tmp : Variable.<Point2D>create(new Point2D.Double(0,0)); // dummy position to avoid a special case
-		return nodePos;
+		return orElse(movableController.position(hitNode), Variable.<Point2D>create(new Point2D.Double(0,0)));
 	}
 }

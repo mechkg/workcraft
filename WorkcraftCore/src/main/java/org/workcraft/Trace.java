@@ -43,4 +43,9 @@ public class Trace extends ArrayList<String>{
 			result.add(s);
 		return result;
 	}
+	
+	@Override
+	public Trace clone() {
+		return (Trace)super.clone();
+	}
 }

@@ -10,6 +10,8 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.gui.graph.tools.selection.MoveDragHandler;
 import org.workcraft.util.Function;
+import org.workcraft.util.Maybe;
+import static org.workcraft.util.Maybe.Util.*;
 
 import pcollections.PCollection;
 import pcollections.TreePVector;
@@ -19,8 +21,8 @@ public class DragHandlerTests {
 		Expression<? extends PCollection<? extends Dummy>> selection = Expressions.constant(selectionV);
 		MovableController<Dummy> movableController = new MovableController<Dummy>(){
 			@Override
-			public ModifiableExpression<Point2D> position(Dummy node) {
-				return node.coordinate;
+			public Maybe<? extends ModifiableExpression<Point2D>> position(Dummy node) {
+				return just(node.coordinate);
 			}
 		};
 		Function<Point2D, Point2D> snap = new Function<Point2D, Point2D>() {

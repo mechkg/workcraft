@@ -20,6 +20,7 @@
 
   <name>Entire Workcraft Solution</name>
   <modules>
+    <module>Util</module>
     <module>WorkcraftCore</module>
     <module>STGPlugin</module>
     <module>PetriNetPlugin</module>

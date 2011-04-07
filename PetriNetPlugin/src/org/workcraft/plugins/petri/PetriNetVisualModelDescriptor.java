@@ -34,67 +34,18 @@ import org.workcraft.util.GUI;
 
 public class PetriNetVisualModelDescriptor implements VisualModelDescriptor {
 	
-	private final static class PlaceGenerator implements NodeGenerator {
-		Icon icon = GUI.createIconFromSVG("images/icons/svg/place.svg");
-
-		@Override
-		public Icon getIcon() {
-			return icon;
-		}
-
-		@Override
-		public String getLabel() {
-			return "Place";
-		}
-
-		@Override
-		public void generate(VisualModel model, Point2D where) throws NodeCreationException {
-			VisualPlace place = ((VisualPetriNet)model).createPlace();
-			place.position().setValue(where);
-		}
-
-		@Override
-		public int getHotKeyCode() {
-			return KeyEvent.VK_P;
-		}
-	}
-
-	private final static class TransitionGenerator implements NodeGenerator {
-		Icon icon = GUI.createIconFromSVG("images/icons/svg/transition.svg");
-
-		@Override
-		public Icon getIcon() {
-			return icon;
-		}
-
-		@Override
-		public String getLabel() {
-			return "Transition";
-		}
-
-		@Override
-		public void generate(VisualModel model, Point2D where) throws NodeCreationException {
-			VisualTransition transition = ((VisualPetriNet)model).createTransition();
-			transition.position().setValue(where);
-		}
-
-		@Override
-		public int getHotKeyCode() {
-			return KeyEvent.VK_T;
-		}
-	}
-	
 	@Override
 	public VisualModel create(MathModel mathModel, StorageManager storage) throws VisualModelInstantiationException {
 		return new VisualPetriNet ((PetriNet)mathModel, storage);
 	}
 
-	public Iterable<GraphEditorTool> createTools(GraphEditor editor) {
+	public Iterable<GraphEditorTool> createTools(VisualPetriNet model, GraphEditor editor) {
 		TouchableProvider<Node> tp = TouchableProvider.DEFAULT;
-		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(tp, editor.getModel().getRoot());
+		
+		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(tp, model.getRoot());
 		
 		return Arrays.asList(new GraphEditorTool[]{
-			attachParameterisedPainter(new SelectionTool(new SelectionToolConfig.Default(editor.getModel(), tp)), colorisablePainter),
+			attachParameterisedPainter(new SelectionTool(new SelectionToolConfig.Default(model, tp)), colorisablePainter),
 			attachParameterisedPainter(new ConnectionTool(editor, tp), colorisablePainter),
 			attachPainter(new NodeGeneratorTool(new PlaceGenerator()), colorisablePainter.eval(Colorisator.EMPTY)),
 			attachPainter(new NodeGeneratorTool(new TransitionGenerator()), colorisablePainter.eval(Colorisator.EMPTY)),

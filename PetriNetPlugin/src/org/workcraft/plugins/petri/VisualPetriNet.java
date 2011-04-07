@@ -31,9 +31,10 @@ import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
+import org.workcraft.gui.graph.tools.ConnectionManager;
 import org.workcraft.util.Hierarchy;
 
-public class VisualPetriNet extends AbstractVisualModel {
+public class VisualPetriNet extends AbstractVisualModel implements ConnectionManager<Node> {
 	private PetriNet net;
 	
 	public VisualPetriNet(PetriNet model, StorageManager storage) throws VisualModelInstantiationException {

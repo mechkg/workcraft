@@ -41,7 +41,7 @@ public class DefaultReflectiveModelPainter {
 			}
 			else
 				if(node instanceof VisualConnection) {
-					return colorise(VisualConnectionGui.getConnectionGui(tp, (VisualConnection)node).graphicalContent(), colorisation);
+					return colorise(VisualConnectionGui.getConnectionGui(TouchableProvider.Util.podgonHideMaybe(tp), (VisualConnection)node).graphicalContent(), colorisation);
 				}
 				else
 					if(node instanceof DrawableNew) {

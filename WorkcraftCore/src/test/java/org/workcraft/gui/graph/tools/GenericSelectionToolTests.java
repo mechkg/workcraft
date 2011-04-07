@@ -5,9 +5,10 @@ import java.awt.geom.Point2D;
 import org.junit.Test;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.gui.graph.tools.GenericSelectionToolTests.Dummy;
 import org.workcraft.gui.graph.tools.selection.GenericSelectionTool;
 import org.workcraft.util.Function;
+import org.workcraft.util.Maybe;
+import static org.workcraft.util.Maybe.Util.*;
 
 import pcollections.HashTreePSet;
 import pcollections.PCollection;
@@ -23,12 +24,32 @@ public class GenericSelectionToolTests {
 				return argument;
 			}
 		};
-		MovableController<Dummy> movableController = new MovableController<Dummy>(){
+		DragHandler<Dummy> dragHandler = new DragHandler<Dummy>() {
 			@Override
-			public ModifiableExpression<Point2D> position(Dummy node) {
-				return node.coordinate;
+			public DragHandle startDrag(Dummy hitNode) {
+				return new DragHandle() {
+					
+					@Override
+					public void setOffset(Point2D offset) {
+						// TODO Auto-generated method stub
+						
+					}
+					
+					@Override
+					public void commit() {
+						// TODO Auto-generated method stub
+						
+					}
+					
+					@Override
+					public void cancel() {
+						// TODO Auto-generated method stub
+						
+					}
+				};
 			}
 		};
+		
 		final Dummy obj = new Dummy();
 		ModifiableExpression<PSet<Dummy>> selection = Variable.<PSet<Dummy>>create(HashTreePSet.<Dummy>empty());
 		HitTester<? extends Dummy> hitTester = new HitTester<Dummy>() {
@@ -43,6 +64,6 @@ public class GenericSelectionToolTests {
 				return null;
 			}
 		};
-		new GenericSelectionTool<Dummy>(selection, hitTester, movableController , snap);
+		new GenericSelectionTool<Dummy>(selection, hitTester, dragHandler);
 	}
 }

@@ -113,8 +113,8 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 
 	public static Expression<? extends ColorisableGraphicalContent> graphicalContent(TouchableProvider<Node> tp, VisualImplicitPlaceArc arc) {
 		
-		ConnectionGui gui = VisualConnectionGui.getConnectionGui(tp, arc);
-		return bindFunc(gui.graphicalContent(), bindFunc(gui.parametricCurve(), arc.tokens(), new Function2<ParametricCurve, Integer, ColorisableGraphicalContent>(){
+		ConnectionGui gui = VisualConnectionGui.getConnectionGui(TouchableProvider.Util.podgonHideMaybe(tp), arc);
+		Function2<ParametricCurve, Integer, ColorisableGraphicalContent> drawTokens = new Function2<ParametricCurve, Integer, ColorisableGraphicalContent>(){
 			@Override
 			public ColorisableGraphicalContent apply(final ParametricCurve curve, final Integer tokens) {
 				return new ColorisableGraphicalContent() {
@@ -128,7 +128,8 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 					}
 				};
 			}
-		}), composeColorisable);
+		};
+		return bindFunc(gui.graphicalContent(), bindFunc(gui.parametricCurve(), arc.tokens(), drawTokens), composeColorisable);
 	}
 	
 	@NoAutoSerialisation

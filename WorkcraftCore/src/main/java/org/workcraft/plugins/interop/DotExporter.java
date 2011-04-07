@@ -1,6 +1,6 @@
 package org.workcraft.plugins.interop;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.exceptions.ModelValidationException;
@@ -23,6 +24,8 @@ import org.workcraft.interop.Exporter;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.serialisation.Format;
+import org.workcraft.util.Action1;
+import org.workcraft.util.Maybe;
 
 public class DotExporter implements Exporter {
 	
@@ -74,59 +77,63 @@ public class DotExporter implements Exporter {
 				final List<DotExportNode> export = new ArrayList<DotExportNode>();
 				for (Node n : eval(model.getRoot().children())) {
 					if (n instanceof VisualComponent) {
-						VisualComponent comp = (VisualComponent) n;
+						final VisualComponent comp = (VisualComponent) n;
 						final String id = eval(model.referenceManager()).getNodeReference(comp);
 						
 						if(id!=null) {
-							final Rectangle2D bb = eval(tp.apply(comp)).getBoundingBox();
+							final Maybe<? extends Touchable> t = eval(tp.apply(comp));
+							
+							Maybe.Util.doIfJust(t, new Action1<Touchable>(){
 
-							if(bb!=null)
-							{
-								final List<String> destinations = new ArrayList<String>();
-								
+								@Override
+								public void run(Touchable argument) {
+									final Rectangle2D bb = argument.getBoundingBox();
+									final List<String> destinations = new ArrayList<String>();
 									
-								Set<Node> postset = eval(model.nodeContext()).getPostset(comp);
-								
-								for(Node target : postset) {
-									String targetId = eval(model.referenceManager()).getNodeReference(target);
-									if(targetId!=null)
-										destinations.add(targetId);
+									
+									Set<Node> postset = eval(model.nodeContext()).getPostset(comp);
+									
+									for(Node target : postset) {
+										String targetId = eval(model.referenceManager()).getNodeReference(target);
+										if(targetId!=null)
+											destinations.add(targetId);
+									}
+									
+									export.add(new DotExportNode()
+									{
+										@Override
+										public String getName() {
+											return id;
+										}
+				
+										@Override
+										public Dimension2D getDimensions() {
+											return new Dimension2D()
+											{
+												@Override
+												public double getHeight() {
+													return bb.getHeight();
+												}
+												@Override
+												public double getWidth() {
+													return bb.getWidth();
+												}
+												@Override
+												public void setSize(double width, double height) {
+													throw new NotSupportedException();
+												}
+											};
+										}
+				
+										@Override
+										public String[] getOutgoingArcs() {
+											return destinations.toArray(new String[0]);
+										}
+									});
 								}
-								
-								export.add(new DotExportNode()
-								{
-									@Override
-									public String getName() {
-										return id;
-									}
-			
-									@Override
-									public Dimension2D getDimensions() {
-										return new Dimension2D()
-										{
-											@Override
-											public double getHeight() {
-												return bb.getHeight();
-											}
-											@Override
-											public double getWidth() {
-												return bb.getWidth();
-											}
-											@Override
-											public void setSize(double width, double height) {
-												throw new NotSupportedException();
-											}
-										};
-									}
-			
-									@Override
-									public String[] getOutgoingArcs() {
-										return destinations.toArray(new String[0]);
-									}
-								});
-							}
-						}
+							});
 					}
+				}
 				}
 				
 				DotExporter.export(new DotExportable() {

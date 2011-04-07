@@ -39,18 +39,16 @@ public class ControlPointsGui {
 		VisualScene<Node> result = VisualScene.Util.empty();
 		for(Node node : selection)
 			if(node instanceof VisualConnection) {
-				result = VisualScene.Util.combine(result, getControlPointsScene((VisualConnection) node));
+				//result = VisualScene.Util.combine(result, getControlPointsScene((VisualConnection) node));
 			}
+		return result;
 	}
 
 	private static Expression<VisualScene<Node>> getControlPointsScene(VisualConnection node) {
-		Expression<VisualScene<Node>> result = bindFunc(node.graphic(), new Function<ConnectionGraphicConfiguration, VisualScene<Node>>(){
+		return bindFunc(node.graphic(), new Function<ConnectionGraphicConfiguration, VisualScene<Node>>(){
 
 			@Override
 			public VisualScene<Node> apply(ConnectionGraphicConfiguration argument) {
-				return new VisualScene<Node>(){
-					
-				};
 			}
 		});		
 	}
@@ -80,8 +78,8 @@ public class ControlPointsGui {
 		@Override
 		public GraphicalContent apply(PVector<VisualConnection> connections) {
 			for(VisualConnection conn : connections) {
-				conn.graphic().
 			}
+			return null;
 		}
 	};
 }

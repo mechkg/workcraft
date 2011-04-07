@@ -15,7 +15,7 @@ import org.workcraft.util.Maybe;
 import org.workcraft.util.TwoWayFunction;
 
 public interface MovableController<Node> {
-	Maybe<ModifiableExpression<Point2D>> position(Node node);
+	Maybe<? extends ModifiableExpression<Point2D>> position(Node node);
 	
 	MovableController<org.workcraft.dom.Node> REFLECTIVE = new MovableController<org.workcraft.dom.Node>() {
 		@Override
@@ -45,7 +45,7 @@ public interface MovableController<Node> {
 
 			if(node == null)
 				return nothing();
-			final Maybe<ModifiableExpression<Point2D>> position = REFLECTIVE.position(node);
+			final Maybe<? extends ModifiableExpression<Point2D>> position = REFLECTIVE.position(node);
 			
 			return applyFunc(position, new Function<ModifiableExpression<Point2D>, ModifiableExpression<Point2D>>(){
 				@Override

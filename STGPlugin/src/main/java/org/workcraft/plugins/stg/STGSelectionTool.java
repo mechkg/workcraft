@@ -1,6 +1,7 @@
 package org.workcraft.plugins.stg;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import static org.workcraft.util.Maybe.Util.*;
 
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
@@ -55,7 +56,7 @@ public class STGSelectionTool extends SelectionTool
 
 	
 	private static void editInPlace (final EditorOverlay overlay, final STG model, final Viewport viewport, final TouchableProvider<Node> touchable, final VisualComponent t, String initialText) {
-		Rectangle2D bb = eval(touchable.apply(t)).getBoundingBox();
+		Rectangle2D bb = eval(TouchableProvider.Util.podgonHideMaybe(touchable).apply(t)).getBoundingBox();
 		Rectangle r = viewport.userToScreen(bb);
 
 		final JTextField text = new JTextField();

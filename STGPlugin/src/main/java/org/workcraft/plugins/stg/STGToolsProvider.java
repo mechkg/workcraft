@@ -240,6 +240,6 @@ public class STGToolsProvider implements CustomToolsProvider {
 				attachPainter(new NodeGeneratorTool(new PlaceGenerator(), snap), simpleModelPainter),
 				attachPainter(new NodeGeneratorTool(new SignalTransitionGenerator(), snap), simpleModelPainter),
 				attachPainter(new NodeGeneratorTool(new DummyTransitionGenerator(), snap), simpleModelPainter),
-				attachParameterisedPainter(new STGSimulationTool(editor, tp), painterProvider));
+				attachParameterisedPainter(STGSimulationTool.createSimulationTool(visualStg.getRoot(), visualStg.stg, tp), painterProvider));
 	}
 }

@@ -149,6 +149,21 @@ public interface Maybe<T> {
 				}
 			};
 		}
+		
+		public static <A> A fromJust(Maybe<A> maybe) {
+			return maybe.accept(new MaybeVisitor<A, A>() {
+
+				@Override
+				public A visitJust(A value) {
+					return value;
+				}
+
+				@Override
+				public A visitNothing() {
+					throw new RuntimeException("Terrible thing happened!!");
+				}
+			});
+		}
 	}
 
 		

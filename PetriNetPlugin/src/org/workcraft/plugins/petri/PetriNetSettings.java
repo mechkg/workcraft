@@ -22,51 +22,68 @@
 package org.workcraft.plugins.petri;
 
 import java.awt.Color;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.workcraft.Config;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.SettingsPage;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
+import org.workcraft.gui.propertyeditor.bool.BooleanProperty;
+import org.workcraft.gui.propertyeditor.colour.ColorProperty;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
+
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 public class PetriNetSettings implements SettingsPage {
-	private static LinkedList<PropertyDescriptor> properties;
-
-	private static Color enabledBackgroundColor = new Color(0.0f, 0.0f, 0.0f);
-	private static Color enabledForegroundColor = new Color(1.0f, 0.5f, 0.0f);
+	private final static Variable<Color> rawEnabledBackgroundColor = Variable.create(new Color(0.0f, 0.0f, 0.0f));
+	private final static Variable<Color> rawEnabledForegroundColor = Variable.create(new Color(1.0f, 0.5f, 0.0f));
 	
-	private static boolean useEnabledBackgroundColor = false;
-	private static boolean useEnabledForegroundColor = true;
-	
-	public PetriNetSettings() {
-		properties = new LinkedList<PropertyDescriptor>();
-		
-		properties.add(new PropertyDeclaration(this, "Use enabled transition foreground", "getUseEnabledForegroundColor", "setUseEnabledForegroundColor", Boolean.class));
-		properties.add(new PropertyDeclaration(this, "Enabled transition foreground", "getEnabledForegroundColor", "setEnabledForegroundColor", Color.class));
+	private static ModifiableExpression<Color> nullIfNotUsed (final ModifiableExpression<Color> color, final ModifiableExpression<Boolean> use) {
+		return new ModifiableExpressionBase<Color>() {
+			@Override
+			public void setValue(Color newValue) {
+				color.setValue(newValue);
+			}
 
-		properties.add(new PropertyDeclaration(this, "Use enabled transition background", "getUseEnabledBackgroundColor", "setUseEnabledBackgroundColor", Boolean.class));
-		properties.add(new PropertyDeclaration(this, "Enabled transition background", "getEnabledBackgroundColor", "setEnabledBackgroundColor", Color.class));
+			@Override
+			protected Color evaluate(EvaluationContext context) {
+				return context.resolve(use) ? context.resolve(color) : null;
+			}
+		};
 	}
+
+	public final static Variable<Boolean> useEnabledBackgroundColor = Variable.create(false);
+	public final static Variable<Boolean> useEnabledForegroundColor = Variable.create(true);
 	
-	public List<PropertyDescriptor> getDescriptors() {
-		return properties;
+	public final static ModifiableExpression<Color> enabledBackgroundColor = nullIfNotUsed(rawEnabledBackgroundColor, useEnabledBackgroundColor);
+	public final static ModifiableExpression<Color> enabledForegroundColor = nullIfNotUsed(rawEnabledForegroundColor, useEnabledForegroundColor);
+	
+	public PVector<EditableProperty> getProperties() {
+		return TreePVector.<EditableProperty>empty()
+			.plus(BooleanProperty.create("Use enabled transition foreground", useEnabledForegroundColor))
+			.plus(ColorProperty.create("Enabled transition foreground", enabledForegroundColor))
+			.plus(BooleanProperty.create("Use enabled transition background", useEnabledBackgroundColor))
+			.plus(ColorProperty.create("Enabled transition background", enabledBackgroundColor));
 	}
 
 	public void load(Config config) {
-		useEnabledForegroundColor = config.getBoolean("PetriNetSettings.useEnabledForegroundColor", true);
-		enabledForegroundColor = config.getColor("PetriNetSettings.enabledForegroundColor", new Color(1.0f, 0.5f, 0.0f));
+		useEnabledForegroundColor.setValue(config.getBoolean("PetriNetSettings.useEnabledForegroundColor", true));
+		enabledForegroundColor.setValue(config.getColor("PetriNetSettings.enabledForegroundColor", new Color(1.0f, 0.5f, 0.0f)));
 
-		useEnabledBackgroundColor = config.getBoolean("PetriNetSettings.useEnabledBackgroundColor", false);
-		enabledBackgroundColor = config.getColor("PetriNetSettings.enabledBackgroundColor", new Color(1.0f, 0.5f, 0.0f));
+		useEnabledBackgroundColor.setValue(config.getBoolean("PetriNetSettings.useEnabledBackgroundColor", false));
+		enabledBackgroundColor.setValue(config.getColor("PetriNetSettings.enabledBackgroundColor", new Color(1.0f, 0.5f, 0.0f)));
 	}
 
 	public void save(Config config) {
-		config.setBoolean("PetriNetSettings.useEnabledForegroundColor", useEnabledForegroundColor);
-		config.setColor("PetriNetSettings.enabledBackgroundColor", enabledBackgroundColor);
+		config.setBoolean("PetriNetSettings.useEnabledForegroundColor", eval(useEnabledForegroundColor));
+		config.setColor("PetriNetSettings.enabledBackgroundColor", eval(enabledBackgroundColor));
 		
-		config.setBoolean("PetriNetSettings.useEnabledBackgroundColor", useEnabledBackgroundColor);
-		config.setColor("PetriNetSettings.enabledForegroundColor", enabledForegroundColor);
+		config.setBoolean("PetriNetSettings.useEnabledBackgroundColor", eval(useEnabledBackgroundColor));
+		config.setColor("PetriNetSettings.enabledForegroundColor", eval(enabledForegroundColor));
 	}
 
 	public String getSection() {
@@ -76,39 +93,5 @@ public class PetriNetSettings implements SettingsPage {
 	@Override
 	public String getName() {
 		return "Petri Net";
-	}
-
-	public static void setEnabledBackgroundColor(Color enabledBackgroundColor) {
-		PetriNetSettings.enabledBackgroundColor = enabledBackgroundColor;
-	}
-
-	public static Color getEnabledBackgroundColor() {
-		return useEnabledBackgroundColor ? enabledBackgroundColor : null;
-	}
-
-	public static void setEnabledForegroundColor(Color enabledForegroundColor) {
-		PetriNetSettings.enabledForegroundColor = enabledForegroundColor;
-	}
-
-	public static Color getEnabledForegroundColor() {
-		return useEnabledForegroundColor ? enabledForegroundColor : null;
-	}
-
-	public static void setUseEnabledBackgroundColor(
-			Boolean useEnabledBackgroundColor) {
-		PetriNetSettings.useEnabledBackgroundColor = useEnabledBackgroundColor;
-	}
-
-	public static Boolean getUseEnabledBackgroundColor() {
-		return useEnabledBackgroundColor;
-	}
-
-	public static void setUseEnabledForegroundColor(
-			Boolean useEnabledForegroundColor) {
-		PetriNetSettings.useEnabledForegroundColor = useEnabledForegroundColor;
-	}
-
-	public static Boolean getUseEnabledForegroundColor() {
-		return useEnabledForegroundColor;
 	}
 }

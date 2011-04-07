@@ -54,7 +54,7 @@ public interface TouchableProvider<N> extends Function<N, Expression<? extends M
 			return bindFunc(result, Maybe.Util.<Touchable>just());
 		}
 		
-		static <N> Function<N, Expression<Touchable>> podgonHideMaybe(final TouchableProvider<N> tp) {
+		public static <N> Function<N, Expression<Touchable>> podgonHideMaybe(final TouchableProvider<N> tp) {
 			return new Function<N, Expression<Touchable>>(){
 				@Override
 				public Expression<Touchable> apply(N argument) {

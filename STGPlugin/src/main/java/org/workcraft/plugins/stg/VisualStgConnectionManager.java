@@ -166,7 +166,7 @@ public class VisualStgConnectionManager implements ConnectionManager<Node> {
 		model.stg.makeExplicit(implicitPlace);
 		
 		VisualPlace place = new VisualPlace(implicitPlace, storage);
-		Point2D p = eval(VisualConnectionGui.getConnectionGui(tp, con).parametricCurve()).getPointOnCurve(0.5);
+		Point2D p = eval(VisualConnectionGui.getConnectionGui(TouchableProvider.Util.podgonHideMaybe(tp), con).parametricCurve()).getPointOnCurve(0.5);
 		place.position().setValue(p);
 
 		VisualConnection con1 = new VisualConnection(con.getRefCon1(), con.getFirst(), place, storage);
@@ -179,5 +179,4 @@ public class VisualStgConnectionManager implements ConnectionManager<Node> {
 		model.remove(con);
 		return place;
 	}
-
 }

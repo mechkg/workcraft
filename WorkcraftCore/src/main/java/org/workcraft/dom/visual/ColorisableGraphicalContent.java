@@ -5,7 +5,6 @@ import java.awt.Graphics2D;
 import org.workcraft.gui.graph.tools.Colorisation;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
-import org.workcraft.util.Graphics;
 
 public interface ColorisableGraphicalContent {
 	ColorisableGraphicalContent EMPTY = new ColorisableGraphicalContent(){

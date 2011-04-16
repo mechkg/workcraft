@@ -26,7 +26,7 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 
-public class Vertex
+public class Vertex implements Node, Component
 {
 	public static Vertex make(StorageManager storage) {
 		return new Vertex(storage.<BooleanFormula>create(One.instance()), VisualComponent.make(storage));
@@ -39,4 +39,13 @@ public class Vertex
 
 	public final ModifiableExpression<BooleanFormula> condition;
 	public final VisualComponent visualInfo;
+	@Override
+	public <T> T accept(NodeVisitor<T> visitor) {
+		return visitor.visitComponent(this);
+	}
+	
+	@Override
+	public <T> T accept(ComponentVisitor<T> visitor) {
+		return visitor.visitVertex(this);
+	}
 }

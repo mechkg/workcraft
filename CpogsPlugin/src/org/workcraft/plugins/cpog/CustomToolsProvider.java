@@ -15,6 +15,8 @@ import org.workcraft.dependencymanager.advanced.core.Combinator;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dom.visual.BoundedColorisableImage;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
@@ -23,6 +25,7 @@ import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.AbstractTool;
+import org.workcraft.gui.graph.tools.Colorisation;
 import org.workcraft.gui.graph.tools.ConnectionManager;
 import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.DragHandler;
@@ -43,6 +46,8 @@ import org.workcraft.util.Maybe;
 
 import pcollections.HashTreePSet;
 import pcollections.PSet;
+
+import static org.workcraft.dom.visual.ColorisableGraphicalContent.Util.*;
 
 public class CustomToolsProvider {
 	
@@ -215,8 +220,23 @@ public class CustomToolsProvider {
 
 					@Override
 					public Expression<? extends GraphicalContent> visitComponent(Component component) {
-						NotImplementedException.warn("need to draw the component!");
-						return constant(GraphicalContent.EMPTY);
+						return bindFunc(component.accept(new ComponentVisitor<Expression<? extends ColorisableGraphicalContent>>() {
+
+							@Override
+							public Expression<? extends ColorisableGraphicalContent> visitRho(RhoClause rho) {
+								return bindFunc(VisualRhoClause.getVisualRhoClause(rho), BoundedColorisableImage.getGraphics);
+							}
+
+							@Override
+							public Expression<? extends ColorisableGraphicalContent> visitVariable(Variable variable) {
+								return bindFunc(VisualVariableGui.getImage(variable), BoundedColorisableImage.getGraphics);
+							}
+
+							@Override
+							public Expression<? extends ColorisableGraphicalContent> visitVertex(Vertex vertex) {
+								return bindFunc(VisualVertex.getImage(vertex), BoundedColorisableImage.getGraphics);
+							}
+						}), constant(Colorisation.EMPTY), applyColourisation);
 					}
 				});
 			}

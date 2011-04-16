@@ -110,13 +110,14 @@ public class CPOG
 
 	public Expression<PVector<Node>> nodes() {
 		return new ExpressionBase<PVector<Node>>(){
-
 			@Override
 			protected PVector<Node> evaluate(EvaluationContext context) {
 				return TreePVector.<Node>empty()
-					.plusAll(context.resolve(variables));
+					.plusAll(context.resolve(variables))
+					.plusAll(context.resolve(vertices))
+					.plusAll(context.resolve(rhoClauses))
+					.plusAll(context.resolve(arcs));
 			}
-			
 		};
 	}
 }

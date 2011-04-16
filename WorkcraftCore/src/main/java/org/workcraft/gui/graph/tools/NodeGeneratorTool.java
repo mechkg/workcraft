@@ -46,14 +46,19 @@ public class NodeGeneratorTool extends AbstractTool {
 		this.snap = snap;
 	}
 	
-	public void mousePressed(GraphEditorMouseEvent e) {
-		try {
-			generator.generate(snap.apply(e.getPosition()));
-		} catch (NodeCreationException e1) {
-			throw new RuntimeException (e1);
-		}
+	@Override
+	public GraphEditorMouseListener mouseListener() {
+		return new DummyMouseListener() {
+			public void mousePressed(GraphEditorMouseEvent e) {
+				try {
+					generator.generate(snap.apply(e.getPosition()));
+				} catch (NodeCreationException e1) {
+					throw new RuntimeException (e1);
+				}
+			}
+		};
 	}
-
+	
 	@Override
 	public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
 		return Expressions.constant(GraphicalContent.EMPTY);

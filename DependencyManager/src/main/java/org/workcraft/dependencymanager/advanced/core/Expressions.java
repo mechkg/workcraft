@@ -306,6 +306,8 @@ public class Expressions {
 
 	/**
 	 * the actual type is like: (a -> Expression b) -> Expression (a -> IO b)
+	 * 
+	 * This function leaks memory if the original function constructs a new Expression each time it is called!
 	 */
 	public static <A, B> Expression<Function<A, B>> joinFunction(final Function<? super A, ? extends Expression<? extends B>> func) {
 		return new ExpressionBase<Function<A, B>>() {

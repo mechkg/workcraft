@@ -78,15 +78,14 @@ public class AsTouchable {
 	
 	private static Expression<Touchable> localTouchable(Component component) {
 		return component.accept(new ComponentVisitor<Expression<Touchable>>() {
+			private Expression<Touchable> getTouchable(Expression<BoundedColorisableImage> image) {
+				return bindFunc(bindFunc(image, BoundedColorisableImage.getBoundingBox), bbToTouchable);
+			}
 
 			@Override
 			public Expression<Touchable> visitRho(RhoClause rho) {
 				Expression<BoundedColorisableImage> image = VisualRhoClause.getVisualRhoClause(rho);
 				return getTouchable(image);
-			}
-
-			private Expression<Touchable> getTouchable(Expression<BoundedColorisableImage> image) {
-				return bindFunc(bindFunc(image, BoundedColorisableImage.getBoundingBox), bbToTouchable);
 			}
 
 			@Override

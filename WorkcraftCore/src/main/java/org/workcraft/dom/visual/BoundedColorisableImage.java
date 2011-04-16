@@ -52,6 +52,13 @@ public class BoundedColorisableImage {
 		}
 	};
 	
+	public static Function<BoundedColorisableImage, ColorisableGraphicalContent> getGraphics = new Function<BoundedColorisableImage, ColorisableGraphicalContent>(){
+		@Override
+		public ColorisableGraphicalContent apply(BoundedColorisableImage image) {
+			return image.graphics;
+		}
+	};
+	
 	public static Function2<BoundedColorisableImage, BoundedColorisableImage , BoundedColorisableImage> compose = new Function2<BoundedColorisableImage, BoundedColorisableImage, BoundedColorisableImage>() {
 		@Override
 		public BoundedColorisableImage apply(BoundedColorisableImage argument1, BoundedColorisableImage argument2) {

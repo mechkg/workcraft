@@ -26,7 +26,7 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 
-public class RhoClause
+public class RhoClause implements Node, Component
 {
 	public final ModifiableExpression<BooleanFormula> formula;
 	public final VisualComponent visualInfo;
@@ -38,5 +38,15 @@ public class RhoClause
 
 	public static RhoClause make(StorageManager storage) {
 		return new RhoClause(storage.create(BooleanOperations.ONE), VisualComponent.make(storage));
+	}
+
+	@Override
+	public <T> T accept(ComponentVisitor<T> visitor) {
+		return visitor.visitRho(this);
+	}
+
+	@Override
+	public <T> T accept(NodeVisitor<T> visitor) {
+		return visitor.visitComponent(this);
 	}	
 }

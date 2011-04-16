@@ -32,6 +32,7 @@ public interface Maybe<T> {
 				}
 			};
 		}
+		
 		public static <R> Function<R,Maybe<R>> just() { return  new Function<R, Maybe<R>>() {
 				@Override
 				public Maybe<R> apply(R argument) {
@@ -150,22 +151,62 @@ public interface Maybe<T> {
 			};
 		}
 		
-		public static <A> A fromJust(Maybe<A> maybe) {
-			return maybe.accept(new MaybeVisitor<A, A>() {
+		public static class NothingFound extends Exception {
+			private static final long serialVersionUID = 1L;
+			
+		}
+		
+		interface ThrowingEvaluator<A, E extends Exception> {
+			A evaluate() throws E;
+		}
+		
+		public static <A> A extract(Maybe<A> maybe) throws NothingFound {
+			return maybe.accept(new MaybeVisitor<A, ThrowingEvaluator<A, NothingFound>>() {
 
 				@Override
+				public ThrowingEvaluator<A, NothingFound> visitJust(final A just) {
+					return new ThrowingEvaluator<A, NothingFound>() {
+						@Override
+						public A evaluate() throws NothingFound {
+							return just;
+						}
+					};
+				}
+
+				@Override
+				public ThrowingEvaluator<A, NothingFound> visitNothing() {
+					return new ThrowingEvaluator<A, NothingFound>(){
+						@Override
+						public A evaluate() throws NothingFound {
+							throw new NothingFound();
+						}
+					};
+				}
+			}).evaluate();
+		}
+		
+		public static <A> A toNullable(Maybe<A> maybe) {
+			return maybe.accept(new MaybeVisitor<A, A>() {
+				@Override
 				public A visitJust(A value) {
-					return value;
+					if(value != null)
+						return value;
+					else
+						throw new NullPointerException();
 				}
 
 				@Override
 				public A visitNothing() {
-					throw new RuntimeException("Terrible thing happened!!");
+					return null;
 				}
 			});
 		}
-	}
 
-		
+		public static <A> Maybe<A> fromNullable(A nullable) {
+			Maybe<A> nothing = nothing();
+			return nullable == null ? nothing : just(nullable);
+		}
+	}
+	
 	public <R> R accept(MaybeVisitor<? super T, ? extends R> visitor);
 }

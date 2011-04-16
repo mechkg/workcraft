@@ -111,7 +111,7 @@ public class VisualCPOG extends AbstractVisualModel
 	private final CPOG mathModel;
 	private final NameGenerator nameGenerator = new NameGenerator();
 
-	public VisualCPOG(CPOG model, StorageManager storage) throws VisualModelInstantiationException
+	public VisualCPOG(CPOG model, StorageManager storage)
 	{
 		this(model, null, storage);
 	}
@@ -132,55 +132,6 @@ public class VisualCPOG extends AbstractVisualModel
 			{
 				throw new RuntimeException(e);
 			}
-		}
-	}
-
-	@Override
-	public void validateConnection(Node first, Node second) throws InvalidConnectionException
-	{
-		if (first == second) throw new InvalidConnectionException("Self loops are not allowed");
-		
-		if (first instanceof VisualVariable && !eval(nodeContext()).getPreset(first).isEmpty()) throw new InvalidConnectionException("Variables do not support multiple connections");
-		if (second instanceof VisualVariable && !eval(nodeContext()).getPreset(second).isEmpty()) throw new InvalidConnectionException("Variables do not support multiple connections");
-		
-		if (first instanceof VisualVertex && second instanceof VisualVertex) return;
-		if (first instanceof VisualVertex && second instanceof VisualVariable) return;
-		if (first instanceof VisualVariable && second instanceof VisualVertex) return;
-		
-		throw new InvalidConnectionException("Invalid connection");
-	}
-
-	@Override
-	public void connect(Node first, Node second) throws InvalidConnectionException
-	{
-		validateConnection(first, second);
-		
-		if (first instanceof VisualVertex && second instanceof VisualVertex)
-		{
-			VisualVertex v = (VisualVertex) first;
-			VisualVertex u = (VisualVertex) second;
-	
-			Arc con = mathModel.connect(v.getMathVertex(), u.getMathVertex());
-			add(Hierarchy.getNearestContainer(v, u), new VisualArc(con, v, u, storage));
-		}
-		else
-		{
-			VisualVertex v;
-			VisualVariable u;
-			
-			if (first instanceof VisualVertex)
-			{
-				v = (VisualVertex) first;
-				u = (VisualVariable) second;
-			}
-			else
-			{
-				v = (VisualVertex) second;
-				u = (VisualVariable) first;
-			}
-			
-			DynamicVariableConnection con = mathModel.connect(v.getMathVertex(), u.getMathVariable());
-			add(Hierarchy.getNearestContainer(v, u), new VisualDynamicVariableConnection(con, v, u, storage));
 		}
 	}
 
@@ -245,29 +196,6 @@ public class VisualCPOG extends AbstractVisualModel
 		return properties;
 	}
 
-	public VisualVertex createVertex() {
-		Vertex vertex = mathModel.createVertex();
-		VisualVertex visualVertex = new VisualVertex(vertex, storage);
-		nameGenerator.assignDefaultLabel(visualVertex);
-		add(visualVertex);
-		return visualVertex;
-	}
-
-	public VisualRhoClause createRhoClause() {
-		RhoClause rhoClause = mathModel.createRhoClause();
-		VisualRhoClause visualRhoClause = new VisualRhoClause(rhoClause, storage);
-		add(visualRhoClause);
-		return visualRhoClause;
-	}
-
-	public VisualVariable createVariable() {
-		Variable variable = mathModel.createVariable();
-		VisualVariable visualVariable = new VisualVariable(variable, storage);
-		nameGenerator.assignDefaultLabel(visualVariable);
-		add(visualVariable);
-		return visualVariable;
-	}
-	
 	private void updateEncoding()
 	{
 		for(VisualScenario group : getGroups())

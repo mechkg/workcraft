@@ -7,6 +7,7 @@ import java.util.Collection;
 
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
+import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.TouchableProvider;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
@@ -15,10 +16,7 @@ import org.workcraft.gui.graph.tools.selection.SelectionToolConfig;
 
 public class SelectionTool extends org.workcraft.gui.graph.tools.selection.SelectionTool
 {
-	public SelectionTool(GraphEditor editor) {
-		super(new SelectionToolConfig.Default(editor.getModel(), TouchableProvider.DEFAULT));
-	}
-	
+	// TODO: use these!
 	@Override
 	public void mouseClicked(GraphEditorMouseEvent e)
 	{

@@ -77,7 +77,7 @@ public class Graphics {
 		}
 	};
 
-	public static Expression<? extends GraphicalContent> compose(final Expression<? extends GraphicalContent> bottom, final Expression<? extends GraphicalContent> top) {
+	public static Expression<GraphicalContent> compose(final Expression<? extends GraphicalContent> bottom, final Expression<? extends GraphicalContent> top) {
 		return bindFunc(bottom, top, compose);
 	}
 }

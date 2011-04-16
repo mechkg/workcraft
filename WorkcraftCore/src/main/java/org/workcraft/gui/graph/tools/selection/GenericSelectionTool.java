@@ -21,7 +21,7 @@
 
 package org.workcraft.gui.graph.tools.selection;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -33,6 +33,8 @@ import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.DragHandle;
 import org.workcraft.gui.graph.tools.DragHandler;
+import org.workcraft.gui.graph.tools.DummyMouseListener;
+import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
 import org.workcraft.gui.graph.tools.HitTester;
 import org.workcraft.util.Geometry;
 
@@ -197,5 +199,40 @@ public class GenericSelectionTool<Node> {
 
 	public Expression<PSet<Node>> effectiveSelection() {
 		return selectDragHandler.effectiveSelection;
+	}
+	
+	public GraphEditorMouseListener getMouseListener() {
+		final GenericSelectionTool<Node> me = this;
+		return new DummyMouseListener() {
+			@Override
+			public void mouseClicked(GraphEditorMouseEvent e) {
+				me.mouseClicked(e);
+			}
+
+			@Override
+			public void finishDrag(GraphEditorMouseEvent e) {
+				me.finishDrag(e);
+			}
+			
+			@Override
+			public boolean isDragging() {
+				return me.isDragging();
+			}
+			
+			@Override
+			public void mousePressed(GraphEditorMouseEvent e) {
+				me.mousePressed(e);
+			}
+			
+			@Override
+			public void mouseMoved(GraphEditorMouseEvent e) {
+				me.mouseMoved(e);
+			}
+			
+			@Override
+			public void startDrag(GraphEditorMouseEvent e) {
+				me.startDrag(e);
+			}
+		};
 	}
 }

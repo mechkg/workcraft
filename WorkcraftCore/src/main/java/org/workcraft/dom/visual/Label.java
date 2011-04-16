@@ -6,12 +6,9 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.util.Function;
 
 public class Label {
@@ -20,60 +17,31 @@ public class Label {
 		return VisualComponent.podgonFontRenderContext();
 	}
 	
-	public final Expression<ColorisableGraphicalContent> graphics;
-	public final Expression<Rectangle2D> centeredBB;
-	
-	public Label(final Font font, final Expression<? extends String> text) {
+	public static Expression<BoundedColorisableImage> mkLabel(final Font font, final Expression<? extends String> text) {
 		
-		final Expression<? extends GlyphVector> glyphVector = bindFunc(text, new Function<String, GlyphVector>(){
+		final Expression<? extends Rectangle2D> textBB = bindFunc(text, new Function<String, Rectangle2D>(){
 					@Override
-					public GlyphVector apply(String textValue) {
-						return font.createGlyphVector(podgonFontRenderContext(), textValue);
+					public Rectangle2D apply(String textValue) {
+						GlyphVector gv = font.createGlyphVector(podgonFontRenderContext(), textValue);
+						return gv.getVisualBounds();
 					}
 				});
 
-		final Expression<Rectangle2D> textBB = new ExpressionBase<Rectangle2D>() {
+		Expression<ColorisableGraphicalContent> graphics = bindFunc(text, new Function<String, ColorisableGraphicalContent>() {
 			@Override
-			protected Rectangle2D evaluate(EvaluationContext context) {
-				return context.resolve(glyphVector).getVisualBounds();
-			}
-		};
-		
-		final Expression<? extends Point2D> textCoords = new ExpressionBase<Point2D>() {
-			@Override
-			protected Point2D evaluate(EvaluationContext context) {
-				Rectangle2D bb = context.resolve(textBB);
-				return new Point2D.Double(-bb.getCenterX(), -bb.getCenterY());
-			}
-		};
-		
-		centeredBB = new ExpressionBase<Rectangle2D>() {
-			@Override
-			protected Rectangle2D evaluate(EvaluationContext context) {
-				double margin = 0.15;
-				Rectangle2D result = BoundingBoxHelper.expand(context.resolve(textBB), margin, margin);
-				result.setRect(result.getX() - result.getCenterX(), result.getY() - result.getCenterY(), result.getWidth(), result.getHeight());
-				return result;
-			}
-		};
-		
-		graphics = new ExpressionBase<ColorisableGraphicalContent>() {
-			@Override
-			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
-			
-				Point2D textXY = context.resolve(textCoords);
-				final float textX = (float)textXY.getX();
-				final float textY = (float)textXY.getY();
-			
+			public ColorisableGraphicalContent apply(final String text) {
 				return new ColorisableGraphicalContent() {
 					@Override
 					public void draw(DrawRequest request) {
 						Graphics2D g = request.getGraphics();
 						g.setFont(font);
-						g.drawGlyphVector(context.resolve(glyphVector), textX, textY);
+						g.drawString(text, 0, 0);
 					}
 				};
 			}
-		};
+		});
+		
+		Expression<BoundedColorisableImage> simpleLabel = bindFunc(graphics, textBB, BoundedColorisableImage.constructor);
+		return bindFunc(simpleLabel, BoundedColorisableImage.centerToZero);
 	}
 }

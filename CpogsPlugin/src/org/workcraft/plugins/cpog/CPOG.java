@@ -21,122 +21,102 @@
 
 package org.workcraft.plugins.cpog;
 
-import java.util.Collection;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dom.AbstractModel;
-import org.workcraft.dom.Container;
-import org.workcraft.dom.Node;
-import org.workcraft.dom.math.MathGroup;
-import org.workcraft.dom.math.MathModel;
-import org.workcraft.dom.references.ReferenceManager;
-import org.workcraft.dom.references.UniqueNameReferenceManager;
-import org.workcraft.exceptions.InvalidConnectionException;
-import org.workcraft.exceptions.NotSupportedException;
-import org.workcraft.observation.HierarchySupervisor;
-import org.workcraft.serialisation.References;
-import org.workcraft.util.Func;
-import org.workcraft.util.Hierarchy;
+import org.workcraft.util.Function;
+import org.workcraft.util.Function0;
 
-public class CPOG extends AbstractModel implements MathModel
+import pcollections.PVector;
+import pcollections.TreePVector;
+
+public class CPOG
 {
-
-	private final StorageManager storage;
-	private final UniqueNameReferenceManager names;
-
-	public CPOG(StorageManager storage)
-	{
-		this(null, null, storage);
-	}
-
-	public CPOG(Container root, StorageManager storage)
-	{
-		this(root, null, storage);
-	}
+	public final StorageManager storage;
 	
-	static class StartupParameters 
-	{
-		public StartupParameters(Container root, References refs, StorageManager storage) {
-			this.storage = storage;
-			this.root = root==null?new MathGroup(storage):root;
-			this.names = new UniqueNameReferenceManager(this.root, refs, new Func<Node, String>(){
-				@Override
-				public String eval(Node arg) {
-					return "badName";
-				}
-			});
-			this.refMan = new HierarchySupervisor<ReferenceManager>(this.root, names);
+	Function0<String> varNameGen = new CheckedPrefixNameGen("x_", new Function<String, Boolean>(){
+		@Override
+		public Boolean apply(String candidate) {
+			for(Variable var : eval(variables))
+				if(eval(var.label).equals(candidate))
+					return false;
+			return true;
 		}
-		StorageManager storage;
-		Container root;
-		Expression<? extends ReferenceManager> refMan;
-		UniqueNameReferenceManager names;
-	}
+	});
+	
+	Function0<String> vertNameGen = new CheckedPrefixNameGen("v_", new Function<String, Boolean>(){
+		@Override
+		public Boolean apply(String candidate) {
+			for(Vertex v : eval(vertices))
+				if(eval(v.visualInfo.label).equals(candidate))
+					return false;
+			return true;
+		}
+	});
+	
+	final ModifiableExpression<PVector<Variable>> variables;
+	final ModifiableExpression<PVector<Vertex>> vertices;
+	final ModifiableExpression<PVector<RhoClause>> rhoClauses;
+	final ModifiableExpression<PVector<Arc>> arcs;
+	final ModifiableExpression<PVector<DynamicVariableConnection>> dynamicArcs;
 
-	public CPOG(StartupParameters p) 
-	{
-		super(createDefaultModelSpecification(p.root, p.refMan));
-		this.names = p.names;
-		this.storage = p.storage;
+	<T>ModifiableExpression<PVector<T>> createEmpty(StorageManager storage) {
+		PVector<T> empty = TreePVector.empty();
+		return storage.create(empty);
 	}
 	
-	public CPOG(Container root, References refs, StorageManager storage)
-	{
-		this(new StartupParameters(root, refs, storage));
-	}
-
-	public String getName(Vertex vertex)
-	{
-		return names.getNodeReference(vertex);
-	}
-
-	public void setName(Vertex vertex, String name)
-	{
-		names.setName(vertex, name);
+	public CPOG(StorageManager storage) {
+		this.storage = storage;
+		variables = createEmpty(storage);
+		vertices = createEmpty(storage);
+		rhoClauses = createEmpty(storage);
+		arcs = createEmpty(storage);
+		dynamicArcs = createEmpty(storage);
 	}
 	
-	public Variable addVariable() 
-	{
-		Variable var = new Variable(storage);
-		add(var);
-		return var;
+	static <T> void add(ModifiableExpression<PVector<T>> vec, T item) {
+		vec.setValue(eval(vec).plus(item));
 	}
 
-	public Arc connect(Vertex first, Vertex second) throws InvalidConnectionException
-	{
+	public Arc connect(Vertex first, Vertex second) {
 		Arc con = new Arc(first, second, storage);
-		add(con);
+		add(arcs, con);
 		return con;
-	}
-	
-	public DynamicVariableConnection connect(Vertex first, Variable second) throws InvalidConnectionException
-	{
-		DynamicVariableConnection con = new DynamicVariableConnection(first, second, storage);
-		add(con);
-		return con;
-	}
-
-	public Collection<Variable> getVariables() {
-		return Hierarchy.getChildrenOfType(getRoot(), Variable.class);
 	}
 
 	public Vertex createVertex() {
-		Vertex vertex = new Vertex(storage);
-		add(vertex);
+		Vertex vertex = Vertex.make(storage);
+		vertex.visualInfo.label.setValue(vertNameGen.apply());
+		add(vertices, vertex);
 		return vertex;
 	}
 
 	public RhoClause createRhoClause() {
-		RhoClause rhoClause = new RhoClause(storage);
-		add(rhoClause);
+		RhoClause rhoClause = RhoClause.make(storage);
+		add(rhoClauses, rhoClause);
 		return rhoClause;
 	}
 
 	public Variable createVariable() {
-		Variable variable = new Variable(storage);
-		add(variable);
-		return variable;
+		String name = varNameGen.apply();
+		Variable var = Variable.make(storage, storage.create(name));
+		add(variables, var);
+		return var;
 	}
 
+	public Expression<PVector<Node>> nodes() {
+		return new ExpressionBase<PVector<Node>>(){
+
+			@Override
+			protected PVector<Node> evaluate(EvaluationContext context) {
+				return TreePVector.<Node>empty()
+					.plusAll(context.resolve(variables));
+			}
+			
+		};
+	}
 }

@@ -4,7 +4,6 @@ import org.workcraft.Framework;
 import org.workcraft.Module;
 import org.workcraft.PluginManager;
 import org.workcraft.dom.ModelDescriptor;
-import org.workcraft.gui.propertyeditor.PropertyClassProvider;
 import org.workcraft.plugins.cpog.serialisation.ArcDeserialiser;
 import org.workcraft.plugins.cpog.serialisation.ArcSerialiser;
 import org.workcraft.plugins.cpog.serialisation.RhoClauseDeserialiser;
@@ -22,8 +21,6 @@ public class CpogModule implements Module {
 		final PluginManager p = framework.getPluginManager();
 		
 		p.registerClass(ModelDescriptor.class, CpogModelDescriptor.class);
-		
-		p.registerClass(PropertyClassProvider.class, EncodingPropertyProvider.class);
 		
 		p.registerClass(XMLSerialiser.class, VisualCPOGGroupSerialiser.class);
 		p.registerClass(XMLSerialiser.class, VertexSerialiser.class);

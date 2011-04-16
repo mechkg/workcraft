@@ -24,14 +24,18 @@ package org.workcraft.exceptions;
 
 public class NotImplementedException extends RuntimeException {
 
-	// To warn users that they should implement the feature or use NotSupportedException instead
+	/**
+	 * Deprecated to warn users that they should implement the feature or use NotSupportedException instead
+	 */
 	@Deprecated
 	public NotImplementedException() 
 	{
 		super("The feature is not implemented yet");
 	}
 	
-	// To warn users that they should implement the feature or use NotSupportedException instead
+	/**
+	 * Deprecated to warn users that they should implement the feature or use NotSupportedException instead
+	 */
 	@Deprecated
 	public NotImplementedException(String message) 
 	{
@@ -40,4 +44,11 @@ public class NotImplementedException extends RuntimeException {
 	
 	private static final long serialVersionUID = -6828334836877473788L;
 
+	/**
+	 * Deprecated to warn users that they should implement the feature or use NotSupportedException instead
+	 */
+	@Deprecated
+	public static void warn(String message) {
+		new NotImplementedException(message).printStackTrace();
+	}
 }

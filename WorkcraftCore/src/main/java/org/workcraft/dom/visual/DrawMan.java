@@ -21,6 +21,8 @@
 
 package org.workcraft.dom.visual;
 
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
@@ -33,63 +35,65 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
 import org.workcraft.gui.graph.tools.NodePainter;
+import org.workcraft.util.Function;
+import org.workcraft.util.Function2;
 import org.workcraft.util.Graphics;
 
 public class DrawMan
 {
-	public static ExpressionBase<GraphicalContent> graphicalContent(final Node node, final NodePainter gcProvider) {
-		return new ExpressionBase<GraphicalContent>() {
-			@Override
-			public GraphicalContent evaluate(EvaluationContext resolver) {
-				if (node instanceof Hidable && resolver.resolve(((Hidable)node).hidden()))
-					return GraphicalContent.EMPTY;
-				else if (node instanceof MovableNew)
-					return resolver.resolve(transformedAndDecorated((MovableNew)node, gcProvider));
-				else
-					return resolver.resolve(decorated(node, gcProvider));
-			}
-		}; 
+	public static Expression<? extends GraphicalContent> graphicalContent(final Node node, final NodePainter gcProvider) {
+		Expression<? extends GraphicalContent> withoutTransform = withoutTransform(node, gcProvider);
+		if (node instanceof MovableNew)
+			return applyTransform((MovableNew)node, withoutTransform);
+		else
+			return withoutTransform;
 	}
 	
-	private static ExpressionBase<GraphicalContent> transformedAndDecorated(final MovableNew node, final NodePainter gcProvider)
+	private static Expression<GraphicalContent> applyTransform(final MovableNew node, final Expression<? extends GraphicalContent> gc)
 	{
-		return new ExpressionBase<GraphicalContent>() {
+		return bindFunc(node.transform(), gc, new Function2<AffineTransform, GraphicalContent, GraphicalContent>(){
 			@Override
-			public GraphicalContent evaluate(EvaluationContext resolver) {
-				final AffineTransform transform = resolver.resolve(node.transform());
-				final GraphicalContent decorated = resolver.resolve(decorated(node, gcProvider));
-				
+			public GraphicalContent apply(final AffineTransform transform, final GraphicalContent content) {
 				return new GraphicalContent() {
 					@Override
 					public void draw(Graphics2D graphics) {
 						graphics.transform(transform);
-						decorated.draw(graphics);
+						content.draw(graphics);
 					}
 				};
 			}
-		};
+		});
+	}
+	
+	public static <N> Expression<GraphicalContent> drawCollection(Iterable<? extends N> collection, Function<? super N, ? extends Expression<? extends GraphicalContent>> painter) {
+		Iterable<? extends N> children = collection;
+		final List<Expression<? extends GraphicalContent>> childrenGraphics = new ArrayList<Expression<? extends GraphicalContent>>();
+		for(N n : children)
+			childrenGraphics.add(painter.apply(n));
+		
+		Expression<GraphicalContent> result = constant(GraphicalContent.EMPTY);
+		for(Expression<? extends GraphicalContent> child : childrenGraphics)
+			result = Graphics.compose(result, child);
+		
+		return result;
 	}
 
-	private static Expression<? extends GraphicalContent> decorated(final Node node, final NodePainter gcProvider)
+	private static Expression<? extends GraphicalContent> withoutTransform(final Node node, final NodePainter gcProvider)
 	{
 		final Expression<? extends GraphicalContent> graphicalContent = gcProvider.getGraphicalContent(node);
+		final Expression<? extends Collection<? extends Node>> nodes = node.children();
 		Expression<? extends Expression<? extends GraphicalContent>> childrenGc = new ExpressionBase<Expression<? extends GraphicalContent>>(){
-
 			@Override
 			protected Expression<? extends GraphicalContent> evaluate(EvaluationContext context) {
-				Collection<? extends Node> children = context.resolve(node.children());
-				final List<ExpressionBase<GraphicalContent>> childrenGraphics = new ArrayList<ExpressionBase<GraphicalContent>>();
-				for(Node n : children)
-					childrenGraphics.add(graphicalContent(n, gcProvider));
-				
-				Expression<? extends GraphicalContent> result = graphicalContent;
-				for(ExpressionBase<GraphicalContent> child : childrenGraphics)
-					result = Graphics.compose(result, child);
-				
-				return result;
+				return drawCollection(context.resolve(nodes), new Function<Node, Expression<? extends GraphicalContent>>(){
+					@Override
+					public Expression<? extends GraphicalContent> apply(Node n) {
+						return graphicalContent(n, gcProvider);
+					}
+				});
 			}
 		};
 		
-		return Expressions.join(childrenGc);
+		return Graphics.compose(graphicalContent, Expressions.join(childrenGc));
 	}
 }

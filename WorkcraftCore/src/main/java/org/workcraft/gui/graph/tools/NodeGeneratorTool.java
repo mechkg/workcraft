@@ -25,8 +25,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 
-import javax.swing.Icon;
-
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
@@ -35,8 +33,8 @@ import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
-import org.workcraft.util.GUI;
 import org.workcraft.util.Function;
+import org.workcraft.util.GUI;
 
 public class NodeGeneratorTool extends AbstractTool {
 	private NodeGenerator generator;
@@ -48,14 +46,6 @@ public class NodeGeneratorTool extends AbstractTool {
 		this.snap = snap;
 	}
 	
-	public Icon getIcon() {
-		return generator.getIcon();
-	}
-
-	public String getLabel() {
-		return generator.getLabel();
-	}
-
 	public void mousePressed(GraphEditorMouseEvent e) {
 		try {
 			generator.generate(snap.apply(e.getPosition()));
@@ -77,14 +67,15 @@ public class NodeGeneratorTool extends AbstractTool {
 				return new GraphicalContent(){
 					@Override
 					public void draw(Graphics2D g) {
-						GUI.drawEditorMessage(viewport, g, Color.BLACK, "Click to create a " + generator.getLabel(), context);	
+						GUI.drawEditorMessage(viewport, g, Color.BLACK, "Click to create a " + generator.getIdentification().getLabel(), context);	
 					}
 				};
 			}
 		};
 	}
 	
-	public int getHotKeyCode() {
-		return generator.getHotKeyCode();
+	@Override
+	public Identification getIdentification() {
+		return generator.getIdentification();
 	}
 }

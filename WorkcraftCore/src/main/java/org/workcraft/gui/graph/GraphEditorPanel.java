@@ -51,15 +51,19 @@ import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.Overlay;
 import org.workcraft.gui.PropertyEditorWindow;
 import org.workcraft.gui.ToolboxPanel;
+import org.workcraft.gui.graph.tools.DummyMouseListener;
 import org.workcraft.gui.graph.tools.GraphEditor;
+import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.shared.CommonVisualSettings;
+import org.workcraft.util.Function;
 import org.workcraft.workspace.WorkspaceEntry;
 
 import pcollections.PVector;
 
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 
 public class GraphEditorPanel extends JPanel implements GraphEditor {
 
@@ -146,7 +150,14 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	private Overlay overlay = new Overlay();
 	
 	private boolean firstPaint = true;
-
+	
+	static Function<GraphEditorTool, GraphEditorMouseListener> mouseListenerGetter = new Function<GraphEditorTool, GraphEditorMouseListener>(){
+		@Override
+		public GraphEditorMouseListener apply(GraphEditorTool tool) {
+			return tool != null ? tool.mouseListener() : DummyMouseListener.INSTANCE;
+		}
+	};
+	
 	public GraphEditorPanel(MainWindow mainWindow, WorkspaceEntry workspaceEntry) throws ServiceNotAvailableException {
 		super (new BorderLayout());
 		this.mainWindow = mainWindow;
@@ -161,8 +172,8 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		ruler = new Ruler(grid);
 
 		toolboxPanel = new ToolboxPanel(graphEditable.createTools(this));
-		
-		GraphEditorPanelMouseListener mouseListener = new GraphEditorPanelMouseListener(this, toolboxPanel.selectedTool());
+
+		GraphEditorPanelMouseListener mouseListener = new GraphEditorPanelMouseListener(this, bindFunc(toolboxPanel.selectedTool(), mouseListenerGetter));
 		GraphEditorPanelKeyListener keyListener = new GraphEditorPanelKeyListener(this, toolboxPanel);
 
 		addMouseMotionListener(mouseListener);
@@ -283,5 +294,4 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	public WorkspaceEntry getWorkspaceEntry() {
 		return workspaceEntry;
 	}
-
 }

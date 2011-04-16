@@ -27,126 +27,200 @@ import static org.workcraft.util.Maybe.Util.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Iterator;
 
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.connections.VisualConnection;
-import org.workcraft.exceptions.NotImplementedException;
-import org.workcraft.util.Func;
+import org.workcraft.gui.graph.tools.HitTester;
 import org.workcraft.util.Function;
+import org.workcraft.util.Function0;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Hierarchy;
 import org.workcraft.util.Maybe;
+import org.workcraft.util.MaybeVisitor;
 
 import pcollections.PCollection;
 import pcollections.TreePVector;
 
 public class HitMan
 {
-	private static <T extends Node> Iterable<T> filterByBB(final Function<? super T, ? extends Maybe<? extends Touchable>> tp, Iterable<? extends T> nodes, final Point2D point) {
-		return filter(nodes, new Func<T, Boolean>()
-				{
-			private static final long serialVersionUID = -7790168871113424836L;
+	public static class Flat<N> {
+		private Instance<N> instance;
+		private final Function0<? extends Iterable<? extends N>> contents;
 
-			@Override
-			public Boolean eval(T arg) {
-				Rectangle2D boundingBox = orElse(applyFunc(tp.apply(arg), Touchable.boundingBoxGetter), null); 
-				return 
-					boundingBox != null &&
-					boundingBox.contains(point);
-			}
-			}
-		);
+		public Flat(final Function0<? extends Iterable<? extends N>> contents, final Function<? super N, ? extends Touchable> tp) {
+			this.contents = contents;
+			this.instance = new Instance<N>(new Function<N, Iterable<? extends N>>(){
+				@Override
+				public Iterable<? extends N> apply(N argument) {
+					return contents.apply();
+				}
+			}, new Function<N, Maybe<? extends Touchable>>(){
+				@Override
+				public Maybe<? extends Touchable> apply(N argument) {
+					if(argument == null)
+						return nothing();
+					else
+						return just(tp.apply(argument));
+				}
+			});
+		}
+		
+		public N hit(Point2D point, Function<? super N, Boolean> filter) {
+			return instance.hitFirst(point, null, filter);
+		}
+		
+		public HitTester<N> getHitTester() {
+			return getHitTester(Arrays.asList(Function.Util.constant(true)));
+		}
+		
+		public HitTester<N> getHitTester(final Iterable<? extends Function<? super N, Boolean>> testers) {
+			return new HitTester<N>() {
+
+				@Override
+				public N hitTest(Point2D point) {
+					for(Function<? super N, Boolean> tester : testers) {
+						N n = hit(point, tester);
+						if(n != null)
+							return n;
+					}
+					return null;
+				}
+
+				@Override
+				public PCollection<N> boxHitTest(Point2D boxStart, Point2D boxEnd) {
+					return HitMan.<N>boxHitTest(instance.tp, contents.apply(), boxStart, boxEnd);
+				}
+				
+			};
+		}
+
 	}
 	
-	private static <T> Iterable<T> filter(Iterable<? extends T> nodes, Func<? super T, Boolean> filter) {
+	public static class Instance<N> {
+		public Instance(Function<? super N, ? extends Iterable<? extends N>> hierarchy, Function<? super N, ? extends Maybe<? extends Touchable>> tp) {
+			this.hierarchy = hierarchy;
+			this.tp = tp;
+		}
+
+		public final Function<? super N, ? extends Iterable<? extends N>> hierarchy;
+		public final Function<? super N, ? extends Maybe<? extends Touchable>> tp;
+		
+		Iterable<N> filterByBB(Iterable<? extends N> nodes, final Point2D point) {
+			return filter(nodes, new Function<N, Boolean>() {
+				@Override
+				public Boolean apply(N arg) {
+					return tp.apply(arg).accept(new MaybeVisitor<Touchable, Boolean>() {
+						@Override
+						public Boolean visitJust(Touchable touchable) {
+							return touchable.getBoundingBox().contains(point);
+						}
+
+						@Override
+						public Boolean visitNothing() {
+							return false;
+						}
+					});
+				}
+			});
+		}
+
+		private Iterable<? extends N> getFilteredChildren(Point2D point, N node) {
+			return reverse(filterByBB(hierarchy.apply(node), point));
+		}
+
+		public N hitDeepest(Point2D point, N node, Function<? super N, Boolean> filter) {
+			
+			for (N n : getFilteredChildren(point, node)) {
+				N result = hitDeepest(point, n, filter);
+				if(result!=null)
+					return result;
+			}
+
+			if (filter.apply(node))
+				return hitBranch(point, node);
+			return null;
+		}
+		
+		private N hitBranch(Point2D point, N node) {
+			if (isBranchHit(point, node))
+				return node;
+			else
+				return null;
+		}
+		
+		public boolean isBranchHit (Point2D point, N node) {
+			Touchable touchable = toNullable(tp.apply(node));
+			if (touchable != null && touchable.hitTest(point))	{
+					return true;
+			}
+
+			for (N n : getFilteredChildren(point, node)) {
+				if (isBranchHit(point, n))
+					return true;
+			}
+
+			return false;
+		}
+		
+		public N hitFirst(Point2D point, N node, Function<? super N, Boolean> filter) {
+			if (filter.apply(node)) {
+				return hitBranch(point, node);
+			} else {
+				return hitFirstChild(point, node, filter);
+			}
+		}
+
+		public N hitFirstChild(Point2D point, N node, Function<? super N, Boolean> filter) {
+			for (N n : getFilteredChildren(point, node)) {
+				N hit = hitFirst(point, n, filter);
+				if (hit != null)
+					return hit;
+			}
+			return null;
+		}
+
+		public N hitFirst(Point2D point, N node) {
+			return hitFirst(point, node, new Function<N, Boolean>(){
+				public Boolean apply(N arg0) {
+					return true;
+				}
+			});
+		}
+
+		/**
+		 * Deprecated to discourage the use of reflection
+		 */
+		@Deprecated
+		public <T> T hitFirstNodeOfType(Point2D point, N node, Class<T> type) {
+			return type.cast(hitFirst(point, node, Hierarchy.getTypeFilter(type)));
+		}
+
+		/**
+		 * Deprecated to discourage the use of reflection
+		 */
+		@Deprecated
+		public <T> T hitFirstChildOfType(Point2D point, N node, Class<T> type) {
+			return type.cast(hitFirstChild(point, node, Hierarchy.getTypeFilter(type)));
+		}
+		
+		/**
+		 * Deprecated to discourage the use of reflection
+		 */
+		@Deprecated
+		public <T> T hitDeepestNodeOfType(Point2D point, N group, final Class<T> type) {
+			return type.cast(hitDeepest(point, group, Hierarchy.getTypeFilter(type)));
+		}
+	}
+	
+	private static <T> Iterable<T> filter(Iterable<? extends T> nodes, Function<? super T, Boolean> filter) {
 		ArrayList<T> result = new ArrayList<T>();
 		for(T node : nodes)
-			if(filter.eval(node))
+			if(filter.apply(node))
 				result.add(node);
 		return result;
-	}
-
-	private static Iterable<? extends Node> getFilteredChildren(final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node)
-	{
-		return reverse(filterByBB(tp, GlobalCache.eval(node.children()), point));
-	}
-
-	public static Node hitDeepest(final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
-		
-		for (Node n : getFilteredChildren(tp, point, node)) {
-			Node result = hitDeepest(tp, point, n, filter);
-			if(result!=null)
-				return result;
-		}
-
-		if (filter.eval(node))
-			return hitBranch(tp, point, node);
-		return null;
-	}
-
-	public static boolean isBranchHit (final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
-
-		Touchable touchable = orElse(tp.apply(node), null);
-		if (touchable != null && touchable.hitTest(point))	{
-				return true;
-		}
-
-		for (Node n : getFilteredChildren(tp, point, node)) {
-			if (isBranchHit(tp, point, n))
-				return true;
-		}
-
-		return false;
-	}
-
-	public static Node hitFirst(final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
-		return hitFirst(tp, point, node, new Func<Node, Boolean>(){
-			public Boolean eval(Node arg0) {
-				return true;
-			}
-		});
-	}
-
-	public static Node hitFirst(final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
-		if (filter.eval(node)) {
-			return hitBranch(tp, point, node);
-		} else {
-			return hitFirstChild(tp, point, node, filter);
-		}
-	}
-
-	private static Node hitBranch(final Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
-		if(node instanceof CustomTouchable) {
-			if(true)throw new NotImplementedException("Get rid of CustomTouchable in favor of custom hitman");
-			return ((CustomTouchable)node).customHitTest(point);
-		}
-		
-		if (isBranchHit(tp, point, node))
-			return node;
-		else
-			return null;
-	}
-
-	public static <T extends Node> T hitFirstNodeOfType(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node, Class<T> type) {
-		return type.cast(hitFirst(tp, point, node, Hierarchy.getTypeFilter(type)));
-	}
-
-	public static Node hitFirstChild(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node, Func<Node, Boolean> filter) {
-		for (Node n : getFilteredChildren(tp, point, node)) {
-			Node hit = hitFirst(tp, point, n, filter);
-			if (hit != null)
-				return hit;
-		}
-		return null;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T extends Node> T hitFirstChildOfType(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node, Class<T> type) {
-		return (T) hitFirstChild(tp, point, node, Hierarchy.getTypeFilter(type));
 	}
 
 	private static <T> Iterable<T> reverse(Iterable<T> original)
@@ -173,36 +247,31 @@ public class HitMan
 			}
 		};
 	}
-
-	@SuppressWarnings("unchecked")
-	public static <T extends Node> T hitDeepestNodeOfType(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node group, final Class<T> type) {
-		return (T)hitDeepest(tp, point, group, Hierarchy.getTypeFilter(type));
-	}
-
-	public static Node hitTestForSelection(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
-		Node nd = HitMan.hitFirstChild(tp, point, node, new Func<Node, Boolean>() {
-			public Boolean eval(Node n) {
-				if (!(n instanceof MovableNew))
-					return false;
-
-				if (n instanceof Hidable)
-					return !GlobalCache.eval(((Hidable)n).hidden());
-				else
-					return true;
+	
+	public static <N extends Node> N hitTestForSelection(Function<? super N, ? extends Maybe<? extends Touchable>> tp, Point2D point, N node, final Class<N> type) {
+		Function<N, Iterable<? extends N>> children = new Function<N, Iterable<? extends N>>() {
+			@Override
+			public Iterable<? extends N> apply(N argument) {
+				ArrayList<N> result = new ArrayList<N>();
+				for(Node n : eval(argument.children()))
+					result.add(type.cast(n));
+				return result;
+			}
+		};
+		
+		Instance<N> hitMan = new Instance<N>(children, tp);
+		
+		N nd = hitMan.hitFirstChild(point, node, new Function<N, Boolean>() {
+			@Override
+			public Boolean apply(N n) {
+				return n instanceof MovableNew;
 			}
 		});
 
 		if (nd == null)
-			nd = HitMan.hitFirstChild(tp, point, node, new Func<Node, Boolean>() {
-				public Boolean eval(Node n) {
-					if (n instanceof VisualConnection) {
-						if (n instanceof Hidable) 
-							return !GlobalCache.eval(((Hidable)n).hidden());
-						else
-							return true;
-					}
-					else
-						return false;
+			nd = hitMan.hitFirstChild(point, node, new Function<Node, Boolean>() {
+				public Boolean apply(Node n) {
+					return n instanceof VisualConnection;
 				}
 			});
 
@@ -210,38 +279,22 @@ public class HitMan
 	}
 
 	public static Node hitTestForConnection(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
-		Node nd = HitMan.hitDeepest(tp, point, node, new Func<Node, Boolean>() {
-			public Boolean eval(Node n) {
-				if (n instanceof MovableNew && ! (n instanceof Container)) {
-					if (n instanceof Hidable) 
-						return !GlobalCache.eval(((Hidable)n).hidden());
-					else
-						return true;					
-				}
-				else
-					return false;
+		Instance<Node> hitMan = new Instance<Node>(Hierarchy.children, tp);
+		
+		Node nd = hitMan.hitDeepest(point, node, new Function<Node, Boolean>() {
+			public Boolean apply(Node n) {
+				return n instanceof MovableNew && ! (n instanceof Container);
 			}
 		});
 
 		if (nd == null)
-			nd = HitMan.hitDeepest(tp, point, node, new Func<Node, Boolean>() {
-				public Boolean eval(Node n) {
-					if (n instanceof VisualConnection) {
-						if (n instanceof Hidable) 
-							return !GlobalCache.eval(((Hidable)n).hidden());
-						else
-							return true;
-					}
-					else
-						return false;
+			nd = hitMan.hitDeepest(point, node, new Function<Node, Boolean>() {
+				public Boolean apply(Node n) {
+					return n instanceof VisualConnection;
 				}
 			});
 
 		return nd;
-	}
-
-	public static PCollection<Node> boxHitTest (TouchableProvider<Node> touchableProvider, Node container, Point2D p1, Point2D p2) {
-		return boxHitTest(eval(TouchableProvider.Util.asAWhole(touchableProvider)), eval(container.children()), p1, p2);
 	}
 
 	/**
@@ -251,8 +304,7 @@ public class HitMan
 	 * @param p2 		The bottom-right corner of the rectangle
 	 * @return 			The collection of nodes fitting completely inside the rectangle
 	 */
-	public static <N> PCollection<N> boxHitTest (Function<? super N, ? extends Maybe<? extends Touchable>> t, Collection<? extends N> nodes, Point2D p1, Point2D p2) {
-		
+	public static <N> PCollection<N> boxHitTest (Function<? super N, ? extends Maybe<? extends Touchable>> t, Iterable<? extends N> nodes, Point2D p1, Point2D p2) {
 		PCollection<N> hit = TreePVector.<N>empty();
 
 		Rectangle2D rect = Geometry.createRectangle(p1, p2);

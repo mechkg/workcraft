@@ -21,25 +21,32 @@
 
 package org.workcraft.plugins.cpog;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
-import org.workcraft.annotations.VisualClass;
+import java.awt.geom.Point2D;
+
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dom.math.MathNode;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor;
 
-@VisualClass(org.workcraft.plugins.cpog.VisualVariable.class)
-public class Variable extends MathNode implements Comparable<Variable>, BooleanVariable
+public class Variable implements Comparable<Variable>, BooleanVariable, Node, Component
 {
-	private final ModifiableExpression<VariableState> state;
-	private final ModifiableExpression<String> label;
+	public final ModifiableExpression<VariableState> state;
+	public final ModifiableExpression<String> label;
+	public final VisualComponent visualVar;
 
-	public Variable(StorageManager storage) {
-		super(storage);
-		state = storage.create(VariableState.UNDEFINED);
-		label = storage.create("");
+	public Variable(ModifiableExpression<VariableState> state, ModifiableExpression<String> label, VisualComponent visualVar) {
+		this.state = state;
+		this.label = label;
+		this.visualVar = visualVar;
+	}
+	
+	public static Variable make(StorageManager storage, ModifiableExpression<String> varName) {
+		return new Variable
+				( storage.create(VariableState.UNDEFINED)
+				, varName
+				, new VisualComponent(storage.<Point2D>create(new Point2D.Double(0, 0)), varName, storage.create(LabelPositioning.BOTTOM)));
 	}
 	
 	public ModifiableExpression<VariableState> state()
@@ -49,13 +56,8 @@ public class Variable extends MathNode implements Comparable<Variable>, BooleanV
 
 	@Override
 	public int compareTo(Variable o)
-	{		
-		return getLabel().compareTo(o.getLabel());
-	}
-
-	public ModifiableExpression<String> label()
 	{
-		return label;
+		return getLabel().compareTo(o.getLabel());
 	}
 	
 	@Override
@@ -66,5 +68,15 @@ public class Variable extends MathNode implements Comparable<Variable>, BooleanV
 	@Override
 	public <T> T accept(BooleanVisitor<T> visitor) {
 		return visitor.visit(this);
+	}
+
+	@Override
+	public <T> T accept(NodeVisitor<T> visitor) {
+		return visitor.visitComponent(this);
+	}
+
+	@Override
+	public <T> T accept(ComponentVisitor<T> visitor) {
+		return visitor.visitVariable(this);
 	}
 }

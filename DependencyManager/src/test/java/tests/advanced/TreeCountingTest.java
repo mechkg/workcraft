@@ -97,6 +97,13 @@ public class TreeCountingTest {
 		});
 	}
 
+	/**
+	 * treeCount :: Expression TreeNode -> Expression Integer
+	 * treeCount tree = tree >>= tc
+	 *     where
+	 *         tc Nil = return 1
+	 *         tc (Branch a b) = (+) <$> treeCount a <*> treeCount b
+	 */
 	private static Expression<? extends Integer> treeCount(final Expression<TreeNode> tree) {
 		
 		return bind(tree, new Combinator<TreeNode, Integer>(){

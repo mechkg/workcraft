@@ -28,16 +28,32 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.gui.graph.Viewport;
 
-public interface GraphEditorTool extends GraphEditorKeyListener, GraphEditorMouseListener {
+public interface GraphEditorTool {
+	
+	interface Identification {
+		public String getLabel();
+		public Icon getIcon();
+		/**
+		 * Returns the hot key code associated with this tool. They should be taken from the java.awt.event.KeyEvent class.
+		 * -1 stands for "no hot-key". 
+		 * @return
+		 */
+		public int getHotKeyCode();	
+	}
+
+	public GraphEditorKeyListener keyListener();
+	public GraphEditorMouseListener mouseListener();
+	
 	public void activated();
 	public void deactivated();
 	
 	public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus);
 	public Expression<? extends GraphicalContent> screenSpaceContent(Viewport viewport, Expression<Boolean> hasFocus);
 	
+	/**
+	 * A panel with additional tool controls. Can be null.
+	 */
 	public JPanel getInterfacePanel();
 
-	public String getLabel();
-	public Icon getIcon();
-	public int getHotKeyCode();	
+	public Identification getIdentification();
 }

@@ -24,6 +24,7 @@ package org.workcraft.dom.visual;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
@@ -31,6 +32,7 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
 import org.workcraft.exceptions.NotAnAncestorException;
+import org.workcraft.util.Function2;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Hierarchy;
 
@@ -124,6 +126,24 @@ public class TransformHelper {
 			@Override
 			public Touchable evaluate(EvaluationContext resolver) {
 				return new TouchableTransformer(resolver.resolve(node), resolver.resolve(transform));
+			}
+		};
+	}
+
+	public static Function2<AffineTransform, Touchable, Touchable> transform() {
+		return new Function2<AffineTransform, Touchable, Touchable>() {
+			@Override
+			public Touchable apply(AffineTransform transform, Touchable touchable) {
+				return transform(touchable, transform);
+			}
+		};
+	}
+
+	public static Function2<? super Touchable, ? super Point2D, ? extends Touchable> translate() {
+		return new Function2<Touchable, Point2D, Touchable>(){
+			@Override
+			public Touchable apply(Touchable touchable, Point2D offset) {
+				return transform(touchable, AffineTransform.getTranslateInstance(offset.getX(), offset.getY()));
 			}
 		};
 	}

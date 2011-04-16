@@ -11,9 +11,11 @@ import org.workcraft.dependencymanager.advanced.user.PickyModifiableExpressionBa
 import org.workcraft.dependencymanager.util.listeners.Listener;
 import org.workcraft.util.Collections;
 import org.workcraft.util.Function;
+import org.workcraft.util.Function0;
 import org.workcraft.util.Function2;
 import org.workcraft.util.Function3;
 import org.workcraft.util.Maybe;
+import org.workcraft.util.SubstructureView;
 import org.workcraft.util.TwoWayFunction;
 
 import pcollections.PVector;
@@ -101,7 +103,7 @@ public class Expressions {
 	}
 
 	public static <A,B,C> Expression<C> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Function2<? super A, ? super B, ? extends C> func) {
-		notNull(expr1, expr2, func); 
+		notNull(expr1, expr2, func);
 		return new ExpressionBase<C>(){
 			@Override
 			protected C evaluate(EvaluationContext context) {
@@ -175,14 +177,9 @@ public class Expressions {
 				return context.resolve(combinator.get(context.resolve(expr1)));
 			}
 		};
-	}
+	}	
 	
-	public static <A,B,R> ModifiableExpression<R> bind(final ModifiableExpression<A> exprA, final Expression<? extends B> additionalInfo, final Function<B, TwoWayFunction<A, R>> func) {
-		Expression<TwoWayFunction<A, R>> ff = bindFunc(additionalInfo, func);
-		return bind(exprA, ff);
-	}
-	
-	public static <A,R> ModifiableExpression<R> bind(final ModifiableExpression<A> exprA, final Expression<TwoWayFunction<A, R>> func) {
+	public static <A,R> ModifiableExpression<R> applyM(final ModifiableExpression<A> exprA, final Expression<TwoWayFunction<A, R>> func) {
 		return new ModifiableExpressionBase<R>() {
 			@Override
 			public void setValue(R newValue) {
@@ -192,6 +189,34 @@ public class Expressions {
 			@Override
 			protected R evaluate(EvaluationContext context) {
 				return context.resolve(func).apply(context.resolve(exprA));
+			}
+		};
+	}
+
+	public static <A,R> ModifiableExpression<R> bindFunc(final ModifiableExpression<A> exprA, final SubstructureView<A, R> func) {
+		return new ModifiableExpressionBase<R>() {
+			@Override
+			public void setValue(R newValue) {
+				exprA.setValue(func.reverse(GlobalCache.eval(exprA), newValue));
+			}
+
+			@Override
+			protected R evaluate(EvaluationContext context) {
+				return func.apply(context.resolve(exprA));
+			}
+		};
+	}
+
+	public static <A,R> ModifiableExpression<R> bind(final ModifiableExpression<A> exprA, final SubstructureView<A, R> func) {
+		return new ModifiableExpressionBase<R>() {
+			@Override
+			public void setValue(R newValue) {
+				exprA.setValue(func.reverse(GlobalCache.eval(exprA), newValue));
+			}
+
+			@Override
+			protected R evaluate(EvaluationContext context) {
+				return func.apply(context.resolve(exprA));
 			}
 		};
 	}
@@ -269,4 +294,30 @@ public class Expressions {
 			}
 		};
 	};
+	
+	public static <A> Function0<A> asFunction(final Expression<? extends A> expr) {
+		return new Function0<A>(){
+			@Override
+			public A apply() {
+				return GlobalCache.eval(expr);
+			}
+		};
+	}
+
+	/**
+	 * the actual type is like: (a -> Expression b) -> Expression (a -> IO b)
+	 */
+	public static <A, B> Expression<Function<A, B>> joinFunction(final Function<? super A, ? extends Expression<? extends B>> func) {
+		return new ExpressionBase<Function<A, B>>() {
+			@Override
+			protected Function<A, B> evaluate(final EvaluationContext context) {
+				return new Function<A, B>() {
+					@Override
+					public B apply(A a) {
+						return context.resolve(func.apply(a));
+					}
+				};
+			}
+		};
+	}
 }

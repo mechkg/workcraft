@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 
 import javax.swing.Icon;
+import javax.swing.JPanel;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
@@ -11,23 +12,25 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.GraphicalContent;
-import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
-import org.workcraft.gui.graph.tools.AbstractTool;
 import org.workcraft.gui.graph.tools.Colorisation;
 import org.workcraft.gui.graph.tools.Colorisator;
 import org.workcraft.gui.graph.tools.DecorationProvider;
+import org.workcraft.gui.graph.tools.DummyKeyListener;
+import org.workcraft.gui.graph.tools.GraphEditorKeyListener;
+import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
+import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.HierarchicalColorisator;
 import org.workcraft.util.GUI;
 
-public class SelectionTool extends AbstractTool implements DecorationProvider<Colorisator> {
+public class SelectionTool implements GraphEditorTool, DecorationProvider<Colorisator> {
 
 	private final GenericSelectionTool<Node> selectionTool;
 	private final Expression<? extends Node> currentLevel;
 	
 	@Override
-	public void mouseClicked(GraphEditorMouseEvent e) {
-		selectionTool.mouseClicked(e);
+	public GraphEditorMouseListener mouseListener() {
+		return selectionTool.getMouseListener();
 	}
 	
 	public SelectionTool(SelectionToolConfig<Node> config) {
@@ -72,7 +75,6 @@ public class SelectionTool extends AbstractTool implements DecorationProvider<Co
 							return Colorisation.EMPTY;
 						
 						Colorisation selectedDecoration = new Colorisation() {
-	
 							@Override
 							public Color getColorisation() {
 								return selectionColor;
@@ -94,47 +96,24 @@ public class SelectionTool extends AbstractTool implements DecorationProvider<Co
 		};
 	}
 	
-	@Override
-	public String getLabel() {
-		return "Select";
-	}
+	public static Identification identification = new Identification() {
+		@Override
+		public String getLabel() {
+			return "Select";
+		}
+		
+		@Override
+		public int getHotKeyCode() {
+			return KeyEvent.VK_S;
+		}
+		
+		@Override
+		public Icon getIcon() {
+			return GUI.createIconFromSVG("images/icons/svg/select.svg");
+		}
+	};
 	
-	@Override
-	public int getHotKeyCode() {
-		return KeyEvent.VK_S;
-	}
-	
-	@Override
-	public Icon getIcon() {
-		return GUI.createIconFromSVG("images/icons/svg/select.svg");
-	}
-
 	protected static Color selectionColor = new Color(99, 130, 191).brighter();
-
-	@Override
-	public void finishDrag(GraphEditorMouseEvent e) {
-		selectionTool.finishDrag(e);
-	}
-	
-	@Override
-	public boolean isDragging() {
-		return selectionTool.isDragging();
-	}
-	
-	@Override
-	public void mousePressed(GraphEditorMouseEvent e) {
-		selectionTool.mousePressed(e);
-	}
-	
-	@Override
-	public void mouseMoved(GraphEditorMouseEvent e) {
-		selectionTool.mouseMoved(e);
-	}
-	
-	@Override
-	public void startDrag(GraphEditorMouseEvent e) {
-		selectionTool.startDrag(e);
-	}
 
 	@Override
 	public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, final Expression<Boolean> hasFocus) {
@@ -144,5 +123,28 @@ public class SelectionTool extends AbstractTool implements DecorationProvider<Co
 	@Override
 	public Expression<? extends GraphicalContent> screenSpaceContent(final Viewport viewport, final Expression<Boolean> hasFocus) {
 		return Expressions.constant(GraphicalContent.EMPTY);
+	}
+
+	@Override
+	public GraphEditorKeyListener keyListener() {
+		return DummyKeyListener.INSTANCE;
+	}
+
+	@Override
+	public void activated() {
+	}
+
+	@Override
+	public void deactivated() {
+	}
+
+	@Override
+	public JPanel getInterfacePanel() {
+		return null;
+	}
+
+	@Override
+	public Identification getIdentification() {
+		return identification;
 	}
 }

@@ -21,127 +21,172 @@
 
 package org.workcraft.plugins.cpog;
 
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
 import java.util.HashMap;
 
+import org.workcraft.dependencymanager.advanced.core.Combinator;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.dom.visual.BoundedColorisableImage;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
-import org.workcraft.dom.visual.DrawableNew;
-import org.workcraft.dom.visual.ReflectiveTouchable;
-import org.workcraft.dom.visual.Touchable;
-import org.workcraft.dom.visual.VisualComponent;
+import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
+import org.workcraft.plugins.shared.CommonVisualSettings;
+import org.workcraft.util.Function;
+import org.workcraft.util.Function2;
 
-public class VisualRhoClause extends VisualComponent implements DrawableNew, ReflectiveTouchable
+public class VisualRhoClause
 {
 	private static float strokeWidth = 0.038f;
+	
+	interface FormulaRenderInfo {
+		BooleanFormula formula();
+		BooleanFormula value();
+		Color foreColor();
+		Color backColor();
+	}
+	
+	
+	static Function<FormulaRenderInfo, BoundedColorisableImage> formulaToImage = new Function<FormulaRenderInfo, BoundedColorisableImage>(){
+		@Override
+		public BoundedColorisableImage apply(FormulaRenderInfo renderInfo) {
+			
+			final BooleanFormula formula = renderInfo.formula();
+			final BooleanFormula value = renderInfo.value();
+			final Color fillColor = renderInfo.backColor();
+			final Color foreColor = renderInfo.foreColor();
+			
+			final FormulaRenderingResult result = FormulaRenderer.render(formula);
+			Rectangle2D textBB = result.boundingBox;
 
-	// Ideally should be done with a normal expression instead of variable. 
-	// This is a lazy approach to conversion to Expressions, which does not require big modifications to draw() method. 
-	private final ModifiableExpression<Rectangle2D> boundingBox;
-	
-	private static Font font;
-	
-	static {
-		try {
-			font = Font.createFont(Font.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/eurm10.pfb")).deriveFont(0.5f);
-		} catch (FontFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			final float textX = (float)-textBB.getCenterX();
+			final float textY = (float)-textBB.getCenterY();
+				
+			float width = (float)textBB.getWidth() + 0.4f;
+			float height = (float)textBB.getHeight() + 0.2f;		
+
+			final Rectangle2D.Float bb = new Rectangle2D.Float(-width / 2, -height / 2, width, height);
+			
+			ColorisableGraphicalContent gc = new ColorisableGraphicalContent(){
+				public void draw(DrawRequest r)
+				{
+					Graphics2D g = r.getGraphics();
+					Color colorisation = r.getColorisation().getColorisation();
+					
+					g.setStroke(new BasicStroke(strokeWidth));
+
+					g.setColor(Coloriser.colorise(fillColor, colorisation));
+					g.fill(bb);
+					g.setColor(Coloriser.colorise(foreColor, colorisation));
+					g.draw(bb);
+					
+					AffineTransform transform = g.getTransform();
+					g.translate(textX, textY);
+					
+					result.draw(g, Coloriser.colorise(valueToColor.apply(value, foreColor), colorisation));
+							
+					g.setTransform(transform);		
+				}
+			};
+			return new BoundedColorisableImage(gc, bb);
 		}
-	}
+	};
 	
-	public VisualRhoClause(RhoClause rhoClause, StorageManager storage)
+	public static Expression<BoundedColorisableImage> getVisualRhoClause(RhoClause rhoClause)
 	{
-		super(rhoClause, storage);
-		boundingBox = storage.<Rectangle2D>create(new Rectangle2D.Float(0, 0, 0, 0));
+		return bindFunc(getRenderInfo(rhoClause), formulaToImage);
 	}
-	
-	@Override
-	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
-		return new ExpressionBase<ColorisableGraphicalContent>(){
 
+/**
+ * This function would be cleaner if implemented with inheritance from ExpressionBase, 
+ * but monadic interface is more general and should be preferred when possible.
+ * 
+ * getRenderInfo :: RhoClause -> Expression FormulaRenderInfo
+ * getRenderInfo rhoClause = do
+ *   formula <- formula rhoClause
+ *   value <- value formula
+ *   foreColor <- CommonVisualSettings.foregroundColor
+ *   fillColor <- CommonVisualSettings.fillColor
+ *   return $ FormulaRenderInfo
+ *       { formula
+ *       , value
+ *       , foreColor
+ *       , fillColor }
+ */
+	private static Expression<FormulaRenderInfo> getRenderInfo(RhoClause rhoClause) {
+		return bind(rhoClause.formula, new Combinator<BooleanFormula, FormulaRenderInfo>() {
 			@Override
-			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
-				return new ColorisableGraphicalContent(){
-					public void draw(DrawRequest r)
-					{
-						Graphics2D g = r.getGraphics();
-						Color colorisation = r.getColorisation().getColorisation();
-						
-						FormulaRenderingResult result = FormulaToGraphics.render(context.resolve(formula()), g.getFontRenderContext(), font);
-						
-						Rectangle2D textBB = result.boundingBox;
-							
-						float textX = (float)-textBB.getCenterX();
-						float textY = (float)-textBB.getCenterY();
-							
-						float width = (float)textBB.getWidth() + 0.4f;
-						float height = (float)textBB.getHeight() + 0.2f;		
-						
-						Rectangle2D.Float bb = new Rectangle2D.Float(-width / 2, -height / 2, width, height);
-						boundingBox.setValue(bb);
-						// careful not to use boundingBox afterwards, or infinite re-evaluation would happen
+			public Expression<? extends FormulaRenderInfo> apply(final BooleanFormula formula) {
+				return bind(value(formula), new Combinator<BooleanFormula, FormulaRenderInfo>(){
 
-						g.setStroke(new BasicStroke(strokeWidth));
+					@Override
+					public Expression<? extends FormulaRenderInfo> apply(final BooleanFormula value) {
+						return bindFunc(CommonVisualSettings.foregroundColor, CommonVisualSettings.fillColor, new Function2<Color, Color, FormulaRenderInfo>(){
 
-						g.setColor(Coloriser.colorise(context.resolve(fillColor()), colorisation));
-						g.fill(bb);
-						g.setColor(Coloriser.colorise(context.resolve(foregroundColor()), colorisation));
-						g.draw(bb);
-						
-						AffineTransform transform = g.getTransform();
-						g.translate(textX, textY);
-						
-						result.draw(g, Coloriser.colorise(getColor(context), colorisation));
-								
-						g.setTransform(transform);		
+							@Override
+							public FormulaRenderInfo apply(final Color fore, final Color fill) {
+								return new FormulaRenderInfo(){
+
+									@Override
+									public BooleanFormula formula() {
+										return formula;
+									}
+
+									@Override
+									public BooleanFormula value() {
+										return value;
+									}
+
+									@Override
+									public Color foreColor() {
+										return fore;
+									}
+
+									@Override
+									public Color backColor() {
+										return fill;
+									}
+								};
+							}
+						});
 					}
-				};
+				});
 			}
-		};
+		});
 	}
+
 	
-	private Color getColor(EvaluationContext context) {
-		BooleanFormula value = context.resolve(value());
-		if(value == One.instance())
-			return new Color(0x00cc00);
-		else
-			if(value == Zero.instance())
-				return Color.RED;
+	private static Function2<BooleanFormula, Color, Color> valueToColor = new Function2<BooleanFormula, Color, Color>() {
+		@Override
+		public Color apply(BooleanFormula val, Color defaultColor) {
+			if(val == One.instance())
+				return new Color(0x00cc00);
 			else
-				return context.resolve(foregroundColor());
-	}
+				if(val == Zero.instance())
+					return Color.RED;
+				else
+					return defaultColor;
+		}
+	};
 
-	private Expression<BooleanFormula> value() {
+	private static Expression<BooleanFormula> value(final BooleanFormula formula) {
 		return new ExpressionBase<BooleanFormula>() {
-
 			@Override
 			protected BooleanFormula evaluate(final EvaluationContext context) {
-				return context.resolve(formula()).accept(
+				return formula.accept(
 						new BooleanReplacer(new HashMap<BooleanVariable, BooleanFormula>())
 						{
 							@Override
@@ -161,42 +206,4 @@ public class VisualRhoClause extends VisualComponent implements DrawableNew, Ref
 			}
 		};
 	}
-
-	public RhoClause getMathRhoClause()
-	{
-		return (RhoClause)getReferencedComponent();
-	}
-	
-	public ModifiableExpression<BooleanFormula> formula()
-	{
-		return getMathRhoClause().formula();
-	}
-
-	@Override
-	public Expression<? extends Touchable> shape() {
-		return new ExpressionBase<Touchable>() {
-
-			@Override
-			protected Touchable evaluate(final EvaluationContext context) {
-				return new Touchable(){
-
-					@Override
-					public boolean hitTest(Point2D point) {
-						return getBoundingBox().contains(point);
-					}
-
-					@Override
-					public Rectangle2D getBoundingBox() {
-						return context.resolve(boundingBox);
-					}
-
-					@Override
-					public Point2D getCenter() {
-						return new Point2D.Double(0, 0);
-					}
-					
-				};
-			}
-		};
-	}	
 }

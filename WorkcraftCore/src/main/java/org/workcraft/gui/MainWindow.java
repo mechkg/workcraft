@@ -67,7 +67,6 @@ import org.pushingpixels.substance.api.SubstanceConstants.TabContentPaneBorderKi
 import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 import org.workcraft.Framework;
 import org.workcraft.dom.ModelDescriptor;
-import org.workcraft.dom.math.MathModel;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.exceptions.SerialisationException;
@@ -88,7 +87,6 @@ import org.workcraft.interop.ServiceHandle;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.PluginInfo;
-import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.tasks.Task;
 import org.workcraft.util.Export;
 import org.workcraft.util.FileUtils;
@@ -653,18 +651,14 @@ public class MainWindow extends JFrame {
 		if (dialog.getModalResult() == 1) {
 			ModelDescriptor info = dialog.getSelectedModel();
 			try {
-				HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
-				
-				MathModel mathModel = info.createMathModel(storage);
-				ServiceProvider modelServices = info.createServiceProvider(mathModel, storage);
+				ServiceProvider modelServices = info.newDocument();
 
 				String name = dialog.getModelTitle();
 
-				if (!dialog.getModelTitle().isEmpty())
-					mathModel.setTitle(dialog.getModelTitle());
+				// TODO: assign a title to the model?
 
 				WorkspaceEntry we = framework.getWorkspace().add(path, name, modelServices, false);
-				if (dialog.createVisualSelected()) { 
+				if (dialog.createVisualSelected()) {
 					// TODO: actually do something or remove this option 
 				}
 				try{
@@ -672,7 +666,7 @@ public class MainWindow extends JFrame {
 						createEditorWindow (we);
 				}
 				catch(ServiceNotAvailableException ex) {
-					throw new VisualModelInstantiationException("visual model is not defined for \"" + info.getDisplayName() + "\".", ex);
+					throw new VisualModelInstantiationException("visual editor is not defined for \"" + info.getDisplayName() + "\".", ex);
 				}
 			} catch (VisualModelInstantiationException e) {
 				e.printStackTrace();

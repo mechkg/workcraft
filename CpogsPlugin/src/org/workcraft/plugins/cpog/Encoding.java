@@ -28,11 +28,13 @@ public class Encoding
 		return result;
 	}	
 
-	public void updateEncoding(String s)
+	public Encoding updateEncoding(String s)
 	{
+		Encoding result = new Encoding();
 		int k = 0;
 		Set<Variable> sortedVariables = new TreeSet<Variable>(states.keySet()); 
-		for(Variable var : sortedVariables) states.put(var, VariableState.fromChar(s.charAt(k++)));
+		for(Variable var : sortedVariables) result.states.put(var, VariableState.fromChar(s.charAt(k++)));
+		return result;
 	}
 
 	public VariableState getState(Variable var)

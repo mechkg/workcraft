@@ -39,7 +39,7 @@ public class ChoiceProperty {
 			}
 		};
 	}
-	
+
 	public static <T> EditableProperty create(String name, PVector<Pair<String,T>> choice, ModifiableExpression<T> property) {
 		return EditableProperty.Util.create(name, createEditorProvider(choice), createRendererProvider(choice), property);
 	}

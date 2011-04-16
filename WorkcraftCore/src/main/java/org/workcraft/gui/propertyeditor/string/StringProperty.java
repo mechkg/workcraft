@@ -36,7 +36,7 @@ import org.workcraft.util.Action;
 
 public class StringProperty {
 
-	private static final GenericEditorProvider<String> EDITOR_PROVIDER = new GenericEditorProvider<String>() {
+	public static final GenericEditorProvider<String> EDITOR_PROVIDER = new GenericEditorProvider<String>() {
 		@Override
 		public GenericCellEditor<String> createEditor(String initialValue, Action accept, Action cancel) {
 			final JTextField textField = new JTextField();

@@ -21,6 +21,7 @@ import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TouchableProvider;
+import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.DefaultReflectiveModelPainter;
@@ -192,15 +193,6 @@ public class STGToolsProvider implements CustomToolsProvider {
 		};
 		final Expression<? extends GraphicalContent> simpleModelPainter = painterProvider.eval(Colorisator.EMPTY);
 		
-		final Function<Node, Maybe<? extends Touchable>> unsafeWholeTp = eval(TouchableProvider.Util.asAWhole(tp));
-		
-		Function<Point2D, Node> connectionHitTester = new Function<Point2D, Node>(){
-			@Override
-			public Node apply(Point2D argument) {
-				return HitMan.hitTestForConnection(unsafeWholeTp, argument, visualStg.getRoot());
-			}
-		};
-		
 		Function<Node, Expression<? extends Point2D>> connectionCenterProvider = new Function<Node, Expression<? extends Point2D>>(){
 			@Override
 			public Expression<? extends Point2D> apply(Node argument) {
@@ -211,17 +203,16 @@ public class STGToolsProvider implements CustomToolsProvider {
 					});
 			}
 		};
+
+		final Function<Node, Maybe<? extends Touchable>> unsafeWholeTp = eval(TouchableProvider.Util.asAWhole(tp));
 		
-		HitTester<VisualNode> selectionHitTester = new HitTester<VisualNode>() {
+		Function<Point2D, Node> connectionHitTester = new Function<Point2D, Node>(){
 			@Override
-			public VisualNode hitTest(Point2D point) {
-				return (VisualNode)HitMan.hitTestForSelection(unsafeWholeTp, point, visualStg.getRoot());
-			}
-			@Override
-			public PCollection<VisualNode> boxHitTest(Point2D boxStart, Point2D boxEnd) {
-				return (PCollection<VisualNode>)(PCollection<?>)HitMan.boxHitTest(tp, visualStg.getRoot(), boxStart, boxEnd);
+			public Node apply(Point2D argument) {
+				return HitMan.hitTestForConnection(unsafeWholeTp, argument, visualStg.getRoot());
 			}
 		};
+		HitTester<VisualNode> selectionHitTester = HitTester.Util.reflectiveHitTestForSelection(visualStg, unsafeWholeTp);
 		
 		Function<Point2D, Point2D> snap = new Function<Point2D, Point2D>() {
 			@Override
@@ -236,7 +227,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 		
 		return asList(
 				attachParameterisedPainter(new STGSelectionTool(visualStg.stg, editor, tp, selectionHitTester, editorState), painterProvider),
-				attachParameterisedPainter(new ConnectionTool(connectionCenterProvider, connectionManager, connectionHitTester), painterProvider),
+				attachParameterisedPainter(new ConnectionTool<Node>(connectionCenterProvider, connectionManager, connectionHitTester), painterProvider),
 				attachPainter(new NodeGeneratorTool(new PlaceGenerator(), snap), simpleModelPainter),
 				attachPainter(new NodeGeneratorTool(new SignalTransitionGenerator(), snap), simpleModelPainter),
 				attachPainter(new NodeGeneratorTool(new DummyTransitionGenerator(), snap), simpleModelPainter),

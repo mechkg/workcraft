@@ -31,9 +31,9 @@ import org.workcraft.plugins.petri.tools.SimulationTraceTable;
 import org.workcraft.plugins.stg.STG;
 import org.workcraft.plugins.stg.SignalTransition;
 import org.workcraft.plugins.stg.VisualSignalTransition;
-import org.workcraft.util.Func;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
+import org.workcraft.util.Hierarchy;
 import org.workcraft.util.Maybe;
 
 public class STGSimulationTool {
@@ -48,9 +48,9 @@ public class STGSimulationTool {
 		return new Function<Point2D, Maybe<String>>(){
 			@Override
 			public Maybe<String> apply(Point2D position) {
-				Node node = HitMan.hitDeepest(tp, position, visualRoot, new Func<Node, Boolean>() {
+				Node node = new HitMan.Instance<Node>(Hierarchy.children, tp).hitDeepest(position, visualRoot, new Function<Node, Boolean>() {
 					@Override
-					public Boolean eval(Node node) {
+					public Boolean apply(Node node) {
 						return node instanceof VisualSignalTransition && net.isEnabled(((VisualSignalTransition) node).getReferencedTransition());
 					}
 				});

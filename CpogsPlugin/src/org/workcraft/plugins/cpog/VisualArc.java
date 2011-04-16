@@ -203,7 +203,7 @@ public class VisualArc extends VisualConnection
 	}
 	
 	@Override
-	public Expression<? extends ColorisableGraphicalContent> graphicalContent() {
+	public static Expression<? extends ColorisableGraphicalContent> graphicalContent() {
 		return label.graphicalContent;
 	}
 	

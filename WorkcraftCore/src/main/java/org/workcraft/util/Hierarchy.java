@@ -37,10 +37,16 @@ import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.NodeHelper;
 
 public class Hierarchy {
-	public static <T> Func<Node, Boolean> getTypeFilter(
-			final Class<T> type) {
-		return new Func<Node, Boolean> (){
-			public Boolean eval(Node node) {
+	public static Function<Node, Collection<? extends Node>> children = new Function<Node, Collection<? extends Node>>(){
+		@Override
+		public Collection<? extends Node> apply(Node node) {
+			return eval(node.children());
+		}
+	};
+	
+	public static <T> Function<Object, Boolean> getTypeFilter(final Class<T> type) {
+		return new Function<Object, Boolean> (){
+			public Boolean apply(Object node) {
 				if (type.isInstance(node))
 					return true;
 				else

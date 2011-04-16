@@ -71,5 +71,4 @@ public class FormulaLabel {
 	
 	public final Expression<Rectangle2D> boundingBox;
 	public final Expression<ColorisableGraphicalContent> graphicalContent;
-	
 }

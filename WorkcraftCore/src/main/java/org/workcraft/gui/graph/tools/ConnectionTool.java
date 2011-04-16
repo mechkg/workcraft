@@ -21,8 +21,7 @@
 
 package org.workcraft.gui.graph.tools;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.assign;
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -42,7 +41,6 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
@@ -50,21 +48,20 @@ import org.workcraft.gui.graph.Viewport;
 import org.workcraft.util.Function;
 import org.workcraft.util.GUI;
 
-public class ConnectionTool extends AbstractTool implements DecorationProvider<Colorisator> {
-	private final ModifiableExpression<Node> mouseOverObject = Variable.create(null);
-	private final ModifiableExpression<Node> first = Variable.create(null);
+public class ConnectionTool<N> extends AbstractTool {
+	private final ModifiableExpression<N> mouseOverObject = Variable.create(null);
+	private final ModifiableExpression<N> first = Variable.create(null);
 
 	private boolean mouseExitRequiredForSelfLoop = true;
 	private boolean leftFirst = false;
 	private ModifiableExpression<Point2D> lastMouseCoords = Variable.<Point2D>create(new Point2D.Double());
 	private String warningMessage = null;
-	private final ConnectionManager<? super Node> connectionManager;
+	private final ConnectionManager<? super N> connectionManager;
 	
-	private static Color highlightColor = new Color(99, 130, 191).brighter();
-	private final Function<? super Point2D, ? extends Node> hitTester;
-	private final Function<? super Node, ? extends Expression<? extends Point2D>> centerProvider;
+	private final Function<? super Point2D, ? extends N> hitTester;
+	private final Function<? super N, ? extends Expression<? extends Point2D>> centerProvider;
 
-	public ConnectionTool (Function<? super Node, ? extends Expression<? extends Point2D>> centerProvider, ConnectionManager<? super Node> connectionManager, Function<? super Point2D, ? extends Node> hitTester) {
+	public ConnectionTool (Function<? super N, ? extends Expression<? extends Point2D>> centerProvider, ConnectionManager<? super N> connectionManager, Function<? super Point2D, ? extends N> hitTester) {
 		this.centerProvider = centerProvider;
 		this.connectionManager = connectionManager;
 		this.hitTester = hitTester;
@@ -84,40 +81,14 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 		return connectingLineGraphicalContent(viewport);
 	}
 
-	@Override
-	public Colorisator getDecoration() {
-		return getColorisator();
+	public Expression<N> mouseOverNode() {
+		return mouseOverObject;
 	}
 	
-	public Colorisator getColorisator() {
-		return new HierarchicalColorisator() {
-
-			@Override
-			public Expression<Colorisation> getSimpleColorisation(final Node node) {
-				return new ExpressionBase<Colorisation>(){
-					@Override
-					protected Colorisation evaluate(EvaluationContext context) {
-						if(node == context.resolve(mouseOverObject))
-							return new Colorisation(){
-								
-								@Override
-								public Color getColorisation() {
-									return highlightColor;
-								}
-		
-								@Override
-								public Color getBackground() {
-									return null;
-								}
-						};
-						return null;
-					}
-				};
-			};
-		
-		};
+	public Expression<N> firstNode() {
+		return mouseOverObject;
 	}
-
+	
 	private Expression<? extends GraphicalContent> connectingLineGraphicalContent(final Viewport viewport) {
 		return new ExpressionBase<GraphicalContent>(){
 
@@ -159,55 +130,58 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 		g.draw(line);
 	}
 
-	public String getLabel() {
-		return "Connect";
-	}
-
 	@Override
-	public void mouseMoved(GraphEditorMouseEvent e) {
-		lastMouseCoords.setValue(e.getPosition());
-		
-		Node newMouseOverObject = hitTester.apply(e.getPosition());
-		
-		mouseOverObject.setValue(newMouseOverObject);
+	public GraphEditorMouseListener mouseListener() {
+		return new DummyMouseListener() {
+			@Override
+			public void mouseMoved(GraphEditorMouseEvent e) {
+				lastMouseCoords.setValue(e.getPosition());
+				
+				N newMouseOverObject = hitTester.apply(e.getPosition());
+				
+				mouseOverObject.setValue(newMouseOverObject);
 
-		if (!leftFirst && mouseExitRequiredForSelfLoop) {
-			if (eval(mouseOverObject) == eval(first))
-				mouseOverObject.setValue(null);
-			else
-				leftFirst = true;
-		}
-	}
-
-	@Override
-	public void mousePressed(GraphEditorMouseEvent e) {
-		if (e.getButton() == MouseEvent.BUTTON1) {
-			if (eval(first) == null) {
-				if (eval(mouseOverObject) != null) { 
-					assign(first, mouseOverObject);
-					leftFirst = false;
-					mouseMoved(e);
-				}
-			} else if (eval(mouseOverObject) != null) {
-				try {
-					connectionManager.connect(eval(first), eval(mouseOverObject));
-
-					if ((e.getModifiers() & MouseEvent.CTRL_DOWN_MASK) != 0) {
-						assign(first, mouseOverObject);
+				if (!leftFirst && mouseExitRequiredForSelfLoop) {
+					if (eval(mouseOverObject) == eval(first))
 						mouseOverObject.setValue(null);
-					} else {
-						first.setValue(null);
-					}
-				} catch (InvalidConnectionException e1) {
-					Toolkit.getDefaultToolkit().beep();
+					else
+						leftFirst = true;
 				}
-
 			}
-		} else if (e.getButton() == MouseEvent.BUTTON3) {
-			first.setValue(null);
-			mouseOverObject.setValue(null);
-		}
+			
+			@Override
+			public void mousePressed(GraphEditorMouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					if (eval(first) == null) {
+						if (eval(mouseOverObject) != null) { 
+							assign(first, mouseOverObject);
+							leftFirst = false;
+							mouseMoved(e);
+						}
+					} else if (eval(mouseOverObject) != null) {
+						try {
+							connectionManager.connect(eval(first), eval(mouseOverObject));
+
+							if ((e.getModifiers() & MouseEvent.CTRL_DOWN_MASK) != 0) {
+								assign(first, mouseOverObject);
+								mouseOverObject.setValue(null);
+							} else {
+								first.setValue(null);
+							}
+						} catch (InvalidConnectionException e1) {
+							Toolkit.getDefaultToolkit().beep();
+						}
+
+					}
+				} else if (e.getButton() == MouseEvent.BUTTON3) {
+					first.setValue(null);
+					mouseOverObject.setValue(null);
+				}
+			}
+			
+		};
 	}
+
 
 	
 	@Override
@@ -234,18 +208,28 @@ public class ConnectionTool extends AbstractTool implements DecorationProvider<C
 					}
 				};
 			}
-			
 		};
 	}
-
+	
 	@Override
-	public int getHotKeyCode() {
-		return KeyEvent.VK_C;		
-	}
+	public Identification getIdentification() {
+		return new Identification() {
+			
+			@Override
+			public int getHotKeyCode() {
+				return KeyEvent.VK_C;		
+			}
 
-	@Override
-	public Icon getIcon() {
-		return GUI.createIconFromSVG("images/icons/svg/connect.svg");
+			@Override
+			public Icon getIcon() {
+				return GUI.createIconFromSVG("images/icons/svg/connect.svg");
+			}
+
+			@Override
+			public String getLabel() {
+				return "Connect";
+			}
+		};
 	}
 
 	@Override

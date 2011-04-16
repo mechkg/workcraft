@@ -9,6 +9,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
+import org.workcraft.dom.visual.BoundedColorisableImage;
+import org.workcraft.dom.visual.ColorisableGraphicalContent;
+import org.workcraft.dom.visual.DrawRequest;
+import org.workcraft.util.Function;
+
 public class FormulaRenderingResult
 {
 	public Rectangle2D boundingBox = null;
@@ -53,4 +58,22 @@ public class FormulaRenderingResult
 		g.setStroke(new BasicStroke(0.025f));
 		for(Line2D line : inversionLines) g.draw(line);		
 	}
+	
+	public BoundedColorisableImage asBoundedColorisableImage() {
+		return new BoundedColorisableImage(new ColorisableGraphicalContent(){
+
+			@Override
+			public void draw(DrawRequest request) {
+				FormulaRenderingResult.this.draw(request.getGraphics(), request.getColorisation().getColorisation());
+			}
+		}, boundingBox);
+	}
+	
+	public static Function<FormulaRenderingResult, BoundedColorisableImage> asBoundedColorisableImage 
+		= new Function<FormulaRenderingResult, BoundedColorisableImage>() {
+		@Override
+		public BoundedColorisableImage apply(FormulaRenderingResult argument) {
+			return argument.asBoundedColorisableImage();
+		}
+	};
 }

@@ -21,9 +21,9 @@
 
 package org.workcraft.gui.graph;
 
-import java.awt.Color;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 import java.awt.Point;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -34,22 +34,20 @@ import java.awt.geom.Point2D;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.tools.GraphEditor;
-import org.workcraft.gui.graph.tools.GraphEditorTool;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
 
 class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListener, MouseWheelListener {
 	protected GraphEditor editor;
 	protected boolean panDrag = false;
-	private Expression<GraphEditorTool> tool;
+	private Expression<GraphEditorMouseListener> toolMouseListener;
 
 	protected Point lastMouseCoords = new Point();
 	private Point2D prevPosition = new Point2D.Double(0, 0);
 	private Point2D startPosition = null;
 	
-	public GraphEditorPanelMouseListener(GraphEditor editor, Expression<GraphEditorTool> tool) {
+	public GraphEditorPanelMouseListener(GraphEditor editor, Expression<GraphEditorMouseListener> toolMouseListener) {
 		this.editor = editor;
-		this.tool = tool;
+		this.toolMouseListener = toolMouseListener;
 	}
 
 	private GraphEditorMouseEvent adaptEvent(MouseEvent e) {
@@ -65,13 +63,11 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 		if (panDrag) {
 			editor.getViewport().pan(currentMouseCoords.x - lastMouseCoords.x, currentMouseCoords.y - lastMouseCoords.y);
 		} else {
-			GraphEditorTool tool = eval(this.tool);
-			if (tool != null) {
-				if(!tool.isDragging() && startPosition!=null) {
-					tool.startDrag(adaptEvent(e));
-				}
-				tool.mouseMoved(adaptEvent(e));
+			GraphEditorMouseListener toolMouseListener = eval(this.toolMouseListener);
+			if(!toolMouseListener.isDragging() && startPosition!=null) {
+				toolMouseListener.startDrag(adaptEvent(e));
 			}
+			toolMouseListener.mouseMoved(adaptEvent(e));
 		}
 		prevPosition = editor.getViewport().screenToUser(currentMouseCoords);
 		lastMouseCoords = currentMouseCoords;
@@ -82,20 +78,18 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 			editor.getMainWindow().requestFocus((GraphEditorPanel)editor);
 		 
 		if (e.getButton() != MouseEvent.BUTTON2)
-			eval(tool).mouseClicked(adaptEvent(e));
+			eval(toolMouseListener).mouseClicked(adaptEvent(e));
 	}
 
 	public void mouseEntered(MouseEvent e) {
 		if (editor.hasFocus()) {
-			GraphEditorTool tool = eval(this.tool);
-			if (tool != null)
-				tool.mouseEntered(adaptEvent(e));
+			eval(toolMouseListener).mouseEntered(adaptEvent(e));
 		}
 	}
 
 	public void mouseExited(MouseEvent e) {
 		if (editor.hasFocus())
-			eval(this.tool).mouseExited(adaptEvent(e));
+			eval(toolMouseListener).mouseExited(adaptEvent(e));
 	}
 
 	public void mousePressed(MouseEvent e) {
@@ -105,15 +99,10 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 		if (e.getButton() == MouseEvent.BUTTON2)
 			panDrag = true;
 		else {
-			GraphEditorTool tool = eval(this.tool);
-			if (tool != null) {
-				if(!tool.isDragging())
-					startPosition = editor.getViewport().screenToUser(e.getPoint());
-				tool.mousePressed(adaptEvent(e));
-			}
-			else {
+			GraphEditorMouseListener toolML = eval(toolMouseListener);
+			if(!toolML.isDragging())
 				startPosition = editor.getViewport().screenToUser(e.getPoint());
-			}
+			toolML.mousePressed(adaptEvent(e));
 		}
 	}
 
@@ -121,25 +110,13 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 		if (e.getButton() == MouseEvent.BUTTON2)
 			panDrag = false;
 		else {
-			GraphEditorTool tool = eval(this.tool);
-			if (tool != null) {
-				if(tool.isDragging())
-					tool.finishDrag(adaptEvent(e));
-				tool.mouseReleased(adaptEvent(e));
-			}
+			GraphEditorMouseListener toolML = eval(toolMouseListener);
+			if(toolML.isDragging())
+				toolML.finishDrag(adaptEvent(e));
+			toolML.mouseReleased(adaptEvent(e));
 			startPosition = null;
 		}
 	}
-
-	public String getLabel() {
-		return "Select";
-	}
-
-	public int getHotKeyCode() {
-		return KeyEvent.VK_S;
-	}
-
-	protected static Color selectionColor = new Color(99, 130, 191).brighter();
 
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		if (editor.hasFocus()) {
@@ -147,4 +124,3 @@ class GraphEditorPanelMouseListener implements MouseMotionListener, MouseListene
 		}
 	}
 }
-

@@ -60,7 +60,7 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 	}
 	
 	private final ModifiableExpression<String> labelText;
-	private final Label label;
+	private final Expression<BoundedColorisableImage> label;
 	
 	private final ModifiableExpression<Color> labelColor;
 	private final ModifiableExpression<Color> foregroundColor;
@@ -80,7 +80,7 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 		this.refNode = refNode;
 
 		labelText = storage.create("");
-		label = new Label(labelFont, labelText);
+		label = Label.mkLabel(labelFont, labelText);
 		
 		labelColor = storage.create(eval(CommonVisualSettings.foregroundColor));
 		foregroundColor = storage.create(eval(CommonVisualSettings.foregroundColor));
@@ -93,7 +93,7 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 	Point2D labelPosition(EvaluationContext context) {
 		if(true)
 			throw new NotImplementedException("The label rendering requires a bounding box, which is not necessarily available here");
-		Rectangle2D textBB = context.resolve(label.centeredBB);
+		Rectangle2D textBB = context.resolve(label).boundingBox;
 		Rectangle2D bb = null; //GlobalCache.eval(localSpaceTouchable()).getBoundingBox();
 		
 		return new Point2D.Double(bb.getMinX()
@@ -107,7 +107,7 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 			if(true)return ColorisableGraphicalContent.EMPTY;
 			final Point2D labelPosition = labelPosition(context);
 			final Color labelColor = context.resolve(VisualComponent.this.labelColor);
-			final ColorisableGraphicalContent labelGraphics = context.resolve(label.graphics);
+			final ColorisableGraphicalContent labelGraphics = context.resolve(label).graphics;
 			
 			return new ColorisableGraphicalContent(){
 				@Override

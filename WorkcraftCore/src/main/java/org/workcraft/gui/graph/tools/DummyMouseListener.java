@@ -25,11 +25,7 @@ import org.workcraft.gui.events.GraphEditorMouseEvent;
 
 public class DummyMouseListener implements GraphEditorMouseListener {
 
-	private static DummyMouseListener instance = new DummyMouseListener();
-	public static DummyMouseListener getInstance()
-	{
-		return instance;
-	}
+	public static DummyMouseListener INSTANCE = new DummyMouseListener();
 	
 	public void mouseClicked(GraphEditorMouseEvent e) {
 	}
@@ -58,5 +54,4 @@ public class DummyMouseListener implements GraphEditorMouseListener {
 	public boolean isDragging() {
 		return false;
 	}
-	
 }

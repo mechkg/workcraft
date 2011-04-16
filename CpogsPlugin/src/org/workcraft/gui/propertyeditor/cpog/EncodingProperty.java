@@ -21,30 +21,31 @@
 
 package org.workcraft.gui.propertyeditor.cpog;
 
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ModifiableExpressionCombinator;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.gui.propertyeditor.string.StringProperty;
 import org.workcraft.plugins.cpog.Encoding;
 
-public class EncodingProperty implements EditableProperty {
+public class EncodingProperty {
+	
+	public static EditableProperty create(String propertyName, final ModifiableExpression<Encoding> encoding) {
+		ModifiableExpression<String> stringEncoding = bind(encoding, new ModifiableExpressionCombinator<Encoding, String>() {
+			@Override
+			public Expression<? extends String> get(Encoding arg) {
+				return constant(arg.toString());
+			}
 
-	public Object fromCellEditorValue(Object editorComponentValue)
-	{
-		return editorComponentValue;
-	}
-
-	public TableCellEditor getCellEditor() {
-		return new EncodingCellEditor();
-	}
-
-	public TableCellRenderer getCellRenderer() {
-		return new DefaultTableCellRenderer();
-	}
-
-	public Object toCellRendererValue(Object value)
-	{
-		return (Encoding) value;
+			@Override
+			public Encoding set(String newVal) {
+				Encoding enc = eval(encoding);
+				return enc.updateEncoding(newVal);
+			}
+		});
+		return StringProperty.create(propertyName, stringEncoding);
 	}
 }

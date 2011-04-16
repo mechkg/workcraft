@@ -7,9 +7,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.connections.VisualConnection;
@@ -28,7 +26,7 @@ public interface TouchableProvider<N> extends Function<N, Expression<? extends M
 			if (node instanceof ReflectiveTouchable) {
 				return bindFunc(((ReflectiveTouchable)node).shape(), Maybe.Util.<Touchable>just());
 			} else
-				return constant(Maybe.Util.<Touchable>nothing());
+				return Expressions.constant(Maybe.Util.<Touchable>nothing());
 		}
 	};
 	
@@ -36,17 +34,7 @@ public interface TouchableProvider<N> extends Function<N, Expression<? extends M
 	
 	public final class Util{
 		public static <N> Expression<Function<N, Maybe<? extends Touchable>>> asAWhole(final TouchableProvider<N> tp) {
-			return new ExpressionBase<Function<N,Maybe<? extends Touchable>>>(){
-				@Override
-				protected Function<N, Maybe<? extends Touchable>> evaluate(final EvaluationContext context) {
-					return new Function<N, Maybe<? extends Touchable>>(){
-						@Override
-						public Maybe<? extends Touchable> apply(N node) {
-							return context.resolve(tp.apply(node));
-						}
-					};
-				}
-			};
+			return joinFunction(tp);
 		}
 		
 		
@@ -123,7 +111,7 @@ public interface TouchableProvider<N> extends Function<N, Expression<? extends M
 			return new TouchableProvider<Node>(){
 				@Override
 				public Expression<? extends Maybe<? extends Touchable>> apply(Node argument) {
-					return constant(Maybe.Util.<Touchable>nothing());
+					return Expressions.constant(Maybe.Util.<Touchable>nothing());
 				}
 			};
 		}

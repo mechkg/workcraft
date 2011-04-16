@@ -21,11 +21,7 @@
 
 package org.workcraft.gui.graph.tools;
 
-import javax.swing.Icon;
 import javax.swing.JPanel;
-
-import org.workcraft.gui.events.GraphEditorKeyEvent;
-import org.workcraft.gui.events.GraphEditorMouseEvent;
 
 public abstract class AbstractTool implements GraphEditorTool {
 	@Override
@@ -35,66 +31,17 @@ public abstract class AbstractTool implements GraphEditorTool {
 	@Override
 	public void deactivated () {
 	}
-
+	
 	@Override
-	public void keyPressed(GraphEditorKeyEvent event) {
-	}
-
-	@Override
-	public void keyReleased(GraphEditorKeyEvent event) {
-	}
-
-	@Override
-	public void keyTyped(GraphEditorKeyEvent event) {
-	}
-
-	@Override
-	public void mouseClicked(GraphEditorMouseEvent e) {
-	}
-
-	@Override
-	public void mouseEntered(GraphEditorMouseEvent e) {
-	}
-
-	@Override
-	public void mouseExited(GraphEditorMouseEvent e) {
-	}
-
-	@Override
-	public void mouseMoved(GraphEditorMouseEvent e) {
-	}
-
-	@Override
-	public void mousePressed(GraphEditorMouseEvent e) {
-	}
-
-	@Override
-	public void mouseReleased(GraphEditorMouseEvent e) {
+	public GraphEditorKeyListener keyListener() {
+		return DummyKeyListener.INSTANCE;
 	}
 	
 	@Override
-	public void startDrag(GraphEditorMouseEvent e) {
+	public GraphEditorMouseListener mouseListener() {
+		return DummyMouseListener.INSTANCE;
 	}
 
-	@Override
-	public void finishDrag(GraphEditorMouseEvent e) {
-	}	
-
-	@Override
-	public boolean isDragging() {
-		return false;
-	}
-	
-	@Override
-	public int getHotKeyCode() {
-		return -1; // undefined hotkey
-	}
-	
-	@Override
-	public Icon getIcon() {
-		return null;
-	}
-	
 	@Override
 	public JPanel getInterfacePanel() {
 		return null;

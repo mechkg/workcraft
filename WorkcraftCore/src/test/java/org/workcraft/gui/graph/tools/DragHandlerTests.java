@@ -21,7 +21,7 @@ public class DragHandlerTests {
 		Expression<? extends PCollection<? extends Dummy>> selection = Expressions.constant(selectionV);
 		MovableController<Dummy> movableController = new MovableController<Dummy>(){
 			@Override
-			public Maybe<? extends ModifiableExpression<Point2D>> position(Dummy node) {
+			public Maybe<? extends ModifiableExpression<Point2D>> apply(Dummy node) {
 				return just(node.coordinate);
 			}
 		};

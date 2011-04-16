@@ -5,6 +5,32 @@ import java.util.HashSet;
 import org.workcraft.dependencymanager.util.listeners.Listener;
 import org.workcraft.dependencymanager.util.listeners.WeakFireOnceListenersCollection;
 
+
+/**
+ * The code with which I tried to explain expressions to Ulan:
+ * 
+ * 
+ * type Resolved = IO -- or maybe something better
+ * 
+ * type EvaluationContext = forall a. Expression a -> Resolved a
+ * 
+ * type ExpressionMaker a = EvaluationContext -> Resolved a 
+ * 
+ * mkExpressionBase :: ExpressionMaker a -> IO (Expression a)
+ * 
+ * fmap :: (a -> b) -> (Expression a -> IO (Expression b))
+ * fmap f a = mkExpressionBase (\context -> f <$> context a)
+ * 
+ * join :: Expression a -> IO (Expression a)
+ * join a = mkExpressionBase (\context -> context a >>= context)
+ * 
+ * old_bind  :: Expression a -> (a -> IO (Expression b)) -> IO (Expression b)
+ * old_bind a f = mkExpressionBase (\context -> context a >>= f >>= context)
+ * 
+ * new_bind :: Expression a -> (a -> IO (Expression b)) -> IO (Expression b)
+ * new_bind a f = fmap f a >>= join
+ */
+
 public abstract class ExpressionBase<T> implements Expression<T> {
 	
 	public static class ValueHandleTuple<T> {

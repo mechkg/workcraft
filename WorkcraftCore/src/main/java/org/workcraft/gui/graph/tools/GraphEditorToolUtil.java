@@ -1,12 +1,9 @@
 package org.workcraft.gui.graph.tools;
 
-import javax.swing.Icon;
 import javax.swing.JPanel;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.visual.GraphicalContent;
-import org.workcraft.gui.events.GraphEditorKeyEvent;
-import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.util.Func;
 import org.workcraft.util.Graphics;
@@ -15,41 +12,23 @@ public class GraphEditorToolUtil {
 
 	public static GraphEditorTool attachPainter(final GraphEditorTool tool, final Expression<? extends GraphicalContent> painter) {
 		return new GraphEditorTool() {
-
-			public void keyTyped(GraphEditorKeyEvent event) {
-				tool.keyTyped(event);
+			@Override
+			public Identification getIdentification() {
+				return tool.getIdentification();
 			}
-
-			public void mouseMoved(GraphEditorMouseEvent e) {
-				tool.mouseMoved(e);
+			
+			@Override
+			public GraphEditorKeyListener keyListener() {
+				return tool.keyListener();
 			}
-
-			public void keyPressed(GraphEditorKeyEvent event) {
-				tool.keyPressed(event);
-			}
-
-			public void mouseClicked(GraphEditorMouseEvent e) {
-				tool.mouseClicked(e);
-			}
-
-			public void keyReleased(GraphEditorKeyEvent event) {
-				tool.keyReleased(event);
-			}
-
-			public void mouseEntered(GraphEditorMouseEvent e) {
-				tool.mouseEntered(e);
-			}
-
-			public void mouseExited(GraphEditorMouseEvent e) {
-				tool.mouseExited(e);
+			
+			@Override
+			public GraphEditorMouseListener mouseListener() {
+				return tool.mouseListener();
 			}
 
 			public void activated() {
 				tool.activated();
-			}
-
-			public void mousePressed(GraphEditorMouseEvent e) {
-				tool.mousePressed(e);
 			}
 
 			public void deactivated() {
@@ -60,40 +39,12 @@ public class GraphEditorToolUtil {
 				return Graphics.compose(painter, tool.userSpaceContent(viewport, hasFocus));
 			}
 
-			public void mouseReleased(GraphEditorMouseEvent e) {
-				tool.mouseReleased(e);
-			}
-
-			public void startDrag(GraphEditorMouseEvent e) {
-				tool.startDrag(e);
-			}
-
 			public Expression<? extends GraphicalContent> screenSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
 				return tool.screenSpaceContent(viewport, hasFocus);
 			}
 
-			public void finishDrag(GraphEditorMouseEvent e) {
-				tool.finishDrag(e);
-			}
-
-			public boolean isDragging() {
-				return tool.isDragging();
-			}
-
 			public JPanel getInterfacePanel() {
 				return tool.getInterfacePanel();
-			}
-
-			public String getLabel() {
-				return tool.getLabel();
-			}
-
-			public Icon getIcon() {
-				return tool.getIcon();
-			}
-
-			public int getHotKeyCode() {
-				return tool.getHotKeyCode();
 			}
 		};
 	}

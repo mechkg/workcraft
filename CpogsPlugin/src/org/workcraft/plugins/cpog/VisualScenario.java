@@ -29,10 +29,15 @@ import org.workcraft.dom.visual.ReflectiveTouchable;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualGroup;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.ExpressionPropertyDeclaration;
+import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.gui.propertyeditor.cpog.EncodingProperty;
+import org.workcraft.gui.propertyeditor.string.StringProperty;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 import org.workcraft.util.Hierarchy;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class VisualScenario extends VisualGroup implements ReflectiveTouchable, DrawableNew
 {
@@ -73,6 +78,13 @@ public class VisualScenario extends VisualGroup implements ReflectiveTouchable, 
 	}
 
 	
+	@Override
+	public PVector<EditableProperty> getProperties() {
+		return TreePVector.<EditableProperty>empty()
+			.plus(StringProperty.create("Label", label()))
+			.plus(EncodingProperty.create("Encoding", encoding()));
+	}
+	
 	public VisualScenario(StorageManager storage)
 	{
 		super(storage);
@@ -81,8 +93,7 @@ public class VisualScenario extends VisualGroup implements ReflectiveTouchable, 
 		encodingBB = storage.create(null);
 		label = storage.create("");
 		encoding = storage.create(new Encoding());
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Label", label(), String.class));
-		addPropertyDeclaration(ExpressionPropertyDeclaration.create("Encoding", encoding(), Encoding.class));
+		
 	}
 
 	@Override

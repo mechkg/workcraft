@@ -73,6 +73,6 @@ public class MoveDragHandler<Node> implements DragHandler<Node> {
 	}
 
 	private static <Node> ModifiableExpression<Point2D> nodePos(Node hitNode, MovableController<Node> movableController) {
-		return orElse(movableController.position(hitNode), Variable.<Point2D>create(new Point2D.Double(0,0)));
+		return orElse(movableController.apply(hitNode), Variable.<Point2D>create(new Point2D.Double(0,0)));
 	}
 }

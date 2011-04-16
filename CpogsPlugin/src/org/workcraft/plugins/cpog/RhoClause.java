@@ -21,25 +21,22 @@
 
 package org.workcraft.plugins.cpog;
 
-import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dom.math.MathNode;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 
-@VisualClass(org.workcraft.plugins.cpog.VisualRhoClause.class)
-public class RhoClause extends MathNode
+public class RhoClause
 {
-	public RhoClause(StorageManager storage) {
-		super(storage);
-		formula = storage.create(BooleanOperations.ONE);
+	public final ModifiableExpression<BooleanFormula> formula;
+	public final VisualComponent visualInfo;
+	
+	public RhoClause(ModifiableExpression<BooleanFormula> formula, VisualComponent visualInfo) {
+		this.formula = formula;
+		this.visualInfo = visualInfo;
 	}
 
-	private final ModifiableExpression<BooleanFormula> formula;
-	
-	public ModifiableExpression<BooleanFormula> formula()
-	{
-		return formula;
+	public static RhoClause make(StorageManager storage) {
+		return new RhoClause(storage.create(BooleanOperations.ONE), VisualComponent.make(storage));
 	}	
 }

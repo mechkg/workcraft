@@ -34,7 +34,7 @@ import org.workcraft.dependencymanager.advanced.core.Combinator;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dom.visual.BoundedColorisableImage;
+import org.workcraft.dom.visual.BoundedColorisableGraphicalContent;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.gui.Coloriser;
@@ -60,9 +60,9 @@ public class VisualRhoClause
 	}
 	
 	
-	static Function<FormulaRenderInfo, BoundedColorisableImage> formulaToImage = new Function<FormulaRenderInfo, BoundedColorisableImage>(){
+	static Function<FormulaRenderInfo, BoundedColorisableGraphicalContent> formulaToImage = new Function<FormulaRenderInfo, BoundedColorisableGraphicalContent>(){
 		@Override
-		public BoundedColorisableImage apply(FormulaRenderInfo renderInfo) {
+		public BoundedColorisableGraphicalContent apply(FormulaRenderInfo renderInfo) {
 			
 			final BooleanFormula formula = renderInfo.formula();
 			final BooleanFormula value = renderInfo.value();
@@ -101,11 +101,11 @@ public class VisualRhoClause
 					g.setTransform(transform);		
 				}
 			};
-			return new BoundedColorisableImage(gc, bb);
+			return new BoundedColorisableGraphicalContent(gc, bb);
 		}
 	};
 	
-	public static Expression<BoundedColorisableImage> getVisualRhoClause(RhoClause rhoClause)
+	public static Expression<BoundedColorisableGraphicalContent> getVisualRhoClause(RhoClause rhoClause)
 	{
 		return bindFunc(getRenderInfo(rhoClause), formulaToImage);
 	}

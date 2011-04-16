@@ -15,7 +15,7 @@ import org.workcraft.dependencymanager.advanced.core.Combinator;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dom.visual.BoundedColorisableImage;
+import org.workcraft.dom.visual.BoundedColorisableGraphicalContent;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.GraphicalContent;
@@ -41,6 +41,7 @@ import org.workcraft.gui.graph.tools.selection.GenericSelectionTool;
 import org.workcraft.gui.graph.tools.selection.MoveDragHandler;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function0;
+import org.workcraft.util.Function2;
 import org.workcraft.util.GUI;
 import org.workcraft.util.Maybe;
 
@@ -220,24 +221,41 @@ public class CustomToolsProvider {
 
 					@Override
 					public Expression<? extends GraphicalContent> visitComponent(Component component) {
-						return bindFunc(component.accept(new ComponentVisitor<Expression<? extends ColorisableGraphicalContent>>() {
+						Expression<? extends BoundedColorisableGraphicalContent> bcgc = component.accept(new ComponentVisitor<Expression<? extends BoundedColorisableGraphicalContent>>() {
 
 							@Override
-							public Expression<? extends ColorisableGraphicalContent> visitRho(RhoClause rho) {
-								return bindFunc(VisualRhoClause.getVisualRhoClause(rho), BoundedColorisableImage.getGraphics);
+							public Expression<? extends BoundedColorisableGraphicalContent> visitRho(RhoClause rho) {
+								return VisualRhoClause.getVisualRhoClause(rho);
 							}
 
 							@Override
-							public Expression<? extends ColorisableGraphicalContent> visitVariable(Variable variable) {
-								return bindFunc(VisualVariableGui.getImage(variable), BoundedColorisableImage.getGraphics);
+							public Expression<? extends BoundedColorisableGraphicalContent> visitVariable(Variable variable) {
+								return VisualVariableGui.getImage(variable);
 							}
 
 							@Override
-							public Expression<? extends ColorisableGraphicalContent> visitVertex(Vertex vertex) {
-								return bindFunc(VisualVertex.getImage(vertex), BoundedColorisableImage.getGraphics);
+							public Expression<? extends BoundedColorisableGraphicalContent> visitVertex(Vertex vertex) {
+								return VisualVertex.getImage(vertex);
 							}
-						}), constant(Colorisation.EMPTY), applyColourisation);
+						});
+						//bindFunc (bcgc, componentMovableController)
+						//return bindFunc(bcgc, constant(Colorisation.EMPTY), applyColourisation);
+						
+						return bindFunc 
+							( bindFunc 
+								( bindFunc
+										( bcgc
+										, componentMovableController.apply(component)
+										, BoundedColorisableGraphicalContent.translate
+										)
+								, BoundedColorisableGraphicalContent.getGraphics
+								)
+							, constant(Colorisation.EMPTY)
+							, applyColourisation
+							);
 					}
+					
+					
 				});
 			}
 		};

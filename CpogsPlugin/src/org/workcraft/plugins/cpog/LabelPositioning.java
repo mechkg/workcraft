@@ -1,12 +1,12 @@
 package org.workcraft.plugins.cpog;
 
-import static org.workcraft.dom.visual.BoundedColorisableImage.*;
+import static org.workcraft.dom.visual.BoundedColorisableGraphicalContent.*;
 import static pcollections.TreePVector.*;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.workcraft.dom.visual.BoundedColorisableImage;
+import org.workcraft.dom.visual.BoundedColorisableGraphicalContent;
 import org.workcraft.util.Pair;
 
 import pcollections.PVector;
@@ -36,8 +36,8 @@ public enum LabelPositioning {
 		return positions;
 	}
 	
-	public static BoundedColorisableImage positionRelative(Rectangle2D bb, LabelPositioning positioning, BoundedColorisableImage image) {
-		BoundedColorisableImage centered = centerToZero.apply(image);
+	public static BoundedColorisableGraphicalContent positionRelative(Rectangle2D bb, LabelPositioning positioning, BoundedColorisableGraphicalContent image) {
+		BoundedColorisableGraphicalContent centered = centerToZero.apply(image);
 		
 		Point2D labelPosition = new Point2D.Double(
 				bb.getCenterX() + 0.5 * positioning.dx * (bb.getWidth() + centered.boundingBox.getWidth() + 0.2),

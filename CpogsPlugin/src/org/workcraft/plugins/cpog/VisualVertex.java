@@ -22,7 +22,7 @@
 package org.workcraft.plugins.cpog;
 
 import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
-import static org.workcraft.dom.visual.BoundedColorisableImage.*;
+import static org.workcraft.dom.visual.BoundedColorisableGraphicalContent.*;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -35,7 +35,7 @@ import java.util.HashMap;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
-import org.workcraft.dom.visual.BoundedColorisableImage;
+import org.workcraft.dom.visual.BoundedColorisableGraphicalContent;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.Label;
@@ -55,11 +55,11 @@ import pcollections.PVector;
 public class VisualVertex
 {
 	
-	public static Expression<BoundedColorisableImage> getImage(final Vertex vertex)  {
-		final ExpressionBase<BoundedColorisableImage> circle = new ExpressionBase<BoundedColorisableImage>(){
+	public static Expression<BoundedColorisableGraphicalContent> getImage(final Vertex vertex)  {
+		final ExpressionBase<BoundedColorisableGraphicalContent> circle = new ExpressionBase<BoundedColorisableGraphicalContent>(){
 
 			@Override
-			protected BoundedColorisableImage evaluate(final EvaluationContext context) {
+			protected BoundedColorisableGraphicalContent evaluate(final EvaluationContext context) {
 				ColorisableGraphicalContent gc = new ColorisableGraphicalContent() {
 					
 					@Override
@@ -91,13 +91,13 @@ public class VisualVertex
 						g.draw(shape);
 					}
 				};
-				return new BoundedColorisableImage(gc, new Rectangle2D.Double(-size/2, -size/2, size, size));
+				return new BoundedColorisableGraphicalContent(gc, new Rectangle2D.Double(-size/2, -size/2, size, size));
 			}
 		};
 		
-		Expression<BoundedColorisableImage> nameLabel = new ExpressionBase<BoundedColorisableImage>() {
+		Expression<BoundedColorisableGraphicalContent> nameLabel = new ExpressionBase<BoundedColorisableGraphicalContent>() {
 			@Override
-			protected BoundedColorisableImage evaluate(EvaluationContext context) {
+			protected BoundedColorisableGraphicalContent evaluate(EvaluationContext context) {
 				String text = context.resolve(vertex.visualInfo.label);
 				BooleanFormula condition = context.resolve(vertex.condition);
 				if (condition != One.instance()) text += ": ";

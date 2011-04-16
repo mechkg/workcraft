@@ -60,7 +60,7 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 	}
 	
 	private final ModifiableExpression<String> labelText;
-	private final Expression<BoundedColorisableImage> label;
+	private final Expression<BoundedColorisableGraphicalContent> label;
 	
 	private final ModifiableExpression<Color> labelColor;
 	private final ModifiableExpression<Color> foregroundColor;

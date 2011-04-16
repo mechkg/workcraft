@@ -6,7 +6,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dom.visual.BoundedColorisableImage;
+import org.workcraft.dom.visual.BoundedColorisableGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.util.Function;
@@ -78,13 +78,13 @@ public class AsTouchable {
 	
 	private static Expression<Touchable> localTouchable(Component component) {
 		return component.accept(new ComponentVisitor<Expression<Touchable>>() {
-			private Expression<Touchable> getTouchable(Expression<BoundedColorisableImage> image) {
-				return bindFunc(bindFunc(image, BoundedColorisableImage.getBoundingBox), bbToTouchable);
+			private Expression<Touchable> getTouchable(Expression<BoundedColorisableGraphicalContent> image) {
+				return bindFunc(bindFunc(image, BoundedColorisableGraphicalContent.getBoundingBox), bbToTouchable);
 			}
 
 			@Override
 			public Expression<Touchable> visitRho(RhoClause rho) {
-				Expression<BoundedColorisableImage> image = VisualRhoClause.getVisualRhoClause(rho);
+				Expression<BoundedColorisableGraphicalContent> image = VisualRhoClause.getVisualRhoClause(rho);
 				return getTouchable(image);
 			}
 

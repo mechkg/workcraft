@@ -17,7 +17,7 @@ public class Label {
 		return VisualComponent.podgonFontRenderContext();
 	}
 	
-	public static Expression<BoundedColorisableImage> mkLabel(final Font font, final Expression<? extends String> text) {
+	public static Expression<BoundedColorisableGraphicalContent> mkLabel(final Font font, final Expression<? extends String> text) {
 		
 		final Expression<? extends Rectangle2D> textBB = bindFunc(text, new Function<String, Rectangle2D>(){
 					@Override
@@ -41,7 +41,7 @@ public class Label {
 			}
 		});
 		
-		Expression<BoundedColorisableImage> simpleLabel = bindFunc(graphics, textBB, BoundedColorisableImage.constructor);
-		return bindFunc(simpleLabel, BoundedColorisableImage.centerToZero);
+		Expression<BoundedColorisableGraphicalContent> simpleLabel = bindFunc(graphics, textBB, BoundedColorisableGraphicalContent.constructor);
+		return bindFunc(simpleLabel, BoundedColorisableGraphicalContent.centerToZero);
 	}
 }

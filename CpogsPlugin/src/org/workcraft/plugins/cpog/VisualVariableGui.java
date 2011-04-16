@@ -23,7 +23,7 @@ package org.workcraft.plugins.cpog;
 
 import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-import static org.workcraft.dom.visual.BoundedColorisableImage.*;
+import static org.workcraft.dom.visual.BoundedColorisableGraphicalContent.*;
 import static org.workcraft.plugins.cpog.LabelPositioning.*;
 import static org.workcraft.util.Function.Util.*;
 
@@ -35,7 +35,7 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dom.visual.BoundedColorisableImage;
+import org.workcraft.dom.visual.BoundedColorisableGraphicalContent;
 import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawRequest;
@@ -70,14 +70,14 @@ public class VisualVariableGui
 			.plus(ChoiceProperty.create("State", states, var.state));
 	}
 	
-	private static BoundedColorisableImage makeLabel(final String formula) {
+	private static BoundedColorisableGraphicalContent makeLabel(final String formula) {
 		return FormulaToGraphics.print(formula, valueFont, Label.podgonFontRenderContext()).asBoundedColorisableImage();
 	}
 	
-	private static Function<String, BoundedColorisableImage> makeLabel =
-		new Function<String, BoundedColorisableImage>() {
+	private static Function<String, BoundedColorisableGraphicalContent> makeLabel =
+		new Function<String, BoundedColorisableGraphicalContent>() {
 			@Override
-			public BoundedColorisableImage apply(String argument) {
+			public BoundedColorisableGraphicalContent apply(String argument) {
 				return makeLabel(argument);
 			}
 		};
@@ -94,26 +94,26 @@ public class VisualVariableGui
 		var.state.setValue(eval(var.state).toggle());
 	}	
 	
-	public static Expression<BoundedColorisableImage> getImage(Variable var)  {
-		Function2<BoundedColorisableImage, LabelPositioning, BoundedColorisableImage> labelNamePositioner = new Function2<BoundedColorisableImage, LabelPositioning, BoundedColorisableImage> (){
+	public static Expression<BoundedColorisableGraphicalContent> getImage(Variable var)  {
+		Function2<BoundedColorisableGraphicalContent, LabelPositioning, BoundedColorisableGraphicalContent> labelNamePositioner = new Function2<BoundedColorisableGraphicalContent, LabelPositioning, BoundedColorisableGraphicalContent> (){
 			@Override
-			public BoundedColorisableImage apply(BoundedColorisableImage image, LabelPositioning positioning) {
+			public BoundedColorisableGraphicalContent apply(BoundedColorisableGraphicalContent image, LabelPositioning positioning) {
 				return positionRelative(visualBox, positioning, image);
 			}
 		};
 		
-		final Expression<BoundedColorisableImage> valueLabel = bindFunc(var.state, composition(toString, makeLabel, centerToZero));
-		final Expression<BoundedColorisableImage> nameLabel = bindFunc(bindFunc(var.label, makeLabel), var.visualVar.labelPosition, labelNamePositioner);
-		final Expression<BoundedColorisableImage> box = simpleColorisableRectangle(visualBox);
+		final Expression<BoundedColorisableGraphicalContent> valueLabel = bindFunc(var.state, composition(toString, makeLabel, centerToZero));
+		final Expression<BoundedColorisableGraphicalContent> nameLabel = bindFunc(bindFunc(var.label, makeLabel), var.visualVar.labelPosition, labelNamePositioner);
+		final Expression<BoundedColorisableGraphicalContent> box = simpleColorisableRectangle(visualBox);
 		return bindFunc(bindFunc(box, nameLabel, compose), valueLabel, compose);
 	}
 	
-	public static Expression<BoundedColorisableImage> simpleColorisableRectangle(final Rectangle2D rect) {
-		return bindFunc(CommonVisualSettings.fillColor, CommonVisualSettings.foregroundColor, new Function2<Color, Color, BoundedColorisableImage>(){
+	public static Expression<BoundedColorisableGraphicalContent> simpleColorisableRectangle(final Rectangle2D rect) {
+		return bindFunc(CommonVisualSettings.fillColor, CommonVisualSettings.foregroundColor, new Function2<Color, Color, BoundedColorisableGraphicalContent>(){
 
 			@Override
-			public BoundedColorisableImage apply(final Color fillColor, final Color foreColor) {
-				return new BoundedColorisableImage(new ColorisableGraphicalContent(){
+			public BoundedColorisableGraphicalContent apply(final Color fillColor, final Color foreColor) {
+				return new BoundedColorisableGraphicalContent(new ColorisableGraphicalContent(){
 
 					@Override
 					public void draw(DrawRequest r) {

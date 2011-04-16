@@ -82,9 +82,9 @@ public class VisualGroup extends VisualTransformableNode implements Container{
 
 	public static Expression<Touchable> screenSpaceBounds(final TouchableProvider<Node> tp, final VisualGroup group) {
 		Expression<? extends Collection<Maybe<? extends Touchable>>> maybeTouchables = bind(group.children(), mapM(tp));
-		Expression<? extends Collection<? extends Touchable>> touchableChildren = bindFunc(maybeTouchables, Maybe.Util.<Touchable>filterJust());
+		Expression<? extends Collection<? extends Touchable>> touchableChildren = fmap(Maybe.Util.<Touchable>filterJust(), maybeTouchables);
 		
-		return bindFunc(touchableChildren, new Function<Collection<? extends Touchable>, Touchable>(){
+		return fmap(new Function<Collection<? extends Touchable>, Touchable>(){
 			@Override
 			public Touchable apply(Collection<? extends Touchable> children) {
 				final Rectangle2D boundingBox = BoundingBoxHelper.mergeBoundingBoxes(children);
@@ -105,7 +105,7 @@ public class VisualGroup extends VisualTransformableNode implements Container{
 					}
 				};
 			}
-		}); 
+		}, touchableChildren); 
 	}
 
 	public List<Node> unGroup() {

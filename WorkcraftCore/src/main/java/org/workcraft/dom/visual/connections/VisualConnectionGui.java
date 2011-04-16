@@ -43,14 +43,14 @@ public class VisualConnectionGui {
 				public Expression<? extends ParametricCurve> visitPolyline(Polyline polyline) {
 					final Expression<? extends Collection<? extends ControlPoint>> controlPointControls = polyline.controlPoints();
 					Expression<PVector<Point2D>> controlPoints = bind(controlPointControls, mapM(ControlPoint.positionGetter));
-					return bindFunc(controlPoints, connProps, PolylineGui.curveMaker);
+					return fmap(PolylineGui.curveMaker, controlPoints, connProps);
 				}
 
 				@Override
 				public Expression<? extends ParametricCurve> visitBezier(Bezier bezier) {
 					Expression<? extends Point2D> p1 = bind(bezier.cp1, VisualTransformableNode.positionGetter);
 					Expression<? extends Point2D> p2 = bind(bezier.cp2, VisualTransformableNode.positionGetter);
-					return bindFunc(connProps, p1, p2, BezierGui.curveMaker);
+					return fmap(BezierGui.curveMaker, connProps, p1, p2);
 				}
 			});
 		}
@@ -109,16 +109,16 @@ public class VisualConnectionGui {
 	public static ConnectionGui getConnectionGui(final Function<? super Node, ? extends Expression<? extends Touchable>> tp, final VisualConnection connection){
 		final Expression<VisualConnectionProperties> properties = getConnectionProperties(tp, connection);
 		final Expression<? extends ParametricCurve> curveExpr = bind(connection.graphic(), constant(properties), curveMaker);
-		final Expression<? extends PartialCurveInfo> curveInfo = bindFunc(properties, curveExpr, curveInfoMaker);
-		final Expression<? extends Shape> connectionPathExpr = bindFunc(curveInfo, curveExpr,new Function2<PartialCurveInfo, ParametricCurve, Shape>(){
+		final Expression<? extends PartialCurveInfo> curveInfo = fmap(curveInfoMaker, properties, curveExpr);
+		final Expression<? extends Shape> connectionPathExpr = fmap(new Function2<PartialCurveInfo, ParametricCurve, Shape>(){
 			@Override
 			public Shape apply(PartialCurveInfo cInfo, ParametricCurve curve) {
 				return curve.getShape(cInfo.tStart, cInfo.tEnd);
 			}
-		});
+		}, curveInfo,curveExpr);
 		
-		final Expression<ColorisableGraphicalContent> graphicalContent = bindFunc(curveInfo, properties, connectionPathExpr, VisualConnectionGui.connectionGraphicalContentMaker);
-		final Expression<Touchable> touchable = bindFunc(curveExpr, VisualConnectionGui.connectionTouchableMaker);
+		final Expression<ColorisableGraphicalContent> graphicalContent = fmap(VisualConnectionGui.connectionGraphicalContentMaker, curveInfo, properties, connectionPathExpr);
+		final Expression<Touchable> touchable = fmap(VisualConnectionGui.connectionTouchableMaker, curveExpr);
 		return new ConnectionGui(){
 			@Override
 			public Expression<? extends Touchable> shape() {

@@ -44,7 +44,7 @@ public interface VisualScene<N> {
 					return new TouchableProvider<Node>(){
 						@Override
 						public Expression<? extends Maybe<? extends Touchable>> apply(Node argument) {
-							return bindFunc(scene1.tp().apply(argument), scene2.tp().apply(argument), Maybe.Util.<Touchable>first());
+							return fmap(Maybe.Util.<Touchable>first(), scene1.tp().apply(argument), scene2.tp().apply(argument));
 						}
 					};
 				}

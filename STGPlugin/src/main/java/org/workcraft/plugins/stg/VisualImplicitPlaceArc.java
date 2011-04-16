@@ -129,7 +129,7 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 				};
 			}
 		};
-		return bindFunc(gui.graphicalContent(), bindFunc(gui.parametricCurve(), arc.tokens(), drawTokens), composeColorisable);
+		return fmap(composeColorisable, gui.graphicalContent(), fmap(drawTokens, gui.parametricCurve(), arc.tokens()));
 	}
 	
 	@NoAutoSerialisation

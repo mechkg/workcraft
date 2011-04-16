@@ -22,7 +22,7 @@ public class StgGraphEditable implements GraphEditable {
 
 	public StgGraphEditable(final VisualSTG stg) {
 		editorState = new StgEditorState(stg.getRoot());
-		properties = bindFunc(editorState.selection, new Function<PSet<Node>, PVector<EditableProperty>>(){
+		properties = fmap(new Function<PSet<Node>, PVector<EditableProperty>>(){
 			@Override
 			public PVector<EditableProperty> apply(PSet<Node> argument) {
 				if(argument.size() == 1) {
@@ -30,7 +30,7 @@ public class StgGraphEditable implements GraphEditable {
 				} else
 					return TreePVector.empty();
 			}
-		});
+		}, editorState.selection);
 		toolsProvider = new STGToolsProvider(stg, editorState);
 	}
 	

@@ -24,7 +24,7 @@ public interface TouchableProvider<N> extends Function<N, Expression<? extends M
 		@Override
 		public Expression<? extends Maybe<Touchable>> apply(Node node) {
 			if (node instanceof ReflectiveTouchable) {
-				return bindFunc(((ReflectiveTouchable)node).shape(), Maybe.Util.<Touchable>just());
+				return fmap(Maybe.Util.<Touchable>just(), ((ReflectiveTouchable)node).shape());
 			} else
 				return Expressions.constant(Maybe.Util.<Touchable>nothing());
 		}
@@ -39,14 +39,14 @@ public interface TouchableProvider<N> extends Function<N, Expression<? extends M
 		
 		
 		static Expression<? extends Maybe<? extends Touchable>> just(Expression<? extends Touchable> result) {
-			return bindFunc(result, Maybe.Util.<Touchable>just());
+			return fmap(Maybe.Util.<Touchable>just(), result);
 		}
 		
 		public static <N> Function<N, Expression<Touchable>> podgonHideMaybe(final TouchableProvider<N> tp) {
 			return new Function<N, Expression<Touchable>>(){
 				@Override
 				public Expression<Touchable> apply(N argument) {
-					return bindFunc(tp.apply(argument), new Function<Maybe<? extends Touchable>, Touchable>(){
+					return fmap(new Function<Maybe<? extends Touchable>, Touchable>(){
 
 						@Override
 						public Touchable apply(Maybe<? extends Touchable> argument) {
@@ -70,7 +70,7 @@ public interface TouchableProvider<N> extends Function<N, Expression<? extends M
 								}
 							});
 						}
-					});
+					}, tp.apply(argument));
 				}
 				
 			};
@@ -98,12 +98,12 @@ public interface TouchableProvider<N> extends Function<N, Expression<? extends M
 						}
 					});
 					
-					return Expressions.bindFunc(localTouchable, position, new Function2<Maybe<? extends Touchable>, Point2D, Maybe<? extends Touchable>>(){
+					return Expressions.fmap(new Function2<Maybe<? extends Touchable>, Point2D, Maybe<? extends Touchable>>(){
 						@Override
 						public Maybe<? extends Touchable> apply(Maybe<? extends Touchable> argument1, Point2D argument2) {
 							return Maybe.Util.applyFunc(argument1, translateFunc.apply(argument2));
 						}
-					});
+					}, localTouchable, position);
 				}
 			};
 		}

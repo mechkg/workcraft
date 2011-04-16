@@ -131,12 +131,12 @@ public class STGToolsProvider implements CustomToolsProvider {
 	}
 
 	private Expression<? extends String> transitionName(final STG stg, final VisualSignalTransition vst) {
-		return Expressions.bindFunc(stg.referenceManager(), new Function<ReferenceManager, String>() {
+		return Expressions.fmap(new Function<ReferenceManager, String>() {
 			@Override
 			public String apply(ReferenceManager refMan) {
 				return refMan.getNodeReference(vst.getReferencedTransition());
 			}
-		});
+		}, stg.referenceManager());
 	}
 	
 	@Override
@@ -157,7 +157,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 						res = vdt.shape(stg.name(vdt.getReferencedTransition()));
 					} else
 						return LOCAL_REFLECTIVE.apply(node);
-				return bindFunc(res, Maybe.Util.<Touchable>just());
+				return fmap(Maybe.Util.<Touchable>just(), res);
 			}
 		};
 		
@@ -184,7 +184,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 							}
 							else
 							return new DefaultReflectiveModelPainter.ReflectiveNodePainter(tp, colorisator).getGraphicalContent(node);
-						return bindFunc(colorisable, colorisator.getColorisation(node), applyColourisation);
+						return fmap(applyColourisation, colorisable, colorisator.getColorisation(node));
 					}
 				};
 				
@@ -196,11 +196,11 @@ public class STGToolsProvider implements CustomToolsProvider {
 		Function<Node, Expression<? extends Point2D>> connectionCenterProvider = new Function<Node, Expression<? extends Point2D>>(){
 			@Override
 			public Expression<? extends Point2D> apply(Node argument) {
-				return bindFunc(tp.apply(argument), new Function<Maybe<? extends Touchable>, Point2D>() { 
+				return fmap(new Function<Maybe<? extends Touchable>, Point2D>() { 
 						public Point2D apply(Maybe<? extends Touchable> maybe) {
 							return Maybe.Util.orElse(Maybe.Util.applyFunc(maybe, Touchable.centerGetter), new Point2D.Double(0,0));
 						}
-					});
+					}, tp.apply(argument));
 			}
 		};
 

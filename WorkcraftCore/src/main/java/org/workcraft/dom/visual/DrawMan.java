@@ -51,7 +51,7 @@ public class DrawMan
 	
 	private static Expression<GraphicalContent> applyTransform(final MovableNew node, final Expression<? extends GraphicalContent> gc)
 	{
-		return bindFunc(node.transform(), gc, new Function2<AffineTransform, GraphicalContent, GraphicalContent>(){
+		return fmap(new Function2<AffineTransform, GraphicalContent, GraphicalContent>(){
 			@Override
 			public GraphicalContent apply(final AffineTransform transform, final GraphicalContent content) {
 				return new GraphicalContent() {
@@ -62,7 +62,7 @@ public class DrawMan
 					}
 				};
 			}
-		});
+		}, node.transform(), gc);
 	}
 	
 	public static <N> Expression<GraphicalContent> drawCollection(Iterable<? extends N> collection, Function<? super N, ? extends Expression<? extends GraphicalContent>> painter) {

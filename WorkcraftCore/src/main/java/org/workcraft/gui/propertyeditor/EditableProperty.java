@@ -44,7 +44,7 @@ public interface EditableProperty {
 					return new ReactiveComponent() {
 						@Override
 						public Expression<? extends Nothing> updateExpression() {
-							return Expressions.bindFunc(property, new Function<T, Nothing>(){
+							return Expressions.fmap(new Function<T, Nothing>(){
 								@Override
 								public Nothing apply(T value) {
 									panel.removeAll();
@@ -52,7 +52,7 @@ public interface EditableProperty {
 									panel.add(renderer.createRenderer(value), BorderLayout.CENTER);
 									return Nothing.VALUE;
 								}
-							});
+							}, property);
 						}
 						@Override
 						public Component component() {
@@ -63,7 +63,7 @@ public interface EditableProperty {
 
 				@Override
 				public Expression<? extends EditorProvider> editorMaker() {
-					return Expressions.bindFunc(property, new Function<T, EditorProvider>(){
+					return Expressions.fmap(new Function<T, EditorProvider>(){
 
 						@Override
 						public EditorProvider apply(final T value) {
@@ -96,7 +96,7 @@ public interface EditableProperty {
 							};
 						}
 						
-					});
+					}, property);
 				}
 
 				@Override

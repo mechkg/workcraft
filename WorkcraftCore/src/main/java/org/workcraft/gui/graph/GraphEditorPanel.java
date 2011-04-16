@@ -173,7 +173,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 
 		toolboxPanel = new ToolboxPanel(graphEditable.createTools(this));
 
-		GraphEditorPanelMouseListener mouseListener = new GraphEditorPanelMouseListener(this, bindFunc(toolboxPanel.selectedTool(), mouseListenerGetter));
+		GraphEditorPanelMouseListener mouseListener = new GraphEditorPanelMouseListener(this, fmap(mouseListenerGetter, toolboxPanel.selectedTool()));
 		GraphEditorPanelKeyListener keyListener = new GraphEditorPanelKeyListener(this, toolboxPanel);
 
 		addMouseMotionListener(mouseListener);

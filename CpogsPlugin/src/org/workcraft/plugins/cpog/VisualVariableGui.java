@@ -102,14 +102,14 @@ public class VisualVariableGui
 			}
 		};
 		
-		final Expression<BoundedColorisableGraphicalContent> valueLabel = bindFunc(var.state, composition(toString, makeLabel, centerToZero));
-		final Expression<BoundedColorisableGraphicalContent> nameLabel = bindFunc(bindFunc(var.label, makeLabel), var.visualVar.labelPosition, labelNamePositioner);
+		final Expression<BoundedColorisableGraphicalContent> valueLabel = fmap(composition(toString, makeLabel, centerToZero), var.state);
+		final Expression<BoundedColorisableGraphicalContent> nameLabel = fmap(labelNamePositioner, fmap(makeLabel, var.label), var.visualVar.labelPosition);
 		final Expression<BoundedColorisableGraphicalContent> box = simpleColorisableRectangle(visualBox);
-		return bindFunc(bindFunc(box, nameLabel, compose), valueLabel, compose);
+		return fmap(compose, fmap(compose, box, nameLabel), valueLabel);
 	}
 	
 	public static Expression<BoundedColorisableGraphicalContent> simpleColorisableRectangle(final Rectangle2D rect) {
-		return bindFunc(CommonVisualSettings.fillColor, CommonVisualSettings.foregroundColor, new Function2<Color, Color, BoundedColorisableGraphicalContent>(){
+		return fmap(new Function2<Color, Color, BoundedColorisableGraphicalContent>(){
 
 			@Override
 			public BoundedColorisableGraphicalContent apply(final Color fillColor, final Color foreColor) {
@@ -131,7 +131,7 @@ public class VisualVariableGui
 					}
 				}, rect);
 			}
-		});
+		}, CommonVisualSettings.fillColor, CommonVisualSettings.foregroundColor);
 	}
 
 	public static Rectangle2D visualBox = new Rectangle2D.Double(-size / 2, -size / 2, size, size);

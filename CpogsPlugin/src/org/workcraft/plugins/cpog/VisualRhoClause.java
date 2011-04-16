@@ -107,7 +107,7 @@ public class VisualRhoClause
 	
 	public static Expression<BoundedColorisableGraphicalContent> getVisualRhoClause(RhoClause rhoClause)
 	{
-		return bindFunc(getRenderInfo(rhoClause), formulaToImage);
+		return fmap(formulaToImage, getRenderInfo(rhoClause));
 	}
 
 /**
@@ -134,7 +134,7 @@ public class VisualRhoClause
 
 					@Override
 					public Expression<? extends FormulaRenderInfo> apply(final BooleanFormula value) {
-						return bindFunc(CommonVisualSettings.foregroundColor, CommonVisualSettings.fillColor, new Function2<Color, Color, FormulaRenderInfo>(){
+						return fmap(new Function2<Color, Color, FormulaRenderInfo>(){
 
 							@Override
 							public FormulaRenderInfo apply(final Color fore, final Color fill) {
@@ -161,7 +161,7 @@ public class VisualRhoClause
 									}
 								};
 							}
-						});
+						}, CommonVisualSettings.foregroundColor, CommonVisualSettings.fillColor);
 					}
 				});
 			}

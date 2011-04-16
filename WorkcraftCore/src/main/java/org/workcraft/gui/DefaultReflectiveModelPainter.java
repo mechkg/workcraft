@@ -30,7 +30,7 @@ public class DefaultReflectiveModelPainter {
 		}
 
 		public static Expression<? extends GraphicalContent> colorise(Expression<? extends ColorisableGraphicalContent> gc, Expression<? extends Colorisation> colorisation) {
-			return Expressions.bindFunc(gc, colorisation, applyColourisation);
+			return Expressions.fmap(applyColourisation, gc, colorisation);
 		}
 
 		@Override

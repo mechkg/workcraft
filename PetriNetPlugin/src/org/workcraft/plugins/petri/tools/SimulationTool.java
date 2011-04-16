@@ -165,16 +165,16 @@ public class SimulationTool<Event> extends AbstractTool implements DecorationPro
 	};
 
 	Expression<Colorisation> nextTransitionColorisation = 
-		bindFunc(
+		fmap(
+				mkColorisation,
 				PetriNetSettings.enabledBackgroundColor,
-				PetriNetSettings.enabledForegroundColor,
-				mkColorisation);
+				PetriNetSettings.enabledForegroundColor);
 
 	Expression<Colorisation> enabledTransitionColorisation = 
-		bindFunc(
+		fmap(
+				mkColorisation,
 				PetriNetSettings.enabledForegroundColor,
-				PetriNetSettings.enabledBackgroundColor,
-				mkColorisation);
+				PetriNetSettings.enabledBackgroundColor);
 
 	public Colorisator getColorisator() {
 		return new Colorisator() { // TODO:

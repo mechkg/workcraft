@@ -45,12 +45,12 @@ public class ControlPointsGui {
 	}
 
 	private static Expression<VisualScene<Node>> getControlPointsScene(VisualConnection node) {
-		return bindFunc(node.graphic(), new Function<ConnectionGraphicConfiguration, VisualScene<Node>>(){
+		return fmap(new Function<ConnectionGraphicConfiguration, VisualScene<Node>>(){
 
 			@Override
 			public VisualScene<Node> apply(ConnectionGraphicConfiguration argument) {
 			}
-		});		
+		}, node.graphic());		
 	}
 
 	Expression<? extends Collection<? extends VisualTransformableNode>> connectionToControlPoints (TouchableProvider<Node> tp, VisualConnection vc) {

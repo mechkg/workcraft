@@ -241,17 +241,17 @@ public class CustomToolsProvider {
 						//bindFunc (bcgc, componentMovableController)
 						//return bindFunc(bcgc, constant(Colorisation.EMPTY), applyColourisation);
 						
-						return bindFunc 
-							( bindFunc 
-								( bindFunc
-										( bcgc
+						return fmap 
+							( applyColourisation
+							, fmap 
+								( BoundedColorisableGraphicalContent.getGraphics
+								, fmap
+										( BoundedColorisableGraphicalContent.translate
+										, bcgc
 										, componentMovableController.apply(component)
-										, BoundedColorisableGraphicalContent.translate
 										)
-								, BoundedColorisableGraphicalContent.getGraphics
 								)
 							, constant(Colorisation.EMPTY)
-							, applyColourisation
 							);
 					}
 					

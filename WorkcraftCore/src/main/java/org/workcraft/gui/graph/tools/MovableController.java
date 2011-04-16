@@ -50,12 +50,12 @@ public interface MovableController<Node> extends Function<Node, Maybe<? extends 
 				@Override
 				public ModifiableExpression<Point2D> apply(ModifiableExpression<Point2D> position) {
 					final Expression<Point2D> transform = bind(node.parent(), TRANSFORM_PROVIDER);
-					return applyM(position, bindFunc(transform, new Function<Point2D, TwoWayFunction<Point2D, Point2D>>(){
+					return applyM(position, fmap(new Function<Point2D, TwoWayFunction<Point2D, Point2D>>(){
 						@Override
 						public TwoWayFunction<Point2D, Point2D> apply(final Point2D shift) {
 							return Geometry.addFunc(shift);
 						}
-					}));
+					}, transform));
 				}
 			});
 		}

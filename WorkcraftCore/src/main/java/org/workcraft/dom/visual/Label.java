@@ -19,15 +19,15 @@ public class Label {
 	
 	public static Expression<BoundedColorisableGraphicalContent> mkLabel(final Font font, final Expression<? extends String> text) {
 		
-		final Expression<? extends Rectangle2D> textBB = bindFunc(text, new Function<String, Rectangle2D>(){
+		final Expression<? extends Rectangle2D> textBB = fmap(new Function<String, Rectangle2D>(){
 					@Override
 					public Rectangle2D apply(String textValue) {
 						GlyphVector gv = font.createGlyphVector(podgonFontRenderContext(), textValue);
 						return gv.getVisualBounds();
 					}
-				});
+				}, text);
 
-		Expression<ColorisableGraphicalContent> graphics = bindFunc(text, new Function<String, ColorisableGraphicalContent>() {
+		Expression<ColorisableGraphicalContent> graphics = fmap(new Function<String, ColorisableGraphicalContent>() {
 			@Override
 			public ColorisableGraphicalContent apply(final String text) {
 				return new ColorisableGraphicalContent() {
@@ -39,9 +39,9 @@ public class Label {
 					}
 				};
 			}
-		});
+		}, text);
 		
-		Expression<BoundedColorisableGraphicalContent> simpleLabel = bindFunc(graphics, textBB, BoundedColorisableGraphicalContent.constructor);
-		return bindFunc(simpleLabel, BoundedColorisableGraphicalContent.centerToZero);
+		Expression<BoundedColorisableGraphicalContent> simpleLabel = fmap(BoundedColorisableGraphicalContent.constructor, graphics, textBB);
+		return fmap(BoundedColorisableGraphicalContent.centerToZero, simpleLabel);
 	}
 }

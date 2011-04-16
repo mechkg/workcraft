@@ -112,7 +112,7 @@ public class VisualVertex
 			}
 		};
 		
-		return bindFunc(circle, nameLabel, compose);
+		return fmap(compose, circle, nameLabel);
 	}
 	
 	private final static double size = 1;

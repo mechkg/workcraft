@@ -35,7 +35,7 @@ public class Graphics {
 	};
 	
 	public static Expression<? extends GraphicalContent> statePreserving(final Expression<? extends GraphicalContent> content) {
-		return bindFunc(content, statePreserver);
+		return fmap(statePreserver, content);
 	}
 	
 	public static ColorisableGraphicalContent compose(final ColorisableGraphicalContent bottom, final ColorisableGraphicalContent top) {
@@ -78,6 +78,6 @@ public class Graphics {
 	};
 
 	public static Expression<GraphicalContent> compose(final Expression<? extends GraphicalContent> bottom, final Expression<? extends GraphicalContent> top) {
-		return bindFunc(bottom, top, compose);
+		return fmap(compose, bottom, top);
 	}
 }

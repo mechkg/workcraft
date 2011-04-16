@@ -89,12 +89,12 @@ public class TreeCountingTest {
 
 	
 	static Expression<? extends Integer> sum(Expression<? extends Integer> e1, Expression<? extends Integer> e2) {
-		return bindFunc(e1, e2, new Function2<Integer, Integer, Integer>() {
+		return fmap(new Function2<Integer, Integer, Integer>() {
 			@Override
 			public Integer apply(Integer a_val, Integer b_val) {
 				return a_val + b_val;
 			}
-		});
+		}, e1, e2);
 	}
 
 	/**

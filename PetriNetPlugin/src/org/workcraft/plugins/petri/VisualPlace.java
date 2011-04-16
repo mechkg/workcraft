@@ -178,7 +178,7 @@ public class VisualPlace extends VisualComponent implements DrawableNew, Reflect
 
 	@Override
 	public Expression<? extends Touchable> shape() {
-		return Expressions.bindFunc(CommonVisualSettings.size, new Function<Double, Touchable>() {
+		return Expressions.fmap(new Function<Double, Touchable>() {
 			@Override
 			public Touchable apply(final Double size) {
 				return new Touchable() {
@@ -199,6 +199,6 @@ public class VisualPlace extends VisualComponent implements DrawableNew, Reflect
 					};
 				};
 			}
-		});
+		}, CommonVisualSettings.size);
 	}
 }

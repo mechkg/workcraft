@@ -89,7 +89,7 @@ public class Expressions {
 		}
 	}
 
-	public static <A,B> Expression<B> bindFunc(final Expression<? extends A> expr1, final Function<? super A, ? extends B> func) {
+	public static <A,B> Expression<B> fmap(final Function<? super A, ? extends B> func, final Expression<? extends A> expr1) {
 		notNull(expr1, func);
 		return new ExpressionBase<B>(){
 			@Override
@@ -102,7 +102,7 @@ public class Expressions {
 		};
 	}
 
-	public static <A,B,C> Expression<C> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Function2<? super A, ? super B, ? extends C> func) {
+	public static <A,B,C> Expression<C> fmap(final Function2<? super A, ? super B, ? extends C> func, final Expression<? extends A> expr1, final Expression<? extends B> expr2) {
 		notNull(expr1, expr2, func);
 		return new ExpressionBase<C>(){
 			@Override
@@ -115,7 +115,7 @@ public class Expressions {
 		};
 	}
 
-	public static <A,B,C,R> Expression<R> bindFunc(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Expression<? extends C> expr3, final Function3<? super A, ? super B, ? super C, ? extends R> func) {
+	public static <A,B,C,R> Expression<R> fmap(final Function3<? super A, ? super B, ? super C, ? extends R> func, final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Expression<? extends C> expr3) {
 		notNull(expr1, expr2, expr3, func); 
 		return new ExpressionBase<R>(){
 			@Override
@@ -138,7 +138,7 @@ public class Expressions {
 	}
 
 	public static <A,B> Expression<B> bind(final Expression<? extends A> expr1, final Function<? super A, ? extends Expression<? extends B>> func) {
-		return join(bindFunc(expr1, func));
+		return join(fmap(func, expr1));
 	}
 
 	public static <A> Expression<A> join(final Expression<? extends Expression<? extends A>> boundFunc) {
@@ -290,7 +290,7 @@ public class Expressions {
 		return new Function<Expression<? extends A>, Expression<B>>(){
 			@Override
 			public Expression<B> apply(Expression<? extends A> exprA) {
-				return bindFunc(exprA, func);
+				return fmap(func, exprA);
 			}
 		};
 	};

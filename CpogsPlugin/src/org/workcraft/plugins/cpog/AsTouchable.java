@@ -25,7 +25,7 @@ public class AsTouchable {
 				return transform.apply(node).accept(new MaybeVisitor<Expression<? extends Point2D>, Expression<Touchable>>() {
 					@Override
 					public Expression<Touchable> visitJust(Expression<? extends Point2D> just) {
-						return bindFunc(localTouchable, just, TransformHelper.translate());
+						return fmap(TransformHelper.translate(), localTouchable, just);
 					}
 
 					@Override
@@ -79,7 +79,7 @@ public class AsTouchable {
 	private static Expression<Touchable> localTouchable(Component component) {
 		return component.accept(new ComponentVisitor<Expression<Touchable>>() {
 			private Expression<Touchable> getTouchable(Expression<BoundedColorisableGraphicalContent> image) {
-				return bindFunc(bindFunc(image, BoundedColorisableGraphicalContent.getBoundingBox), bbToTouchable);
+				return fmap(bbToTouchable, fmap(BoundedColorisableGraphicalContent.getBoundingBox, image));
 			}
 
 			@Override

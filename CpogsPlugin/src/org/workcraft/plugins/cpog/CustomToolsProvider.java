@@ -4,16 +4,15 @@ import static java.util.Arrays.*;
 import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.*;
+import static org.workcraft.plugins.cpog.gui.MovableController.*;
+import static org.workcraft.plugins.cpog.gui.TouchableProvider.*;
 import static org.workcraft.util.Maybe.Util.*;
 
-import java.awt.event.KeyEvent;
+import java.awt.Color;
 import java.awt.geom.Point2D;
+import java.util.Set;
 
-import javax.swing.Icon;
-
-import org.workcraft.dependencymanager.advanced.core.Combinator;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
@@ -21,28 +20,23 @@ import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.Touchable;
-import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.AbstractTool;
 import org.workcraft.gui.graph.tools.Colorisation;
-import org.workcraft.gui.graph.tools.ConnectionManager;
+import org.workcraft.gui.graph.tools.ConnectionController;
 import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.DragHandler;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
-import org.workcraft.gui.graph.tools.GraphEditorTool.Identification;
 import org.workcraft.gui.graph.tools.HitTester;
-import org.workcraft.gui.graph.tools.MovableController;
-import org.workcraft.gui.graph.tools.NodeGenerator;
 import org.workcraft.gui.graph.tools.NodeGeneratorTool;
 import org.workcraft.gui.graph.tools.selection.GenericSelectionTool;
 import org.workcraft.gui.graph.tools.selection.MoveDragHandler;
+import org.workcraft.plugins.cpog.gui.Generators;
+import org.workcraft.util.Collections;
 import org.workcraft.util.Function;
-import org.workcraft.util.Function0;
-import org.workcraft.util.Function2;
-import org.workcraft.util.GUI;
 import org.workcraft.util.Maybe;
 
 import pcollections.HashTreePSet;
@@ -56,171 +50,52 @@ public class CustomToolsProvider {
 		this.cpog = cpog;
 	}
 	
-	Identification createIdentification(final String label, final String svgIconPath, final int hotKeyCode) {
-		return new Identification() {
-			@Override
-			public String getLabel() {
-				return label;
-			}
+	public final CPOG cpog;
+	
+	static <N> HitTester<N> createHitTester
+		( Expression<? extends Iterable<? extends N>> nodesGetter
+		, Function<? super N, ? extends Expression<? extends Point2D>> transform
+		, Function<? super N, ? extends Expression<? extends Touchable>> touchableProvider) {
 
+		final Function<N, Touchable> transformedTouchableProvider = eval(transform(touchableProvider, transform));
+		return new HitMan.Flat<N>(asFunction(nodesGetter), transformedTouchableProvider).getHitTester();
+	}
+	
+	static <V> Function<Node, V> withDefault(final V def, final Function<? super Node, ? extends Maybe<? extends V>> f) {
+		return new Function<Node, V>(){
 			@Override
-			public Icon getIcon() {
-				return GUI.createIconFromSVG(svgIconPath);
-			}
-
-			@Override
-			public int getHotKeyCode() {
-				return hotKeyCode;
+			public V apply(Node argument) {
+				return orElse(f.apply(argument), def);
 			}
 		};
 	}
 	
-	public final CPOG cpog;
-
-	private final class VertexGenerator implements NodeGenerator {
-		Identification identification = createIdentification("Vertex", "images/icons/svg/vertex.svg", KeyEvent.VK_V);
-
-		@Override
-		public Identification getIdentification() {
-			return identification;
-		}
-
-		@Override
-		public void generate(Point2D where) throws NodeCreationException {
-			Vertex vertex = cpog.createVertex();
-			vertex.visualInfo.position.setValue(where);
-		}
-	}
-
-	private final class VariableGenerator implements NodeGenerator {
-		Identification identification = createIdentification("Variable", "images/icons/svg/variable.svg", KeyEvent.VK_X);
-
-		@Override
-		public Identification getIdentification() {
-			return identification;
-		}
-
-		@Override
-		public void generate(Point2D where) throws NodeCreationException {
-			Variable variable = cpog.createVariable();
-			variable.visualVar.position.setValue(where);
-		}
-	}
-
-	private final class RhoClauseGenerator implements NodeGenerator {
-		Identification identification = createIdentification("RhoClause", "images/icons/svg/rho.svg", KeyEvent.VK_R);
-
-		@Override
-		public Identification getIdentification() {
-			return identification;
-		}
-
-		@Override
-		public void generate(Point2D where) throws NodeCreationException {
-			RhoClause rhoClause = cpog.createRhoClause();
-			rhoClause.visualInfo.position.setValue(where);
-		}
-	}
-
 	public Iterable<GraphEditorTool> getTools(final GraphEditor editor)
 	{
-//		final Func<Colorisator, Expression<? extends GraphicalContent>> colorisablePainter = reflectivePainterProvider(tp , cpog);
-//		final Expression<? extends GraphicalContent> simplePainter = colorisablePainter.eval(Colorisator.EMPTY);
-
 		final ModifiableExpression<PSet<Node>> selection = cpog.storage.<PSet<Node>>create(HashTreePSet.<Node>empty());
-		Function0<? extends Iterable<? extends Node>> nodesExtractor = asFunction(cpog.nodes());
-		final Function<Point2D, Point2D> snap = new Function<Point2D, Point2D>() {
-			@Override
-			public Point2D apply(Point2D argument) {
-				return editor.snap(argument);
-			}
-		};
-
-		//		componentMovableController :: Component -> ModifiableExpression Point2D
-		//		componentMovableController component = case component of
-		//				(RhoClause rho) -> position (visualInfo rho)
-		//				(Variable v) -> position (visualVar v)
-		//				(Vertex v) -> position (visualInfo v)
-		final Function<Component, ModifiableExpression<Point2D>> componentMovableController = new Function<Component, ModifiableExpression<Point2D>>(){
-			@Override
-			public ModifiableExpression<Point2D> apply(Component component) {
-				return component.accept(new ComponentVisitor<ModifiableExpression<Point2D>>() {
-					@Override
-					public ModifiableExpression<Point2D> visitRho(RhoClause rho) {
-						return rho.visualInfo.position;
-					}
-
-					@Override
-					public ModifiableExpression<Point2D> visitVariable(Variable variable) {
-						return variable.visualVar.position;
-					}
-
-					@Override
-					public ModifiableExpression<Point2D> visitVertex(Vertex vertex) {
-						return vertex.visualInfo.position;
-					}
-				});
-			}
-		};
+		final Generators generators = Generators.createFor(cpog);
 		
-		//		movableController :: Node -> Maybe (ModifiableExpression Point2D)
-		//		movableController node = case node of
-		//			Arc _ -> Nothing
-		//			Component c -> Just $ componentMovableController c
-		final MovableController<Node> movableController = new MovableController<Node>(){
-			@Override
-			public Maybe<? extends ModifiableExpression<Point2D>> apply(Node node) {
-				return node.accept(new NodeVisitor<Maybe<? extends ModifiableExpression<Point2D>>>() {
-					@Override
-					public Maybe<? extends ModifiableExpression<Point2D>> visitArc(Arc arc) {
-						return nothing();
-					}
+		final Function<? super Node, ? extends Expression<? extends Point2D>> transformer = withDefault(constant(new Point2D.Double(0, 0)), movableController);
 
-					@Override
-					public Maybe<? extends ModifiableExpression<Point2D>> visitComponent(Component component) {
-						return just(componentMovableController.apply(component));
-					}
-				});
-			}
-		};
-
-		Function<Node, Expression<Touchable>> touchableProvider = AsTouchable.instance(movableController);
-		final HitTester<? extends Node> selectionHitTester = new HitMan.Flat<Node>(nodesExtractor, eval(joinFunction(touchableProvider))).getHitTester();
-		final Function<? super Point2D, ? extends Component> connectionHitTester = new Function<Point2D, Component>(){
-			@Override
-			public Component apply(Point2D point) {
-				Node node = selectionHitTester.hitTest(point);
-				if(node == null)
-					return null;
-				return node.accept(new NodeVisitor<Component>() {
-
-					@Override
-					public Component visitArc(Arc arc) {
-						return null;
-					}
-
-					@Override
-					public Component visitComponent(Component component) {
-						return component;
-					}
-				});
-			}
-		};
+		final HitTester<Node> selectionHitTester = createHitTester(cpog.nodes(), transformer, nodeLocalTouchable);
+		final HitTester<Component> connectionHitTester = createHitTester(cpog.components(), componentMovableController, componentLocalTouchable);
 		
-		final DragHandler<Node> dragHandler = new MoveDragHandler<Node>(selection, movableController, snap);
-		final Function<Node, ? extends Expression<? extends GraphicalContent>> nodePainter = new Function<Node, Expression<? extends GraphicalContent>>(){
+		final DragHandler<Node> dragHandler = new MoveDragHandler<Node>(selection, movableController, editor.snapFunction());
+
+		
+		final Function<Node, ? extends Expression<? extends ColorisableGraphicalContent>> nodePainter = new Function<Node, Expression<? extends ColorisableGraphicalContent>>(){
 			@Override
-			public Expression<? extends GraphicalContent> apply(Node node) {
-				return node.accept(new NodeVisitor<Expression<? extends GraphicalContent>>() {
+			public Expression<? extends ColorisableGraphicalContent> apply(Node node) {
+				return node.accept(new NodeVisitor<Expression<? extends ColorisableGraphicalContent>>() {
 
 					@Override
-					public Expression<? extends GraphicalContent> visitArc(Arc arc) {
+					public Expression<? extends ColorisableGraphicalContent> visitArc(Arc arc) {
 						NotImplementedException.warn("need to draw the arc!");
-						return constant(GraphicalContent.EMPTY);
+						return constant(ColorisableGraphicalContent.EMPTY);
 					}
 
 					@Override
-					public Expression<? extends GraphicalContent> visitComponent(Component component) {
+					public Expression<? extends ColorisableGraphicalContent> visitComponent(Component component) {
 						Expression<? extends BoundedColorisableGraphicalContent> bcgc = component.accept(new ComponentVisitor<Expression<? extends BoundedColorisableGraphicalContent>>() {
 
 							@Override
@@ -238,35 +113,83 @@ public class CustomToolsProvider {
 								return VisualVertex.getImage(vertex);
 							}
 						});
-						//bindFunc (bcgc, componentMovableController)
-						//return bindFunc(bcgc, constant(Colorisation.EMPTY), applyColourisation);
 						
-						return fmap 
-							( applyColourisation
-							, fmap 
+						return  fmap 
 								( BoundedColorisableGraphicalContent.getGraphics
 								, fmap
 										( BoundedColorisableGraphicalContent.translate
 										, bcgc
 										, componentMovableController.apply(component)
 										)
-								)
-							, constant(Colorisation.EMPTY)
-							);
+								);
 					}
-					
-					
 				});
 			}
 		};
 		
-		final Expression<? extends GraphicalContent> painter = Expressions.<Iterable<? extends Node>, GraphicalContent>bind(cpog.nodes(), new Combinator<Iterable<? extends Node>, GraphicalContent>() {
+		/** 
+		* compose :: [GraphicalContent] -> GraphicalContent
+		* 
+		* composeGraphics :: Expression [ GraphicalContent ] -> Expression GraphicalContent
+		* composeGraphics = fmap compose
+		*   
+		* nodes :: Expression [Node]
+		* nodePainter :: Node -> Expression ColorisableGraphicalContent
+		* 
+		* drawCollection :: [Node] -> Expression [ColorisableGraphicalContent]
+		* drawCollection = sequence map nodePainter
+		* 
+		* colorise :: ColorisableGraphicalContent -> GraphicalContent
+		* 
+		*  
+		*  drawCollection :: [Node] -> NodePainter -> Expression ColorisableGraphicalContent
+		*/
+
+		final Colorisation highlightedColorisation = new Colorisation() {
+			
 			@Override
-			public Expression<? extends GraphicalContent> apply(Iterable<? extends Node> nodes) {
-				return DrawMan.drawCollection(nodes, nodePainter);
+			public Color getColorisation() {
+				return new Color(99, 130, 191).brighter();
 			}
-		});
-		final ConnectionManager<? super Component> connectionManager = ConnectionManager.Util.fromSafe(new CpogConnectionManager(cpog));
+			
+			@Override
+			public Color getBackground() {
+				return null;
+			}
+		};
+
+		Function<Expression<? extends Set<? extends Node>>, Expression<GraphicalContent>> makePainter = new Function<Expression<? extends Set<? extends Node>>, Expression<GraphicalContent>>(){
+
+			@Override
+			public Expression<GraphicalContent> apply(final Expression<? extends Set<? extends Node>> highlighted) {
+				final Function<Node, Expression<? extends GraphicalContent>> colorisedPainter = new Function<Node, Expression<? extends GraphicalContent>>(){
+
+					@Override
+					public Expression<? extends GraphicalContent> apply(final Node node) {
+						Expression<Colorisation> colorisation = fmap(new Function<Set<? extends Node>, Colorisation>(){
+
+							@Override
+							public Colorisation apply(Set<? extends Node> highlighted) {
+								return highlighted.contains(node) ? highlightedColorisation : Colorisation.EMPTY;
+							}
+						}, highlighted);
+						return fmap(applyColourisation, nodePainter.apply(node), colorisation);
+					}
+				};
+				
+				return bind(
+						cpog.nodes()
+						, new Function<Iterable<? extends Node>, Expression<? extends GraphicalContent>>() {
+							@Override
+							public Expression<? extends GraphicalContent> apply(Iterable<? extends Node> nodes) {
+								return DrawMan.drawCollection(nodes, colorisedPainter);
+							}
+						}
+					);
+			}
+		};
+		
+		final ConnectionController<? super Component> connectionManager = ConnectionController.Util.fromSafe(new CpogConnectionManager(cpog));
 		final Function<? super Component, ? extends Expression<? extends Point2D>> centerProvider = new Function<Component, Expression<? extends Point2D>>(){
 			@Override
 			public Expression<? extends Point2D> apply(Component component) {
@@ -289,19 +212,24 @@ public class CustomToolsProvider {
 			@Override
 			public Expression<? extends GraphicalContent> screenSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
 				return constant(GraphicalContent.EMPTY);
-			}
-			
+			}		
+
 			@Override
-			public Identification getIdentification() {
+			public Button getButton() {
 				return org.workcraft.gui.graph.tools.selection.SelectionTool.identification;
 			}
 		};
+
+		ConnectionTool<Component> connectionTool = new ConnectionTool<Component>(centerProvider, connectionManager, HitTester.Util.asPointHitTester(connectionHitTester));
+		
+		Set<Node> emptySet = java.util.Collections.emptySet();
+		Expression<? extends GraphicalContent> painter = makePainter.apply(constant(emptySet));
 		
 		return asList(
-				attachPainter(selectionTool, painter),
-				attachPainter(new ConnectionTool<Component>(centerProvider, connectionManager, connectionHitTester), painter),
-				attachPainter(new NodeGeneratorTool(new VertexGenerator(), snap), painter),
-				attachPainter(new NodeGeneratorTool(new VariableGenerator(), snap), painter),
-				attachPainter(new NodeGeneratorTool(new RhoClauseGenerator(), snap), painter));
+				attachPainter(selectionTool, makePainter.apply(genericSelectionTool.effectiveSelection())),
+				attachPainter(connectionTool, makePainter.apply(fmap(Collections.<Node>singleton(), connectionTool.mouseOverNode()))),
+				attachPainter(new NodeGeneratorTool(generators.vertexGenerator, editor.snapFunction()), painter),
+				attachPainter(new NodeGeneratorTool(generators.variableGenerator, editor.snapFunction()), painter),
+				attachPainter(new NodeGeneratorTool(generators.rhoClauseGenerator, editor.snapFunction()), painter));
 	}
 }

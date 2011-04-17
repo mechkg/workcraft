@@ -16,12 +16,12 @@ import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.dom.visual.connections.VisualConnectionGui;
 import org.workcraft.exceptions.InvalidConnectionException;
-import org.workcraft.gui.graph.tools.ConnectionManager;
+import org.workcraft.gui.graph.tools.ConnectionController;
 import org.workcraft.plugins.petri.VisualPlace;
 import org.workcraft.plugins.petri.VisualTransition;
 import org.workcraft.util.Hierarchy;
 
-public class VisualStgConnectionManager implements ConnectionManager<Node> {
+public class VisualStgConnectionManager implements ConnectionController<Node> {
 
 	final VisualSTG model;
 	final StorageManager storage;

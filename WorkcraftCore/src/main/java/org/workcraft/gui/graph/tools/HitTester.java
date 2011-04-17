@@ -19,6 +19,16 @@ public interface HitTester<N> {
 	PCollection<N> boxHitTest(Point2D boxStart, Point2D boxEnd);
 	
 	public class Util {
+		public static <N> Function <Point2D, N> asPointHitTester (final HitTester<N> hitTester) {
+			return new Function<Point2D, N>() {
+				@Override
+				public N apply(Point2D argument) {
+					return hitTester.hitTest(argument);
+				}
+			};
+		}
+		
+		
 		public static HitTester<VisualNode> reflectiveHitTestForSelection(final VisualModel model, final Function<? super Node, ? extends Maybe<? extends Touchable>> tp) {
 			return new HitTester<VisualNode>() {
 				@Override

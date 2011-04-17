@@ -3,7 +3,7 @@ package org.workcraft.plugins.cpog;
 import org.workcraft.util.Maybe;
 import static org.workcraft.util.Maybe.Util.*;
 
-public interface Component {
+public interface Component extends Node {
 	class ComponentVisitorWithDefaultValue<T> implements ComponentVisitor<T> {
 		private final T value;
 
@@ -28,9 +28,10 @@ public interface Component {
 	}
 	
 	class Util {
-		/**
+		/** <pre>
 		 * asVertex (Vertex v) -> Just v
 		 * asVertex _ -> Nothing
+		 * </pre>
 		 */
 		public static Maybe<Vertex> asVertex(Component component) {
 			Maybe<Vertex> noVertex = nothing();

@@ -294,4 +294,14 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	public WorkspaceEntry getWorkspaceEntry() {
 		return workspaceEntry;
 	}
+
+	@Override
+	public Function<Point2D, Point2D> snapFunction() {
+		return new Function<Point2D, Point2D>() {
+			@Override
+			public Point2D apply(Point2D argument) {
+				return snap(argument);
+			}
+		};	
+	}
 }

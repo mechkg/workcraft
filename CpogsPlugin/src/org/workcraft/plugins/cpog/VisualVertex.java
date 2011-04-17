@@ -60,6 +60,7 @@ public class VisualVertex
 
 			@Override
 			protected BoundedColorisableGraphicalContent evaluate(final EvaluationContext context) {
+				final Expression<BooleanFormula> value2 = value(vertex);
 				ColorisableGraphicalContent gc = new ColorisableGraphicalContent() {
 					
 					@Override
@@ -70,7 +71,8 @@ public class VisualVertex
 						Shape shape = new Ellipse2D.Double(-size / 2 + strokeWidth / 2, -size / 2 + strokeWidth / 2,
 								size - strokeWidth, size - strokeWidth);
 
-						BooleanFormula value = context.resolve(value(vertex));
+
+						BooleanFormula value = context.resolve(value2);
 						
 						g.setColor(Coloriser.colorise(context.resolve(CommonVisualSettings.fillColor), colorisation));
 						g.fill(shape);

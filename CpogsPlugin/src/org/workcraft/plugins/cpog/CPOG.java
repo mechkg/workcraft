@@ -109,14 +109,25 @@ public class CPOG
 	}
 
 	public Expression<PVector<Node>> nodes() {
+		final Expression<PVector<Component>> components = components();
 		return new ExpressionBase<PVector<Node>>(){
 			@Override
 			protected PVector<Node> evaluate(EvaluationContext context) {
 				return TreePVector.<Node>empty()
+					.plusAll(context.resolve(components))
+					.plusAll(context.resolve(arcs));
+			}
+		};
+	}
+
+	public Expression<PVector<Component>> components() {
+		return new ExpressionBase<PVector<Component>>(){
+			@Override
+			protected PVector<Component> evaluate(EvaluationContext context) {
+				return TreePVector.<Component>empty()
 					.plusAll(context.resolve(variables))
 					.plusAll(context.resolve(vertices))
-					.plusAll(context.resolve(rhoClauses))
-					.plusAll(context.resolve(arcs));
+					.plusAll(context.resolve(rhoClauses));
 			}
 		};
 	}

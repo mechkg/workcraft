@@ -96,7 +96,7 @@ public class SelectionTool implements GraphEditorTool, DecorationProvider<Colori
 		};
 	}
 	
-	public static Identification identification = new Identification() {
+	public static Button identification = new Button() {
 		@Override
 		public String getLabel() {
 			return "Select";
@@ -144,7 +144,7 @@ public class SelectionTool implements GraphEditorTool, DecorationProvider<Colori
 	}
 
 	@Override
-	public Identification getIdentification() {
+	public Button getButton() {
 		return identification;
 	}
 }

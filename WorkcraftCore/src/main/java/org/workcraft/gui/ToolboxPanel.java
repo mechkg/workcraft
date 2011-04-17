@@ -43,7 +43,7 @@ import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.gui.events.GraphEditorKeyEvent;
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
-import org.workcraft.gui.graph.tools.GraphEditorTool.Identification;
+import org.workcraft.gui.graph.tools.GraphEditorTool.Button;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
 @SuppressWarnings("serial")
@@ -97,7 +97,7 @@ public class ToolboxPanel extends JPanel implements GraphEditorKeyListener {
 		int iconSize = eval(CommonVisualSettings.iconSize); // TODO: make the size update appropriately
 		int minSize = iconSize+Math.max(insets.left+insets.right, insets.top+insets.bottom);
 		
-		Identification identification = tool.getIdentification();
+		Button identification = tool.getButton();
 		
 		Icon icon = identification.getIcon();
 		if(icon==null) {
@@ -153,7 +153,7 @@ public class ToolboxPanel extends JPanel implements GraphEditorKeyListener {
 	
 	public void selectTool(GraphEditorTool tool) {
 		if (eval(selectedTool) != null) {
-			ToolTracker oldTracker = hotkeyMap.get(eval(selectedTool).getIdentification().getHotKeyCode());
+			ToolTracker oldTracker = hotkeyMap.get(eval(selectedTool).getButton().getHotKeyCode());
 			if(oldTracker!=null)
 				oldTracker.reset();
 			
@@ -161,7 +161,7 @@ public class ToolboxPanel extends JPanel implements GraphEditorKeyListener {
 			buttons.get(eval(selectedTool)).setSelected(false);
 		}
 
-		ToolTracker tracker = hotkeyMap.get(tool.getIdentification().getHotKeyCode());
+		ToolTracker tracker = hotkeyMap.get(tool.getButton().getHotKeyCode());
 		if (tracker != null)
 			tracker.track(tool);
 		

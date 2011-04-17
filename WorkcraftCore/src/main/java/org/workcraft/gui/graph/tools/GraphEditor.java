@@ -26,6 +26,7 @@ import java.awt.geom.Point2D;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.graph.EditorOverlay;
 import org.workcraft.gui.graph.Viewport;
+import org.workcraft.util.Function;
 
 public interface GraphEditor {
 	public Viewport getViewport();
@@ -34,6 +35,7 @@ public interface GraphEditor {
 	public int getWidth();
 	public int getHeight();
 	public Point2D snap(Point2D pos);
+	public Function<Point2D, Point2D> snapFunction();
 	public void repaint();
 	public boolean hasFocus();
 }

@@ -30,7 +30,7 @@ import org.workcraft.gui.graph.Viewport;
 
 public interface GraphEditorTool {
 	
-	interface Identification {
+	public interface Button {
 		public String getLabel();
 		public Icon getIcon();
 		/**
@@ -55,5 +55,5 @@ public interface GraphEditorTool {
 	 */
 	public JPanel getInterfacePanel();
 
-	public Identification getIdentification();
+	public Button getButton();
 }

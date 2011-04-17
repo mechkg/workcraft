@@ -69,7 +69,7 @@ public class HitMan
 		}
 		
 		public N hit(Point2D point, Function<? super N, Boolean> filter) {
-			return instance.hitFirst(point, null, filter);
+			return instance.hitFirstChild(point, null, filter);
 		}
 		
 		public HitTester<N> getHitTester() {
@@ -82,6 +82,7 @@ public class HitMan
 				@Override
 				public N hitTest(Point2D point) {
 					for(Function<? super N, Boolean> tester : testers) {
+						
 						N n = hit(point, tester);
 						if(n != null)
 							return n;

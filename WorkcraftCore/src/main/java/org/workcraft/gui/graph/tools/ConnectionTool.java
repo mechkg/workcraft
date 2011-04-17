@@ -56,12 +56,12 @@ public class ConnectionTool<N> extends AbstractTool {
 	private boolean leftFirst = false;
 	private ModifiableExpression<Point2D> lastMouseCoords = Variable.<Point2D>create(new Point2D.Double());
 	private String warningMessage = null;
-	private final ConnectionManager<? super N> connectionManager;
+	private final ConnectionController<? super N> connectionManager;
 	
 	private final Function<? super Point2D, ? extends N> hitTester;
 	private final Function<? super N, ? extends Expression<? extends Point2D>> centerProvider;
 
-	public ConnectionTool (Function<? super N, ? extends Expression<? extends Point2D>> centerProvider, ConnectionManager<? super N> connectionManager, Function<? super Point2D, ? extends N> hitTester) {
+	public ConnectionTool (Function<? super N, ? extends Expression<? extends Point2D>> centerProvider, ConnectionController<? super N> connectionManager, Function<? super Point2D, ? extends N> hitTester) {
 		this.centerProvider = centerProvider;
 		this.connectionManager = connectionManager;
 		this.hitTester = hitTester;
@@ -212,8 +212,8 @@ public class ConnectionTool<N> extends AbstractTool {
 	}
 	
 	@Override
-	public Identification getIdentification() {
-		return new Identification() {
+	public Button getButton() {
+		return new Button() {
 			
 			@Override
 			public int getHotKeyCode() {

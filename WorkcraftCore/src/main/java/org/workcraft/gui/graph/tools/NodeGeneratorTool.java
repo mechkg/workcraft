@@ -80,7 +80,7 @@ public class NodeGeneratorTool extends AbstractTool {
 	}
 	
 	@Override
-	public Identification getIdentification() {
+	public Button getButton() {
 		return generator.getIdentification();
 	}
 }

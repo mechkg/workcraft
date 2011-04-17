@@ -26,7 +26,7 @@ import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.DefaultReflectiveModelPainter;
 import org.workcraft.gui.graph.tools.Colorisator;
-import org.workcraft.gui.graph.tools.ConnectionManager;
+import org.workcraft.gui.graph.tools.ConnectionController;
 import org.workcraft.gui.graph.tools.ConnectionTool;
 import org.workcraft.gui.graph.tools.CustomToolsProvider;
 import org.workcraft.gui.graph.tools.GraphEditor;
@@ -223,7 +223,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 		
 		
 		
-		ConnectionManager<Node> connectionManager = new VisualStgConnectionManager(visualStg, visualStg.storage, tp);
+		ConnectionController<Node> connectionManager = new VisualStgConnectionManager(visualStg, visualStg.storage, tp);
 		
 		return asList(
 				attachParameterisedPainter(new STGSelectionTool(visualStg.stg, editor, tp, selectionHitTester, editorState), painterProvider),

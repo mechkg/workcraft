@@ -5,11 +5,11 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.util.Function;
 
 public class GlobalCache {
-	public static <T> T eval(Expression<T> expression) {
+	public static <T> T eval(Expression<? extends T> expression) {
 		return expression.getValue(null).value;
 	}
 
-	public static <A, B> Function<A, B> eval(final Function<A, Expression<B>> function) {
+	public static <A, B> Function<A, B> eval(final Function<? super A, ? extends Expression<? extends B>> function) {
 		return new Function<A, B>() {
 			@Override
 			public B apply(A arg) {

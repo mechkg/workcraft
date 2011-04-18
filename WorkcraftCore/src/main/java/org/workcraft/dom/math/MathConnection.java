@@ -25,7 +25,6 @@ import org.workcraft.annotations.VisualClass;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
 
-
 @VisualClass(org.workcraft.dom.visual.connections.VisualConnection.class)
 public class MathConnection extends MathNode implements Connection {
 	private MathNode first;
@@ -51,9 +50,4 @@ public class MathConnection extends MathNode implements Connection {
 	final public void setDependencies(MathNode first, MathNode second) {
 		this.first = first;	 this.second = second;
 	}
-	
-	public String toString() {
-		return "MathConnection " + this.hashCode() + " (" + first +", " + second +")";		
-	}
-
 }

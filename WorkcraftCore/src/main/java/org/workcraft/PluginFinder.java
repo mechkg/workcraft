@@ -101,8 +101,9 @@ public class PluginFinder {
 			System.out.println("bad class: " + e.getMessage());
 		} catch (LinkageError e) {
 			System.out.println("bad class: " + e.getMessage());
-		} catch (ClassNotFoundException e) {
-			throw new PluginInstantiationException(e);
+		} catch (Throwable e) {
+			System.out.println("bad class: " + e.getMessage());
+			// throw new PluginInstantiationException(e);
 		}
 	}
 }

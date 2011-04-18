@@ -40,7 +40,7 @@ public interface Function<A,R> {
 			};
 		}
 		
-		public static <A, B, C> Function<A, C> composition(final Function<A, B> f1, final Function<B, C> f2) {
+		public static <A, B, C> Function<A, C> composition(final Function<? super A, ? extends B> f1, final Function<? super B, ? extends C> f2) {
 			return new Function<A, C>() {
 				@Override
 				public C apply(A argument) {

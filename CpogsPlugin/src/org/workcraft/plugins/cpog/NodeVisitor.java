@@ -1,6 +1,45 @@
 package org.workcraft.plugins.cpog;
 
-public interface NodeVisitor<T> {
-	public T visitArc(Arc arc);
-	public T visitComponent(Component component);
+import org.workcraft.util.Function;
+
+public abstract class NodeVisitor<T> implements Function<Node, T> {
+	public abstract T visitArc(Arc arc);
+	public abstract T visitComponent(Component component);
+	
+	public final Function<Arc, T> arcVisitor() {
+		return new Function<Arc, T>(){
+			@Override
+			public T apply(Arc arc) {
+				return visitArc(arc);
+			}
+		};
+	}
+	
+	public final Function<Component, T> componentVisitor() {
+		return new Function<Component, T>(){
+			@Override
+			public T apply(Component component) {
+				return visitComponent(component);
+			}
+		};
+	}
+	
+	public final T apply(Node node) {
+		return node.accept(this);
+	}
+	
+	public static <T> NodeVisitor<T> create(final Function<Arc, T> arcVisitor, final Function<Component, T> componentVisitor) {
+		return new NodeVisitor<T>() {
+
+			@Override
+			public T visitArc(Arc arc) {
+				return arcVisitor.apply(arc);
+			}
+
+			@Override
+			public T visitComponent(Component component) {
+				return componentVisitor.apply(component);
+			}
+		};
+	}
 }

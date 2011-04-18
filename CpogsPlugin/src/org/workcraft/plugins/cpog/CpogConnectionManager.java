@@ -23,7 +23,7 @@ public class CpogConnectionManager implements SafeConnectionManager<Component> {
 		
 		try {
 			final Vertex firstVertex = extract(asVertex(first));
-			final Vertex secondVertex = extract(asVertex(first));
+			final Vertex secondVertex = extract(asVertex(second));
 		
 			return new Action() {
 				@Override

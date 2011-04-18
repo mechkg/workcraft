@@ -5,20 +5,16 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.workcraft.util.Function3;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Geometry.CurveSplitResult;
 
 public class BezierGui {
 	
-	public static Function3<VisualConnectionProperties, Point2D, Point2D, ParametricCurve> curveMaker = new Function3<VisualConnectionProperties, Point2D, Point2D, ParametricCurve>() {
-		@Override
-		public ParametricCurve apply(VisualConnectionProperties connectionInfo, Point2D cp1, Point2D cp2) {
-			CubicCurve2D curve2D = new CubicCurve2D.Double();
-			curve2D.setCurve(connectionInfo.getFirstShape().getCenter(), cp1, cp2, connectionInfo.getSecondShape().getCenter());
-			return new Curve(curve2D);
-		}
-	};
+	public static ParametricCurve makeCurve(VisualConnectionProperties connectionInfo, VisualConnectionContext context, Point2D cp1, Point2D cp2) {
+		CubicCurve2D curve2D = new CubicCurve2D.Double();
+		curve2D.setCurve(context.component1().getCenter(), cp1, cp2, context.component2().getCenter());
+		return new Curve(curve2D);
+	}
 	
 	private final static class Curve implements ParametricCurve {
 		

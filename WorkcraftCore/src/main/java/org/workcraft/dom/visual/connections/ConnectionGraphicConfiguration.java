@@ -1,7 +1,6 @@
 package org.workcraft.dom.visual.connections;
 
-import org.workcraft.dom.Node;
 
-public interface ConnectionGraphicConfiguration extends Node { // TODO: drop "Node"
+public interface ConnectionGraphicConfiguration {
 	public <T> T accept(ConnectionGraphicConfigurationVisitor<T> visitor);
 }

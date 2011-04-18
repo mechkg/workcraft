@@ -46,7 +46,7 @@ import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.dom.visual.connections.ParametricCurve;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.dom.visual.connections.VisualConnectionGui;
-import org.workcraft.dom.visual.connections.VisualConnectionGui.ConnectionGui;
+import org.workcraft.dom.visual.connections.VisualConnectionGui.ExprConnectionGui;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.integer.IntegerProperty;
@@ -113,7 +113,7 @@ public class VisualImplicitPlaceArc extends VisualConnection {
 
 	public static Expression<? extends ColorisableGraphicalContent> graphicalContent(TouchableProvider<Node> tp, VisualImplicitPlaceArc arc) {
 		
-		ConnectionGui gui = VisualConnectionGui.getConnectionGui(TouchableProvider.Util.podgonHideMaybe(tp), arc);
+		ExprConnectionGui gui = VisualConnectionGui.getConnectionGui(TouchableProvider.Util.podgonHideMaybe(tp), arc);
 		Function2<ParametricCurve, Integer, ColorisableGraphicalContent> drawTokens = new Function2<ParametricCurve, Integer, ColorisableGraphicalContent>(){
 			@Override
 			public ColorisableGraphicalContent apply(final ParametricCurve curve, final Integer tokens) {

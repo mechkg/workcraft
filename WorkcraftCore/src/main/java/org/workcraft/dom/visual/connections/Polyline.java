@@ -36,11 +36,10 @@ import org.workcraft.dom.ArbitraryInsertionGroupImpl;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 
-public class Polyline implements Node, Container, ConnectionGraphicConfiguration {
+public class Polyline implements ConnectionGraphicConfiguration {
 	
 	private ArbitraryInsertionGroupImpl groupImpl;
 	private final StorageManager storage; 
-	
 	
 	public Polyline(VisualConnection parent, StorageManager storage) {
 		this.storage = storage;

@@ -21,26 +21,49 @@
 
 package org.workcraft.plugins.cpog;
 
+import java.awt.geom.Point2D;
+
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.dom.visual.connections.BezierData;
+import org.workcraft.dom.visual.connections.ConnectionDataVisitor;
+import org.workcraft.dom.visual.connections.VisualConnectionData;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 
-public class Arc implements Node
-{
+public class Arc implements Node {
 	private final ModifiableExpression<BooleanFormula> condition;
 	public final Vertex first;
 	public final Vertex second;
+	public final ModifiableExpression<VisualConnectionData> visual;
 
-	public Arc(Vertex first, Vertex second, StorageManager storage)
-	{
+	public Arc(Vertex first, Vertex second, StorageManager storage) {
 		this.first = first;
 		this.second = second;
-		condition = storage.<BooleanFormula>create(One.instance());
+		this.condition = storage.<BooleanFormula> create(One.instance());
+		VisualConnectionData defaultConnectionData = new VisualConnectionData(){
+
+			@Override
+			public <T> T accept(ConnectionDataVisitor<T> visitor) {
+				return visitor.visitBezier(new BezierData() {
+					
+					@Override
+					public Point2D cp2() {
+						return new Point2D.Double(1.0/3.0, 0);
+					}
+					
+					@Override
+					public Point2D cp1() {
+						return new Point2D.Double(2.0/3.0, 0);
+					}
+				});
+			}
+			
+		};
+		this.visual = storage.create(defaultConnectionData);
 	}
 
-	public ModifiableExpression<BooleanFormula> condition()
-	{
+	public ModifiableExpression<BooleanFormula> condition() {
 		return condition;
 	}
 

@@ -9,12 +9,8 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.TransformHelper;
-import org.workcraft.exceptions.NotImplementedException;
-import org.workcraft.plugins.cpog.Arc;
 import org.workcraft.plugins.cpog.Component;
 import org.workcraft.plugins.cpog.ComponentVisitor;
-import org.workcraft.plugins.cpog.Node;
-import org.workcraft.plugins.cpog.NodeVisitor;
 import org.workcraft.plugins.cpog.RhoClause;
 import org.workcraft.plugins.cpog.Variable;
 import org.workcraft.plugins.cpog.Vertex;
@@ -38,21 +34,7 @@ public class TouchableProvider {
 		};
 	}
 
-	public static Expression<Touchable> localTouchable(Node node) {
-		return node.accept(new NodeVisitor<Expression<Touchable>>() {
-			@Override
-			public Expression<Touchable> visitArc(Arc arc) {
-				throw new NotImplementedException();
-			}
-
-			@Override
-			public Expression<Touchable> visitComponent(Component component) {
-				return localTouchable(component);
-			}
-		});
-	}
-	
-	static Function<Rectangle2D, Touchable> bbToTouchable = new Function<Rectangle2D, Touchable>() {
+	public static Function<Rectangle2D, Touchable> bbToTouchable = new Function<Rectangle2D, Touchable>() {
 		@Override
 		public Touchable apply(final Rectangle2D bb) {
 			return new Touchable(){
@@ -71,15 +53,7 @@ public class TouchableProvider {
 				public Point2D getCenter() {
 					return new Point2D.Double(0, 0);
 				}
-				
 			};
-		}
-	};
-	
-	public static Function<Node, Expression<Touchable>> nodeLocalTouchable = new Function<Node, Expression<Touchable>>() {
-		@Override
-		public Expression<Touchable> apply(Node argument) {
-			return localTouchable(argument);
 		}
 	};
 	

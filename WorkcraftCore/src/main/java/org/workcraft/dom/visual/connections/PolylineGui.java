@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.workcraft.dom.visual.BoundingBoxHelper;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.util.Function2;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Pair;
@@ -33,9 +34,10 @@ public class PolylineGui {
 	
 	public static void createPolylineControlPoint(VisualConnectionProperties connectionProps, Polyline polyline, Point2D userLocation) {
 		PVector<Point2D> controlPoints = eval(mapM(ControlPoint.positionGetter).apply(eval(polyline.controlPoints())));
-		Curve curve = PolylineGui.curveMaker.apply(controlPoints, connectionProps);
-		Pair<Integer, Double> lt = curve.getNearestPointTLocal(userLocation);
-		polyline.createControlPoint(lt.getFirst(), curve.getPoint(lt));
+		//Curve curve = PolylineGui.curveMaker.apply(controlPoints, connectionProps);
+		//Pair<Integer, Double> lt = curve.getNearestPointTLocal(userLocation);
+		//polyline.createControlPoint(lt.getFirst(), curve.getPoint(lt));
+		throw new NotImplementedException();
 	}
 	
 	public static final class Curve implements ParametricCurve {
@@ -193,10 +195,7 @@ public class PolylineGui {
 		}
 	}
 
-	public final static Function2<List<? extends Point2D>, VisualConnectionProperties, Curve> curveMaker = new  Function2<List<? extends Point2D>, VisualConnectionProperties, Curve>(){
-		@Override
-		public Curve apply(List<? extends Point2D> controlPoints, VisualConnectionProperties props) {
-			return new Curve(createAnchorPoints(props.getFirstShape().getCenter(), props.getSecondShape().getCenter(), controlPoints));
-		}
-	};
+	public static Curve makeCurve(VisualConnectionProperties props, VisualConnectionContext context, List<? extends Point2D> controlPoints) {
+		return new Curve(createAnchorPoints(context.component1().getCenter(), context.component2().getCenter(), controlPoints));
+	}
 }

@@ -24,19 +24,12 @@ package org.workcraft.dom.visual.connections;
 import java.awt.Color;
 import java.awt.Stroke;
 
-import org.workcraft.dom.visual.Touchable;
-import org.workcraft.dom.visual.connections.VisualConnection.ScaleMode;
-
 public interface VisualConnectionProperties {
 	public Color getDrawColor();
 	public double getArrowWidth();
 	public double getArrowLength();
 	public boolean hasArrow();
 	public Stroke getStroke();
-	
-	public Touchable getFirstShape();
-	public Touchable getSecondShape();
-	public ScaleMode getScaleMode();
 	
 	class Inheriting implements VisualConnectionProperties {
 		private final VisualConnectionProperties target;
@@ -64,18 +57,5 @@ public interface VisualConnectionProperties {
 		public Stroke getStroke() {
 			return target.getStroke();
 		}
-
-		public Touchable getFirstShape() {
-			return target.getFirstShape();
-		}
-
-		public Touchable getSecondShape() {
-			return target.getSecondShape();
-		}
-
-		public ScaleMode getScaleMode() {
-			return target.getScaleMode();
-		}
-
 	}
 }

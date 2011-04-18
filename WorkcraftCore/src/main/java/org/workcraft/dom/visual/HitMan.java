@@ -28,6 +28,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 
 import org.workcraft.dom.Container;
@@ -52,10 +53,14 @@ public class HitMan
 
 		public Flat(final Function0<? extends Iterable<? extends N>> contents, final Function<? super N, ? extends Touchable> tp) {
 			this.contents = contents;
+			// we use a special case of hierarchical hit tester with null representing the root and contents representing its children 
 			this.instance = new Instance<N>(new Function<N, Iterable<? extends N>>(){
 				@Override
 				public Iterable<? extends N> apply(N argument) {
-					return contents.apply();
+					if (argument == null)
+						return contents.apply();
+					else
+						return Collections.emptyList();
 				}
 			}, new Function<N, Maybe<? extends Touchable>>(){
 				@Override

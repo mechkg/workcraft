@@ -154,7 +154,7 @@ public class Expressions {
 		};
 	}
 	
-	public static <A,B,C> Expression<? extends C> bind(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Combinator2<? super A, ? super B, ? extends C> func) {
+	public static <A,B,C> Expression<? extends C> bind(final Expression<? extends A> expr1, final Expression<? extends B> expr2, final Function2<? super A, ? super B, ? extends Expression<? extends C>> func) {
 		notNull(expr1, expr2, func);
 		return new ExpressionBase<C>(){
 			@Override
@@ -286,7 +286,7 @@ public class Expressions {
 		};
 	}
 
-	public static <A,B> Function<Expression<? extends A>, Expression<B>> lift(final Function<? super A, ? extends B> func) {
+	public static <A,B> Function<Expression<? extends A>, Expression<B>> fmap(final Function<? super A, ? extends B> func) {
 		return new Function<Expression<? extends A>, Expression<B>>(){
 			@Override
 			public Expression<B> apply(Expression<? extends A> exprA) {

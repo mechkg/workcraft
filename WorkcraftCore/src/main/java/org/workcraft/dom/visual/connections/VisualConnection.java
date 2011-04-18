@@ -23,37 +23,24 @@ package org.workcraft.dom.visual.connections;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 import java.awt.Color;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.user.CachedHashSet;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionFilter;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
-import org.workcraft.dom.Node;
-import org.workcraft.dom.math.MathConnection;
-import org.workcraft.dom.math.MathNode;
-import org.workcraft.dom.visual.DependentNode;
-import org.workcraft.dom.visual.VisualComponent;
-import org.workcraft.dom.visual.VisualNode;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty;
 import org.workcraft.gui.propertyeditor.dubble.DoubleProperty;
-import org.workcraft.serialisation.xml.NoAutoSerialisation;
 import org.workcraft.util.Pair;
 
 import pcollections.PVector;
 import pcollections.TreePVector;
 
-public class VisualConnection extends VisualNode implements
-		Node, Connection,
-		DependentNode {
+public class VisualConnection<N> implements Connection<N> {
 	
 	public enum ConnectionType 
 	{
@@ -70,23 +57,12 @@ public class VisualConnection extends VisualNode implements
 		ADAPTIVE
 	}
 	
-	private MathConnection refConnection;
-	private VisualComponent first;
-	private VisualComponent second;
+	private final N first;
+	private final N second;
 
 	private final ModifiableExpression<ScaleMode> scaleMode;
 	
-	private final ModifiableExpression<ConnectionGraphicConfiguration> graphic = new ModifiableExpressionBase<ConnectionGraphicConfiguration>(){
-		@Override
-		protected ConnectionGraphicConfiguration evaluate(EvaluationContext context) {
-			return context.resolve(children).iterator().next();
-		};
-		@Override
-		public void setValue(ConnectionGraphicConfiguration newValue) {
-			children.clear();
-			children.add(newValue);
-		};
-	};
+	private final ModifiableExpression<ConnectionGraphicConfiguration> graphic;
 
 	static class BoundedVariable extends ModifiableExpressionFilter<Double, Double>
 	{	
@@ -121,7 +97,6 @@ public class VisualConnection extends VisualNode implements
 	private final ModifiableExpression<Double> arrowWidth;
 	private final ModifiableExpression<Double> arrowLength;
 	
-	private CachedHashSet<ConnectionGraphicConfiguration> children;
 	public final StorageManager storage;
 	public final ModifiableExpression<ConnectionType> connectionType = new ModifiableExpressionBase<ConnectionType>(){
 		@Override
@@ -156,7 +131,6 @@ public class VisualConnection extends VisualNode implements
 		}
 	};
 	
-	@Override
 	public PVector<EditableProperty> getProperties() {
 
 		PVector<Pair<String,Double>> arrowLengths = TreePVector.<Pair<String, Double>>empty()
@@ -178,7 +152,7 @@ public class VisualConnection extends VisualNode implements
 		.plus(Pair.of("Adaptive", ScaleMode.ADAPTIVE))
 		;
 		
-		return super.getProperties()
+		return TreePVector.<EditableProperty>empty()
 			.plus(DoubleProperty.create("Line width", lineWidth))
 			.plus(DoubleProperty.create("Arrow width", arrowWidth))
 			.plus(ChoiceProperty.create("Arrow length", arrowLengths, arrowLength))
@@ -186,39 +160,20 @@ public class VisualConnection extends VisualNode implements
 			.plus(ChoiceProperty.create("Scale mode", scaleModes, scaleMode))
 			;
 	}
-
-	public VisualConnection(StorageManager storage) {
-		super(storage);
+	
+	
+	public VisualConnection(StorageManager storage, N first, N second) {
 		this.storage = storage;
 		color = storage.create(defaultColor);
 		scaleMode = storage.create(ScaleMode.LOCK_RELATIVELY);
 		lineWidth = new BoundedVariable(0.01, 0.5, storage.create(defaultLineWidth));
 		arrowWidth = new BoundedVariable(0.1, 1, storage.create(defaultArrowWidth));
 		arrowLength = new BoundedVariable(0.1, 1, storage.create(defaultArrowLength));
-	}
-	
-	public void setVisualConnectionDependencies(VisualComponent first, VisualComponent second, ConnectionGraphicConfiguration graphic, MathConnection refConnection) {
-		if(first == null)
-			throw new NullPointerException("first");
-		if(second == null)
-			throw new NullPointerException("second");
-		if(graphic == null)
-			throw new NullPointerException("graphic");
-	
+
 		this.first = first;
 		this.second = second;
-		this.refConnection = refConnection;
-		this.children = new CachedHashSet<ConnectionGraphicConfiguration>(storage);
-		this.children.add(graphic);
-	}
-	
-	public VisualConnection(MathConnection refConnection, VisualComponent first, VisualComponent second, StorageManager storage) {
-		this(storage);
-		this.refConnection = refConnection;
-		this.first = first;
-		this.second = second;
-		this.children = new CachedHashSet<ConnectionGraphicConfiguration>(storage);
-		this.children.add(new Polyline(this, storage));
+		ConnectionGraphicConfiguration polyline = new Polyline(this, storage);
+		this.graphic = storage.create(polyline);
 	}
 
 	public ModifiableExpression<Color> color() {
@@ -237,40 +192,20 @@ public class VisualConnection extends VisualNode implements
 		return arrowLength;
 	}
 	
-	public MathConnection getReferencedConnection() {
-		return refConnection;
-	}
-	
 	@Override
-	public VisualComponent getFirst() {
+	public N getFirst() {
 		return first;
 	}
 
 	@Override
-	public VisualComponent getSecond() {
+	public N getSecond() {
 		return second;
 	}
 
-	@Override
-	public Set<MathNode> getMathReferences() {
-		Set<MathNode> ret = new HashSet<MathNode>();
-		MathConnection refCon = getReferencedConnection();
-		if(refCon!=null)
-			ret.add(refCon);
-		return ret;
-	}
-
-	@NoAutoSerialisation
 	public Expression<ConnectionGraphicConfiguration> graphic() {
 		return graphic;
 	}
 	
-	@Override
-	public Expression<? extends Collection<? extends Node>> children() {
-		return children;
-	}
-	
-	@NoAutoSerialisation
 	public ModifiableExpression<ScaleMode> scaleMode() {
 		return scaleMode;
 	}

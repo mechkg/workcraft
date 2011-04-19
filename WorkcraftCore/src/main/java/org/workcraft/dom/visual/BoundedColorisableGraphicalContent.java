@@ -45,7 +45,7 @@ public class BoundedColorisableGraphicalContent {
 				, bb.getHeight()));
 	}
 	
-	public static Function2<BoundedColorisableGraphicalContent, Point2D, BoundedColorisableGraphicalContent> translate = new Function2<BoundedColorisableGraphicalContent, Point2D, BoundedColorisableGraphicalContent>() { 
+	public static Function2<BoundedColorisableGraphicalContent, Point2D, BoundedColorisableGraphicalContent> translateQweqwe = new Function2<BoundedColorisableGraphicalContent, Point2D, BoundedColorisableGraphicalContent>() { 
 		@Override
 		public BoundedColorisableGraphicalContent apply(
 				BoundedColorisableGraphicalContent argument1, Point2D argument2) {

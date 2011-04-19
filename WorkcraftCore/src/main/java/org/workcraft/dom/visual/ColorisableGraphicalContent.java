@@ -42,7 +42,7 @@ public interface ColorisableGraphicalContent {
 				}
 			};
 		}
-		public final static Function2<ColorisableGraphicalContent, Colorisation, GraphicalContent> applyColourisation = new Function2<ColorisableGraphicalContent, Colorisation, GraphicalContent>() {
+		public final static Function2<ColorisableGraphicalContent, Colorisation, GraphicalContent> applyColourisationFunc = new Function2<ColorisableGraphicalContent, Colorisation, GraphicalContent>() {
 			@Override
 			public GraphicalContent apply(ColorisableGraphicalContent argument1, Colorisation argument2) {
 				return applyColourisation(argument1, argument2);

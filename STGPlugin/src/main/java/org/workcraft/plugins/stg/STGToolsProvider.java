@@ -184,7 +184,7 @@ public class STGToolsProvider implements CustomToolsProvider {
 							}
 							else
 							return new DefaultReflectiveModelPainter.ReflectiveNodePainter(tp, colorisator).getGraphicalContent(node);
-						return fmap(applyColourisation, colorisable, colorisator.getColorisation(node));
+						return fmap(applyColourisationFunc, colorisable, colorisator.getColorisation(node));
 					}
 				};
 				

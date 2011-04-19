@@ -43,6 +43,7 @@ import org.workcraft.gui.graph.tools.NodeGeneratorTool;
 import org.workcraft.gui.graph.tools.selection.GenericSelectionTool;
 import org.workcraft.gui.graph.tools.selection.MoveDragHandler;
 import org.workcraft.plugins.cpog.gui.Generators;
+
 import org.workcraft.util.Collections;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
@@ -145,6 +146,7 @@ public class CustomToolsProvider {
 	
 	public Iterable<GraphEditorTool> getTools(final GraphEditor editor)
 	{
+		
 		final ModifiableExpression<PSet<Node>> selection = cpog.storage.<PSet<Node>>create(HashTreePSet.<Node>empty());
 		final Generators generators = Generators.createFor(cpog);
 		
@@ -197,7 +199,7 @@ public class CustomToolsProvider {
 						return  fmap 
 								( BoundedColorisableGraphicalContent.getGraphics
 								, fmap
-										( BoundedColorisableGraphicalContent.translate
+										( BoundedColorisableGraphicalContent.translateQweqwe
 										, bcgc
 										, componentMovableController.apply(component)
 										)
@@ -234,7 +236,7 @@ public class CustomToolsProvider {
 								return highlighted.contains(node) ? highlightedColorisation : Colorisation.EMPTY;
 							}
 						}, highlighted);
-						return fmap(applyColourisation, nodePainter.apply(node), colorisation);
+						return fmap(applyColourisationFunc, nodePainter.apply(node), colorisation);
 					}
 				};
 				
@@ -251,12 +253,6 @@ public class CustomToolsProvider {
 		};
 		
 		final ConnectionController<? super Component> connectionManager = ConnectionController.Util.fromSafe(new CpogConnectionManager(cpog));
-		final Function<? super Component, ? extends Expression<? extends Point2D>> centerProvider = new Function<Component, Expression<? extends Point2D>>(){
-			@Override
-			public Expression<? extends Point2D> apply(Component component) {
-				return componentMovableController.apply(component);
-			}
-		};
 
 		final GenericSelectionTool<Node> genericSelectionTool = new GenericSelectionTool<Node>(selection, selectionHitTester, dragHandler);
 		GraphEditorTool selectionTool = new AbstractTool() {
@@ -281,7 +277,7 @@ public class CustomToolsProvider {
 			}
 		};
 
-		ConnectionTool<Component> connectionTool = new ConnectionTool<Component>(centerProvider, connectionManager, HitTester.Util.asPointHitTester(connectionHitTester));
+		ConnectionTool<Component> connectionTool = new ConnectionTool<Component>(componentMovableController, connectionManager, HitTester.Util.asPointHitTester(connectionHitTester));
 		
 		Set<Node> emptyNodesSet = java.util.Collections.emptySet();
 		Expression<? extends GraphicalContent> painter = makePainter.apply(constant(emptyNodesSet));

@@ -10,7 +10,7 @@ import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty;
 import org.workcraft.gui.propertyeditor.dubble.DoubleProperty;
 import org.workcraft.gui.propertyeditor.string.StringProperty;
-import org.workcraft.util.SubstructureView;
+import org.workcraft.util.FieldAccessor;
 
 import pcollections.PVector;
 import pcollections.TreePVector;
@@ -32,25 +32,25 @@ public class VisualComponent {
 	}
 	
 	public static PVector<EditableProperty> getProperties(VisualComponent component) {
-		SubstructureView<Point2D, Double> xView = new SubstructureView<Point2D, Double>(){
+		FieldAccessor<Point2D, Double> xView = new FieldAccessor<Point2D, Double>(){
 			@Override
 			public Double apply(Point2D argument) {
 				return argument.getX();
 			}
 
 			@Override
-			public Point2D reverse(Point2D old, Double x) {
+			public Point2D assign(Point2D old, Double x) {
 				return new Point2D.Double(x, old.getY());
 			}
 		};
-		SubstructureView<Point2D, Double> yView = new SubstructureView<Point2D, Double>(){
+		FieldAccessor<Point2D, Double> yView = new FieldAccessor<Point2D, Double>(){
 			@Override
 			public Double apply(Point2D argument) {
 				return argument.getY();
 			}
 			
 			@Override
-			public Point2D reverse(Point2D old, Double y) {
+			public Point2D assign(Point2D old, Double y) {
 				return new Point2D.Double(old.getX(), y);
 			}
 		};

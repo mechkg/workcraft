@@ -50,26 +50,14 @@ import org.workcraft.gui.graph.Viewport
 import java.util.Set
 import java.lang.Boolean
 
+import org.workcraft.plugins.cpog.scala.Util._
+
 
 import _root_.scala.collection.JavaConversions._
 
 object ToolsProvider {
-	def bindFunc[A, B] (a : Expression[_ <: A])(f : A => B) : Expression[B] = javafmap(asFunctionObject(f), a)
-	def bindFunc[A, B, C] (a : Expression[_ <: A], b : Expression[_ <: B])(f : (A, B) => C) : Expression[C] = javafmap(asFunctionObject2(f), a, b)
-	def fmap[A, B] (f : A => B)(a : Expression[_ <: A]) : Expression[B] = javafmap(asFunctionObject(f), a)
-	def fmap[A, B, C] (f : (A, B) => C)(a : Expression[_ <: A], b : Expression[_ <: B]) : Expression[C] = javafmap(asFunctionObject2(f), a, b)
-	def bind[A, B] (a: Expression[_ <: A], f : A => _ <: Expression[_ <: B]) : Expression [B] = javabind[A,B](a, asFunctionObject(f)) 
+
 	
-	
-	def asFunctionObject[T,R] (f : (T=>R)) = new Function[T,R] {
-		def apply (x:T) = f(x)
-	}
-	
-	def asFunctionObject2[T1,T2,R] (f : ((T1,T2)=>R)) = new Function2[T1,T2,R] {
-		def apply (x:T1, y:T2) = f(x,y)
-	}
-	
-	def withDefault[V] (default: V, f:(Node => Maybe[_ <: V])) : (Node => V) = { x => Maybe.Util.orElse (f(x), default) }
 	
 
 	val visualConnectionProperties = new  VisualConnectionProperties {
@@ -104,7 +92,7 @@ object ToolsProvider {
 		val selection = cpog.storage.create[PSet[Node]](HashTreePSet.empty())
 		val generators = createFor(cpog)
 		
-		val transformer =  withDefault [Expression[Point2D]](constant(new Point2D.Double(0,0)), movableController(_))
+		val transformer =  withDefault [Expression[Point2D]] (constant(new Point2D.Double(0,0)), movableController(_))
 		
 		val transformedComponentTouchableProvider = transform(componentLocalTouchable, asFunctionObject(transformer))
 		

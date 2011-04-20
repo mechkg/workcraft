@@ -15,7 +15,7 @@ import org.workcraft.util.Function0;
 import org.workcraft.util.Function2;
 import org.workcraft.util.Function3;
 import org.workcraft.util.Maybe;
-import org.workcraft.util.SubstructureView;
+import org.workcraft.util.FieldAccessor;
 import org.workcraft.util.TwoWayFunction;
 
 import pcollections.PVector;
@@ -193,11 +193,11 @@ public class Expressions {
 		};
 	}
 
-	public static <A,R> ModifiableExpression<R> bindFunc(final ModifiableExpression<A> exprA, final SubstructureView<A, R> func) {
+	public static <A,R> ModifiableExpression<R> bindFunc(final ModifiableExpression<A> exprA, final FieldAccessor<A, R> func) {
 		return new ModifiableExpressionBase<R>() {
 			@Override
 			public void setValue(R newValue) {
-				exprA.setValue(func.reverse(GlobalCache.eval(exprA), newValue));
+				exprA.setValue(func.assign(GlobalCache.eval(exprA), newValue));
 			}
 
 			@Override
@@ -207,11 +207,11 @@ public class Expressions {
 		};
 	}
 
-	public static <A,R> ModifiableExpression<R> bind(final ModifiableExpression<A> exprA, final SubstructureView<A, R> func) {
+	public static <A,R> ModifiableExpression<R> bind(final ModifiableExpression<A> exprA, final FieldAccessor<A, R> func) {
 		return new ModifiableExpressionBase<R>() {
 			@Override
 			public void setValue(R newValue) {
-				exprA.setValue(func.reverse(GlobalCache.eval(exprA), newValue));
+				exprA.setValue(func.assign(GlobalCache.eval(exprA), newValue));
 			}
 
 			@Override

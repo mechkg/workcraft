@@ -117,7 +117,7 @@ object ToolsProvider {
 						val bcgc = component.accept(new ComponentVisitor[Expression[_ <: BoundedColorisableGraphicalContent]] {
 							override def visitRho(rho : RhoClause) = VisualRhoClause.getVisualRhoClause(rho)
 							override def visitVariable(variable : Variable) = VisualVariableGui.getImage(variable)
-							override def visitVertex(vertex : Vertex) = VisualVertex.getImage(vertex)
+							override def visitVertex(vertex : Vertex) = VisualVertex.image(vertex)
 						})
 						
 						bindFunc (bindFunc ( bcgc

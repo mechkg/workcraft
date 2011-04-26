@@ -88,11 +88,8 @@ object ToolsProvider {
 	}
 	
 	def getTools (cpog:CPOG, snap:Function[Point2D, Point2D]) : Iterable[GraphEditorTool] = {
-		
 		val selection = cpog.storage.create[PSet[Node]](HashTreePSet.empty())
 		val generators = createFor(cpog)
-		
-		val transformer =  withDefault [Expression[Point2D]] (constant(new Point2D.Double(0,0)), movableController(_))
 		
 		val transformedComponentTouchableProvider = transform(componentLocalTouchable, asFunctionObject(transformer))
 		
@@ -148,8 +145,6 @@ object ToolsProvider {
 				})
 			}
 			
-			
-			
 			def someshit (nodes : Iterable[_ <: Node]) = DrawMan.drawCollection(nodes, asFunctionObject(colorisedPainter))
 			
 			bind(
@@ -163,11 +158,11 @@ object ToolsProvider {
 		val genericSelectionTool = new GenericSelectionTool[Node](selection, selectionHitTester, dragHandler);
 		
 		val selectionTool = new AbstractTool {
-			override def mouseListener = genericSelectionTool.getMouseListener()
-			override def userSpaceContent(viewport : Viewport, hasFocus : Expression[Boolean]) = genericSelectionTool.userSpaceContent(viewport);
+			override def mouseListener = genericSelectionTool.getMouseListener
+			override def userSpaceContent(viewport : Viewport, hasFocus : Expression[Boolean]) = genericSelectionTool.userSpaceContent(viewport)
 			override def screenSpaceContent(viewport : Viewport, hasFocus : Expression[Boolean]) = constant(GraphicalContent.EMPTY)
-			override def getButton = org.workcraft.gui.graph.tools.selection.SelectionTool.identification;
-		};
+			override def getButton = org.workcraft.gui.graph.tools.selection.SelectionTool.identification
+		}
 
 		val connectionTool = new ConnectionTool[Component](componentMovableController, connectionManager, HitTester.Util.asPointHitTester(connectionHitTester))
 		

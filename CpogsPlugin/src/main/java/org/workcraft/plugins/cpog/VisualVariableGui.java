@@ -105,7 +105,7 @@ public class VisualVariableGui
 		final Expression<BoundedColorisableGraphicalContent> valueLabel = fmap(composition(toString, makeLabel, centerToZero), var.state);
 		final Expression<BoundedColorisableGraphicalContent> nameLabel = fmap(labelNamePositioner, fmap(makeLabel, var.label), var.visualVar.labelPosition);
 		final Expression<BoundedColorisableGraphicalContent> box = simpleColorisableRectangle(visualBox);
-		return fmap(compose, fmap(compose, box, nameLabel), valueLabel);
+		return fmap(composeFunc, fmap(composeFunc, box, nameLabel), valueLabel);
 	}
 	
 	public static Expression<BoundedColorisableGraphicalContent> simpleColorisableRectangle(final Rectangle2D rect) {

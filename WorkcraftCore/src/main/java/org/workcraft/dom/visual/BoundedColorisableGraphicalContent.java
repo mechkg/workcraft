@@ -8,6 +8,9 @@ import org.workcraft.util.Function2;
 import org.workcraft.util.Graphics;
 
 public class BoundedColorisableGraphicalContent {
+	public static BoundedColorisableGraphicalContent EMPTY = new BoundedColorisableGraphicalContent(ColorisableGraphicalContent.EMPTY, new Rectangle2D.Double());
+	
+	
 	public BoundedColorisableGraphicalContent(ColorisableGraphicalContent graphics, Rectangle2D boundingBox) {
 		this.graphics = graphics;
 		this.boundingBox = boundingBox;
@@ -40,7 +43,7 @@ public class BoundedColorisableGraphicalContent {
 			}
 		}, new Rectangle2D.Double(
 				  bb.getMinX() + offset.getX()
-				, bb.getMaxX() + offset.getX()
+				, bb.getMinY() + offset.getY()
 				, bb.getWidth()
 				, bb.getHeight()));
 	}
@@ -67,7 +70,7 @@ public class BoundedColorisableGraphicalContent {
 		}
 	};
 	
-	public static Function2<BoundedColorisableGraphicalContent, BoundedColorisableGraphicalContent , BoundedColorisableGraphicalContent> compose = new Function2<BoundedColorisableGraphicalContent, BoundedColorisableGraphicalContent, BoundedColorisableGraphicalContent>() {
+	public static Function2<BoundedColorisableGraphicalContent, BoundedColorisableGraphicalContent , BoundedColorisableGraphicalContent> composeFunc = new Function2<BoundedColorisableGraphicalContent, BoundedColorisableGraphicalContent, BoundedColorisableGraphicalContent>() {
 		@Override
 		public BoundedColorisableGraphicalContent apply(BoundedColorisableGraphicalContent argument1, BoundedColorisableGraphicalContent argument2) {
 			return compose(argument1, argument2);

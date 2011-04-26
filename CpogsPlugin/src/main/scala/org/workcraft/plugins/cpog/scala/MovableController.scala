@@ -24,9 +24,6 @@ object MovableController {
     case _ : Arc => constant (new Point2D.Double (0,0))
     case c : Component => position (c)
   }
-  
-
-  
-  
+    
   def localTouchable (node : Node) : Touchable = null
 }

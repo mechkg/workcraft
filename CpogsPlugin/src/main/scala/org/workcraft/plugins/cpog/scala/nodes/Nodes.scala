@@ -48,20 +48,6 @@ package org.workcraft.plugins.cpog.scala.nodes {
   
   object Vertex {
     def create (storage:StorageManager) = Vertex(storage.create (One.instance), VisualProperties.create(storage))
-    
-    def conditionValue (vertex:Vertex) : Expression[BooleanFormula] = new ExpressionBase[BooleanFormula] {
-      override def evaluate (context : EvaluationContext) = context.resolve(vertex.condition).accept(
-    		  new BooleanReplacer (new HashMap[BooleanVariable, BooleanFormula]) {
-    		    override def visit (node : BooleanVariable) : BooleanFormula = node match {
-    		      case v : Variable => context.resolve(v.state) match {
-    		        case VariableState.TRUE => One.instance
-    		        case VariableState.FALSE => Zero.instance
-    		        case _ => v
-    		      }
-    		    }
-    		  }
-          )
-        }
   }
   
   object RhoClause {

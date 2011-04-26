@@ -1,5 +1,14 @@
 package org.workcraft.plugins.cpog.scala
 
+import org.workcraft.plugins.cpog.optimisation.expressions.Zero
+import org.workcraft.plugins.cpog.optimisation.expressions.One
+import org.workcraft.plugins.cpog.scala.nodes.Variable
+import org.workcraft.plugins.cpog.VariableState
+import org.workcraft.plugins.cpog.optimisation.BooleanVariable
+import java.util.HashMap
+import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase
+import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.dependencymanager.advanced.core.GlobalCache
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase
@@ -37,4 +46,18 @@ object Util {
 		override def setValue(newValue:FieldT) = expr.setValue(accessor.assign(GlobalCache.eval(expr), newValue));
 		override def evaluate (context:EvaluationContext) : FieldT = accessor(context.resolve(expr))
 	}
+	
+	  def formulaValue (formula : BooleanFormula) : Expression[BooleanFormula] = new ExpressionBase[BooleanFormula] {
+      override def evaluate (context : EvaluationContext) = formula.accept(
+    		  new BooleanReplacer (new HashMap[BooleanVariable, BooleanFormula]) {
+    		    override def visit (node : BooleanVariable) : BooleanFormula = node match {
+    		      case v : Variable => context.resolve(v.state) match {
+    		        case VariableState.TRUE => One.instance
+    		        case VariableState.FALSE => Zero.instance
+    		        case _ => v
+    		      }
+    		    }
+    		  }
+          )
+        }
 }

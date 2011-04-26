@@ -24,7 +24,7 @@ public class FormulaRenderingResult
 	public List<Point2D> glyphCoordinates = null;
 	public List<Line2D> inversionLines = null;
 	
-	public void add(FormulaRenderingResult summand)
+	public FormulaRenderingResult add(FormulaRenderingResult summand)
 	{
 		for(GlyphVector glyph : summand.glyphs) glyphs.add(glyph);
 		for(Point2D p : summand.glyphCoordinates)
@@ -42,6 +42,8 @@ public class FormulaRenderingResult
 				summand.boundingBox.getMinY()));
 		
 		visualTop = Math.min(visualTop, summand.visualTop);
+		
+		return this;
 	}
 	
 	public void draw(Graphics2D g, Color color)
@@ -65,6 +67,16 @@ public class FormulaRenderingResult
 			@Override
 			public void draw(DrawRequest request) {
 				FormulaRenderingResult.this.draw(request.getGraphics(), request.getColorisation().getColorisation());
+			}
+		}, boundingBox);
+	}
+	
+	public BoundedColorisableGraphicalContent asBoundedColorisableImage(final Color color) {
+		return new BoundedColorisableGraphicalContent(new ColorisableGraphicalContent(){
+
+			@Override
+			public void draw(DrawRequest request) {
+				FormulaRenderingResult.this.draw(request.getGraphics(), color);
 			}
 		}, boundingBox);
 	}

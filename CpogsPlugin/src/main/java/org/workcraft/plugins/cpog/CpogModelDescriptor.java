@@ -14,8 +14,6 @@ import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.interop.ServiceProviderImpl;
-import org.workcraft.plugins.cpog.scala.ToolsProvider;
-//import org.workcraft.plugins.cpog.scala.ToolsProvider;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 
 import pcollections.PVector;
@@ -42,7 +40,7 @@ public class CpogModelDescriptor implements ModelDescriptor {
 				
 				@Override
 				public Iterable<? extends GraphEditorTool> createTools(GraphEditor editor) {
-					return ToolsProvider.getTools(cpog, editor.snapFunction());
+					return new CustomToolsProvider(cpog).getTools(editor);
 				}
 			});
 	}

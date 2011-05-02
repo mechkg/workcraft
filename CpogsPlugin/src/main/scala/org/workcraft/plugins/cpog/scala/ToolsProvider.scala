@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog.scala
+/*package org.workcraft.plugins.cpog.scala
 
 import org.workcraft.dom.visual.HitMan
 
@@ -176,3 +176,4 @@ object ToolsProvider {
 			Nil)
 	}
 }
+*/

@@ -19,7 +19,7 @@
  *
  */
 
-package org.workcraft.plugins.cpog.serialisation;
+/*package org.workcraft.plugins.cpog.serialisation;
 
 import org.w3c.dom.Element;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
@@ -48,6 +48,5 @@ public class ArcDeserialiser extends BooleanFunctionDeserialiser
 	{
 		return new Arc((StorageManager)constructorParameters[0]);
 	}
-
-	
 }
+*/

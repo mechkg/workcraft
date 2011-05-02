@@ -1,4 +1,4 @@
-import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
+/*import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
@@ -128,5 +128,5 @@ public class VisualVariableGui
 
 	public static Rectangle2D visualBox = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 }
-
+*/
 */

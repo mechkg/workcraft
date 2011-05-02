@@ -62,7 +62,6 @@ public class CPOG
 	final ModifiableExpression<PVector<Vertex>> vertices;
 	final ModifiableExpression<PVector<RhoClause>> rhoClauses;
 	final ModifiableExpression<PVector<Arc>> arcs;
-	final ModifiableExpression<PVector<DynamicVariableConnection>> dynamicArcs;
 
 	<T>ModifiableExpression<PVector<T>> createEmpty(StorageManager storage) {
 		PVector<T> empty = TreePVector.empty();
@@ -75,7 +74,6 @@ public class CPOG
 		vertices = createEmpty(storage);
 		rhoClauses = createEmpty(storage);
 		arcs = createEmpty(storage);
-		dynamicArcs = createEmpty(storage);
 	}
 	
 	static <T> void add(ModifiableExpression<PVector<T>> vec, T item) {

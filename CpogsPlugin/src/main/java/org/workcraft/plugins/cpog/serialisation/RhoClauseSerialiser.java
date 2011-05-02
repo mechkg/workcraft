@@ -19,7 +19,7 @@
  *
  */
 
-package org.workcraft.plugins.cpog.serialisation;
+/*package org.workcraft.plugins.cpog.serialisation;
 
 import org.workcraft.plugins.cpog.RhoClause;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
@@ -39,3 +39,4 @@ public class RhoClauseSerialiser extends BooleanFormulaSerialiser
 		return eval(((RhoClause) serialisee).formula());
 	}
 }
+*/

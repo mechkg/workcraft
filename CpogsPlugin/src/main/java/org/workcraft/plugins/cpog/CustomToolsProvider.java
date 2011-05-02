@@ -28,7 +28,6 @@ import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.Touchable;
-import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.dom.visual.connections.BezierData;
 import org.workcraft.dom.visual.connections.ConnectionDataVisitor;
 import org.workcraft.dom.visual.connections.ConnectionGui;
@@ -57,6 +56,7 @@ import org.workcraft.plugins.cpog.gui.Generators;
 import org.workcraft.util.Collections;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
+import org.workcraft.util.Graphics;
 import org.workcraft.util.Maybe;
 
 import pcollections.HashTreePSet;
@@ -158,6 +158,33 @@ public class CustomToolsProvider {
 			}
 		});
 	}
+
+	static <N> Expression<GraphicalContent> drawWithHighlight(final Colorisation highlightedColorisation, final Expression<? extends Set<? extends N>> highlighted, final Function<N, ? extends Expression<? extends ColorisableGraphicalContent>> painter, Expression<? extends Iterable<? extends N>> nodes) {
+			final Function<N, Expression<? extends GraphicalContent>> colorisedPainter = new Function<N, Expression<? extends GraphicalContent>>(){
+				@Override
+				public Expression<? extends GraphicalContent> apply(final N node) {
+					Expression<Colorisation> colorisation = fmap(new Function<Set<? extends N>, Colorisation>(){
+
+						@Override
+						public Colorisation apply(Set<? extends N> highlighted) {
+							return highlighted.contains(node) ? highlightedColorisation : Colorisation.EMPTY;
+						}
+					}, highlighted);
+					return fmap(applyColourisationFunc, painter.apply(node), colorisation);
+				}
+			};
+			
+			return bind(
+					nodes
+					, new Function<Iterable<? extends N>, Expression<? extends GraphicalContent>>() {
+						@Override
+						public Expression<? extends GraphicalContent> apply(Iterable<? extends N> nodes) {
+							return DrawMan.drawCollection(nodes, colorisedPainter);
+						}
+					}
+				);
+		}
+	
 	
 	public Iterable<GraphEditorTool> getTools(final GraphEditor editor)
 	{
@@ -237,33 +264,9 @@ public class CustomToolsProvider {
 		};
 
 		Function<Expression<? extends Set<? extends Node>>, Expression<GraphicalContent>> makePainter = new Function<Expression<? extends Set<? extends Node>>, Expression<GraphicalContent>>(){
-
 			@Override
 			public Expression<GraphicalContent> apply(final Expression<? extends Set<? extends Node>> highlighted) {
-				final Function<Node, Expression<? extends GraphicalContent>> colorisedPainter = new Function<Node, Expression<? extends GraphicalContent>>(){
-
-					@Override
-					public Expression<? extends GraphicalContent> apply(final Node node) {
-						Expression<Colorisation> colorisation = fmap(new Function<Set<? extends Node>, Colorisation>(){
-
-							@Override
-							public Colorisation apply(Set<? extends Node> highlighted) {
-								return highlighted.contains(node) ? highlightedColorisation : Colorisation.EMPTY;
-							}
-						}, highlighted);
-						return fmap(applyColourisationFunc, nodePainter.apply(node), colorisation);
-					}
-				};
-				
-				return bind(
-						cpog.nodes()
-						, new Function<Iterable<? extends Node>, Expression<? extends GraphicalContent>>() {
-							@Override
-							public Expression<? extends GraphicalContent> apply(Iterable<? extends Node> nodes) {
-								return DrawMan.drawCollection(nodes, colorisedPainter);
-							}
-						}
-					);
+				return drawWithHighlight(highlightedColorisation, highlighted, nodePainter, cpog.nodes());
 			}
 		};
 		
@@ -343,7 +346,6 @@ public class CustomToolsProvider {
 						}
 					}));
 				}
-				
 				Function2<PSet<ControlPoint>, Set<ControlPoint>, PSet<ControlPoint>> union = new Function2<PSet<ControlPoint>, Set<ControlPoint>, PSet<ControlPoint>>() {
 					@Override
 					public PSet<ControlPoint> apply(PSet<ControlPoint> argument1, Set<ControlPoint> argument2) {
@@ -353,37 +355,10 @@ public class CustomToolsProvider {
 				for(Expression<PSet<ControlPoint>> cps : controlPointLists) {
 					result = fmap(union, result, cps);
 				}
-				
 				return result;
 			}
 		});
-		HitTester<? extends ControlPoint> cpHitTester = createHitTester(visibleControlPoints, new Function<ControlPoint, Expression<Touchable>>(){
-			@Override
-			public Expression<Touchable> apply(ControlPoint argument) {
-				return fmap(new Function<Point2D, Touchable>(){
-						@Override
-						public Touchable apply(Point2D argument) {
-							return TransformHelper.translate().apply(new Touchable() {
-								
-								@Override
-								public boolean hitTest(Point2D point) {
-									return getBoundingBox().contains(point);
-								}
-								
-								@Override
-								public Point2D getCenter() {
-									return new Point2D.Double(0,0);
-								}
-								
-								@Override
-								public Rectangle2D getBoundingBox() {
-									return new Rectangle2D.Double(-0.1, -0.1, 0.2, 0.2);
-								}
-							}, argument);
-						}
-					}, argument.position);
-				}
-		});
+		
 		MovableController<ControlPoint> controlPointMovableController = new MovableController<ControlPoint>(){
 			@Override
 			public Maybe<? extends ModifiableExpression<Point2D>> apply(ControlPoint argument) {
@@ -391,8 +366,40 @@ public class CustomToolsProvider {
 			}
 		};
 		DragHandler<ControlPoint> cpDragHandler = new MoveDragHandler<ControlPoint>(selectedControlPoints, controlPointMovableController, editor.snapFunction());
-		final GenericSelectionTool<ControlPoint> gcpet = new GenericSelectionTool<ControlPoint>(selectedControlPoints, cpHitTester, cpDragHandler);
 
+		final Function<ControlPoint, Expression<BoundedColorisableGraphicalContent>> cpGc = new Function<ControlPoint, Expression<BoundedColorisableGraphicalContent>>(){
+			@Override
+			public Expression<BoundedColorisableGraphicalContent> apply(ControlPoint argument) {
+				
+				Function<? super Point2D, ? extends BoundedColorisableGraphicalContent> drawCircle = new Function<Point2D, BoundedColorisableGraphicalContent>(){
+					public BoundedColorisableGraphicalContent apply(Point2D offset) {
+						 return BoundedColorisableGraphicalContent.translate(org.workcraft.plugins.cpog.scala.Graphics.boundedCircle(1, new BasicStroke(0), Color.BLUE, Color.RED), offset);						
+					};
+				};
+				return fmap(drawCircle, argument.position);
+			}
+		};
+		
+		HitTester<? extends ControlPoint> cpHitTester = createHitTester(visibleControlPoints, new Function<ControlPoint, Expression<Touchable>>(){
+			@Override
+			public Expression<Touchable> apply(ControlPoint argument) {
+					Expression<BoundedColorisableGraphicalContent> bgc = cpGc.apply(argument);
+					Expression<Rectangle2D> bb = fmap(BoundedColorisableGraphicalContent.getBoundingBox, bgc);
+					return fmap(bbToTouchable, bb);
+			}
+		});
+		
+		final GenericSelectionTool<ControlPoint> gcpet = new GenericSelectionTool<ControlPoint>(selectedControlPoints, cpHitTester, cpDragHandler);
+		
+		// cpPainter = fmap (fmap BoundedColorisableGraphicalContent.getGraphics) cpGc
+		Function<ControlPoint, Expression<ColorisableGraphicalContent>> cpPainter = new Function<ControlPoint, Expression<ColorisableGraphicalContent>>(){
+			@Override
+			public Expression<ColorisableGraphicalContent> apply(ControlPoint argument) {
+				return fmap(BoundedColorisableGraphicalContent.getGraphics, cpGc.apply(argument));
+			}
+		};
+		
+		Expression<GraphicalContent> controlPointGC = CustomToolsProvider.<ControlPoint>drawWithHighlight(highlightedColorisation, selectedControlPoints, cpPainter, visibleControlPoints);
 		
 		GraphEditorTool controlPointEditorTool = new AbstractTool() {
 			
@@ -435,7 +442,7 @@ public class CustomToolsProvider {
 		
 		return asList(
 				attachPainter(selectionTool, makePainter.apply(genericSelectionTool.effectiveSelection())),
-				attachPainter(controlPointEditorTool, painter),
+				attachPainter(controlPointEditorTool,  fmap(Graphics.compose, painter, controlPointGC)),
 				attachPainter(connectionTool, makePainter.apply(fmap(Collections.<Node>singleton(), connectionTool.mouseOverNode()))),
 				attachPainter(new NodeGeneratorTool(generators.vertexGenerator, editor.snapFunction()), painter),
 				attachPainter(new NodeGeneratorTool(generators.variableGenerator, editor.snapFunction()), painter),

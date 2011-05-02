@@ -52,15 +52,13 @@ import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
 import org.workcraft.dom.visual.Label;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.util.Func;
 import org.workcraft.util.Geometry;
 
-public class VisualArc extends VisualConnection
+public class VisualArc
 {
 	private static Font labelFont;
-	private final FormulaLabel label;
-	
-	Arc mathConnection;
 	
 	static {
 		try {
@@ -73,6 +71,10 @@ public class VisualArc extends VisualConnection
 			e.printStackTrace();
 		}
 	}
+
+	private Expression<BooleanFormula> condition() {
+		throw new NotImplementedException();
+	}
 	
 	FormulaLabel makeFormulaLabel() {
 		final Expression<FormulaRenderingResult> renderedLabel = new ExpressionBase<FormulaRenderingResult>(){
@@ -83,6 +85,7 @@ public class VisualArc extends VisualConnection
 				
 				return FormulaToGraphics.render(condition, Label.podgonFontRenderContext(), labelFont);
 			}
+
 		};
 
 		return new FormulaLabel(renderedLabel, new ExpressionBase<Func<Rectangle2D, AffineTransform>>(){
@@ -92,7 +95,7 @@ public class VisualArc extends VisualConnection
 
 					@Override
 					public AffineTransform eval(Rectangle2D labelBB) {
-						ParametricCurve graphic = context.resolve(context.resolve(graphic()).curve());
+						ParametricCurve graphic = context.resolve(curve());
 						
 						Point2D p = graphic.getPointOnCurve(0.5);
 						Point2D d = graphic.getDerivativeAt(0.5);
@@ -111,6 +114,10 @@ public class VisualArc extends VisualConnection
 						
 						return transform;
 					}
+
+					private Expression<ParametricCurve> curve() {
+						throw new NotImplementedException();
+					}
 					
 				};
 			}
@@ -118,33 +125,13 @@ public class VisualArc extends VisualConnection
 		});
 	}
 	
-	public VisualArc(Arc mathConnection, StorageManager storage)
-	{
-		super(storage);
-		this.mathConnection = mathConnection;
-		label = makeFormulaLabel();
-	}
-	
-	public VisualArc(Arc mathConnection, VisualVertex first, VisualVertex second, StorageManager storage)
-	{
-		super(mathConnection, first, second, storage);
-		this.mathConnection = mathConnection;
-		label = makeFormulaLabel();
-	}
-
-	public ModifiableExpression<BooleanFormula> condition()
-	{
-		return mathConnection.condition();
-	}
-	
-	@Override
 	public ExpressionBase<VisualConnectionProperties> properties() {
 		return new ExpressionBase<VisualConnectionProperties>() {
 
 			@Override
 			protected VisualConnectionProperties evaluate(final EvaluationContext context) {
-				final VisualConnectionProperties superProperties = context.resolve(VisualArc.super.properties());
-
+				final VisualConnectionProperties superProperties = null;// TODO: superProperties
+				
 				return new VisualConnectionProperties.Inheriting(superProperties) {
 
 					@Override
@@ -160,8 +147,9 @@ public class VisualArc extends VisualConnection
 					public Stroke getStroke() {
 						BooleanFormula value = context.resolve(value());
 						
+						Expression<Double> lineWidth = null; // TODO: lineWidth 
 						if (value == Zero.instance()) 
-							return new BasicStroke((float)context.resolve(lineWidth()).doubleValue(), BasicStroke.CAP_BUTT,
+							return new BasicStroke((float)context.resolve(lineWidth).doubleValue(), BasicStroke.CAP_BUTT,
 						        BasicStroke.JOIN_MITER, 1.0f, new float[] {0.18f, 0.18f}, 0.00f);
 						
 						return superProperties.getStroke();
@@ -171,6 +159,10 @@ public class VisualArc extends VisualConnection
 		};
 	}
 
+	Expression<BooleanFormula> value(Vertex v) {
+		throw new NotImplementedException();
+	}
+	
 	private Expression<BooleanFormula> value()
 	{
 		return new ExpressionBase<BooleanFormula>() {
@@ -178,8 +170,10 @@ public class VisualArc extends VisualConnection
 			protected BooleanFormula evaluate(final EvaluationContext context) {
 				BooleanFormula condition = context.resolve(condition());
 				
-				condition = BooleanOperations.and(condition, context.resolve(((VisualVertex) getFirst()).value()));
-				condition = BooleanOperations.and(condition, context.resolve(((VisualVertex) getSecond()).value()));
+				Vertex first = null; // TODO: get from somewhere
+				Vertex second = null;
+				condition = BooleanOperations.and(condition, context.resolve(value(first)));
+				condition = BooleanOperations.and(condition, context.resolve(value(second)));
 				
 				return condition.accept(
 						new BooleanReplacer(new HashMap<BooleanVariable, BooleanFormula>())
@@ -202,46 +196,35 @@ public class VisualArc extends VisualConnection
 		};
 	}
 	
-	@Override
-	public static Expression<? extends ColorisableGraphicalContent> graphicalContent() {
-		return label.graphicalContent;
-	}
-	
-	@Override
 	public Expression<? extends Touchable> shape() {
 		return new ExpressionBase<Touchable>() {
 
 			@Override
 			protected Touchable evaluate(final EvaluationContext context) {
 				
-				final Touchable superShape = context.resolve(VisualArc.super.shape());
+				final Touchable superShape = null; //TODO: context.resolve(VisualArc.super.shape());
 				
 				return new Touchable() {
 					
 					@Override
 					public boolean hitTest(Point2D point) {
-						Rectangle2D lbb = context.resolve(label.boundingBox);
+						Rectangle2D lbb = context.resolve(null /* TODO: label.boundingBox */ );
 						if (lbb!=null && lbb.contains(point)) return true;
 						return superShape.hitTest(point);
 					}
 					
 					@Override
 					public Point2D getCenter() {
-						return VisualArc.this.getPointOnConnection(0.5);
+						return null; //TODO: VisualArc.this.getPointOnConnection(0.5);
 					}
 					
 					@Override
 					public Rectangle2D getBoundingBox() {
-						return BoundingBoxHelper.union(superShape.getBoundingBox(), context.resolve(label.boundingBox));
+						return null;//TODO: BoundingBoxHelper.union(superShape.getBoundingBox(), context.resolve(null /* TODO: label.boundingBox */));
 					}
 				};
 			}
 			
 		};
-	}
-
-	public Expression<Rectangle2D> getLabelBoundingBox()
-	{
-		return label.boundingBox;
 	}
 }

@@ -19,7 +19,7 @@
  *
  */
 
-package org.workcraft.plugins.cpog.serialisation;
+/*package org.workcraft.plugins.cpog.serialisation;
 
 import org.w3c.dom.Element;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
@@ -51,3 +51,4 @@ public class VertexDeserialiser extends BooleanFunctionDeserialiser
 
 	
 }
+*/

@@ -40,7 +40,6 @@ import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.exceptions.VisualModelInstantiationException;
 import org.workcraft.gui.propertyeditor.Properties;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString;
 import org.workcraft.plugins.cpog.optimisation.javacc.BooleanParser;
@@ -49,7 +48,7 @@ import org.workcraft.util.Hierarchy;
 
 import pcollections.HashTreePSet;
 
-public class VisualCPOG extends AbstractVisualModel
+/*public class VisualCPOG extends AbstractVisualModel
 {
 	private final class BooleanFormulaPropertyDescriptor implements PropertyDescriptor 
 	{
@@ -225,3 +224,4 @@ public class VisualCPOG extends AbstractVisualModel
 		updateEncoding();
 	}
 }
+*/

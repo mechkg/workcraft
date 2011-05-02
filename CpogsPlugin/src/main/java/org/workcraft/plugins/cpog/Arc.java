@@ -37,24 +37,26 @@ public class Arc implements Node {
 	public final Vertex second;
 	public final ModifiableExpression<VisualConnectionData> visual;
 
-	public Arc(Vertex first, Vertex second, StorageManager storage) {
+	public Arc(Vertex first, Vertex second, final StorageManager storage) {
 		this.first = first;
 		this.second = second;
 		this.condition = storage.<BooleanFormula> create(One.instance());
 		VisualConnectionData defaultConnectionData = new VisualConnectionData(){
+			ModifiableExpression<Point2D> cp1 = storage.<Point2D>create(new Point2D.Double(1.0/3.0, 0));
+			ModifiableExpression<Point2D> cp2 = storage.<Point2D>create(new Point2D.Double(2.0/3.0, 0));
 
 			@Override
 			public <T> T accept(ConnectionDataVisitor<T> visitor) {
 				return visitor.visitBezier(new BezierData() {
 					
 					@Override
-					public Point2D cp2() {
-						return new Point2D.Double(1.0/3.0, 0);
+					public ModifiableExpression<Point2D> cp1() {
+						return cp1;
 					}
-					
+
 					@Override
-					public Point2D cp1() {
-						return new Point2D.Double(2.0/3.0, 0);
+					public ModifiableExpression<Point2D> cp2() {
+						return cp2;
 					}
 				});
 			}

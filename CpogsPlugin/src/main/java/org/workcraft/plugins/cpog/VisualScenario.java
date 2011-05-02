@@ -139,14 +139,15 @@ public class VisualScenario extends VisualGroup implements ReflectiveTouchable, 
 	private Rectangle2D getContentsBoundingBox(EvaluationContext context) {
 		Rectangle2D bb = null;
 		
-		for(VisualVertex v : context.resolve(Hierarchy.childrenOfType(this, VisualVertex.class)))
+		// TODO: throw away everything?
+		/*for(VisualVertex v : context.resolve(Hierarchy.childrenOfType(this, VisualVertex.class)))
 			bb = BoundingBoxHelper.union(bb, context.resolve(v.shape()).getBoundingBox());
 
 		for(VisualVariable v : context.resolve(Hierarchy.childrenOfType(this, VisualVariable.class)))
 			bb = BoundingBoxHelper.union(bb, context.resolve(v.shape()).getBoundingBox());
 
 		for(VisualArc a : context.resolve(Hierarchy.childrenOfType(this, VisualArc.class)))
-			bb = BoundingBoxHelper.union(bb, context.resolve(a.getLabelBoundingBox()));
+			bb = BoundingBoxHelper.union(bb, context.resolve(a.getLabelBoundingBox()));*/
 
 		if (bb == null) bb = context.resolve(contentsBB);
 		else

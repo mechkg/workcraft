@@ -19,7 +19,7 @@
  *
  */
 
-package org.workcraft.plugins.cpog;
+/*package org.workcraft.plugins.cpog;
 
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
@@ -60,3 +60,4 @@ public class VisualDynamicVariableConnection extends VisualConnection
 		};
 	}
 }
+*/

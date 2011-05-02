@@ -19,7 +19,7 @@
  *
  */
 
-package org.workcraft.plugins.cpog.serialisation;
+/*package org.workcraft.plugins.cpog.serialisation;
 
 import org.workcraft.plugins.cpog.Vertex;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
@@ -38,3 +38,4 @@ public class VertexSerialiser extends BooleanFormulaSerialiser
 		return eval(((Vertex) serialisee).condition());
 	}
 }
+*/

@@ -14,7 +14,7 @@ import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.selection.SelectionToolConfig;
 
-public class SelectionTool extends org.workcraft.gui.graph.tools.selection.SelectionTool
+/*public class SelectionTool extends org.workcraft.gui.graph.tools.selection.SelectionTool
 {
 	// TODO: use these!
 	@Override
@@ -56,3 +56,4 @@ public class SelectionTool extends org.workcraft.gui.graph.tools.selection.Selec
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) currentLevelUp(e.getModel());
 	}
 }
+*/

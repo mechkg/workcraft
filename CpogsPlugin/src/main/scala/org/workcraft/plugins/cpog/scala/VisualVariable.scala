@@ -14,7 +14,7 @@ import java.awt.BasicStroke
 package org.workcraft.plugins.cpog.scala {
 
   object VisualVariable {
-    private val size = 1;
+    val size = 1;
     private val strokeWidth = 0.08f;
     
     private val nameFont = FormulaRenderer.fancyFont;
@@ -22,7 +22,7 @@ package org.workcraft.plugins.cpog.scala {
 
     def image(variable: Variable): Expression[BoundedColorisableGraphicalContent] = {
       new ExpressionBase[BoundedColorisableGraphicalContent] {
-        def evaluate(context: EvaluationContext) {
+        def evaluate(context: EvaluationContext) : BoundedColorisableGraphicalContent = {
           val state = context.resolve(variable.state)
           val label = context.resolve(variable.label)
           val fillColor = context.resolve(CommonVisualSettings.fillColor)
@@ -35,7 +35,8 @@ package org.workcraft.plugins.cpog.scala {
           compose (
         		  frame ::
         		  aligned (valueLabel, frame, HorizontalAlignment.Center, VerticalAlignment.Center) ::
-        		  sideways (nameLabel, frame, LabelPositioning.BOTTOM)
+        		  sideways (nameLabel, frame, LabelPositioning.BOTTOM) ::
+        		  Nil
                 )
         }
       }

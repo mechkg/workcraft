@@ -139,7 +139,7 @@ package org.workcraft.plugins.cpog.scala {
       
     def compose (a : BoundedColorisableGraphicalContent, b : BoundedColorisableGraphicalContent) = BoundedColorisableGraphicalContent.compose (a,b)
     
-    def compose (list : List[BoundedColorisableGraphicalContent]) = list match {
+    def compose (list : List[BoundedColorisableGraphicalContent]) : BoundedColorisableGraphicalContent = list match {
       case Nil => BoundedColorisableGraphicalContent.EMPTY
       case head :: Nil  => head
       case head :: tail => tail.foldRight(head)((a,b)=>BoundedColorisableGraphicalContent.compose(a,b)) 

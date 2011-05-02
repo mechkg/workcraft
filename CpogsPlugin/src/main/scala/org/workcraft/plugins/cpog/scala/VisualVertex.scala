@@ -27,7 +27,7 @@ import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 
 package org.workcraft.plugins.cpog.scala {
   object VisualVertex {
-    private val size: Double = 1
+    val size: Double = 1
     private val strokeWidth: Float = 0.1f
 
     private def simpleLabel(label: String) = FormulaToGraphics.print(label, FormulaRenderer.fancyFont, Label.podgonFontRenderContext())

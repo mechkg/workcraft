@@ -76,7 +76,7 @@ public class GenericSelectionTool<Node> {
 	
 	public GenericSelectionTool(
 			ModifiableExpression<PSet<Node>> selection, 
-			HitTester<? extends Node> hitTester, 
+			HitTester<? extends Node> hitTester,
 			DragHandler<Node> nodeDragHandler) {
 		this.selection = selection;
 		this.hitTester = hitTester;

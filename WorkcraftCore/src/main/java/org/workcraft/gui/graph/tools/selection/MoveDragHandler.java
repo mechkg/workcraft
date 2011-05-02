@@ -1,7 +1,7 @@
 package org.workcraft.gui.graph.tools.selection;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-import static org.workcraft.util.Maybe.Util.*;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.util.Maybe.Util.orElse;
 
 import java.awt.geom.Point2D;
 
@@ -12,18 +12,20 @@ import org.workcraft.dependencymanager.advanced.user.Setter;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.gui.graph.tools.DragHandle;
 import org.workcraft.gui.graph.tools.DragHandler;
-import org.workcraft.gui.graph.tools.MovableController;
 import org.workcraft.util.Function;
 import org.workcraft.util.Geometry;
+import org.workcraft.util.Maybe;
 
 import pcollections.PCollection;
 
 public class MoveDragHandler<Node> implements DragHandler<Node> {
 	private final Function<Point2D, Point2D> snap;
-	private final MovableController<Node> movableController;
+	private final Function<Node, Maybe<? extends ModifiableExpression<Point2D>>> movableController;
 	private final Expression<? extends PCollection<? extends Node>> selection;
 	
-	public MoveDragHandler(Expression<? extends PCollection<? extends Node>> selection, MovableController<Node> movableController, Function<Point2D, Point2D> snap) {
+	public MoveDragHandler(Expression<? extends PCollection<? extends Node>> selection, 
+			Function<Node, Maybe<? extends ModifiableExpression<Point2D>>> movableController, 
+			Function<Point2D, Point2D> snap) {
 		this.selection = selection;
 		this.snap = snap;
 		this.movableController = movableController;
@@ -72,7 +74,8 @@ public class MoveDragHandler<Node> implements DragHandler<Node> {
 		};
 	}
 
-	private static <Node> ModifiableExpression<Point2D> nodePos(Node hitNode, MovableController<Node> movableController) {
+	private static <Node> ModifiableExpression<Point2D> nodePos(Node hitNode,
+			Function<Node, Maybe<? extends ModifiableExpression<Point2D>>> movableController) {
 		return orElse(movableController.apply(hitNode), Variable.<Point2D>create(new Point2D.Double(0,0)));
 	}
 }

@@ -1,8 +1,8 @@
 import org.workcraft.plugins.shared.CommonVisualSettings
 
-
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import org.workcraft.plugins.cpog.scala.nodes.RhoClause
+import org.workcraft.plugins.cpog.scala.Util.monadicSyntax
 import org.workcraft.plugins.cpog.scala.Graphics._
 import java.awt.geom.Rectangle2D
 import org.workcraft.dependencymanager.advanced.core.Expression
@@ -15,13 +15,39 @@ import java.awt.Color
 import java.awt.BasicStroke
 
 package org.workcraft.plugins.cpog.scala {
-
 
-object VisualRhoClause {
-  private val size: Double = 1
-  private val strokeWidth: Float = 0.1f
-  
-  def image (rhoClause : RhoClause) = new ExpressionBase[BoundedColorisableGraphicalContent] {
+  object VisualRhoClause {
+    private val size: Double = 1
+    private val strokeWidth: Float = 0.1f
+
+    def image(rhoClause: RhoClause) =
+      for (
+        formula <- rhoClause.formula;
+        value <- Util.formulaValue(formula);
+        fillColor <- CommonVisualSettings.fillColor;
+        foreColor <- CommonVisualSettings.foregroundColor
+      ) yield {
+        val formulaColor = if (value == One.instance)
+          new Color(0x00cc00)
+        else if (value == Zero.instance)
+          Color.RED
+        else
+          foreColor
+
+        val formulaImage = FormulaRenderer.render(formula).asBoundedColorisableImage(formulaColor)
+
+        val frameImage = boundedRectangle(
+          formulaImage.boundingBox.getWidth + 0.4,
+          formulaImage.boundingBox.getHeight + 0.4,
+          new BasicStroke(strokeWidth),
+          fillColor,
+          foreColor)
+
+        compose(frameImage,
+          aligned(formulaImage, frameImage, HorizontalAlignment.Center, VerticalAlignment.Center))
+      }
+
+    /*def image (rhoClause : RhoClause) = new ExpressionBase[BoundedColorisableGraphicalContent] {
     override def evaluate (context : EvaluationContext) : BoundedColorisableGraphicalContent = {
       val formula = context.resolve(rhoClause.formula)
       val value = context.resolve  (Util.formulaValue (formula))
@@ -54,6 +80,6 @@ object VisualRhoClause {
                                      VerticalAlignment.Center))
           )
     }
+  }*/
   }
-}
 }

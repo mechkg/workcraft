@@ -1,4 +1,5 @@
 import org.workcraft.plugins.cpog.scala.VisualProperties
+
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.user.StorageManager
 import org.workcraft.plugins.cpog.optimisation.expressions.One
@@ -15,13 +16,17 @@ import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer
 import java.util.HashMap
+import org.workcraft.plugins.cpog.scala.VisualArc
+import org.workcraft.plugins.cpog.scala.VisualArc.Bezier
 
 package org.workcraft.plugins.cpog.scala.nodes {
- 
+
+
+
   sealed abstract class Node
   sealed abstract case class Component(visualProperties:VisualProperties) extends Node
    
-  case class Arc extends Node
+  case class Arc (first : Component, second : Component, condition: ModifiableExpression[BooleanFormula], visual : ModifiableExpression[VisualArc]) extends Node
   
   case class Vertex(condition: ModifiableExpression[BooleanFormula], override val visualProperties:VisualProperties) extends Component (visualProperties)
    
@@ -36,6 +41,13 @@ package org.workcraft.plugins.cpog.scala.nodes {
   }
   
   case class RhoClause(formula:ModifiableExpression[BooleanFormula], override val visualProperties:VisualProperties) extends Component (visualProperties)
+  
+  object Arc {
+    def create (storage: StorageManager, first : Component, second : Component) = {
+      Arc (first, second, storage.create (One.instance), 
+          storage.create (Bezier(storage.create(new Point2D.Double(1/3.0,0)), storage.create(new Point2D.Double(2/3.0,0)))))    
+    }
+  }
   
   object Variable {
     def create(storage:StorageManager, varName:ModifiableExpression[String]) : Variable = 

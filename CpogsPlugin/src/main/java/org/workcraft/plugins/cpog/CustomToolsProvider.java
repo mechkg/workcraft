@@ -14,7 +14,11 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Set;
+
+import javax.swing.Icon;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
@@ -24,7 +28,12 @@ import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.Touchable;
+import org.workcraft.dom.visual.TransformHelper;
+import org.workcraft.dom.visual.connections.BezierData;
+import org.workcraft.dom.visual.connections.ConnectionDataVisitor;
 import org.workcraft.dom.visual.connections.ConnectionGui;
+import org.workcraft.dom.visual.connections.PolylineData;
+import org.workcraft.dom.visual.connections.StaticVisualConnectionData;
 import org.workcraft.dom.visual.connections.VisualConnectionContext;
 import org.workcraft.dom.visual.connections.VisualConnectionData;
 import org.workcraft.dom.visual.connections.VisualConnectionGui;
@@ -39,6 +48,7 @@ import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.HitTester;
+import org.workcraft.gui.graph.tools.MovableController;
 import org.workcraft.gui.graph.tools.NodeGeneratorTool;
 import org.workcraft.gui.graph.tools.selection.GenericSelectionTool;
 import org.workcraft.gui.graph.tools.selection.MoveDragHandler;
@@ -122,24 +132,29 @@ public class CustomToolsProvider {
 					}
 				};
 				
-				return fmap(new Function2<Touchable, Touchable, ConnectionGui>(){
-					@Override
-					public ConnectionGui apply(final Touchable component1, final Touchable component2) {
-						final VisualConnectionContext context = new VisualConnectionContext(){
+				return bind(VisualConnectionData.Util.getStatic(data), new Function<StaticVisualConnectionData, Expression<ConnectionGui>>(){
+					public Expression<ConnectionGui> apply(final StaticVisualConnectionData data) {
+						
+						return fmap(new Function2<Touchable, Touchable, ConnectionGui>(){
 							@Override
-							public Touchable component1() {
-								return component1;
+							public ConnectionGui apply(final Touchable component1, final Touchable component2) {
+								final VisualConnectionContext context = new VisualConnectionContext(){
+									@Override
+									public Touchable component1() {
+										return component1;
+									}
+		
+									@Override
+									public Touchable component2() {
+										return component2;
+									}
+								};
+								ConnectionGui connectionGui = VisualConnectionGui.getConnectionGui(properties, context, data);
+								return connectionGui;
 							}
-
-							@Override
-							public Touchable component2() {
-								return component2;
-							}
-						};
-						ConnectionGui connectionGui = VisualConnectionGui.getConnectionGui(properties, context, data);
-						return connectionGui;
+						}, transformedComponents.apply(arc.first), transformedComponents.apply(arc.second));
 					}
-				}, transformedComponents.apply(arc.first), transformedComponents.apply(arc.second));
+				});
 			}
 		});
 	}
@@ -282,8 +297,145 @@ public class CustomToolsProvider {
 		Set<Node> emptyNodesSet = java.util.Collections.emptySet();
 		Expression<? extends GraphicalContent> painter = makePainter.apply(constant(emptyNodesSet));
 		
+		PSet<ControlPoint> emptyControlPointSet = HashTreePSet.empty();
+		ModifiableExpression<PSet<ControlPoint>> selectedControlPoints = org.workcraft.dependencymanager.advanced.user.Variable.create(emptyControlPointSet);
+		Expression<? extends Iterable<? extends ControlPoint>> visibleControlPoints = bind(selection, new Function<Set<Node>, Expression<PSet<ControlPoint>>>(){
+
+			@Override
+			public Expression<PSet<ControlPoint>> apply(Set<Node> selectedNodes) {
+				final PSet<ControlPoint> emptySet = HashTreePSet.empty();
+				Expression<PSet<ControlPoint>> result = constant(emptySet);
+				ArrayList<Expression<PSet<ControlPoint>>> controlPointLists = new ArrayList<Expression<PSet<ControlPoint>>>(); 
+				for(Node node : selectedNodes) {
+					controlPointLists.add(node.accept(new NodeVisitor<Expression<PSet<ControlPoint>>>(){
+
+						@Override
+						public Expression<PSet<ControlPoint>> visitArc(Arc arc) {
+							return fmap(new Function<VisualConnectionData, PSet<ControlPoint>>(){
+								@Override
+								public PSet<ControlPoint> apply(VisualConnectionData argument) {
+									return argument.accept(new ConnectionDataVisitor<PSet<ControlPoint>>() {
+
+										@Override
+										public PSet<ControlPoint> visitPolyline(PolylineData data) {
+											PSet<ControlPoint> result = HashTreePSet.empty();
+											for (ModifiableExpression<Point2D> pos : data.controlPoints()) {
+												result = result.plus(new ControlPoint(pos));
+											}
+											return result;
+										}
+
+										@Override
+										public PSet<ControlPoint> visitBezier(BezierData data) {
+											final PSet<ControlPoint> empty = HashTreePSet.empty();
+											return empty
+												.plus(new ControlPoint(data.cp1()))
+												.plus(new ControlPoint(data.cp2()));
+										}
+									});
+								}
+							}, arc.visual);
+						}
+
+						@Override
+						public Expression<PSet<ControlPoint>> visitComponent(Component component) {
+							return constant(emptySet);
+						}
+					}));
+				}
+				
+				Function2<PSet<ControlPoint>, Set<ControlPoint>, PSet<ControlPoint>> union = new Function2<PSet<ControlPoint>, Set<ControlPoint>, PSet<ControlPoint>>() {
+					@Override
+					public PSet<ControlPoint> apply(PSet<ControlPoint> argument1, Set<ControlPoint> argument2) {
+						return argument1.plusAll(argument2);
+					}
+				};
+				for(Expression<PSet<ControlPoint>> cps : controlPointLists) {
+					result = fmap(union, result, cps);
+				}
+				
+				return result;
+			}
+		});
+		HitTester<? extends ControlPoint> cpHitTester = createHitTester(visibleControlPoints, new Function<ControlPoint, Expression<Touchable>>(){
+			@Override
+			public Expression<Touchable> apply(ControlPoint argument) {
+				return fmap(new Function<Point2D, Touchable>(){
+						@Override
+						public Touchable apply(Point2D argument) {
+							return TransformHelper.translate().apply(new Touchable() {
+								
+								@Override
+								public boolean hitTest(Point2D point) {
+									return getBoundingBox().contains(point);
+								}
+								
+								@Override
+								public Point2D getCenter() {
+									return new Point2D.Double(0,0);
+								}
+								
+								@Override
+								public Rectangle2D getBoundingBox() {
+									return new Rectangle2D.Double(-0.1, -0.1, 0.2, 0.2);
+								}
+							}, argument);
+						}
+					}, argument.position);
+				}
+		});
+		MovableController<ControlPoint> controlPointMovableController = new MovableController<ControlPoint>(){
+			@Override
+			public Maybe<? extends ModifiableExpression<Point2D>> apply(ControlPoint argument) {
+				return just(argument.position);
+			}
+		};
+		DragHandler<ControlPoint> cpDragHandler = new MoveDragHandler<ControlPoint>(selectedControlPoints, controlPointMovableController, editor.snapFunction());
+		final GenericSelectionTool<ControlPoint> gcpet = new GenericSelectionTool<ControlPoint>(selectedControlPoints, cpHitTester, cpDragHandler);
+
+		
+		GraphEditorTool controlPointEditorTool = new AbstractTool() {
+			
+			@Override
+			public GraphEditorMouseListener mouseListener() {
+				return gcpet.getMouseListener();
+			}
+			
+			@Override
+			public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
+				return gcpet.userSpaceContent(viewport);
+			}
+			
+			@Override
+			public Expression<? extends GraphicalContent> screenSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
+				return constant(GraphicalContent.EMPTY);
+			}
+			
+			@Override
+			public Button getButton() {
+				return new Button() {
+					
+					@Override
+					public String getLabel() {
+						return "Control point editor";
+					}
+					
+					@Override
+					public Icon getIcon() {
+						return null;
+					}
+					
+					@Override
+					public int getHotKeyCode() {
+						return java.awt.event.KeyEvent.VK_Q;
+					}
+				};
+			}
+		};
+		
 		return asList(
 				attachPainter(selectionTool, makePainter.apply(genericSelectionTool.effectiveSelection())),
+				attachPainter(controlPointEditorTool, painter),
 				attachPainter(connectionTool, makePainter.apply(fmap(Collections.<Node>singleton(), connectionTool.mouseOverNode()))),
 				attachPainter(new NodeGeneratorTool(generators.vertexGenerator, editor.snapFunction()), painter),
 				attachPainter(new NodeGeneratorTool(generators.variableGenerator, editor.snapFunction()), painter),

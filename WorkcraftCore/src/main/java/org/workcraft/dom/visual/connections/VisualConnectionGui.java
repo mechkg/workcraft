@@ -76,15 +76,15 @@ public class VisualConnectionGui {
 		};
 	}
 	
-	public static ConnectionGui getConnectionGui(final VisualConnectionProperties properties, final VisualConnectionContext context,  VisualConnectionData data) {
-		final ParametricCurve curve = data.accept(new ConnectionDataVisitor<ParametricCurve>() {
+	public static ConnectionGui getConnectionGui(final VisualConnectionProperties properties, final VisualConnectionContext context,  StaticVisualConnectionData data) {
+		final ParametricCurve curve = data.accept(new StaticConnectionDataVisitor<ParametricCurve>() {
 			@Override
-			public ParametricCurve visitPolyline(PolylineData polyline) {
+			public ParametricCurve visitPolyline(StaticPolylineData polyline) {
 				return PolylineGui.makeCurve(properties, context, polyline.controlPoints());
 			}
 
 			@Override
-			public ParametricCurve visitBezier(BezierData bezier) {
+			public ParametricCurve visitBezier(StaticBezierData bezier) {
 				return BezierGui.makeCurve(properties, context, bezier.cp1(), bezier.cp2());
 			}
 		});

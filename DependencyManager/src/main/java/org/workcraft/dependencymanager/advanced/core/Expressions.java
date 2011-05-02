@@ -273,19 +273,24 @@ public class Expressions {
 		return new Function<Collection<? extends Expression<? extends A>>, Expression<PVector<A>>>(){
 			@Override
 			public Expression<pcollections.PVector<A>> apply(final Collection<? extends org.workcraft.dependencymanager.advanced.core.Expression<? extends A>> collection) {
-				return new ExpressionBase<PVector<A>>(){
-					@Override
-					protected PVector<A> evaluate(EvaluationContext context) {
-						PVector<A> res = TreePVector.empty();
-						for(Expression<? extends A> ea : collection)
-							res =res.plus(context.resolve(ea));
-						return res;
-					}
-				};
-			};
+				return joinCollection(collection);
+			}
 		};
 	}
 
+	public static <A> Expression<pcollections.PVector<A>> joinCollection(
+			final Collection<? extends org.workcraft.dependencymanager.advanced.core.Expression<? extends A>> collection) {
+		return new ExpressionBase<PVector<A>>(){
+			@Override
+			protected PVector<A> evaluate(EvaluationContext context) {
+				PVector<A> res = TreePVector.empty();
+				for(Expression<? extends A> ea : collection)
+					res =res.plus(context.resolve(ea));
+				return res;
+			}
+		};
+	};
+	
 	public static <A,B> Function<Expression<? extends A>, Expression<B>> fmap(final Function<? super A, ? extends B> func) {
 		return new Function<Expression<? extends A>, Expression<B>>(){
 			@Override

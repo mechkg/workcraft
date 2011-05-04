@@ -1,5 +1,8 @@
 package org.workcraft.plugins.cpog.scala
 
+import org.workcraft.dom.visual.connections.StaticConnectionDataVisitor
+import org.workcraft.dom.visual.connections.StaticBezierData
+import org.workcraft.dom.visual.connections.StaticVisualConnectionData
 import org.workcraft.dependencymanager.advanced.core.Expressions
 import org.workcraft.dom.visual.connections.BezierData
 import org.workcraft.dom.visual.connections.ConnectionDataVisitor
@@ -25,9 +28,9 @@ object VisualArc {
   case class Bezier(cp1: ModifiableExpression[Point2D], cp2: ModifiableExpression[Point2D]) extends VisualArc
   case class Polyline(cp: List[ModifiableExpression[Point2D]]) extends VisualArc
 
-  implicit def qwe(p: (Point2D, Point2D)): VisualConnectionData = new VisualConnectionData {
-    override def accept[T](visitor: ConnectionDataVisitor[T]): T = {
-      val data = new BezierData {
+  implicit def qwe(p: (Point2D, Point2D)): StaticVisualConnectionData = new StaticVisualConnectionData {
+    override def accept[T](visitor: StaticConnectionDataVisitor[T]): T = {
+      val data = new StaticBezierData {
         override def cp1 = p._1
         override def cp2 = p._2
       }
@@ -36,7 +39,7 @@ object VisualArc {
     }
   }
   
-  implicit def xru(p: Iterable[Point2D]) : VisualConnectionData = null
+  implicit def xru(p: Iterable[Point2D]) : StaticVisualConnectionData = null
 
   val properties = new VisualConnectionProperties {
     override def getDrawColor = Color.green
@@ -59,16 +62,16 @@ object VisualArc {
       };
 
       visualArc : VisualArc <- arc.visual;
-      gui:VisualConnectionData <- visualArc match {
-        case b: Bezier => null:Expression[VisualConnectionData]
-        /*  for (
+      gui:StaticVisualConnectionData <- visualArc match {
+        case b: Bezier =>
+          for (
             cp1 <- b.cp1;
             cp2 <- b.cp2
-          ) yield qwe(cp1, cp2)*/
-        case p: Polyline => null
-          /*for (
+          ) yield qwe(cp1, cp2)
+        case p: Polyline =>
+          (for (
             cp <- Expressions.joinCollection()(asJavaList(p.cp))
-          ) yield xru(cp)*/
+          ) yield xru(cp) ) : Expression[StaticVisualConnectionData]
       }) yield VisualConnectionGui.getConnectionGui(properties, context, gui)
       
 

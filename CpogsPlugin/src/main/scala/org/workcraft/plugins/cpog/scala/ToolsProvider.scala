@@ -67,18 +67,6 @@ package org.workcraft.plugins.cpog.scala {
       override def getStroke = new BasicStroke(0.05f)
     }
 
-    def arcToGui(transformedComponents: Component => Expression[_ <: Touchable])(arc: Arc): Expression[ConnectionGui] = {
-      bind[VisualConnectionData, ConnectionGui](arc.visual, (data: VisualConnectionData) => {
-        fmap[Touchable, Touchable, ConnectionGui]((c1, c2) => {
-          val context = new VisualConnectionContext {
-            override def component1 = c1
-            override def component2 = c2
-          }
-          VisualConnectionGui.getConnectionGui(visualConnectionProperties, context, data);
-        })(transformedComponents(arc.first), transformedComponents(arc.second))
-      })
-    }
-
     def createHitTester[N](
         nodes: Expression[_ <: Iterable[_ <: N]],
         touchableProvider: Function[_ >: N, _ <: Expression[_ <: Touchable]]

@@ -73,7 +73,7 @@ public class CustomToolsProvider {
 	public final CPOG cpog;
 	
 	
-	static <N> HitTester<N> createHitTester
+	public static <N> HitTester<N> createHitTester
 		( Expression<? extends Iterable<? extends N>> nodesGetter
 		, Function<? super N, ? extends Expression<? extends Touchable>> touchableProvider) {
 
@@ -159,7 +159,7 @@ public class CustomToolsProvider {
 		});
 	}
 
-	static <N> Expression<GraphicalContent> drawWithHighlight(final Colorisation highlightedColorisation, final Expression<? extends Set<? extends N>> highlighted, final Function<N, ? extends Expression<? extends ColorisableGraphicalContent>> painter, Expression<? extends Iterable<? extends N>> nodes) {
+	public static <N> Expression<GraphicalContent> drawWithHighlight(final Colorisation highlightedColorisation, final Expression<? extends Set<? extends N>> highlighted, final Function<N, ? extends Expression<? extends ColorisableGraphicalContent>> painter, Expression<? extends Iterable<? extends N>> nodes) {
 			final Function<N, Expression<? extends GraphicalContent>> colorisedPainter = new Function<N, Expression<? extends GraphicalContent>>(){
 				@Override
 				public Expression<? extends GraphicalContent> apply(final N node) {
@@ -294,7 +294,7 @@ public class CustomToolsProvider {
 				return org.workcraft.gui.graph.tools.selection.SelectionTool.identification;
 			}
 		};
-
+		
 		ConnectionTool<Component> connectionTool = new ConnectionTool<Component>(componentMovableController, connectionManager, HitTester.Util.asPointHitTester(connectionHitTester));
 		
 		Set<Node> emptyNodesSet = java.util.Collections.emptySet();

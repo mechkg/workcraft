@@ -63,7 +63,7 @@ public class Graphics {
 		};
 	}
 	
-	public static Function2<GraphicalContent, GraphicalContent, GraphicalContent> compose = new Function2<GraphicalContent, GraphicalContent, GraphicalContent>(){
+	public static Function2<GraphicalContent, GraphicalContent, GraphicalContent> composeFunc = new Function2<GraphicalContent, GraphicalContent, GraphicalContent>(){
 		@Override
 		public GraphicalContent apply(GraphicalContent bottom, GraphicalContent top) {
 			return compose(bottom, top);
@@ -78,6 +78,6 @@ public class Graphics {
 	};
 
 	public static Expression<GraphicalContent> compose(final Expression<? extends GraphicalContent> bottom, final Expression<? extends GraphicalContent> top) {
-		return fmap(compose, bottom, top);
+		return fmap(composeFunc, bottom, top);
 	}
 }

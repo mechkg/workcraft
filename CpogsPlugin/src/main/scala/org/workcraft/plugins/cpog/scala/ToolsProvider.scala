@@ -1,7 +1,7 @@
 
 import org.workcraft.dom.visual.HitMan
 
-import org.workcraft.plugins.cpog._
+import org.workcraft.plugins.cpog.CPOG
 import org.workcraft.plugins.cpog.gui.Generators._
 import org.workcraft.plugins.cpog.gui.TouchableProvider._
 
@@ -9,8 +9,6 @@ import org.workcraft.Tool
 import java.awt.geom.Point2D
 import pcollections.HashTreePSet;
 import pcollections.PSet;
-import org.workcraft.plugins.cpog.Node
-import org.workcraft.plugins.cpog.NodeVisitor
 import org.workcraft.util.Maybe
 import org.workcraft.dependencymanager.advanced.core.Expressions.{ fmap => javafmap, bind => javabind, asFunction, constant }
 import org.workcraft.dependencymanager.advanced.core.Expression
@@ -50,6 +48,9 @@ import java.util.Set
 import java.lang.Boolean
 
 import org.workcraft.plugins.cpog.scala.Util._
+import org.workcraft.plugins.cpog.scala.nodes._
+import org.workcraft.plugins.cpog.scala.HitTester.hitTester
+import org.workcraft.plugins.cpog.scala.NodePainter
 import org.workcraft.gui.graph.tools.GraphEditorConfiguration
 import org.workcraft.plugins.cpog.scala.MovableController
 
@@ -57,6 +58,7 @@ import _root_.scala.collection.JavaConversions._
 
 package org.workcraft.plugins.cpog.scala {
 
+import java.awt.geom.AffineTransform
   object ToolsProvider {
 
     val visualConnectionProperties = new VisualConnectionProperties {
@@ -67,29 +69,33 @@ package org.workcraft.plugins.cpog.scala {
       override def getStroke = new BasicStroke(0.05f)
     }
 
-    def createHitTester[N](
-        nodes: Expression[_ <: Iterable[_ <: N]],
-        touchableProvider: Function[_ >: N, _ <: Expression[_ <: Touchable]]
-        ) : HitTester[N] = {
-      val transformedTouchableProvider = eval[N, Touchable](touchableProvider)
-      new HitMan.Flat[N](asFunction(nodes), transformedTouchableProvider).getHitTester()
-    }
-    
-    
-    def selectionTool (selection: ModifiableExpression[PSet[Node]], snap: Function[Point2D, Point2D]) = {
-  /*    val dragHandler = new MoveDragHandler[Node](selection, asFunctionObject(MovableController.position), snap);
+    def selectionTool (
+        selection: ModifiableExpression[PSet[Node]], 
+        nodes : Expression[List[Node]], 
+        snap: Point2D => Point2D, 
+        transform: Node => Expression[AffineTransform]
+        
+        ) = {
+      val dragHandler = new MoveDragHandler[Node](selection, MovableController.position(_:Node), snap);
       
-      val selectionHitTester = createHitTester(cpog.nodes(), nodeTouchableProvider)
+      val genericSelectionTool = new GenericSelectionTool[Node](selection, hitTester(nodes, touchable), dragHandler);
       
-      val genericSelectionTool = new GenericSelectionTool[Node](selection, selectionHitTester, dragHandler);*/
+      val selectionTool = new AbstractTool {
+        override def mouseListener = genericSelectionTool.getMouseListener
+        override def userSpaceContent(viewport: Viewport, hasFocus: Expression[Boolean]) = genericSelectionTool.userSpaceContent(viewport)
+        override def screenSpaceContent(viewport: Viewport, hasFocus: Expression[Boolean]) = constant(GraphicalContent.EMPTY)
+        override def getButton = org.workcraft.gui.graph.tools.selection.SelectionTool.identification
+      }
       
-      
-
-      
-      
+      attachPainter(selectionTool, )
     }
 
     def getTools(cpog: CPOG, snap: Function[Point2D, Point2D]): Iterable[GraphEditorConfiguration] = {
+      
+      
+      val colourisablePainter = NodePainter.graphicalContent()
+      
+      
   /*    val selection = cpog.storage.create[PSet[Node]](HashTreePSet.empty())
       val generators = createFor(cpog)
 

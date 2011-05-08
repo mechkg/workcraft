@@ -442,7 +442,7 @@ public class CustomToolsProvider {
 		
 		return asList(
 				attachPainter(selectionTool, makePainter.apply(genericSelectionTool.effectiveSelection())),
-				attachPainter(controlPointEditorTool,  fmap(Graphics.compose, painter, controlPointGC)),
+				attachPainter(controlPointEditorTool,  fmap(Graphics.composeFunc, painter, controlPointGC)),
 				attachPainter(connectionTool, makePainter.apply(fmap(Collections.<Node>singleton(), connectionTool.mouseOverNode()))),
 				attachPainter(new NodeGeneratorTool(generators.vertexGenerator, editor.snapFunction()), painter),
 				attachPainter(new NodeGeneratorTool(generators.variableGenerator, editor.snapFunction()), painter),

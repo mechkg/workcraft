@@ -1,5 +1,8 @@
 package org.workcraft.plugins.cpog.scala
 
+import java.awt.geom.AffineTransform
+import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
+import org.workcraft.dom.visual.connections.StaticPolylineData
 import org.workcraft.dom.visual.connections.StaticConnectionDataVisitor
 import org.workcraft.dom.visual.connections.StaticBezierData
 import org.workcraft.dom.visual.connections.StaticVisualConnectionData
@@ -15,6 +18,7 @@ import java.awt.BasicStroke
 import java.awt.Color
 import org.workcraft.dom.visual.connections.VisualConnectionProperties
 import nodes._
+import org.workcraft.plugins.cpog.scala.TouchableProvider
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.connections.ConnectionGui
@@ -28,7 +32,7 @@ object VisualArc {
   case class Bezier(cp1: ModifiableExpression[Point2D], cp2: ModifiableExpression[Point2D]) extends VisualArc
   case class Polyline(cp: List[ModifiableExpression[Point2D]]) extends VisualArc
 
-  implicit def qwe(p: (Point2D, Point2D)): StaticVisualConnectionData = new StaticVisualConnectionData {
+  def makeBezierVisitor(p: (Point2D, Point2D)): StaticVisualConnectionData = new StaticVisualConnectionData {
     override def accept[T](visitor: StaticConnectionDataVisitor[T]): T = {
       val data = new StaticBezierData {
         override def cp1 = p._1
@@ -39,7 +43,15 @@ object VisualArc {
     }
   }
   
-  implicit def xru(p: Iterable[Point2D]) : StaticVisualConnectionData = null
+  def makePolylineVisitor(p: Iterable[Point2D]) : StaticVisualConnectionData = new StaticVisualConnectionData {
+    override def accept[T](visitor: StaticConnectionDataVisitor[T]): T = {
+      val data = new StaticPolylineData {
+        override def controlPoints = new java.util.ArrayList[Point2D](p)
+      }
+
+      return visitor.visitPolyline(data)
+    }
+  }
 
   val properties = new VisualConnectionProperties {
     override def getDrawColor = Color.green
@@ -49,12 +61,12 @@ object VisualArc {
     override def getStroke = new BasicStroke(0.05f)
   }
 
-  def gui(arc: Arc, transformedComponents: Component => Expression[Touchable]): Expression[ConnectionGui] =
+  def gui(touchable: Component => Expression[Touchable])(arc : Arc): Expression[ConnectionGui] =
   {
     
     for (
-      c1 <- transformedComponents(arc.first);
-      c2 <- transformedComponents(arc.second);
+      c1 <- touchable(arc.first);
+      c2 <- touchable(arc.second);
       
       val context = new VisualConnectionContext {
         override def component1 = c1
@@ -62,19 +74,19 @@ object VisualArc {
       };
 
       visualArc : VisualArc <- arc.visual;
-      gui:StaticVisualConnectionData <- visualArc match {
+      gui <- visualArc match {
         case b: Bezier =>
           for (
             cp1 <- b.cp1;
             cp2 <- b.cp2
-          ) yield qwe(cp1, cp2)
+          ) yield makeBezierVisitor(cp1, cp2)
         case p: Polyline =>
           (for (
             cp <- Expressions.joinCollection()(asJavaList(p.cp))
-          ) yield xru(cp) ) : Expression[StaticVisualConnectionData]
+          ) yield makePolylineVisitor(cp) ) : Expression[StaticVisualConnectionData]
       }) yield VisualConnectionGui.getConnectionGui(properties, context, gui)
-      
-
-
     }
+   
+  def image( gui : Expression[ConnectionGui] ) : Expression[BoundedColorisableGraphicalContent] = 
+    for (gui <- gui) yield new BoundedColorisableGraphicalContent (gui.graphicalContent, gui.shape.getBoundingBox)
 }

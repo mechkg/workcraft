@@ -1,5 +1,7 @@
 package org.workcraft.plugins.cpog.scala
 
+import java.awt.geom.AffineTransform
+import org.workcraft.dom.visual.TransformHelper
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.Expressions
 import java.awt.geom.Rectangle2D
@@ -21,8 +23,8 @@ object TouchableProvider {
     def getCenter = center 
   }
    
-  def localTouchable (node : Node) : Expression[Touchable] = {
-    node match {
+  def localTouchable (c : Component) : Expression[Touchable] =
+    c match {
       case _ : Vertex => Expressions.constant(vertexTouchable)
       case v : Variable =>
         for ( image <- VisualVariable.image(v) ) 
@@ -30,7 +32,10 @@ object TouchableProvider {
       case r : RhoClause =>
         for ( image <- VisualRhoClause.image(r) ) 
         yield org.workcraft.plugins.cpog.gui.TouchableProvider.bbToTouchable(image.boundingBox);
-      case a : Arc => null        
     }
+  
+  def touchable (transform: Component => Expression[AffineTransform])(node : Node) : Expression[Touchable] = node match {
+    case c : Component => for ( lt <- localTouchable(c); t <- transform(c) ) yield TransformHelper.transform(lt,t)
+    case a : Arc => for (gui <- VisualArc.gui(touchable(transform))(a)) yield gui.shape
   }
 }

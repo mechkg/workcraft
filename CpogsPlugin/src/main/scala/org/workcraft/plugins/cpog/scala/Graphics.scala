@@ -2,6 +2,7 @@ import org.workcraft.dom.visual.DrawRequest
 
 import org.workcraft.gui.Coloriser
 
+import org.workcraft.dom.visual.GraphicalContent
 import org.workcraft.dom.visual.ColorisableGraphicalContent
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import java.awt.geom.Ellipse2D
@@ -23,6 +24,7 @@ import org.workcraft.dom.visual.VisualComponent
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics
 
 import org.workcraft.plugins.cpog.LabelPositioning
+import org.workcraft.plugins.cpog.scala.Util.monadicSyntax
 
 package org.workcraft.plugins.cpog.scala {
   
@@ -138,6 +140,8 @@ package org.workcraft.plugins.cpog.scala {
       FormulaToGraphics.print(formula, font, VisualComponent.podgonFontRenderContext).asBoundedColorisableImage(color)
       
     def compose (a : BoundedColorisableGraphicalContent, b : BoundedColorisableGraphicalContent) = BoundedColorisableGraphicalContent.compose (a,b)
+    
+    def compose (a : GraphicalContent, b : GraphicalContent) = org.workcraft.util.Graphics.compose (a,b)
     
     def compose (list : List[BoundedColorisableGraphicalContent]) : BoundedColorisableGraphicalContent = list match {
       case Nil => BoundedColorisableGraphicalContent.EMPTY

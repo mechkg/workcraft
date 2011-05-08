@@ -21,14 +21,19 @@ import org.workcraft.dependencymanager.advanced.core.Expressions.{ fmap => javaf
 
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.util.Function
+import org.workcraft.util.Function0
 import org.workcraft.util.Function2
 
 object Util {
-  def asFunctionObject[T, R](f: (T => R)) = new Function[T, R] {
+  implicit def asFunctionObject[T, R](f: (T => R)) = new Function[T, R] {
     def apply(x: T) = f(x)
   }
+  
+  implicit def asFunctionObject0[R](f: () => R) = new Function0[R] {
+    def apply() = f()
+  }
 
-  def asFunctionObject2[T1, T2, R](f: ((T1, T2) => R)) = new Function2[T1, T2, R] {
+  implicit def asFunctionObject2[T1, T2, R](f: ((T1, T2) => R)) = new Function2[T1, T2, R] {
     def apply(x: T1, y: T2) = f(x, y)
   }
 

@@ -24,7 +24,7 @@ import org.workcraft.dom.visual.VisualComponent
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics
 
 import org.workcraft.plugins.cpog.LabelPositioning
-import org.workcraft.plugins.cpog.scala.Util.monadicSyntax
+import org.workcraft.plugins.cpog.scala.Expressions.monadicSyntax
 
 package org.workcraft.plugins.cpog.scala {
   
@@ -141,7 +141,7 @@ package org.workcraft.plugins.cpog.scala {
       
     def compose (a : BoundedColorisableGraphicalContent, b : BoundedColorisableGraphicalContent) = BoundedColorisableGraphicalContent.compose (a,b)
     
-    def compose (a : GraphicalContent, b : GraphicalContent) = org.workcraft.util.Graphics.compose (a,b)
+    val compose = (a : GraphicalContent, b : GraphicalContent) => org.workcraft.util.Graphics.compose (a,b)
     
     def compose (list : List[BoundedColorisableGraphicalContent]) : BoundedColorisableGraphicalContent = list match {
       case Nil => BoundedColorisableGraphicalContent.EMPTY

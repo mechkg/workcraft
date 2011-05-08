@@ -41,8 +41,8 @@ public class CPOG
 	Function0<String> varNameGen = new CheckedPrefixNameGen("x_", new Function<String, Boolean>(){
 		@Override
 		public Boolean apply(String candidate) {
-			for(Variable var : eval(variables))
-				if(eval(var.label).equals(candidate))
+			for(org.workcraft.plugins.cpog.scala.nodes.Variable var : eval(variables))
+				if(eval(var.label()).equals(candidate))
 					return false;
 			return true;
 		}
@@ -51,17 +51,17 @@ public class CPOG
 	Function0<String> vertNameGen = new CheckedPrefixNameGen("v_", new Function<String, Boolean>(){
 		@Override
 		public Boolean apply(String candidate) {
-			for(Vertex v : eval(vertices))
-				if(eval(v.visualInfo.label).equals(candidate))
+			for(org.workcraft.plugins.cpog.scala.nodes.Vertex v : eval(vertices))
+				if(eval(v.visualProperties().label()).equals(candidate))
 					return false;
 			return true;
 		}
 	});
 	
-	final ModifiableExpression<PVector<Variable>> variables;
-	final ModifiableExpression<PVector<Vertex>> vertices;
-	final ModifiableExpression<PVector<RhoClause>> rhoClauses;
-	final ModifiableExpression<PVector<Arc>> arcs;
+	final ModifiableExpression<PVector<org.workcraft.plugins.cpog.scala.nodes.Variable>> variables;
+	final ModifiableExpression<PVector<org.workcraft.plugins.cpog.scala.nodes.Vertex>> vertices;
+	final ModifiableExpression<PVector<org.workcraft.plugins.cpog.scala.nodes.RhoClause>> rhoClauses;
+	final ModifiableExpression<PVector<org.workcraft.plugins.cpog.scala.nodes.Arc>> arcs;
 
 	<T>ModifiableExpression<PVector<T>> createEmpty(StorageManager storage) {
 		PVector<T> empty = TreePVector.empty();
@@ -80,49 +80,49 @@ public class CPOG
 		vec.setValue(eval(vec).plus(item));
 	}
 
-	public Arc connect(Vertex first, Vertex second) {
-		Arc con = new Arc(first, second, storage);
+	public Arc connect(org.workcraft.plugins.cpog.scala.nodes.Vertex first, org.workcraft.plugins.cpog.scala.nodes.Vertex second) {
+		org.workcraft.plugins.cpog.scala.nodes.Arc con = org.workcraft.plugins.cpog.scala.nodes.Arc.create(storage, first, second);
 		add(arcs, con);
 		return con;
 	}
 
-	public Vertex createVertex() {
-		Vertex vertex = Vertex.make(storage);
-		vertex.visualInfo.label.setValue(vertNameGen.apply());
+	public org.workcraft.plugins.cpog.scala.nodes.Vertex createVertex() {
+		org.workcraft.plugins.cpog.scala.nodes.Vertex vertex = org.workcraft.plugins.cpog.scala.nodes.Vertex.create(storage);
+		vertex.visualProperties().label().setValue(vertNameGen.apply());
 		add(vertices, vertex);
 		return vertex;
 	}
 
-	public RhoClause createRhoClause() {
-		RhoClause rhoClause = RhoClause.make(storage);
+	public org.workcraft.plugins.cpog.scala.nodes.RhoClause createRhoClause() {
+		org.workcraft.plugins.cpog.scala.nodes.RhoClause rhoClause = org.workcraft.plugins.cpog.scala.nodes.RhoClause.create(storage);
 		add(rhoClauses, rhoClause);
 		return rhoClause;
 	}
 
-	public Variable createVariable() {
+	public org.workcraft.plugins.cpog.scala.nodes.Variable createVariable() {
 		String name = varNameGen.apply();
-		Variable var = Variable.make(storage, storage.create(name));
+		org.workcraft.plugins.cpog.scala.nodes.Variable var = org.workcraft.plugins.cpog.scala.nodes.Variable.create(storage, storage.create(name));
 		add(variables, var);
 		return var;
 	}
 
-	public Expression<PVector<Node>> nodes() {
-		final Expression<PVector<Component>> components = components();
-		return new ExpressionBase<PVector<Node>>(){
+	public Expression<PVector<org.workcraft.plugins.cpog.scala.nodes.Node>> nodes() {
+		final Expression<PVector<org.workcraft.plugins.cpog.scala.nodes.Component>> components = components();
+		return new ExpressionBase<PVector<org.workcraft.plugins.cpog.scala.nodes.Node>>(){
 			@Override
-			protected PVector<Node> evaluate(EvaluationContext context) {
-				return TreePVector.<Node>empty()
+			protected PVector<org.workcraft.plugins.cpog.scala.nodes.Node> evaluate(EvaluationContext context) {
+				return TreePVector.<org.workcraft.plugins.cpog.scala.nodes.Node>empty()
 					.plusAll(context.resolve(components))
 					.plusAll(context.resolve(arcs));
 			}
 		};
 	}
 
-	public Expression<PVector<Component>> components() {
-		return new ExpressionBase<PVector<Component>>(){
+	public Expression<PVector<org.workcraft.plugins.cpog.scala.nodes.Component>> components() {
+		return new ExpressionBase<PVector<org.workcraft.plugins.cpog.scala.nodes.Component>>(){
 			@Override
-			protected PVector<Component> evaluate(EvaluationContext context) {
-				return TreePVector.<Component>empty()
+			protected PVector<org.workcraft.plugins.cpog.scala.nodes.Component> evaluate(EvaluationContext context) {
+				return TreePVector.<org.workcraft.plugins.cpog.scala.nodes.Component>empty()
 					.plusAll(context.resolve(variables))
 					.plusAll(context.resolve(vertices))
 					.plusAll(context.resolve(rhoClauses));

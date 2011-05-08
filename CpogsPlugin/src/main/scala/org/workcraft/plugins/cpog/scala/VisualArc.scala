@@ -6,7 +6,6 @@ import org.workcraft.dom.visual.connections.StaticPolylineData
 import org.workcraft.dom.visual.connections.StaticConnectionDataVisitor
 import org.workcraft.dom.visual.connections.StaticBezierData
 import org.workcraft.dom.visual.connections.StaticVisualConnectionData
-import org.workcraft.dependencymanager.advanced.core.Expressions
 import org.workcraft.dom.visual.connections.BezierData
 import org.workcraft.dom.visual.connections.ConnectionDataVisitor
 import org.workcraft.dom.visual.connections.VisualConnectionData
@@ -18,11 +17,10 @@ import java.awt.BasicStroke
 import java.awt.Color
 import org.workcraft.dom.visual.connections.VisualConnectionProperties
 import nodes._
-import org.workcraft.plugins.cpog.scala.TouchableProvider
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.connections.ConnectionGui
-import Util.monadicSyntax
+import Expressions.monadicSyntax
 import _root_.scala.collection.JavaConversions._
 
 
@@ -82,7 +80,7 @@ object VisualArc {
           ) yield makeBezierVisitor(cp1, cp2)
         case p: Polyline =>
           (for (
-            cp <- Expressions.joinCollection()(asJavaList(p.cp))
+            cp <- Expressions.joinCollection(p.cp)
           ) yield makePolylineVisitor(cp) ) : Expression[StaticVisualConnectionData]
       }) yield VisualConnectionGui.getConnectionGui(properties, context, gui)
     }

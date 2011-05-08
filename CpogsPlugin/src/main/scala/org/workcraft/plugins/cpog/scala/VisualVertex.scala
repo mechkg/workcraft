@@ -76,6 +76,3 @@ package org.workcraft.plugins.cpog.scala {
     //def getProperties (v : Vertex) : PVector[EditableProperty] = VisualComponent.getProperties (v.visualProperties)
   }
 }
-					
-     
-	

@@ -10,7 +10,6 @@ import java.awt.geom.Point2D
 import pcollections.HashTreePSet;
 import pcollections.PSet;
 import org.workcraft.util.Maybe
-import org.workcraft.dependencymanager.advanced.core.Expressions.{ fmap => javafmap, bind => javabind, asFunction, constant }
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.GlobalCache.eval
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
@@ -29,10 +28,10 @@ import org.workcraft.gui.graph.tools.GraphEditorToolUtil._
 
 import java.awt.Color
 import java.awt.BasicStroke
-import java.lang.Iterable
 
 import org.workcraft.gui.graph.tools.GraphEditorTool
 import org.workcraft.gui.graph.tools.Colorisation
+import org.workcraft.gui.graph.tools.Colorisation.{EMPTY => emptyColorisation}
 import org.workcraft.gui.graph.tools.ConnectionController
 import org.workcraft.gui.graph.tools.ConnectionTool
 import org.workcraft.gui.graph.tools.selection.MoveDragHandler
@@ -54,11 +53,14 @@ import org.workcraft.plugins.cpog.scala.NodePainter
 import org.workcraft.gui.graph.tools.GraphEditorConfiguration
 import org.workcraft.plugins.cpog.scala.MovableController
 
-import _root_.scala.collection.JavaConversions._
+import scala.collection.JavaConversions._
+import java.awt.geom.AffineTransform
 
 package org.workcraft.plugins.cpog.scala {
 
-import java.awt.geom.AffineTransform
+import Expressions._
+import Util._
+
   object ToolsProvider {
 
     val visualConnectionProperties = new VisualConnectionProperties {
@@ -71,10 +73,10 @@ import java.awt.geom.AffineTransform
 
     def selectionTool (
         selection: ModifiableExpression[PSet[Node]], 
-        nodes : Expression[List[Node]], 
+        nodes : Expression[_ <: Iterable[Node]], 
         snap: Point2D => Point2D, 
-        transform: Node => Expression[AffineTransform]
-        
+        touchable: Node => Expression[Touchable],
+        painter: Node => Expression[ColorisableGraphicalContent]
         ) = {
       val dragHandler = new MoveDragHandler[Node](selection, MovableController.position(_:Node), snap);
       
@@ -87,19 +89,38 @@ import java.awt.geom.AffineTransform
         override def getButton = org.workcraft.gui.graph.tools.selection.SelectionTool.identification
       }
       
-      attachPainter(selectionTool, )
+      attachPainter(selectionTool, drawWithHighlight[Node](highlightedColorisation, genericSelectionTool.effectiveSelection(), painter, nodes))
     }
 
-    def getTools(cpog: CPOG, snap: Function[Point2D, Point2D]): Iterable[GraphEditorConfiguration] = {
-      
-      
-      val colourisablePainter = NodePainter.graphicalContent()
-      
-      
-  /*    val selection = cpog.storage.create[PSet[Node]](HashTreePSet.empty())
-      val generators = createFor(cpog)
+	val highlightedColorisation = new Colorisation {
+		override def getColorisation = new Color(99, 130, 191).brighter()
+		override def getBackground = null
+	}
+    
+    def drawWithHighlight[N](highlightedColorisation : Colorisation, highlighted : Expression[_ <: Set[N]] , painter : N => Expression[ColorisableGraphicalContent], nodes : Expression[_ <: Iterable[N]]) : Expression[GraphicalContent] = {
+    	val colorisedPainter = (node : N) => for(highlighted <- highlighted; painter <- painter(node)) yield applyColourisation(painter, if (highlighted.contains(node)) highlightedColorisation else Colorisation.EMPTY)
 
-      val transformedComponentTouchableProvider = transform(componentLocalTouchable, asFunctionObject(transformer))
+    	for (nodes <- nodes;
+    	    graphics <- joinCollection (nodes.map(colorisedPainter)))
+    	yield graphics.foldLeft(GraphicalContent.EMPTY)(Graphics.compose)
+    }
+    
+    def getTools(cpog: CPOG, snap: Function[Point2D, Point2D]): Iterable[GraphEditorTool] = {
+      
+      val selection = cpog.storage.create[PSet[Node]](HashTreePSet.empty())
+      val generators = createFor(cpog)
+ 
+
+      val transform = MovableController.positionWithDefaultZero(_)
+      val transformAffine = (n : Node) => { 
+        for(point <-  transform(n)) yield AffineTransform.getTranslateInstance(point.getX(), point.getY());
+      }
+      val touchable = TouchableProvider.touchable(transformAffine)(_)
+      val painter = NodePainter.nodeColorisableGraphicalContent (transformAffine)(_)
+      
+      val nodes = for(nodes <- cpog.nodes) yield asScalaIterable[Node](nodes)
+      val selTool = selectionTool(selection, nodes, (x => snap (x)), touchable, painter)
+/*      val transformedComponentTouchableProvider = transform(componentLocalTouchable, asFunctionObject(transformer))
 
       val arcToGuiV: Arc => Expression[ConnectionGui] = arcToGui(transformedComponentTouchableProvider(_))
 
@@ -133,25 +154,6 @@ import java.awt.geom.AffineTransform
         override def getBackground = null
       }
 
-      def makePainter(highlighted: Expression[_ <: Set[_ >: Node]]) = {
-
-        def getColorisation(highlighted: Set[_ >: Node])(node: Node) = if (highlighted.contains(node))
-          highlightedColorisation else Colorisation.EMPTY
-        val coloriser = bindFunc(highlighted)(hl => getColorisation(hl)(_))
-
-        def colorisedPainter(node: Node) = {
-          bind(nodePainter(node), (gc: ColorisableGraphicalContent) => {
-            bindFunc(coloriser)((coloriser: Node => Colorisation) => {
-              applyColourisation(gc, coloriser(node))
-            })
-          })
-        }
-
-        def someshit(nodes: Iterable[_ <: Node]) = DrawMan.drawCollection(nodes, asFunctionObject(colorisedPainter))
-
-        bind(
-          cpog.nodes(), (nodes: Iterable[_ <: Node]) => someshit(nodes));
-      };
 
       val connectionManager = ConnectionController.Util.fromSafe(new CpogConnectionManager(cpog));
 
@@ -165,15 +167,14 @@ import java.awt.geom.AffineTransform
       }
 
       val connectionTool = new ConnectionTool[Component](componentMovableController, connectionManager, HitTester.Util.asPointHitTester(connectionHitTester))
+*/
+      val uncolorised = drawWithHighlight[Node](Colorisation.EMPTY, constant(java.util.Collections.emptySet()), painter, nodes)
 
-      val painter = makePainter(constant(java.util.Collections.emptySet()))
-
-      asJavaList(attachPainter(selectionTool, makePainter(genericSelectionTool.effectiveSelection())) ::
-        attachPainter(connectionTool, makePainter(bindFunc(connectionTool.mouseOverNode())(java.util.Collections.singleton[Node](_)))) ::
-        attachPainter(new NodeGeneratorTool(generators.vertexGenerator, snap), painter) ::
-        attachPainter(new NodeGeneratorTool(generators.variableGenerator, snap), painter) ::
-        attachPainter(new NodeGeneratorTool(generators.rhoClauseGenerator, snap), painter) ::
-        Nil)*/
+      selTool ::
+       // attachPainter(connectionTool, makePainter(bindFunc(connectionTool.mouseOverNode())(java.util.Collections.singleton[Node](_)))) ::
+        attachPainter(new NodeGeneratorTool(generators.vertexGenerator, snap), uncolorised) ::
+        attachPainter(new NodeGeneratorTool(generators.variableGenerator, snap), uncolorised) ::
+        attachPainter(new NodeGeneratorTool(generators.rhoClauseGenerator, snap), uncolorised) ::
       Nil
     }
   }

@@ -31,46 +31,52 @@ import org.workcraft.dom.visual.connections.VisualConnectionData;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 
-public class Arc implements Node {
-	private final ModifiableExpression<BooleanFormula> condition;
-	public final Vertex first;
-	public final Vertex second;
-	public final ModifiableExpression<VisualConnectionData> visual;
+public interface Arc {
+	public ModifiableExpression<BooleanFormula> condition();
+	public Vertex first();
+	public Vertex second();
+	public ModifiableExpression<VisualConnectionData> visual();
+	public class Util {
+		public static Node asNode(final Arc arc) {
+			return new Node() {
 
-	public Arc(Vertex first, Vertex second, final StorageManager storage) {
-		this.first = first;
-		this.second = second;
-		this.condition = storage.<BooleanFormula> create(One.instance());
-		VisualConnectionData defaultConnectionData = new VisualConnectionData(){
-			ModifiableExpression<Point2D> cp1 = storage.<Point2D>create(new Point2D.Double(1.0/3.0, 0));
-			ModifiableExpression<Point2D> cp2 = storage.<Point2D>create(new Point2D.Double(2.0/3.0, 0));
-
-			@Override
-			public <T> T accept(ConnectionDataVisitor<T> visitor) {
-				return visitor.visitBezier(new BezierData() {
-					
-					@Override
-					public ModifiableExpression<Point2D> cp1() {
-						return cp1;
-					}
-
-					@Override
-					public ModifiableExpression<Point2D> cp2() {
-						return cp2;
-					}
-				});
-			}
-			
-		};
-		this.visual = storage.create(defaultConnectionData);
-	}
-
-	public ModifiableExpression<BooleanFormula> condition() {
-		return condition;
-	}
-
-	@Override
-	public <T> T accept(NodeVisitor<T> visitor) {
-		return visitor.visitArc(this);
+				@Override
+				public <T> T accept(NodeVisitor<T> visitor) {
+					return visitor.visitArc(arc);
+				}
+				
+			};
+		}
+		public static Arc create(final Vertex first, final Vertex second, final StorageManager storage) {
+			VisualConnectionData defaultConnectionData = new VisualConnectionData(){
+				ModifiableExpression<Point2D> cp1 = storage.<Point2D>create(new Point2D.Double(1.0/3.0, 0));
+				ModifiableExpression<Point2D> cp2 = storage.<Point2D>create(new Point2D.Double(2.0/3.0, 0));
+	
+				@Override
+				public <T> T accept(ConnectionDataVisitor<T> visitor) {
+					return visitor.visitBezier(new BezierData() {
+						
+						@Override
+						public ModifiableExpression<Point2D> cp1() {
+							return cp1;
+						}
+	
+						@Override
+						public ModifiableExpression<Point2D> cp2() {
+							return cp2;
+						}
+					});
+				}
+				
+			};
+			final ModifiableExpression<BooleanFormula> condition = storage.<BooleanFormula> create(One.instance());
+			final ModifiableExpression<VisualConnectionData> visual = storage.create(defaultConnectionData);
+			return new Arc(){
+				@Override public Vertex first() { return first; }
+				@Override public Vertex second() { return second; }
+				@Override public ModifiableExpression<VisualConnectionData> visual() { return visual; }
+				@Override public ModifiableExpression<BooleanFormula> condition() { return condition; }
+			};
+		}
 	}
 }

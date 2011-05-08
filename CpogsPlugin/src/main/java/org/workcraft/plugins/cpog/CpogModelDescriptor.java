@@ -40,7 +40,7 @@ public class CpogModelDescriptor implements ModelDescriptor {
 				
 				@Override
 				public Iterable<? extends GraphEditorTool> createTools(GraphEditor editor) {
-					return new CustomToolsProvider(cpog).getTools(editor);
+					return org.workcraft.plugins.cpog.scala.ToolsProvider.getTools(cpog, editor.snapFunction());
 				}
 			});
 	}

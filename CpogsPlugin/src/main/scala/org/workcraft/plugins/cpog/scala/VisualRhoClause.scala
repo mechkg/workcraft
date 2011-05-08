@@ -2,7 +2,7 @@ import org.workcraft.plugins.shared.CommonVisualSettings
 
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import org.workcraft.plugins.cpog.scala.nodes.RhoClause
-import org.workcraft.plugins.cpog.scala.Util.monadicSyntax
+import org.workcraft.plugins.cpog.scala.Expressions.monadicSyntax
 import org.workcraft.plugins.cpog.scala.Graphics._
 import java.awt.geom.Rectangle2D
 import org.workcraft.dependencymanager.advanced.core.Expression

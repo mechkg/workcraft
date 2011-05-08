@@ -152,7 +152,7 @@ public class CustomToolsProvider {
 								ConnectionGui connectionGui = VisualConnectionGui.getConnectionGui(properties, context, data);
 								return connectionGui;
 							}
-						}, transformedComponents.apply(arc.first), transformedComponents.apply(arc.second));
+						}, transformedComponents.apply(arc.first()), transformedComponents.apply(arc.second()));
 					}
 				});
 			}

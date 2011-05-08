@@ -21,14 +21,18 @@ import org.workcraft.plugins.cpog.scala.VisualArc.Bezier
 
 package org.workcraft.plugins.cpog.scala.nodes {
 
-
-
-  sealed abstract class Node
-  sealed abstract case class Component(visualProperties:VisualProperties) extends Node
-   
-  case class Arc (first : Component, second : Component, condition: ModifiableExpression[BooleanFormula], visual : ModifiableExpression[VisualArc]) extends Node
+  sealed abstract class Node extends org.workcraft.plugins.cpog.Node {
+    override def accept[A](visitor : org.workcraft.plugins.cpog.NodeVisitor[A]) = this match {
+      case a : Arc => visitor.visitArc(a)
+      case c : Component => visitor.visitComponent(c)
+    }
+  }
   
-  case class Vertex(condition: ModifiableExpression[BooleanFormula], override val visualProperties:VisualProperties) extends Component (visualProperties)
+  sealed abstract case class Component(visualProperties:VisualProperties) extends Node with org.workcraft.plugins.cpog.Component
+   
+  case class Arc (first : Vertex, second : Vertex, condition: ModifiableExpression[BooleanFormula], visual : ModifiableExpression[VisualArc]) extends Node with org.workcraft.plugins.cpog.Arc
+  
+  case class Vertex(condition: ModifiableExpression[BooleanFormula], override val visualProperties:VisualProperties) extends Component (visualProperties) with org.workcraft.plugins.cpog.Vertex
    
   case class Variable(state:ModifiableExpression[VariableState], label: ModifiableExpression[String], override val visualProperties:VisualProperties) 
   			extends Component (visualProperties) with BooleanVariable with Comparable[Variable] {
@@ -43,7 +47,7 @@ package org.workcraft.plugins.cpog.scala.nodes {
   case class RhoClause(formula:ModifiableExpression[BooleanFormula], override val visualProperties:VisualProperties) extends Component (visualProperties)
   
   object Arc {
-    def create (storage: StorageManager, first : Component, second : Component) = {
+    def create (storage: StorageManager, first : Vertex, second : Vertex) = {
       Arc (first, second, storage.create (One.instance), 
           storage.create (Bezier(storage.create(new Point2D.Double(1/3.0,0)), storage.create(new Point2D.Double(2/3.0,0)))))    
     }

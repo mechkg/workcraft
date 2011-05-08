@@ -19,7 +19,8 @@ import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import pcollections.HashTreePSet
 import pcollections.PSet
-import Util._
+import Expressions.monadicSyntax
+import Util.asFunctionObject
 import org.workcraft.dependencymanager.advanced.core.Expressions._
 import VisualArc._
 import scala.collection.JavaConversions.{ collectionAsScalaIterable, asJavaCollection }

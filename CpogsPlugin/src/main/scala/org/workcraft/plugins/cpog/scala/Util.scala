@@ -1,6 +1,5 @@
 package org.workcraft.plugins.cpog.scala
 
-import org.workcraft.dependencymanager.advanced.core.Expressions
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero
 import org.workcraft.plugins.cpog.optimisation.expressions.One
 import org.workcraft.plugins.cpog.scala.nodes.Variable
@@ -42,6 +41,7 @@ object Util {
   def bindFunc[A, B](a: Expression[_ <: A])(f: A => B): Expression[B] = javafmap(asFunctionObject(f), a)
   def bindFunc[A, B, C](a: Expression[_ <: A], b: Expression[_ <: B])(f: (A, B) => C): Expression[C] = javafmap(asFunctionObject2(f), a, b)
   def fmap[A, B](f: A => B)(a: Expression[_ <: A]): Expression[B] = javafmap(asFunctionObject(f), a)
+  def fmap2[A, B, R](f: (A, B) => R)(a: Expression[_ <: A], b: Expression[_ <: B]): Expression[R] = javafmap(asFunctionObject2(f), a, b)
 
   def fmap[A, B, C](f: (A, B) => C)(a: Expression[_ <: A], b: Expression[_ <: B]): Expression[C] = javafmap(asFunctionObject2(f), a, b)
   def bind[A, B](a: Expression[_ <: A], f: A => _ <: Expression[_ <: B]): Expression[B] = javabind[A, B](a, asFunctionObject(f))
@@ -63,13 +63,5 @@ object Util {
           }
         }
       })
-  }
-
-  implicit def monadicSyntax[A](m: Expression[A]) = new {
-    def bind[B](x: A => Expression[B] ) = Expressions.bind(m, asFunctionObject(x))
-
-    def map[B](f: A => B) = Expressions.fmap[A,B](asFunctionObject(f), m)
-
-    def flatMap[B](f: A => Expression[B]) = bind(f)
   }
 }

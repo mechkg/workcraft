@@ -3,12 +3,11 @@ package org.workcraft.plugins.cpog.scala
 import java.awt.geom.AffineTransform
 import org.workcraft.dom.visual.TransformHelper
 import org.workcraft.dependencymanager.advanced.core.Expression
-import org.workcraft.dependencymanager.advanced.core.Expressions
 import java.awt.geom.Rectangle2D
 import java.awt.geom.Point2D
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.plugins.cpog.scala.nodes._
-import org.workcraft.plugins.cpog.scala.Util.monadicSyntax
+import org.workcraft.plugins.cpog.scala.Expressions.monadicSyntax
 
 
 object TouchableProvider {
@@ -20,7 +19,7 @@ object TouchableProvider {
     
     def hitTest (point: Point2D) = point.distance(0,0) < size/2
     def getBoundingBox = bb
-    def getCenter = center 
+    def getCenter = center
   }
    
   def localTouchable (c : Component) : Expression[Touchable] =

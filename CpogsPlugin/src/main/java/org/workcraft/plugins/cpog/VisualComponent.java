@@ -31,7 +31,7 @@ public class VisualComponent {
 		this.labelPosition = labelPosition;
 	}
 	
-	public static PVector<EditableProperty> getProperties(VisualComponent component) {
+	public static PVector<EditableProperty> getProperties(org.workcraft.plugins.cpog.scala.VisualProperties component) {
 		FieldAccessor<Point2D, Double> xView = new FieldAccessor<Point2D, Double>(){
 			@Override
 			public Double apply(Point2D argument) {
@@ -55,9 +55,9 @@ public class VisualComponent {
 			}
 		};
 		return TreePVector.<EditableProperty>empty()
-			.plus(StringProperty.create("Label", component.label))
-			.plus(DoubleProperty.create("X", bindFunc(component.position, xView)))
-			.plus(DoubleProperty.create("Y", bindFunc(component.position, yView)))
-			.plus(ChoiceProperty.create("Label positioning", LabelPositioning.getChoice(), component.labelPosition));
+			.plus(StringProperty.create("Label", component.label()))
+			.plus(DoubleProperty.create("X", bindFunc(component.position(), xView)))
+			.plus(DoubleProperty.create("Y", bindFunc(component.position(), yView)))
+			.plus(ChoiceProperty.create("Label positioning", LabelPositioning.getChoice(), component.labelPositioning()));
 	}
 }

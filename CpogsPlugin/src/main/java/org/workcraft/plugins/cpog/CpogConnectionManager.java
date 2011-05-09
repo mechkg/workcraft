@@ -1,12 +1,15 @@
 package org.workcraft.plugins.cpog;
 
-import static org.workcraft.plugins.cpog.Component.Util.*;
+import static org.workcraft.plugins.cpog.ComponentVisitor.Util.*;
 import static org.workcraft.util.Maybe.Util.*;
 
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.gui.graph.tools.SafeConnectionManager;
 import org.workcraft.util.Action;
 import org.workcraft.util.Maybe.Util.NothingFound;
+
+
+import org.workcraft.plugins.cpog.scala.nodes.*;
 
 public class CpogConnectionManager implements SafeConnectionManager<Component> {
 

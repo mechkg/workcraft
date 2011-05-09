@@ -24,11 +24,18 @@ import Expressions.monadicSyntax
 import _root_.scala.collection.JavaConversions._
 
 
-sealed trait VisualArc
+sealed trait VisualArc extends org.workcraft.dom.visual.connections.VisualConnectionData {
+  def accept[T](visitor : ConnectionDataVisitor[T]) = this match {
+    case b : VisualArc.Bezier => visitor.visitBezier(b)
+    case p : VisualArc.Polyline => visitor.visitPolyline(p)
+  }
+}
 
 object VisualArc {
-  case class Bezier(cp1: ModifiableExpression[Point2D], cp2: ModifiableExpression[Point2D]) extends VisualArc
-  case class Polyline(cp: List[ModifiableExpression[Point2D]]) extends VisualArc
+  case class Bezier(cp1: ModifiableExpression[Point2D], cp2: ModifiableExpression[Point2D]) extends VisualArc with org.workcraft.dom.visual.connections.BezierData
+  case class Polyline(cp: List[ModifiableExpression[Point2D]]) extends VisualArc with org.workcraft.dom.visual.connections.PolylineData {
+    override def controlPoints = asJavaCollection(cp)
+  }
 
   def makeBezierVisitor(p: (Point2D, Point2D)): StaticVisualConnectionData = new StaticVisualConnectionData {
     override def accept[T](visitor: StaticConnectionDataVisitor[T]): T = {

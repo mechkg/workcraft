@@ -21,33 +21,6 @@
 
 package org.workcraft.plugins.cpog;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dom.Container;
-import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.AbstractVisualModel;
-import org.workcraft.dom.visual.VisualGroup;
-import org.workcraft.dom.visual.connections.VisualConnection;
-import org.workcraft.exceptions.InvalidConnectionException;
-import org.workcraft.exceptions.NodeCreationException;
-import org.workcraft.exceptions.VisualModelInstantiationException;
-import org.workcraft.gui.propertyeditor.Properties;
-import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString;
-import org.workcraft.plugins.cpog.optimisation.javacc.BooleanParser;
-import org.workcraft.plugins.cpog.optimisation.javacc.ParseException;
-import org.workcraft.util.Hierarchy;
-
-import pcollections.HashTreePSet;
-
 /*public class VisualCPOG extends AbstractVisualModel
 {
 	private final class BooleanFormulaPropertyDescriptor implements PropertyDescriptor 

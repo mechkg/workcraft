@@ -56,6 +56,8 @@ import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.util.Func;
 import org.workcraft.util.Geometry;
 
+import org.workcraft.plugins.cpog.scala.nodes.*;
+
 public class VisualArc
 {
 	private static Font labelFont;

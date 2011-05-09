@@ -19,14 +19,14 @@
  *
  */
 
-package org.workcraft.plugins.cpog.serialisation;
+/*package org.workcraft.plugins.cpog.serialisation;
 
 import java.util.Map;
 
 import org.w3c.dom.Element;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.plugins.cpog.Encoding;
-import org.workcraft.plugins.cpog.Variable;
+import org.workcraft.plugins.cpog.scala.nodes.Variable;
 import org.workcraft.plugins.cpog.VariableState;
 import org.workcraft.plugins.cpog.VisualScenario;
 import org.workcraft.serialisation.ReferenceProducer;
@@ -61,3 +61,4 @@ public class VisualCPOGGroupSerialiser implements CustomXMLSerialiser
 		}
 	}
 }
+*/

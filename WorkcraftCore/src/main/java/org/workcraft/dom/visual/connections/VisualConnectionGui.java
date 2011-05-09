@@ -110,8 +110,4 @@ public class VisualConnectionGui {
 			}
 		};
 	}
-
-	static <N> VisualConnectionGraphicalPropertiesImpl getConnectionProperties(final VisualConnection<N> connection) {
-		return new VisualConnectionGraphicalPropertiesImpl(connection);
-	}
 }

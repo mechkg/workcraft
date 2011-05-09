@@ -21,7 +21,7 @@
 
 package org.workcraft.plugins.cpog.serialisation;
 
-import org.workcraft.plugins.cpog.Arc;
+import org.workcraft.plugins.cpog.scala.nodes.*;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 

@@ -52,6 +52,8 @@ import org.workcraft.plugins.shared.CommonVisualSettings;
 
 import pcollections.PVector;
 
+import org.workcraft.plugins.cpog.scala.nodes.*;
+
 public class VisualVertex
 {
 	
@@ -100,8 +102,8 @@ public class VisualVertex
 		Expression<BoundedColorisableGraphicalContent> nameLabel = new ExpressionBase<BoundedColorisableGraphicalContent>() {
 			@Override
 			protected BoundedColorisableGraphicalContent evaluate(EvaluationContext context) {
-				String text = context.resolve(vertex.visualInfo.label);
-				BooleanFormula condition = context.resolve(vertex.condition);
+				String text = context.resolve(vertex.visualProperties().label());
+				BooleanFormula condition = context.resolve(vertex.condition());
 				if (condition != One.instance()) text += ": ";
 				
 				FormulaRenderingResult result = FormulaToGraphics.print(text, FormulaRenderer.fancyFont, Label.podgonFontRenderContext());
@@ -109,7 +111,7 @@ public class VisualVertex
 				if (condition != One.instance()) result.add(FormulaToGraphics.render(condition, Label.podgonFontRenderContext(), FormulaRenderer.fancyFont));
 				
 				return LabelPositioning.positionRelative(context.resolve(circle).boundingBox
-						, context.resolve(vertex.visualInfo.labelPosition)
+						, context.resolve(vertex.visualProperties().labelPositioning())
 						, result.asBoundedColorisableImage());
 			}
 		};
@@ -121,7 +123,7 @@ public class VisualVertex
 	private final static float strokeWidth = 0.1f;
 
 	public static PVector<EditableProperty> getProperties(Vertex v) {
-		return VisualComponent.getProperties(v.visualInfo);
+		return VisualComponent.getProperties(v.visualProperties());
 	}
 
 	public static Expression<BooleanFormula> value(final Vertex vert) {
@@ -129,7 +131,7 @@ public class VisualVertex
 
 			@Override
 			protected BooleanFormula evaluate(final EvaluationContext context) {
-				return context.resolve(vert.condition).accept(
+				return context.resolve(vert.condition()).accept(
 						new BooleanReplacer(new HashMap<BooleanVariable, BooleanFormula>())
 						{
 							@Override

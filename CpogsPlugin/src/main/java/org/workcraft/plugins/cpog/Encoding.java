@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.workcraft.plugins.cpog.scala.nodes.Variable;
 
 public class Encoding
 {

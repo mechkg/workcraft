@@ -40,7 +40,7 @@ import org.workcraft.util.Pair;
 import pcollections.PVector;
 import pcollections.TreePVector;
 
-public class VisualConnection<N> implements Connection<N> {
+public class VisualConnection {
 	
 	public enum ConnectionType 
 	{
@@ -57,13 +57,6 @@ public class VisualConnection<N> implements Connection<N> {
 		ADAPTIVE
 	}
 	
-	private final N first;
-	private final N second;
-
-	private final ModifiableExpression<ScaleMode> scaleMode;
-	
-	private final ModifiableExpression<ConnectionGraphicConfiguration> graphic;
-
 	static class BoundedVariable extends ModifiableExpressionFilter<Double, Double>
 	{	
 		private final double min;
@@ -89,9 +82,10 @@ public class VisualConnection<N> implements Connection<N> {
 	private static double defaultLineWidth = 0.02;
 	private static double defaultArrowWidth = 0.15;
 	private static double defaultArrowLength = 0.4;
-	public static double HIT_THRESHOLD = 0.2;
 	private static final Color defaultColor = Color.BLACK;
-
+	
+	public static double HIT_THRESHOLD = 0.2;
+	/*
 	private final ModifiableExpression<Color> color;
 	private final ModifiableExpression<Double> lineWidth;
 	private final ModifiableExpression<Double> arrowWidth;
@@ -208,5 +202,5 @@ public class VisualConnection<N> implements Connection<N> {
 	
 	public ModifiableExpression<ScaleMode> scaleMode() {
 		return scaleMode;
-	}
+	}*/
 }

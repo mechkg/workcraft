@@ -32,8 +32,8 @@ public class PolylineGui {
 		return result;
 	}
 	
-	public static void createPolylineControlPoint(VisualConnectionProperties connectionProps, Polyline polyline, Point2D userLocation) {
-		PVector<Point2D> controlPoints = eval(mapM(ControlPoint.positionGetter).apply(eval(polyline.controlPoints())));
+	public static void createPolylineControlPoint(VisualConnectionProperties connectionProps, Point2D userLocation) {
+		//PVector<Point2D> controlPoints = eval(mapM(ControlPoint.positionGetter).apply(eval(polyline.controlPoints())));
 		//Curve curve = PolylineGui.curveMaker.apply(controlPoints, connectionProps);
 		//Pair<Integer, Double> lt = curve.getNearestPointTLocal(userLocation);
 		//polyline.createControlPoint(lt.getFirst(), curve.getPoint(lt));

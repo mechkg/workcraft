@@ -1,85 +1,68 @@
 package org.workcraft.plugins.cpog;
 
-import static java.util.Arrays.*;
-import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
-import static org.workcraft.dom.visual.ColorisableGraphicalContent.Util.*;
-import static org.workcraft.dom.visual.connections.ConnectionGui.*;
-import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.*;
-import static org.workcraft.plugins.cpog.gui.MovableController.*;
-import static org.workcraft.plugins.cpog.gui.TouchableProvider.*;
-import static org.workcraft.util.Maybe.Util.*;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.asFunction;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.bind;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.fmap;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.dom.visual.ColorisableGraphicalContent.Util.applyColourisationFunc;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Stroke;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.Set;
 
-import javax.swing.Icon;
-
 import org.workcraft.dependencymanager.advanced.core.Expression;
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
-import org.workcraft.dom.visual.BoundedColorisableGraphicalContent;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.Touchable;
-import org.workcraft.dom.visual.connections.BezierData;
-import org.workcraft.dom.visual.connections.ConnectionDataVisitor;
-import org.workcraft.dom.visual.connections.ConnectionGui;
-import org.workcraft.dom.visual.connections.PolylineData;
-import org.workcraft.dom.visual.connections.StaticVisualConnectionData;
-import org.workcraft.dom.visual.connections.VisualConnectionContext;
-import org.workcraft.dom.visual.connections.VisualConnectionData;
-import org.workcraft.dom.visual.connections.VisualConnectionGui;
-import org.workcraft.dom.visual.connections.VisualConnectionProperties;
-import org.workcraft.gui.graph.Viewport;
-import org.workcraft.gui.graph.tools.AbstractTool;
 import org.workcraft.gui.graph.tools.Colorisation;
-import org.workcraft.gui.graph.tools.ConnectionController;
-import org.workcraft.gui.graph.tools.ConnectionTool;
-import org.workcraft.gui.graph.tools.DragHandler;
-import org.workcraft.gui.graph.tools.GraphEditor;
-import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
-import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.HitTester;
-import org.workcraft.gui.graph.tools.MovableController;
-import org.workcraft.gui.graph.tools.NodeGeneratorTool;
-import org.workcraft.gui.graph.tools.selection.GenericSelectionTool;
-import org.workcraft.gui.graph.tools.selection.MoveDragHandler;
-import org.workcraft.plugins.cpog.gui.Generators;
-
-import org.workcraft.util.Collections;
 import org.workcraft.util.Function;
-import org.workcraft.util.Function2;
-import org.workcraft.util.Graphics;
-import org.workcraft.util.Maybe;
-
-import pcollections.HashTreePSet;
-import pcollections.PSet;
-
-import static org.workcraft.util.Function.Util.composition;
 
 public class CustomToolsProvider {
 	
+	public static <N> HitTester<N> createHitTester
+		( Expression<? extends Iterable<? extends N>> nodesGetter
+		, Function<? super N, ? extends Expression<? extends Touchable>> touchableProvider) 
+			{ final Function<N, Touchable> transformedTouchableProvider = eval(touchableProvider)
+			; return new HitMan.Flat<N>(asFunction(nodesGetter), transformedTouchableProvider).getHitTester()
+			; }
+
+
+	public static <N> Expression<GraphicalContent> drawWithHighlight(final Colorisation highlightedColorisation, final Expression<? extends Set<? extends N>> highlighted, final Function<N, ? extends Expression<? extends ColorisableGraphicalContent>> painter, Expression<? extends Iterable<? extends N>> nodes) {
+		final Function<N, Expression<? extends GraphicalContent>> colorisedPainter = new Function<N, Expression<? extends GraphicalContent>>(){
+			@Override
+			public Expression<? extends GraphicalContent> apply(final N node) {
+				Expression<Colorisation> colorisation = fmap(new Function<Set<? extends N>, Colorisation>(){
+
+					@Override
+					public Colorisation apply(Set<? extends N> highlighted) {
+						return highlighted.contains(node) ? highlightedColorisation : Colorisation.EMPTY;
+					}
+				}, highlighted);
+				return fmap(applyColourisationFunc, painter.apply(node), colorisation);
+			}
+		};
+		
+		return bind(
+				nodes
+				, new Function<Iterable<? extends N>, Expression<? extends GraphicalContent>>() {
+					@Override
+					public Expression<? extends GraphicalContent> apply(Iterable<? extends N> nodes) {
+						return DrawMan.drawCollection(nodes, colorisedPainter);
+					}
+				}
+			);
+	}
+}
+	
+		
+	/*	
 	public CustomToolsProvider(CPOG cpog) {
 		this.cpog = cpog;
 	}
 	
 	public final CPOG cpog;
 	
-	
-	public static <N> HitTester<N> createHitTester
-		( Expression<? extends Iterable<? extends N>> nodesGetter
-		, Function<? super N, ? extends Expression<? extends Touchable>> touchableProvider) {
-
-		final Function<N, Touchable> transformedTouchableProvider = eval(touchableProvider);
-		return new HitMan.Flat<N>(asFunction(nodesGetter), transformedTouchableProvider).getHitTester();
-	}
 	
 	static <V> Function<Node, V> withDefault(final V def, final Function<? super Node, ? extends Maybe<? extends V>> f) {
 		return new Function<Node, V>(){
@@ -159,33 +142,6 @@ public class CustomToolsProvider {
 		});
 	}
 
-	public static <N> Expression<GraphicalContent> drawWithHighlight(final Colorisation highlightedColorisation, final Expression<? extends Set<? extends N>> highlighted, final Function<N, ? extends Expression<? extends ColorisableGraphicalContent>> painter, Expression<? extends Iterable<? extends N>> nodes) {
-			final Function<N, Expression<? extends GraphicalContent>> colorisedPainter = new Function<N, Expression<? extends GraphicalContent>>(){
-				@Override
-				public Expression<? extends GraphicalContent> apply(final N node) {
-					Expression<Colorisation> colorisation = fmap(new Function<Set<? extends N>, Colorisation>(){
-
-						@Override
-						public Colorisation apply(Set<? extends N> highlighted) {
-							return highlighted.contains(node) ? highlightedColorisation : Colorisation.EMPTY;
-						}
-					}, highlighted);
-					return fmap(applyColourisationFunc, painter.apply(node), colorisation);
-				}
-			};
-			
-			return bind(
-					nodes
-					, new Function<Iterable<? extends N>, Expression<? extends GraphicalContent>>() {
-						@Override
-						public Expression<? extends GraphicalContent> apply(Iterable<? extends N> nodes) {
-							return DrawMan.drawCollection(nodes, colorisedPainter);
-						}
-					}
-				);
-		}
-	
-	
 	public Iterable<GraphEditorTool> getTools(final GraphEditor editor)
 	{
 		
@@ -449,3 +405,4 @@ public class CustomToolsProvider {
 				attachPainter(new NodeGeneratorTool(generators.rhoClauseGenerator, editor.snapFunction()), painter));
 	}
 }
+*/

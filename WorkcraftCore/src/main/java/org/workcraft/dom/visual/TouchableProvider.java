@@ -12,6 +12,7 @@ import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.dom.visual.connections.VisualConnectionGui;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.graph.tools.MovableController;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
@@ -85,8 +86,9 @@ public interface TouchableProvider<N> extends Function<N, Expression<? extends M
 					if(node instanceof VisualGroup)
 						return just(VisualGroup.screenSpaceBounds(this, (VisualGroup)node));
 					else
-						if(node instanceof VisualConnection) 
-							return just(VisualConnectionGui.getConnectionGui(podgonHideMaybe(this), (VisualConnection)node).shape());
+						if(node instanceof VisualConnection)
+							throw new NotImplementedException();
+							//return nothing();//just(VisualConnectionGui.getConnectionGui(podgonHideMaybe(this), (VisualConnection)node).shape());
 						localTouchable = localTP.apply(node);
 					
 					final Expression<Point2D> position = MovableController.TRANSFORM_PROVIDER.apply(node);

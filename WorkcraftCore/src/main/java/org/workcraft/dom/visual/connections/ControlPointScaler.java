@@ -42,6 +42,8 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
+import org.workcraft.dom.visual.connections.VisualConnection.ScaleMode;
+import org.workcraft.exceptions.NotImplementedException;
 
 public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, ModifiableExpression<AffineTransform>>> {
 	private static double THRESHOLD = 0.00001;
@@ -155,15 +157,17 @@ public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, Modifia
 			points.add(new Point2D.Double(tr.getTranslateX(), tr.getTranslateY()));
 		}
 		
-		final Point2D newC1 = connInfo.getFirstShape().getCenter();
-		final Point2D newC2 = connInfo.getSecondShape().getCenter();
+		final Point2D newC1 = null; // TODO:
+		final Point2D newC2 = null;
+		ScaleMode scaleMode = null;
+		if(true)throw new NotImplementedException(); 
 
 		if (oldC1==null || oldC2 == null) {
 			oldC1 = newC1;
 			oldC2 = newC2;
 		}
 		
-		final List<? extends Point2D> scaled = scale(oldC1, oldC2, newC1, newC2, points, connInfo.getScaleMode());
+		final List<? extends Point2D> scaled = scale(oldC1, oldC2, newC1, newC2, points, scaleMode);
 		
 		applyScale(cpoints, scaled);
 		

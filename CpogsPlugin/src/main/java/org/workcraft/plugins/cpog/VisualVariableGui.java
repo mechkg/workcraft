@@ -52,6 +52,8 @@ import org.workcraft.util.Pair;
 import pcollections.PVector;
 import pcollections.TreePVector;
 
+import org.workcraft.plugins.cpog.scala.nodes.*;
+
 public class VisualVariableGui
 {
 	private static double size = 1;
@@ -66,8 +68,8 @@ public class VisualVariableGui
 		.plus(Pair.of("[0] false", VariableState.FALSE))
 		.plus(Pair.of("[?] undefined", VariableState.UNDEFINED));
 		
-		return VisualComponent.getProperties(var.visualVar)
-			.plus(ChoiceProperty.create("State", states, var.state));
+		return VisualComponent.getProperties(var.visualProperties())
+			.plus(ChoiceProperty.create("State", states, var.state()));
 	}
 	
 	private static BoundedColorisableGraphicalContent makeLabel(final String formula) {
@@ -91,7 +93,7 @@ public class VisualVariableGui
 	
 	public static void toggle(Variable var)
 	{
-		var.state.setValue(eval(var.state).toggle());
+		var.state().setValue(eval(var.state()).toggle());
 	}	
 	
 	public static Expression<BoundedColorisableGraphicalContent> getImage(Variable var)  {
@@ -102,8 +104,8 @@ public class VisualVariableGui
 			}
 		};
 		
-		final Expression<BoundedColorisableGraphicalContent> valueLabel = fmap(composition(toString, makeLabel, centerToZero), var.state);
-		final Expression<BoundedColorisableGraphicalContent> nameLabel = fmap(labelNamePositioner, fmap(makeLabel, var.label), var.visualVar.labelPosition);
+		final Expression<BoundedColorisableGraphicalContent> valueLabel = fmap(composition(toString, makeLabel, centerToZero), var.state());
+		final Expression<BoundedColorisableGraphicalContent> nameLabel = fmap(labelNamePositioner, fmap(makeLabel, var.label()), var.visualProperties().labelPositioning());
 		final Expression<BoundedColorisableGraphicalContent> box = simpleColorisableRectangle(visualBox);
 		return fmap(composeFunc, fmap(composeFunc, box, nameLabel), valueLabel);
 	}

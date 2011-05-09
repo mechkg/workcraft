@@ -34,6 +34,8 @@ import org.workcraft.util.Function0;
 import pcollections.PVector;
 import pcollections.TreePVector;
 
+import org.workcraft.plugins.cpog.scala.nodes.*;
+
 public class CPOG
 {
 	public final StorageManager storage;

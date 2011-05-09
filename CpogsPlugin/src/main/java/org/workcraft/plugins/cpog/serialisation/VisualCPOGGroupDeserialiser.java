@@ -19,14 +19,14 @@
  *
  */
 
-package org.workcraft.plugins.cpog.serialisation;
+/*package org.workcraft.plugins.cpog.serialisation;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.plugins.cpog.Encoding;
-import org.workcraft.plugins.cpog.Variable;
+import org.workcraft.plugins.cpog.scala.nodes.Variable;
 import org.workcraft.plugins.cpog.VariableState;
 import org.workcraft.plugins.cpog.VisualScenario;
 import org.workcraft.serialisation.ReferenceResolver;
@@ -77,3 +77,4 @@ public class VisualCPOGGroupDeserialiser implements CustomXMLDeserialiser
 
 	}
 }
+*/

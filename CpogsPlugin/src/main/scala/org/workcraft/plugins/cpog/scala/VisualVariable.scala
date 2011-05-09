@@ -30,7 +30,7 @@ package org.workcraft.plugins.cpog.scala {
           
           val frame      = boundedRectangle (size, size, new BasicStroke (strokeWidth), fillColor, foreColor)
           val valueLabel = boundedFormulaLabel (state.toString, valueFont, foreColor)
-          val nameLabel  = boundedLabel (label, nameFont, foreColor)
+          val nameLabel  = boundedFormulaLabel (label, nameFont, foreColor)
           
           compose (
         		  frame ::

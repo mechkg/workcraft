@@ -43,7 +43,6 @@ import org.workcraft.dom.visual.DrawMan;
 import org.workcraft.gui.graph.tools.selection.GenericSelectionTool
 
 import org.workcraft.gui.graph.Viewport
-import java.util.Set
 import java.lang.Boolean
 
 import org.workcraft.plugins.cpog.scala.Util._
@@ -55,9 +54,11 @@ import org.workcraft.plugins.cpog.scala.MovableController
 
 import scala.collection.JavaConversions._
 import java.awt.geom.AffineTransform
+import scala.collection.immutable.Set
 
 package org.workcraft.plugins.cpog.scala {
 
+import org.workcraft.plugins.cpog.CpogConnectionManager
 import Expressions._
 import Util._
 
@@ -97,7 +98,7 @@ import Util._
 		override def getBackground = null
 	}
     
-    def drawWithHighlight[N](highlightedColorisation : Colorisation, highlighted : Expression[_ <: Set[N]] , painter : N => Expression[ColorisableGraphicalContent], nodes : Expression[_ <: Iterable[N]]) : Expression[GraphicalContent] = {
+    def drawWithHighlight[N](highlightedColorisation : Colorisation, highlighted : Expression[_ <: java.util.Set[_ >: N]] , painter : N => Expression[ColorisableGraphicalContent], nodes : Expression[_ <: Iterable[N]]) : Expression[GraphicalContent] = {
     	val colorisedPainter = (node : N) => for(highlighted <- highlighted; painter <- painter(node)) yield applyColourisation(painter, if (highlighted.contains(node)) highlightedColorisation else Colorisation.EMPTY)
 
     	for (nodes <- nodes;
@@ -105,9 +106,10 @@ import Util._
     	yield graphics.foldLeft(GraphicalContent.EMPTY)(Graphics.compose)
     }
     
-    def getTools(cpog: CPOG, snap: Function[Point2D, Point2D]): Iterable[GraphEditorTool] = {
+    def getTools(cpog: CPOG, snap: Function[Point2D, Point2D]): java.lang.Iterable[GraphEditorTool] = {
       
-      val selection = cpog.storage.create[PSet[Node]](HashTreePSet.empty())
+      val selectionJ = cpog.storage.create[PSet[Node]](HashTreePSet.empty())
+      val selection = for (selection <- selectionJ) yield asScalaSet (selection)
       val generators = createFor(cpog)
  
 
@@ -119,7 +121,8 @@ import Util._
       val painter = NodePainter.nodeColorisableGraphicalContent (transformAffine)(_)
       
       val nodes = for(nodes <- cpog.nodes) yield asScalaIterable[Node](nodes)
-      val selTool = selectionTool(selection, nodes, (x => snap (x)), touchable, painter)
+      val components = for(components <- cpog.components) yield asScalaIterable[Component](components)
+      val selTool = selectionTool(selectionJ, nodes, (x => snap (x)), touchable, painter)
 /*      val transformedComponentTouchableProvider = transform(componentLocalTouchable, asFunctionObject(transformer))
 
       val arcToGuiV: Arc => Expression[ConnectionGui] = arcToGui(transformedComponentTouchableProvider(_))
@@ -132,8 +135,6 @@ import Util._
           asFunctionObject(arcToGuiV), javafmap[ConnectionGui, Touchable](getTouchableFunc)), transformedComponentTouchableProvider)
 
       
-      val connectionHitTester = createHitTester(cpog.components(), transformedComponentTouchableProvider)
-
       val nv = new NodeVisitor[Expression[_ <: ColorisableGraphicalContent]] {
         override def visitArc(arc: Arc) = bindFunc(arcToGuiV(arc))(x => x.graphicalContent);
         override def visitComponent(component: Component) = {
@@ -154,28 +155,25 @@ import Util._
         override def getBackground = null
       }
 
+*/
+      val connectionHitTester = hitTester(components, touchable)
 
       val connectionManager = ConnectionController.Util.fromSafe(new CpogConnectionManager(cpog));
 
-      
+      val connectionTool = new ConnectionTool[Component](MovableController.position(_:Component), connectionManager, connectionHitTester.hitTest(_:Point2D))
 
-      val selectionTool = new AbstractTool {
-        override def mouseListener = genericSelectionTool.getMouseListener
-        override def userSpaceContent(viewport: Viewport, hasFocus: Expression[Boolean]) = genericSelectionTool.userSpaceContent(viewport)
-        override def screenSpaceContent(viewport: Viewport, hasFocus: Expression[Boolean]) = constant(GraphicalContent.EMPTY)
-        override def getButton = org.workcraft.gui.graph.tools.selection.SelectionTool.identification
-      }
-
-      val connectionTool = new ConnectionTool[Component](componentMovableController, connectionManager, HitTester.Util.asPointHitTester(connectionHitTester))
-*/
       val uncolorised = drawWithHighlight[Node](Colorisation.EMPTY, constant(java.util.Collections.emptySet()), painter, nodes)
 
-      selTool ::
-       // attachPainter(connectionTool, makePainter(bindFunc(connectionTool.mouseOverNode())(java.util.Collections.singleton[Node](_)))) ::
+      val controlPointsEditorTool = ControlPoints.gogo(selection, uncolorised)
+      
+      asJavaCollection (selTool ::
+        controlPointsEditorTool ::
+        attachPainter(connectionTool, 
+            drawWithHighlight[Node](highlightedColorisation, for(node <- connectionTool.mouseOverNode()) yield java.util.Collections.singleton[Node](node), painter, nodes)) ::
         attachPainter(new NodeGeneratorTool(generators.vertexGenerator, snap), uncolorised) ::
         attachPainter(new NodeGeneratorTool(generators.variableGenerator, snap), uncolorised) ::
         attachPainter(new NodeGeneratorTool(generators.rhoClauseGenerator, snap), uncolorised) ::
-      Nil
+      Nil)
     }
   }
 }

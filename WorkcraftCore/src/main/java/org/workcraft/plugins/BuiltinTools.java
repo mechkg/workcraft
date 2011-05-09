@@ -5,7 +5,6 @@ import org.workcraft.Module;
 import org.workcraft.PluginManager;
 import org.workcraft.Tool;
 import org.workcraft.gui.propertyeditor.SettingsPage;
-import org.workcraft.plugins.layout.DotLayout;
 import org.workcraft.plugins.layout.DotLayoutSettings;
 import org.workcraft.plugins.layout.NullLayout;
 import org.workcraft.plugins.layout.RandomLayout;
@@ -16,7 +15,7 @@ public class BuiltinTools implements Module {
 	@Override
 	public void init(final Framework framework) {
 		final PluginManager p = framework.getPluginManager();
-		p.registerClass(Tool.class, DotLayout.class, framework);
+		//p.registerClass(Tool.class, DotLayout.class, framework);
 		p.registerClass(Tool.class, NullLayout.class);
 		p.registerClass(Tool.class, RandomLayout.class);
 		

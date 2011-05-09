@@ -7,9 +7,9 @@ import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.graph.tools.GraphEditorTool.Button;
 import org.workcraft.gui.graph.tools.NodeGenerator;
 import org.workcraft.plugins.cpog.CPOG;
-import org.workcraft.plugins.cpog.RhoClause;
-import org.workcraft.plugins.cpog.Variable;
-import org.workcraft.plugins.cpog.Vertex;
+import org.workcraft.plugins.cpog.scala.nodes.RhoClause;
+import org.workcraft.plugins.cpog.scala.nodes.Variable;
+import org.workcraft.plugins.cpog.scala.nodes.Vertex;
 
 import static org.workcraft.gui.graph.tools.GraphEditorToolUtil.*;
 
@@ -35,7 +35,7 @@ public class Generators {
 		@Override
 		public void generate(Point2D where) throws NodeCreationException {
 			Vertex vertex = cpog.createVertex();
-			vertex.visualInfo.position.setValue(where);
+			vertex.visualProperties().position().setValue(where);
 		}
 	};
 
@@ -50,7 +50,7 @@ public class Generators {
 		@Override
 		public void generate(Point2D where) throws NodeCreationException {
 			Variable variable = cpog.createVariable();
-			variable.visualVar.position.setValue(where);
+			variable.visualProperties().position().setValue(where);
 		}
 	};
 
@@ -65,7 +65,7 @@ public class Generators {
 		@Override
 		public void generate(Point2D where) throws NodeCreationException {
 			RhoClause rhoClause = cpog.createRhoClause();
-			rhoClause.visualInfo.position.setValue(where);
+			rhoClause.visualProperties().position().setValue(where);
 		}
 	};
 

@@ -48,6 +48,8 @@ import org.workcraft.plugins.shared.CommonVisualSettings;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
 
+import org.workcraft.plugins.cpog.scala.nodes.*;
+
 public class VisualRhoClause
 {
 	private static float strokeWidth = 0.038f;
@@ -127,7 +129,7 @@ public class VisualRhoClause
  *       , fillColor }
  */
 	private static Expression<FormulaRenderInfo> getRenderInfo(RhoClause rhoClause) {
-		return bind(rhoClause.formula, new Combinator<BooleanFormula, FormulaRenderInfo>() {
+		return bind(rhoClause.formula(), new Combinator<BooleanFormula, FormulaRenderInfo>() {
 			@Override
 			public Expression<? extends FormulaRenderInfo> apply(final BooleanFormula formula) {
 				return bind(value(formula), new Combinator<BooleanFormula, FormulaRenderInfo>(){

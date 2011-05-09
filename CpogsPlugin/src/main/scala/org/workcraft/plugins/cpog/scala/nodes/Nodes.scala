@@ -21,18 +21,24 @@ import org.workcraft.plugins.cpog.scala.VisualArc.Bezier
 
 package org.workcraft.plugins.cpog.scala.nodes {
 
-  sealed abstract class Node extends org.workcraft.plugins.cpog.Node {
-    override def accept[A](visitor : org.workcraft.plugins.cpog.NodeVisitor[A]) = this match {
+  sealed abstract class Node {
+    final def accept[A](visitor : org.workcraft.plugins.cpog.NodeVisitor[A]) = this match {
       case a : Arc => visitor.visitArc(a)
       case c : Component => visitor.visitComponent(c)
     }
   }
   
-  sealed abstract case class Component(visualProperties:VisualProperties) extends Node with org.workcraft.plugins.cpog.Component
-   
-  case class Arc (first : Vertex, second : Vertex, condition: ModifiableExpression[BooleanFormula], visual : ModifiableExpression[VisualArc]) extends Node with org.workcraft.plugins.cpog.Arc
+  sealed abstract case class Component(visualProperties:VisualProperties) extends Node {
+    final def accept[A](visitor : org.workcraft.plugins.cpog.ComponentVisitor[A]) = this match {
+      case v : Vertex => visitor.visitVertex(v)
+      case v : Variable => visitor.visitVariable(v)
+      case r : RhoClause => visitor.visitRho(r)
+    }
+  }
   
-  case class Vertex(condition: ModifiableExpression[BooleanFormula], override val visualProperties:VisualProperties) extends Component (visualProperties) with org.workcraft.plugins.cpog.Vertex
+  case class Arc (first : Vertex, second : Vertex, condition: ModifiableExpression[BooleanFormula], visual : ModifiableExpression[VisualArc]) extends Node
+  
+  case class Vertex(condition: ModifiableExpression[BooleanFormula], override val visualProperties:VisualProperties) extends Component (visualProperties)
    
   case class Variable(state:ModifiableExpression[VariableState], label: ModifiableExpression[String], override val visualProperties:VisualProperties) 
   			extends Component (visualProperties) with BooleanVariable with Comparable[Variable] {

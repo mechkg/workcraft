@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog;
+/*package org.workcraft.plugins.cpog;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -140,14 +140,14 @@ public class VisualScenario extends VisualGroup implements ReflectiveTouchable, 
 		Rectangle2D bb = null;
 		
 		// TODO: throw away everything?
-		/*for(VisualVertex v : context.resolve(Hierarchy.childrenOfType(this, VisualVertex.class)))
+		for(VisualVertex v : context.resolve(Hierarchy.childrenOfType(this, VisualVertex.class)))
 			bb = BoundingBoxHelper.union(bb, context.resolve(v.shape()).getBoundingBox());
 
 		for(VisualVariable v : context.resolve(Hierarchy.childrenOfType(this, VisualVariable.class)))
 			bb = BoundingBoxHelper.union(bb, context.resolve(v.shape()).getBoundingBox());
 
 		for(VisualArc a : context.resolve(Hierarchy.childrenOfType(this, VisualArc.class)))
-			bb = BoundingBoxHelper.union(bb, context.resolve(a.getLabelBoundingBox()));*/
+			bb = BoundingBoxHelper.union(bb, context.resolve(a.getLabelBoundingBox()));
 
 		if (bb == null) bb = context.resolve(contentsBB);
 		else
@@ -326,3 +326,4 @@ public class VisualScenario extends VisualGroup implements ReflectiveTouchable, 
 		return encoding;
 	}
 }
+*/

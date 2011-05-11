@@ -109,7 +109,7 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.2</version>
-			<!-- TODO: move tests where they belong and add <scope>test</scope> -->
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>

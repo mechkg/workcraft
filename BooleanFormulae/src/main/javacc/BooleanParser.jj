@@ -1,0 +1,184 @@
+/**
+ * JavaCC file
+ */
+ 
+options {
+  JDK_VERSION = "1.5";
+  STATIC = false;
+  UNICODE_INPUT = true;
+}
+PARSER_BEGIN(BooleanParser)
+package org.workcraft.plugins.cpog.optimisation.javacc;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.io.Reader;
+import java.io.StringReader;
+
+import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString;
+import org.workcraft.plugins.cpog.optimisation.expressions.*;
+import org.workcraft.plugins.cpog.optimisation.*;
+import org.workcraft.util.Function;
+
+public class BooleanParser {
+  BooleanWorker worker = new org.workcraft.plugins.cpog.optimisation.expressions.CleverBooleanWorker();
+  BooleanFormula<String> var(String name) throws ParseException
+  {
+	return worker.var(name);
+  }
+  BooleanFormula<String> constant(String value)
+  {
+    return "0".equals(value) ? worker.<String>zero() : worker.<String>one();
+  }
+  BooleanFormula<String> and(BooleanFormula<String> a, BooleanFormula<String> b)
+  {
+    return worker.and(a, b);
+  }
+  BooleanFormula<String> or(BooleanFormula<String> a, BooleanFormula<String> b)
+  {
+    return worker.or(a, b);
+  }
+  BooleanFormula<String> eq(BooleanFormula<String> a, BooleanFormula<String> b)
+  {
+    return worker.iff(a, b);
+  }
+  BooleanFormula<String> imply(BooleanFormula<String> a, BooleanFormula<String> b)
+  {
+    return worker.imply(a, b);
+  }
+  BooleanFormula<String> xor(BooleanFormula<String> a, BooleanFormula<String> b)
+  {
+    return worker.xor(a, b);
+  }
+  BooleanFormula<String> not(BooleanFormula<String> a)
+  {
+    return worker.not(a);
+  }
+  
+  public static BooleanFormula<String> parse(String text, Function<String, ? extends BooleanFormula<String>> vars) throws ParseException
+  {
+    return new BooleanParser(new StringReader(text), vars).formula();
+  }
+
+  public static BooleanFormula<String> parse(String text) throws ParseException
+  {
+    return parse(text);
+  }
+
+  public static void main(String [] args) throws Exception
+  {
+    System.out.println(FormulaToString.toString(new BooleanParser(System.in).formula()));
+  }
+}
+PARSER_END(BooleanParser)
+
+SKIP :
+{
+ 	" "
+|	"\r"
+|	"\t"
+|	"\n"
+}
+TOKEN : /* OPERATORS */
+{
+  	< EQUALS: "eq" | "=" | "==" | "<->" | "<=>" >
+|  	< NOTEQUALS: "neq" | "!=" >
+|  	< IMPLIES: "imp" | "=>" | "\u21d2" | "->" >
+|  	< OR: "or" | "|" | "+" | "\u2228" >
+|  	< XOR: "xor" | "^" | "\u2295" >
+|	< AND: "and" | "&" | "*" | "\u2227" | "\u2022" >
+|	< NOT: "not" | "!" | "�" >
+|   < POSTNOT: "'" >
+}
+TOKEN :
+{
+    < CONSTANT: "0"|"1" >
+|   < VARIABLE: ["A"-"Z","a"-"z","_"](["_","A"-"Z","a"-"z","0"-"9","[","]"])* >
+}
+BooleanFormula<String> formula() :
+{
+  	BooleanFormula<String> result;
+  	BooleanFormula<String> op;
+}
+{
+  result = eqOp() ( < EQUALS > op = eqOp()  { result = eq(result, op); } )*
+  { return result; }}
+
+BooleanFormula<String> eqOp() :
+{
+  	BooleanFormula<String> result;
+  	BooleanFormula<String> op;
+}
+{
+  result = neqOp() ( < NOTEQUALS > op = neqOp()
+  { result = xor(result, op); } ) *
+  { return result; }
+}
+
+BooleanFormula<String> neqOp() :
+{
+  	BooleanFormula<String> result;
+  	BooleanFormula<String> op;
+}
+{
+  result = implyOp() [ < IMPLIES > op = implyOp()
+  { result = imply(result, op); } ]
+  { return result; }
+}
+
+BooleanFormula<String> implyOp() :
+{
+  	BooleanFormula<String> result;
+  	BooleanFormula<String> op;
+}
+{
+  result = orOp() ( < OR > op = orOp()
+  { result = or(result, op); } ) *
+  { return result; }
+}
+
+BooleanFormula<String> orOp() :
+{
+  	BooleanFormula<String> result;
+  	BooleanFormula<String> op;
+}
+{
+  result = xorOp() ( < XOR > op = xorOp()
+  { result = xor(result, op); } ) *
+  { return result; }
+}
+
+BooleanFormula<String> xorOp() :
+{
+  	BooleanFormula<String> result;
+  	BooleanFormula<String> op;
+}
+{
+  result = andOp() ( < AND > op = andOp()
+  { result = and(result, op); } ) *
+  { return result; }
+}
+
+BooleanFormula<String> andOp() :
+{
+  boolean inverse = false;
+  BooleanFormula<String> result;}
+{
+  	(< NOT > { inverse = !inverse; } )*
+  	result = literal()
+  	(< POSTNOT > { inverse = !inverse; } )*
+  	{ return inverse ? not(result) : result; }
+}
+
+BooleanFormula<String> literal() :
+{
+  Token t;
+  BooleanFormula<String> result;}
+{
+   (     t = < VARIABLE >
+	{ result = var(t.image); }
+    |
+    t = < CONSTANT >
+	{ result = constant(t.image); }    | "(" result = formula() ")"
+  )
+  { return result; }}

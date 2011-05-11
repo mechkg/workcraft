@@ -37,6 +37,8 @@
     <module>GraphPlugin</module>
     <module>MpsatPlugin</module>
     <module>Tests</module>
+    <module>BooleanFormulae</module>
+    <module>OldNodesCore</module>
     <module>DependencyManager</module>
     <module>WorkcraftDistrWindowsBasic</module>
     <module>WorkcraftDistrWindowsFull</module>

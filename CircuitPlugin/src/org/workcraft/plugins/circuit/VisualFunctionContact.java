@@ -42,9 +42,9 @@ import org.workcraft.dom.visual.VisualComponent;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.plugins.circuit.Contact.IoType;
 import org.workcraft.plugins.circuit.renderers.ComponentRenderingResult.RenderType;
+import org.workcraft.plugins.cpog.formularendering.FormulaRenderingResult;
+import org.workcraft.plugins.cpog.formularendering.FancyPrinter;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 
 public class VisualFunctionContact extends VisualContact {
 
@@ -66,7 +66,7 @@ public class VisualFunctionContact extends VisualContact {
 			@Override
 			protected FormulaRenderingResult evaluate(EvaluationContext context) {
 				BooleanFormula formulaValue = context.resolve(formula);
-				return formulaValue == null ? null : FormulaToGraphics.render(formulaValue, VisualComponent.podgonFontRenderContext(), font);
+				return formulaValue == null ? null : FancyPrinter.render(formulaValue, VisualComponent.podgonFontRenderContext(), font);
 			}
 		};
 	}

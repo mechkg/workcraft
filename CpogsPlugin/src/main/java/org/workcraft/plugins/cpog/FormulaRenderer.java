@@ -5,9 +5,9 @@ import java.awt.FontFormatException;
 import java.io.IOException;
 
 import org.workcraft.dom.visual.Label;
+import org.workcraft.plugins.cpog.formularendering.FormulaRenderingResult;
+import org.workcraft.plugins.cpog.formularendering.FancyPrinter;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 
 public class FormulaRenderer {
 	public static Font fancyFont;
@@ -29,6 +29,6 @@ public class FormulaRenderer {
 	}
 	
 	public static FormulaRenderingResult render(BooleanFormula formula, Font font) {
-		return FormulaToGraphics.render(formula, Label.podgonFontRenderContext(), fancyFont);
+		return FancyPrinter.render(formula, Label.podgonFontRenderContext(), fancyFont);
 	}
 }

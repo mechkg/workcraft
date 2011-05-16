@@ -41,11 +41,11 @@ import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.Label;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.plugins.cpog.formularendering.FormulaRenderingResult;
+import org.workcraft.plugins.cpog.formularendering.FancyPrinter;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
 import org.workcraft.plugins.shared.CommonVisualSettings;
@@ -106,9 +106,9 @@ public class VisualVertex
 				BooleanFormula condition = context.resolve(vertex.condition());
 				if (condition != One.instance()) text += ": ";
 				
-				FormulaRenderingResult result = FormulaToGraphics.print(text, FormulaRenderer.fancyFont, Label.podgonFontRenderContext());
+				FormulaRenderingResult result = FancyPrinter.print(text, FormulaRenderer.fancyFont, Label.podgonFontRenderContext());
 				
-				if (condition != One.instance()) result.add(FormulaToGraphics.render(condition, Label.podgonFontRenderContext(), FormulaRenderer.fancyFont));
+				if (condition != One.instance()) result.add(FancyPrinter.render(condition, Label.podgonFontRenderContext(), FormulaRenderer.fancyFont));
 				
 				return LabelPositioning.positionRelative(context.resolve(circle).boundingBox
 						, context.resolve(vertex.visualProperties().labelPositioning())

@@ -18,7 +18,7 @@
 * along with Workcraft.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
-package org.workcraft.plugins.cpog.optimisation.booleanvisitors;
+package org.workcraft.plugins.cpog.formularendering;
 
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -32,21 +32,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.workcraft.gui.propertyeditor.SettingsEditorDialog;
+import org.workcraft.plugins.cpog.formularendering.FancyPrinter.PrinterSettings;
 import org.workcraft.plugins.cpog.optimisation.BinaryBooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
-import org.workcraft.plugins.cpog.optimisation.expressions.And;
-import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor;
-import org.workcraft.plugins.cpog.optimisation.expressions.Iff;
-import org.workcraft.plugins.cpog.optimisation.expressions.Imply;
-import org.workcraft.plugins.cpog.optimisation.expressions.Not;
-import org.workcraft.plugins.cpog.optimisation.expressions.One;
-import org.workcraft.plugins.cpog.optimisation.expressions.Or;
-import org.workcraft.plugins.cpog.optimisation.expressions.Xor;
-import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
+import org.workcraft.plugins.cpog.optimisation.expressions.*;
+import org.workcraft.util.Function;
+import org.workcraft.util.Function0;
+import org.workcraft.util.Function2;
+import org.workcraft.util.Maybe;
+import org.workcraft.util.MaybeVisitor;
+import org.workcraft.util.Nothing;
+import org.workcraft.util.Pair;
 
 
 
-public class FormulaToGraphics 
+public class FancyPrinter
 {
 	public class Void{ private Void(){} }
 	
@@ -135,6 +136,105 @@ public class FormulaToGraphics
 	
 	public static class PrinterSuite
 	{
+		abstract static class List<A> implements Function0<Maybe<Pair<A, List<A>>>> {
+			public static <A> List<A> empty() {
+				return new List<A>(){
+					@Override
+					public Maybe<Pair<A, List<A>>> apply() {
+						return Maybe.Util.nothing();
+					}
+				};
+			}
+			public static <A> List<A> cons(final A head, final List<A> tail) {
+				return new List<A>() {
+					@Override
+					public Maybe<Pair<A, List<A>>> apply() {
+						return Maybe.Util.just(Pair.of(head, tail));
+					}
+				};
+			}
+		}
+		
+		Function<List<List<Character>>, List<List<Character>>> a = new Function<List<List<Character>>, List<List<Character>>>(){
+			@Override
+			public List<List<Character>> apply(List<List<Character>> argument) {
+				return List.cons(List.cons('a', List.<Character>empty()), argument);
+			}
+		};
+		
+		Function<List<List<Character>>, List<List<Character>>> b = new Function<List<List<Character>>, List<List<Character>>>(){
+			@Override
+			public List<List<Character>> apply(List<List<Character>> argument) {
+				return List.cons(List.cons('b', List.<Character>empty()), argument);
+			}
+		};
+		
+		static <A> Function2<List<A>, List<A>, List<A>> concat() { 
+			return new Function2<List<A>, List<A>, List<A>>(){
+				@Override
+				public List<A> apply(final List<A> argument1, final List<A> argument2) {
+					return new List<A>(){
+
+						@Override
+						public Maybe<Pair<A, List<A>>> apply() {
+							Maybe<Pair<A, List<A>>> res = argument1.apply();
+							return res.accept(new MaybeVisitor<Pair<A, List<A>>, Maybe<Pair<A, List<A>>>>() {
+
+								@Override
+								public Maybe<Pair<A, List<A>>> visitJust(Pair<A, List<A>> just) {
+									return cons(just.getFirst(), PrinterSuite.<A>concat().apply(just.getSecond(), argument2)).apply();
+								}
+
+								@Override
+								public Maybe<Pair<A, List<A>>> visitNothing() {
+									return argument2.apply();
+								}
+							});
+						}
+					};
+				}
+			};
+		}
+		
+		static <A,B> List<B> zipWith(final Function2<A, A, B> func, final List<A> list1, List<A> list2) {
+			return new List<B>(){
+				@Override
+				public Maybe<Pair<B, List<B>>> apply() {
+					Maybe<Pair<A, List<A>>> l1 = list1.apply();
+					Maybe<Pair<A, List<A>>> l2 = list1.apply();
+					return Maybe.Util.bind(new Function<Pair<A, List<A>>, Maybe<Pair<B, List<B>>>>(){
+
+						@Override
+						public Maybe<Pair<B, List<B>>> apply(final Pair<A, List<A>> sl1) {
+							return Maybe.Util.bind(new Function<Pair<A, List<A>>, Maybe<Pair<B, List<B>>>>(){
+
+								@Override
+								public Maybe<Pair<B, List<B>>> apply(Pair<A, List<A>> sl2) {
+									return Maybe.Util.just(Pair.of(func.apply(sl1.getFirst(), sl2.getFirst()), zipWith(func, sl1.getSecond(), sl2.getSecond())));
+								}
+							});
+						}
+						
+					});
+				}
+			};
+		}
+		
+		Function2<List<List<Character>>, List<List<Character>>, List<List<Character>>> d = new Function2<List<List<Character>>, List<List<Character>>, List<List<Character>>>(){
+			@Override
+			public List<List<Character>> apply(List<List<Character>> argument1, List<List<Character>> argument2) {
+				return new List<List<Character>>(){
+
+					@Override
+					public Maybe<Pair<List<Character>, List<List<Character>>>> apply() {
+						// TODO Auto-generated method stub
+						return null;
+					}
+					
+				};
+			}
+		};
+		
 		public PrinterSuite()
 		{
 			iff = new IffPrinter();
@@ -161,14 +261,6 @@ public class FormulaToGraphics
 			init(paren, iff, fontRenderContext, font, unicodeAllowed);
 		}
 		
-		public void init(DelegatingPrinter printer, DelegatingPrinter next, FontRenderContext fontRenderContext, Font font, boolean unicodeAllowed)
-		{
-			printer.setNext(next);
-			printer.setFontRenderContext(fontRenderContext);
-			printer.setFont(font);
-			printer.unicodeAllowed = unicodeAllowed;
-		}
-		
 		public StringBuilder builder;
 		public IffPrinter iff;
 		public ImplyPrinter imply;
@@ -181,36 +273,36 @@ public class FormulaToGraphics
 		public ParenthesesPrinter paren;
 	}
 	
-	public static class DelegatingPrinter implements BooleanVisitor<FormulaRenderingResult>
-	{
-		public DelegatingPrinter next;
-		public boolean unicodeAllowed = false;
+	class PrinterSettings<Var> {
+		public final DelegatingPrinter<Var> next;
+		public final FontRenderContext fontRenderContext;
+		public final Font font;
 		
-		public FontRenderContext fontRenderContext;
-		public Font font;
-
-		public void setFontRenderContext(FontRenderContext fontRenderContext)
-		{
+		public PrinterSettings(DelegatingPrinter<Var> next,
+				FontRenderContext fontRenderContext, Font font) {
+			super();
+			this.next = next;
 			this.fontRenderContext = fontRenderContext;
-		}
-
-		public void setFont(Font font)
-		{
 			this.font = font;
 		}
-		
-		public void setNext(DelegatingPrinter next)
-		{
-			this.next = next;
+	}
+	
+	public static class DelegatingPrinter<Var> extends BooleanVisitor<Var, FormulaRenderingResult>
+	{
+		public final PrinterSettings<Var> settings;
+
+		public DelegatingPrinter(PrinterSettings<Var> settings) {
+			this.settings = settings;
 		}
-		
+
+		public final boolean unicodeAllowed = false;
+
 		public FormulaRenderingResult print(String text)
 		{
-			return FormulaToGraphics.print(text, font, fontRenderContext);
+			return FancyPrinter.print(text, settings.font, settings.fontRenderContext);
 		}
 		
-
-		protected FormulaRenderingResult visitBinary(DelegatingPrinter printer, String opSymbol, BinaryBooleanFormula node)
+		protected FormulaRenderingResult visitBinary(DelegatingPrinter<Var> printer, String opSymbol, BinaryBooleanFormula<Var> node)
 		{
 			FormulaRenderingResult res = node.getX().accept(printer);
 
@@ -222,113 +314,125 @@ public class FormulaToGraphics
 		}
 		
 		@Override
-		public FormulaRenderingResult visit(And node) {
-			return next.visit(node);
+		public FormulaRenderingResult visit(And<Var> node) {
+			return settings.next.visit(node);
 		}
 
 		@Override
-		public FormulaRenderingResult visit(Iff node) {
-			return next.visit(node);
+		public FormulaRenderingResult visit(Iff<Var> node) {
+			return settings.next.visit(node);
 		}
 
 		@Override
-		public FormulaRenderingResult visit(Zero node) {
-			return next.visit(node);
+		public FormulaRenderingResult visit(Zero<Var> node) {
+			return settings.next.visit(node);
 		}
 
 		@Override
-		public FormulaRenderingResult visit(One node) {
-			return next.visit(node);
+		public FormulaRenderingResult visit(One<Var> node) {
+			return settings.next.visit(node);
 		}
 
 		@Override
-		public FormulaRenderingResult visit(Not node) {
-			return next.visit(node);
+		public FormulaRenderingResult visit(Not<Var> node) {
+			return settings.next.visit(node);
 		}
 
 		@Override
-		public FormulaRenderingResult visit(Imply node) {
-			return next.visit(node);
+		public FormulaRenderingResult visit(Imply<Var> node) {
+			return settings.next.visit(node);
 		}
 
 		@Override
-		public FormulaRenderingResult visit(BooleanVariable node) {
-			return next.visitVar(node);
+		public FormulaRenderingResult visit(Variable<Var> node) {
+			return settings.next.visit(node);
 		}
 
 		@Override
-		public FormulaRenderingResult visit(Or node) {
-			return next.visit(node);
+		public FormulaRenderingResult visit(Or<Var> node) {
+			return settings.next.visit(node);
 		}
 
 		@Override
-		public FormulaRenderingResult visit(Xor node) {
-			return next.visit(node);
+		public FormulaRenderingResult visit(Xor<Var> node) {
+			return settings.next.visit(node);
 		}
 	}
 	
-	public static class IffPrinter extends DelegatingPrinter
+	public static class IffPrinter<Var> extends DelegatingPrinter<Var>
 	{
+		public IffPrinter(PrinterSettings<Var> settings) {
+			super(settings);
+		}
+		
 		@Override
-		public FormulaRenderingResult visit(Iff node) {
+		public FormulaRenderingResult visit(Iff<Var> node) {
 			return visitBinary(this, " = ", node);
 		}
 	}
 	
-	public static class ImplyPrinter extends DelegatingPrinter
+	public static class ImplyPrinter<Var> extends DelegatingPrinter<Var>
 	{
+		public ImplyPrinter(PrinterSettings<Var> settings) {
+			super(settings);
+		}
+		
 		@Override
-		public FormulaRenderingResult visit(Imply node) {
-			return visitBinary(next, unicodeAllowed ? " \u21d2 " : " => ", node);
+		public FormulaRenderingResult visit(Imply<Var> node) {
+			return visitBinary(settings.next, unicodeAllowed ? " \u21d2 " : " => ", node);
 		}
 	}
 	
-	public static class OrPrinter extends DelegatingPrinter
+	public static class OrPrinter<Var> extends DelegatingPrinter<Var>
 	{
+		public OrPrinter(PrinterSettings<Var> settings) {
+			super(settings);
+		}
+		
 		@Override
-		public FormulaRenderingResult visit(Or node) {
+		public FormulaRenderingResult visit(Or<Var> node) {
 			return visitBinary(this, " + ", node);
 		}
 	}
 	
-	public static class XorPrinter extends DelegatingPrinter
+	public static class XorPrinter<Var> extends DelegatingPrinter<Var>
 	{
 		@Override
-		public FormulaRenderingResult visit(Xor node) {
+		public FormulaRenderingResult visit(Xor<Var> node) {
 			return visitBinary(this, unicodeAllowed ? " \u2295 " : " ^ ", node);
 		}
 	}
 	
-	public static class AndPrinter extends DelegatingPrinter
+	public static class AndPrinter<Var> extends DelegatingPrinter<Var>
 	{
 		@Override
-		public FormulaRenderingResult visit(And node) {
+		public FormulaRenderingResult visit(And<Var> node) {
 			return visitBinary(this, unicodeAllowed ? "\u00b7" : "*", node);
 		}
 	}
 	
-	public static class NotPrinter extends DelegatingPrinter
+	public static class NotPrinter<Var> extends DelegatingPrinter<Var>
 	{		
-		private final IffPrinter iff;
+		private final IffPrinter<Var> iff;
 
-		public NotPrinter(IffPrinter iff)
+		public NotPrinter(IffPrinter<Var> iff)
 		{
 			this.iff = iff;			
 		}
 
 		@Override
-		public FormulaRenderingResult visit(Not node)
+		public FormulaRenderingResult visit(Not<Var> node)
 		{
 			FormulaRenderingResult res = node.getX().accept(iff);
 			
-			res.visualTop -= font.getSize2D() / 8.0;
+			res.visualTop -= settings.font.getSize2D() / 8.0;
 			
 			res.inversionLines.add(new Line2D.Double(
 				res.boundingBox.getMinX(), res.visualTop,
 				res.boundingBox.getMaxX(), res.visualTop));
 			
 			
-			res.boundingBox.add(new Point2D.Double(res.boundingBox.getMaxX(), res.boundingBox.getMinY() - font.getSize2D() / 8.0));
+			res.boundingBox.add(new Point2D.Double(res.boundingBox.getMaxX(), res.boundingBox.getMinY() - settings.font.getSize2D() / 8.0));
 			
 			return res;  
 		}

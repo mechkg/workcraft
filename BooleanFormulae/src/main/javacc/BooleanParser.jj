@@ -55,11 +55,6 @@ public class BooleanParser {
     return worker.not(a);
   }
   
-  public static BooleanFormula<String> parse(String text, Function<String, ? extends BooleanFormula<String>> vars) throws ParseException
-  {
-    return new BooleanParser(new StringReader(text), vars).formula();
-  }
-
   public static BooleanFormula<String> parse(String text) throws ParseException
   {
     return parse(text);

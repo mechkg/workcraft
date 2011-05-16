@@ -1,5 +1,6 @@
 package org.workcraft.plugins.cpog.scala
 
+import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero
 import org.workcraft.plugins.cpog.optimisation.expressions.One
 import org.workcraft.plugins.cpog.scala.nodes.Variable
@@ -49,16 +50,12 @@ object Util {
       override def evaluate(context: EvaluationContext): FieldT = accessor(context.resolve(expr))
     }
 
-  def formulaValue(formula: BooleanFormula): Expression[BooleanFormula] = new ExpressionBase[BooleanFormula] {
-    override def evaluate(context: EvaluationContext) = formula.accept(
-      new BooleanReplacer(new HashMap[BooleanVariable, BooleanFormula]) {
-        override def visit(node: BooleanVariable): BooleanFormula = node match {
-          case v: Variable => context.resolve(v.state) match {
-            case VariableState.TRUE => One.instance
-            case VariableState.FALSE => Zero.instance
-            case _ => v
-          }
-        }
-      })
+  def formulaValue(formula: BooleanFormula[Variable]): Expression[BooleanFormula[Variable]] = new ExpressionBase[BooleanFormula[Variable]] {
+    override def evaluate(context: EvaluationContext) =
+        BooleanReplacer.cachedReplacer(BooleanOperations.worker, asFunctionObject[Variable, BooleanFormula[Variable]]((v:Variable) => context.resolve(v.state) match {
+            case VariableState.TRUE => One.instance[Variable]
+            case VariableState.FALSE => Zero.instance[Variable]
+            case _ => BooleanOperations.worker.`var`(v)
+          })) (formula)
   }
 }

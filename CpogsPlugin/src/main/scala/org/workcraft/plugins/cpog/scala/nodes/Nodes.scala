@@ -18,11 +18,9 @@ import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer
 import java.util.HashMap
 import org.workcraft.plugins.cpog.scala.VisualArc
 import org.workcraft.plugins.cpog.scala.VisualArc.Bezier
-import org.workcraft.plugins.cpog.optimisation.GenericBooleanFormula
 
 package org.workcraft.plugins.cpog.scala.nodes {
 
-import org.workcraft.plugins.cpog.optimisation.GenericBooleanFormula
   sealed abstract class Node {
     final def accept[A](visitor : org.workcraft.plugins.cpog.NodeVisitor[A]) = this match {
       case a : Arc => visitor.visitArc(a)
@@ -38,9 +36,9 @@ import org.workcraft.plugins.cpog.optimisation.GenericBooleanFormula
     }
   }
   
-  case class Arc (first : Vertex, second : Vertex, condition: ModifiableExpression[BooleanFormula], visual : ModifiableExpression[VisualArc]) extends Node
+  case class Arc (first : Vertex, second : Vertex, condition: ModifiableExpression[BooleanFormula[Variable]], visual : ModifiableExpression[VisualArc]) extends Node
   
-  case class Vertex(condition: ModifiableExpression[GenericBooleanFormula[Variable]], override val visualProperties:VisualProperties) extends Component (visualProperties)
+  case class Vertex(condition: ModifiableExpression[BooleanFormula[Variable]], override val visualProperties:VisualProperties) extends Component (visualProperties)
    
   case class Variable(state:ModifiableExpression[VariableState], label: ModifiableExpression[String], override val visualProperties:VisualProperties) 
   			extends Component (visualProperties) with Comparable[Variable] {
@@ -52,7 +50,7 @@ import org.workcraft.plugins.cpog.optimisation.GenericBooleanFormula
     override def accept [T] (visitor:BooleanVisitor[T]) : T = visitor.visit(this)
   }
   
-  case class RhoClause(formula:ModifiableExpression[BooleanFormula], override val visualProperties:VisualProperties) extends Component (visualProperties)
+  case class RhoClause(formula:ModifiableExpression[BooleanFormula[Variable]], override val visualProperties:VisualProperties) extends Component (visualProperties)
   
   object Arc {
     def create (storage: StorageManager, first : Vertex, second : Vertex) = {

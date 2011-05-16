@@ -43,11 +43,11 @@ import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.connections.ParametricCurve;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.dom.visual.connections.VisualConnectionProperties;
+import org.workcraft.plugins.cpog.formularendering.FormulaRenderingResult;
+import org.workcraft.plugins.cpog.formularendering.FancyPrinter;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
@@ -85,7 +85,7 @@ public class VisualArc
 				BooleanFormula condition = context.resolve(condition());
 				if (condition == One.instance()) return null;
 				
-				return FormulaToGraphics.render(condition, Label.podgonFontRenderContext(), labelFont);
+				return FancyPrinter.render(condition, Label.podgonFontRenderContext(), labelFont);
 			}
 
 		};

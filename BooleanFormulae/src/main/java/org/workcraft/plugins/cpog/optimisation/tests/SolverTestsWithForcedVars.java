@@ -343,7 +343,7 @@ public class SolverTestsWithForcedVars
 	}
 	
 	private void testSolve(String[] scenarios, int free, int derived, boolean solutionExists) {
-		CpogEncoding solution = createSolver().solve(scenarios,free,derived);
+		CpogEncoding<FreeVariable> solution = createSolver().solve(scenarios,free,derived);
 		printSolution(solution);
 		if(solutionExists)
 			assertNotNull(solution);
@@ -352,7 +352,7 @@ public class SolverTestsWithForcedVars
 	}
 
 	private void testSolve(String[] scenarios, int free, int [] levels, boolean solutionExists) {
-		CpogEncoding solution = createSolver(levels).solve(scenarios,free,0);
+		CpogEncoding<FreeVariable> solution = createSolver(levels).solve(scenarios,free,0);
 		printSolution(solution);
 		if(solutionExists)
 			assertNotNull(solution);

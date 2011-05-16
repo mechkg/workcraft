@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog.optimisation.booleanvisitors;
+package org.workcraft.plugins.cpog.formularendering;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

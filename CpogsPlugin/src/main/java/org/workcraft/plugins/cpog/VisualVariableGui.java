@@ -43,7 +43,7 @@ import org.workcraft.dom.visual.Label;
 import org.workcraft.gui.Coloriser;
 import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics;
+import org.workcraft.plugins.cpog.formularendering.FancyPrinter;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 import org.workcraft.util.Function;
 import org.workcraft.util.Function2;
@@ -73,7 +73,7 @@ public class VisualVariableGui
 	}
 	
 	private static BoundedColorisableGraphicalContent makeLabel(final String formula) {
-		return FormulaToGraphics.print(formula, valueFont, Label.podgonFontRenderContext()).asBoundedColorisableImage();
+		return FancyPrinter.print(formula, valueFont, Label.podgonFontRenderContext()).asBoundedColorisableImage();
 	}
 	
 	private static Function<String, BoundedColorisableGraphicalContent> makeLabel =

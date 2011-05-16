@@ -4,6 +4,7 @@ import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.Expressions.{joinCollection => joinCollectionJ, constant => constantJ, bind => bindJ, fmap => fmapJ}
 import scala.collection.JavaConversions.{asJavaCollection, asScalaIterable}
 import Util.asFunctionObject
+import Expressions.monadicSyntax
 
 object Expressions {
   implicit def monadicSyntax[A](m: Expression[A]) = new {
@@ -14,6 +15,7 @@ object Expressions {
     def flatMap[B](f: A => Expression[B]) = bind(f)
   }
   
-  def joinCollection[A](collection : Iterable[Expression[_ <: A]]) = for(javaRes <- joinCollectionJ[A] (asJavaCollection (collection))) yield asScalaIterable (javaRes)
+  def joinCollection[A](collection : Iterable[Expression[_ <: A]]) = collection.foldRight(constant(Nil : List[A]))((head : Expression[_ <: A], tail : Expression[List[A]]) => for(tail <- tail; head <- head) yield head::tail)
   def constant[A](a : A) = constantJ(a)
+  def mapE
 }

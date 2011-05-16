@@ -206,7 +206,23 @@ public interface Maybe<T> {
 			Maybe<A> nothing = nothing();
 			return nullable == null ? nothing : just(nullable);
 		}
+		
+		public static <A,B> Maybe<B> bind(Maybe<A> a, final Function<A, Maybe<B>> f) {
+			return a.accept(new MaybeVisitor<A, Maybe<B>>() {
+
+				@Override
+				public Maybe<B> visitJust(A just) {
+					return f.apply(just);
+				}
+
+				@Override
+				public Maybe<B> visitNothing() {
+					return nothing();
+				}
+			});
+		}
 	}
 	
 	public <R> R accept(MaybeVisitor<? super T, ? extends R> visitor);
+	
 }

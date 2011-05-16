@@ -12,7 +12,7 @@ import org.workcraft.dom.visual.BoundingBoxHelper;
 import org.workcraft.dom.visual.DrawRequest;
 import org.workcraft.dom.visual.ColorisableGraphicalContent;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaRenderingResult;
+import org.workcraft.plugins.cpog.formularendering.FormulaRenderingResult;
 import org.workcraft.util.Func;
 
 public class FormulaLabel {

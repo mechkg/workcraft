@@ -21,13 +21,14 @@ import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.dom.visual.VisualComponent
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToGraphics
+import org.workcraft.plugins.cpog.scala.formularendering.FormulaToGraphics
 
 import org.workcraft.plugins.cpog.LabelPositioning
 import org.workcraft.plugins.cpog.scala.Expressions.monadicSyntax
 
 package org.workcraft.plugins.cpog.scala {
   
+import org.workcraft.plugins.cpog.formularendering.FancyPrinter
     
   object Graphics {
     
@@ -137,7 +138,7 @@ package org.workcraft.plugins.cpog.scala {
           )
     
     def boundedFormulaLabel (formula : String, font : Font, color : Color) = 
-      FormulaToGraphics.print(formula, font, VisualComponent.podgonFontRenderContext).asBoundedColorisableImage(color)
+      FancyPrinter.print(formula, font, VisualComponent.podgonFontRenderContext).asBoundedColorisableImage(color)
       
     def compose (a : BoundedColorisableGraphicalContent, b : BoundedColorisableGraphicalContent) = BoundedColorisableGraphicalContent.compose (a,b)
     

@@ -25,7 +25,7 @@ import org.workcraft.plugins.cpog.scala.nodes.*;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
-public class ArcSerialiser extends BooleanFormulaSerialiser
+/*public class ArcSerialiser extends BooleanFormulaSerialiser
 {
 	@Override
 	public String getClassName()
@@ -38,4 +38,4 @@ public class ArcSerialiser extends BooleanFormulaSerialiser
 	{
 		return eval(((Arc) serialisee).condition());
 	}
-}
+}*/

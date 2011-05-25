@@ -37,6 +37,8 @@ import org.workcraft.plugins.cpog.optimisation.expressions.Xor;
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
 import org.workcraft.plugins.cpog.optimisation.expressions.Variable;
 import org.workcraft.util.Function;
+import org.workcraft.util.Memoise;
+
 import static org.workcraft.plugins.cpog.optimisation.booleanvisitors.Fix.*;
 
 
@@ -59,7 +61,7 @@ public class BooleanReplacer<Var> extends BooleanVisitor<Var, BooleanFormula<Var
 		return fix(new Function<Function<BooleanFormula<Var>, BooleanFormula<Var>>, Endo<BooleanFormula<Var>>>() {
 			@Override
 			public Endo<BooleanFormula<Var>> apply(Function<BooleanFormula<Var>, BooleanFormula<Var>> rec) {
-				return new BooleanReplacer<Var>(rec, worker, f);
+				return new BooleanReplacer<Var>(rec, worker, Memoise.memoise(f));
 			}
 		});
 	}

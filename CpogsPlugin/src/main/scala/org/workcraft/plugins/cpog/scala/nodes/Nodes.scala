@@ -1,11 +1,10 @@
-import org.workcraft.plugins.cpog.scala.VisualProperties
+
 
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.user.StorageManager
 import org.workcraft.plugins.cpog.optimisation.expressions.One
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
-import org.workcraft.plugins.cpog.optimisation.BooleanVariable
 import org.workcraft.dependencymanager.advanced.core.GlobalCache._
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor
 import org.workcraft.plugins.cpog.VariableState
@@ -28,7 +27,15 @@ package org.workcraft.plugins.cpog.scala.nodes {
     }
   }
   
-  sealed abstract case class Component(visualProperties:VisualProperties) extends Node {
+  object Component {
+    final def unapply(node : Node) : Some[Component] = node match {
+      case c : Vertex => Some(c)
+      case c : Variable => Some(c)
+      case c : RhoClause => Some(c)
+    }
+  }
+  
+  sealed abstract class Component(val visualProperties:VisualProperties) extends Node {
     final def accept[A](visitor : org.workcraft.plugins.cpog.ComponentVisitor[A]) = this match {
       case v : Vertex => visitor.visitVertex(v)
       case v : Variable => visitor.visitVariable(v)
@@ -38,23 +45,21 @@ package org.workcraft.plugins.cpog.scala.nodes {
   
   case class Arc (first : Vertex, second : Vertex, condition: ModifiableExpression[BooleanFormula[Variable]], visual : ModifiableExpression[VisualArc]) extends Node
   
-  case class Vertex(condition: ModifiableExpression[BooleanFormula[Variable]], override val visualProperties:VisualProperties) extends Component (visualProperties)
+  case class Vertex(condition: ModifiableExpression[BooleanFormula[Variable]], visualProperties:VisualProperties) extends Component (visualProperties)
    
-  case class Variable(state:ModifiableExpression[VariableState], label: ModifiableExpression[String], override val visualProperties:VisualProperties) 
+  case class Variable(state:ModifiableExpression[VariableState], label: ModifiableExpression[String], visualProperties:VisualProperties) 
   			extends Component (visualProperties) with Comparable[Variable] {
   
-    override def getLabel : String = eval(label)
+    private def getLabel : String = eval(label)
   
     override def compareTo(other:Variable) : Int = getLabel.compareTo(other.getLabel)
-    
-    override def accept [T] (visitor:BooleanVisitor[T]) : T = visitor.visit(this)
   }
   
-  case class RhoClause(formula:ModifiableExpression[BooleanFormula[Variable]], override val visualProperties:VisualProperties) extends Component (visualProperties)
+  case class RhoClause(formula:ModifiableExpression[BooleanFormula[Variable]], visualProperties:VisualProperties) extends Component (visualProperties)
   
   object Arc {
     def create (storage: StorageManager, first : Vertex, second : Vertex) = {
-      Arc (first, second, storage.create (One.instance), 
+      Arc (first, second, storage.create (One.instance[Variable]), 
           storage.create (Bezier(storage.create(new Point2D.Double(1/3.0,0)), storage.create(new Point2D.Double(2/3.0,0)))))    
     }
   }
@@ -69,10 +74,10 @@ package org.workcraft.plugins.cpog.scala.nodes {
   }
   
   object Vertex {
-    def create (storage:StorageManager) = Vertex(storage.create (One.instance), VisualProperties.create(storage))
+    def create (storage:StorageManager) = Vertex(storage.create (One.instance[Variable]), VisualProperties.create(storage))
   }
   
   object RhoClause {
-    def create (storage:StorageManager) = RhoClause (storage.create(One.instance), VisualProperties.create(storage))
+    def create (storage:StorageManager) = RhoClause (storage.create(One.instance[Variable]), VisualProperties.create(storage))
   }
 }

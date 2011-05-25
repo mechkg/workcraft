@@ -24,12 +24,11 @@ import org.workcraft.dom.visual.VisualComponent
 import org.workcraft.plugins.cpog.scala.formularendering.FormulaToGraphics
 
 import org.workcraft.plugins.cpog.LabelPositioning
-import org.workcraft.plugins.cpog.scala.Expressions.monadicSyntax
+import org.workcraft.plugins.cpog.scala.Util._
+import org.workcraft.plugins.cpog.scala.Expressions._
 
 package org.workcraft.plugins.cpog.scala {
   
-import org.workcraft.plugins.cpog.formularendering.FancyPrinter
-    
   object Graphics {
     
   sealed trait HorizontalAlignment
@@ -62,11 +61,11 @@ import org.workcraft.plugins.cpog.formularendering.FancyPrinter
       transformation.transform(a,a)
       transformation.transform(b,b)
       
-      val minX = Math.min (a.x, b.x)
-      val minY = Math.min (a.y, b.y)
+      val minX = math.min (a.x, b.x)
+      val minY = math.min (a.y, b.y)
       
-      val maxX = Math.max (a.x, b.x)
-      val maxY = Math.max (a.y, b.y)
+      val maxX = math.max (a.x, b.x)
+      val maxY = math.max (a.y, b.y)
       
       new Rectangle2D.Double (minX, minY, maxX-minX, maxY-minY)
     }
@@ -126,7 +125,7 @@ import org.workcraft.plugins.cpog.formularendering.FancyPrinter
       override def draw (r : DrawRequest) = {
 		val g = r.getGraphics
         g.setFont(font)
-        g.setColor(color)
+        g.setColor(Coloriser.colorise(color, r.getColorisation.getColorisation))
 		g.drawString(text, 0, 0)
       }
     }
@@ -138,7 +137,7 @@ import org.workcraft.plugins.cpog.formularendering.FancyPrinter
           )
     
     def boundedFormulaLabel (formula : String, font : Font, color : Color) = 
-      FancyPrinter.print(formula, font, VisualComponent.podgonFontRenderContext).asBoundedColorisableImage(color)
+      formularendering.FormulaToGraphics(VisualComponent.podgonFontRenderContext).WithFont(font).print(formula).asBoundedColorisableImage(color)
       
     def compose (a : BoundedColorisableGraphicalContent, b : BoundedColorisableGraphicalContent) = BoundedColorisableGraphicalContent.compose (a,b)
     

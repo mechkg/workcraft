@@ -61,6 +61,7 @@ package org.workcraft.plugins.cpog.scala {
 import org.workcraft.plugins.cpog.CpogConnectionManager
 import Expressions._
 import Util._
+import Scalaz._
 
   object ToolsProvider {
 
@@ -109,7 +110,7 @@ import Util._
     def getTools(cpog: CPOG, snap: Function[Point2D, Point2D]): java.lang.Iterable[GraphEditorTool] = {
       
       val selectionJ = cpog.storage.create[PSet[Node]](HashTreePSet.empty())
-      val selection = for (selection <- selectionJ) yield asScalaSet (selection)
+      val selection : Expression[Set[Node]] = for (selection <- selectionJ) yield Set.apply(javaCollectionToList(selection) : _*)
       val generators = createFor(cpog)
  
 
@@ -120,8 +121,8 @@ import Util._
       val touchable = TouchableProvider.touchable(transformAffine)(_)
       val painter = NodePainter.nodeColorisableGraphicalContent (transformAffine)(_)
       
-      val nodes = for(nodes <- cpog.nodes) yield asScalaIterable[Node](nodes)
-      val components = for(components <- cpog.components) yield asScalaIterable[Component](components)
+      val nodes = for(nodes <- cpog.nodes) yield collectionAsScalaIterable[Node](nodes)
+      val components = for(components <- cpog.components) yield collectionAsScalaIterable[Component](components)
       val selTool = selectionTool(selectionJ, nodes, (x => snap (x)), touchable, painter)
 /*      val transformedComponentTouchableProvider = transform(componentLocalTouchable, asFunctionObject(transformer))
 

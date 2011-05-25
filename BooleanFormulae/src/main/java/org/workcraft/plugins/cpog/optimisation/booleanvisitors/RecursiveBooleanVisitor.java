@@ -34,7 +34,7 @@ import org.workcraft.plugins.cpog.optimisation.expressions.Xor;
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero;
 
 
-public class RecursiveBooleanVisitor<Var, T> extends BooleanVisitor<Var, T> 
+public class RecursiveBooleanVisitor<Var, T> extends BooleanVisitor<Var, T>
 {
 	protected T visitDefault(BooleanFormula<Var> node)
 	{

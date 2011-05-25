@@ -24,7 +24,6 @@ package org.workcraft.plugins.cpog.serialisation;
 import org.w3c.dom.Element;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
-import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.javacc.BooleanParser;
 import org.workcraft.plugins.cpog.optimisation.javacc.ParseException;
 import org.workcraft.serialisation.ReferenceResolver;
@@ -33,7 +32,7 @@ import org.workcraft.serialisation.xml.NodeFinaliser;
 import org.workcraft.serialisation.xml.NodeInitialiser;
 import org.workcraft.util.Func;
 
-public abstract class BooleanFunctionDeserialiser implements CustomXMLDeserialiser
+/*public abstract class BooleanFunctionDeserialiser implements CustomXMLDeserialiser
 {
 	private static final class VariableResolver implements
 			Func<String, BooleanVariable> {
@@ -79,4 +78,4 @@ public abstract class BooleanFunctionDeserialiser implements CustomXMLDeserialis
 	{
 
 	}
-}
+}*/

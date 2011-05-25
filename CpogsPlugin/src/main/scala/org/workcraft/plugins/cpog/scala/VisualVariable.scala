@@ -5,7 +5,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.plugins.cpog.scala.nodes._
 import org.workcraft.plugins.cpog.scala.Graphics._
 import org.workcraft.plugins.shared.CommonVisualSettings
-import org.workcraft.plugins.cpog.FormulaRenderer
+import org.workcraft.plugins.cpog.scala.formularendering.FormulaToGraphics
 import org.workcraft.plugins.cpog.LabelPositioning
 import pcollections.TreePVector
 import java.awt.geom.Rectangle2D
@@ -17,7 +17,7 @@ package org.workcraft.plugins.cpog.scala {
     val size = 1;
     private val strokeWidth = 0.08f;
     
-    private val nameFont = FormulaRenderer.fancyFont;
+    private val nameFont = FormulaToGraphics.fancyFont;
 	private val valueFont = nameFont.deriveFont(0.75f);
 
     def image(variable: Variable): Expression[BoundedColorisableGraphicalContent] = {

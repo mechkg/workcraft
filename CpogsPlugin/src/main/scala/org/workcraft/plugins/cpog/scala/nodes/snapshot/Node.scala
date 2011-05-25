@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog.scala.nodes.snapshot
+package org.workcraft.plugins.cpog.scala.nodes
 
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import org.workcraft.plugins.cpog.optimisation.expressions.{Variable => BooleanVariable}
@@ -7,25 +7,30 @@ import org.workcraft.plugins.cpog.VariableState
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import java.awt.geom.Point2D
 import org.workcraft.plugins.cpog.LabelPositioning
+import java.util.UUID
 
-sealed trait Node
+package object snapshot {
 
-sealed case class VisualProperties(label: String, labelPositioning: LabelPositioning, position: Point2D)
-
-sealed abstract case class Component(visualProperties:VisualProperties) extends Node
-
-sealed case class VisualArc
-
-sealed case class Arc (first : Vertex, second : Vertex, condition: BooleanFormula[Variable], visual : VisualArc) extends Node
-
-case class Vertex(condition: BooleanFormula[Variable], override val visualProperties:VisualProperties) extends Component (visualProperties)
-
-case class Variable(state : VariableState, label : String, override val visualProperties:VisualProperties) extends Component (visualProperties) with Comparable[Variable] {
-    override def getLabel : String = label
-    override def compareTo(other:Variable) : Int = getLabel.compareTo(other.getLabel)
-    override def accept [T] (visitor:BooleanVisitor[Variable, T]) : T = visitor.visit(BooleanVariable.create(this))
-  }
-
-case class RhoClause(formula : BooleanFormula[Variable], override val visualProperties : VisualProperties) extends Component (visualProperties)
-
-sealed case class CPOG(nodes : List[Node])
+	sealed case class Id[Entity] (id : UUID) {
+	}
+	
+	sealed trait Node
+	
+	sealed case class VisualProperties(label: String, labelPositioning: LabelPositioning, position: Point2D)
+	
+	sealed abstract class Component(val visualProperties:VisualProperties) extends Node
+	
+	sealed case class VisualArc ()
+	
+	sealed case class Arc (first : Id[Vertex], second : Id[Vertex], condition: BooleanFormula[Id[Variable]], visual : VisualArc) extends Node
+	
+	case class Vertex(condition: BooleanFormula[Id[Variable]], visualProperties:VisualProperties) extends Component (visualProperties)
+	
+	case class Variable(state : VariableState, label : String, visualProperties:VisualProperties) extends Component (visualProperties)
+	
+	case class RhoClause(formula : BooleanFormula[Id[Variable]], visualProperties : VisualProperties) extends Component (visualProperties)
+	
+	type Storage[A]=Map[Id[A],A]
+	
+	sealed case class CPOG(variables : Storage[Variable], vertices : Storage[Vertex], arcs : List[Arc], rhoClauses : List[RhoClause])
+}

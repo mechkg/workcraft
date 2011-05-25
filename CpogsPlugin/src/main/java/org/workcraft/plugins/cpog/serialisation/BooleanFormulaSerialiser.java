@@ -24,7 +24,6 @@ package org.workcraft.plugins.cpog.serialisation;
 import org.w3c.dom.Element;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
-import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString.PrinterSuite;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString.Void;
@@ -32,7 +31,7 @@ import org.workcraft.serialisation.ReferenceProducer;
 import org.workcraft.serialisation.xml.CustomXMLSerialiser;
 import org.workcraft.serialisation.xml.NodeSerialiser;
 
-public abstract class BooleanFormulaSerialiser implements CustomXMLSerialiser
+/*public abstract class BooleanFormulaSerialiser implements CustomXMLSerialiser
 {
 	@Override
 	public void serialise(Element element, Object object, final ReferenceProducer internalReferences,
@@ -69,4 +68,4 @@ public abstract class BooleanFormulaSerialiser implements CustomXMLSerialiser
 	}
 
 	protected abstract BooleanFormula getFormula(Object serialisee);
-}
+}*/

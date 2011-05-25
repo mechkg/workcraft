@@ -20,7 +20,9 @@ import nodes._
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.connections.ConnectionGui
-import Expressions.monadicSyntax
+import Expressions._
+import Util._
+import Scalaz._
 import _root_.scala.collection.JavaConversions._
 
 

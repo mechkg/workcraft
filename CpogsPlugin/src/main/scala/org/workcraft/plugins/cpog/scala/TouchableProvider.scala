@@ -7,7 +7,8 @@ import java.awt.geom.Rectangle2D
 import java.awt.geom.Point2D
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.plugins.cpog.scala.nodes._
-import org.workcraft.plugins.cpog.scala.Expressions.monadicSyntax
+import org.workcraft.plugins.cpog.scala.Scalaz._
+import org.workcraft.plugins.cpog.scala.Expressions._
 
 
 object TouchableProvider {

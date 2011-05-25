@@ -5,7 +5,8 @@ import org.workcraft.dom.visual.GraphicalContent
 import org.workcraft.dom.visual.ColorisableGraphicalContent
 import org.workcraft.dom.visual.ColorisableGraphicalContent.Util._
 import org.workcraft.plugins.cpog.scala.Graphics._
-import org.workcraft.plugins.cpog.scala.Expressions.monadicSyntax
+import org.workcraft.plugins.cpog.scala.Scalaz._
+import org.workcraft.plugins.cpog.scala.Expressions._
 import java.awt.geom.AffineTransform
 import org.workcraft.dependencymanager.advanced.core.Expression
 import nodes._

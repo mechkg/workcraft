@@ -1,11 +1,11 @@
 package org.workcraft.plugins.cpog.scala
 
+import scalaz.Monad
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero
 import org.workcraft.plugins.cpog.optimisation.expressions.One
 import org.workcraft.plugins.cpog.scala.nodes.Variable
 import org.workcraft.plugins.cpog.VariableState
-import org.workcraft.plugins.cpog.optimisation.BooleanVariable
 import java.util.HashMap
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
@@ -24,6 +24,7 @@ import org.workcraft.util.Function0
 import org.workcraft.util.Function2
 
 object Util {
+  
   implicit def asFunctionObject[T, R](f: (T => R)) = new Function[T, R] {
     def apply(x: T) = f(x)
   }
@@ -58,4 +59,12 @@ object Util {
             case _ => BooleanOperations.worker.`var`(v)
           })) (formula)
   }
+
+  def javaCollectionToList[A](c : java.lang.Iterable[_ <: A]) = {
+    var res : List[A] = Nil
+    val it = c.iterator
+    while(it.hasNext)
+    	res = it.next :: res
+    res.reverse
+  }  
 }

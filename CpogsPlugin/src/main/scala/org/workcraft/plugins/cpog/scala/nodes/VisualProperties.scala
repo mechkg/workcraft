@@ -11,7 +11,7 @@ import org.workcraft.plugins.cpog.LabelPositioning
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty
 
-package org.workcraft.plugins.cpog.scala {
+package org.workcraft.plugins.cpog.scala.nodes {
   case class VisualProperties(label: ModifiableExpression[String], labelPositioning: ModifiableExpression[LabelPositioning], position: ModifiableExpression[Point2D])
 
   object VisualProperties {

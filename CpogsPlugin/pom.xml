@@ -16,6 +16,11 @@
 			<name>Scala-tools Maven2 Repository</name>
 			<url>http://scala-tools.org/repo-releases</url>
 		</repository>
+<!--		<repository>
+			<id>scala-tools.org-snapshots</id>
+			<name>Scala-tools Maven2 Repository - Snapshots</name>
+			<url>http://scala-tools.org/repo-snapshots</url>
+		</repository> -->
 	</repositories>
 
 	<pluginRepositories>
@@ -100,9 +105,19 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<args>
+						<arg>-deprecation</arg>
+					</args>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+
+
+<properties>
+  <scala.version>2.9.0</scala.version>
+</properties>
 
 	<dependencies>
 		<dependency>
@@ -130,5 +145,17 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
+		
+  <dependency>
+    <groupId>org.scalaz</groupId>
+    <artifactId>scalaz-core_${scala.version}</artifactId>
+    <version>6.0.RC2</version>
+  </dependency>
+  <dependency>
+    <groupId>org.scalaz</groupId>
+    <artifactId>scalaz-http_${scala.version}</artifactId>
+    <version>6.0.RC2</version>
+  </dependency>
+		
 	</dependencies>
 </project>

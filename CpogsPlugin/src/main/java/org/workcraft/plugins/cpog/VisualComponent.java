@@ -31,7 +31,7 @@ public class VisualComponent {
 		this.labelPosition = labelPosition;
 	}
 	
-	public static PVector<EditableProperty> getProperties(org.workcraft.plugins.cpog.scala.VisualProperties component) {
+	public static PVector<EditableProperty> getProperties(org.workcraft.plugins.cpog.scala.nodes.VisualProperties component) {
 		FieldAccessor<Point2D, Double> xView = new FieldAccessor<Point2D, Double>(){
 			@Override
 			public Double apply(Point2D argument) {

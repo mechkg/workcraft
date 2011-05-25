@@ -43,10 +43,7 @@ import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.connections.ParametricCurve;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.dom.visual.connections.VisualConnectionProperties;
-import org.workcraft.plugins.cpog.formularendering.FormulaRenderingResult;
-import org.workcraft.plugins.cpog.formularendering.FancyPrinter;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
-import org.workcraft.plugins.cpog.optimisation.BooleanVariable;
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer;
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanOperations;
 import org.workcraft.plugins.cpog.optimisation.expressions.One;
@@ -58,7 +55,7 @@ import org.workcraft.util.Geometry;
 
 import org.workcraft.plugins.cpog.scala.nodes.*;
 
-public class VisualArc
+/*public class VisualArc
 {
 	private static Font labelFont;
 	
@@ -210,7 +207,7 @@ public class VisualArc
 					
 					@Override
 					public boolean hitTest(Point2D point) {
-						Rectangle2D lbb = context.resolve(null /* TODO: label.boundingBox */ );
+						Rectangle2D lbb = context.resolve(null // TODO: label.boundingBox  );
 						if (lbb!=null && lbb.contains(point)) return true;
 						return superShape.hitTest(point);
 					}
@@ -222,7 +219,7 @@ public class VisualArc
 					
 					@Override
 					public Rectangle2D getBoundingBox() {
-						return null;//TODO: BoundingBoxHelper.union(superShape.getBoundingBox(), context.resolve(null /* TODO: label.boundingBox */));
+						return null;//TODO: BoundingBoxHelper.union(superShape.getBoundingBox(), context.resolve(null // TODO: label.boundingBox ));
 					}
 				};
 			}
@@ -230,3 +227,4 @@ public class VisualArc
 		};
 	}
 }
+*/

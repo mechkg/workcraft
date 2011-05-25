@@ -1,57 +1,153 @@
-package org.workcraft.plugins.cpog.scala.formularendering
+package org.workcraft.plugins.cpog.scala
 
+import org.workcraft.dom.visual.Label
+import org.workcraft.exceptions.NotImplementedException
+import java.awt.font.GlyphVector
+import java.awt.font.TextAttribute
+import org.workcraft.exceptions.NotSupportedException
 import java.awt.font.FontRenderContext
-import java.awt.Font
+import java.awt.{Font => JavaFont}
 import java.awt.geom.Rectangle2D
 import java.awt.geom.Line2D
+import java.awt.geom.Point2D
 import org.workcraft.plugins.cpog.optimisation.BinaryBooleanFormula
 import org.workcraft.plugins.cpog.optimisation.expressions._
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
-import RichRectangle2D._
+import scalaz.Monad
+import org.workcraft.plugins.cpog.scala.Scalaz._
+import scala.collection.JavaConversions._
+import org.workcraft.plugins.cpog.scala.Expressions._
+import org.workcraft.plugins.cpog.scala.nodes.{Variable => VariableNode}
+import org.workcraft.dependencymanager.advanced.core.Expression
 
-object FormulaToGraphics {
-	def print[Var](formula : BooleanFormula[Var], font : Font, fontRenderContext : FontRenderContext, varPrinter : Var => String) : FormulaRenderingResult = {
-	  class DefaultPrinter(p : BooleanFormula[Var] => FormulaRenderingResult) extends BooleanVisitor[Var, FormulaRenderingResult] {
-	    def visit(v : Variable[Var]) = p(v)
-	    def visit(v : Iff[Var]) = p(v)
-	    def visit(v : Or[Var]) = p(v)
-	    def visit(v : And[Var]) = p(v)
-	    def visit(v : Xor[Var]) = p(v)
-	    def visit(v : Not[Var]) = p(v)
+package object formularendering {
+	import RichRectangle2D._
+	
+
+	case class UseUnicode(value : Boolean) {}
+	implicit def useUnicode(value : Boolean) : UseUnicode = UseUnicode(value)
+	implicit val defaultUseUnicode : UseUnicode = true
+	
+	object FormulaToGraphics {
+	  val withPodgonFontRenderContext = FormulaToGraphics(Label.podgonFontRenderContext()) 
+	  lazy val defaultFont = JavaFont.createFont(JavaFont.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/default.pfb")).deriveFont(0.5f);
+	  lazy val fancyFont = JavaFont.createFont(JavaFont.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/eurm10.pfb")).deriveFont(0.5f);
+	  def render(formula : BooleanFormula[VariableNode]) : Expression[FormulaRenderingResult] = withPodgonFontRenderContext.withFancyFont.renderM[Expression, VariableNode](formula)(variable => variable.label)
+	}
+	
+	case class FormulaToGraphics(fontRenderContext : FontRenderContext) {
+	  
+	  case class Font(font : JavaFont, defaultFont : JavaFont) {
+	    def deriveSubscript : Font = Font(Font.deriveSubscriptJava(font), Font.deriveSubscriptJava(defaultFont))
+	    def createGlyphVector(c : Char) : GlyphVector = {
+	      val fnt = if(font.canDisplay(c)) font else defaultFont
+	      fnt.createGlyphVector(fontRenderContext, Array(c))
+	    }
+	    def size =  font.getSize2D
 	  }
-	  def printIff(x : BooleanFormula[Var]) : FormulaRenderingResult = (new DefaultPrinter(printImply(_)) {
-	    def visit(v : Iff[Var]) = printBinary(printIff(_), " = ", v) 
-	  }) (x);
-	  def printImply(x : BooleanFormula[Var]) : FormulaRenderingResult = (new DefaultPrinter(printOr(_)) {
-	    def visit(v : Imply[Var]) = printBinary(printOr(_), " => ", v)
-	  }) (x)
-	  def printOr(x : BooleanFormula[Var]) : FormulaRenderingResult = (new DefaultPrinter(printXor(_)) {
-	    def visit(v : Or[Var]) = printBinary(printOr(_), " + ", v)
-	  }) (x)
-	  def printXor(x : BooleanFormula[Var]) : FormulaRenderingResult = (new DefaultPrinter(printAnd(_)) {
-	    def visit(v : Xor[Var]) = printBinary(printXor(_), " ^ ", v)
-	  }) (x)
-	  def printAnd(x : BooleanFormula[Var]) : FormulaRenderingResult = (new DefaultPrinter(printNot(_)) {
-	    def visit(v : And[Var]) = printBinary(printAnd(_), " ^ ", v)
-	  }) (x)
-	  def printBinary(printer : BooleanFormula[Var] => FormulaRenderingResult, symbol : String, formula : BinaryBooleanFormula[Var]) = {
-	    null
+	  object Font {
+		  def deriveSubscriptJava(font : JavaFont) = {
+			val attributes = Map((TextAttribute.SUPERSCRIPT, TextAttribute.SUPERSCRIPT_SUB))
+			font.deriveFont(attributes);
+		  }
 	  }
 	  
-	  def printNot(x : BooleanFormula[Var]) : FormulaRenderingResult = (new DefaultPrinter(printNot(_)) {
-	    def visit(node : Not[Var]) =
-			printIff(node.getX()) match {
-			  case FormulaRenderingResult(boundingBox, visualTop, glyphs, glyphCoordinates, inversionLines) => {
-			    val inversionLines2 = new Line2D.Double(
-			    		boundingBox.getMinX(), visualTop,
-			    		boundingBox.getMaxX(), visualTop)
-			    val boundingBox2 = boundingBox.plus(new Point2D.Double(res.boundingBox.getMaxX(), res.boundingBox.getMinY() - settings.font.getSize2D() / 8.0))
-			    FormulaRenderingResult(boundingBox2, visualTop - settings.font.getSize2D() / 8.0, glyphs, glyphCoordinates, inversionLines2)
-			  }
+	  val withFancyFont = WithFont(FormulaToGraphics.fancyFont)
+	  
+	  object WithFont {
+	        def apply(font : JavaFont) = new WithFont(font)
+	  }
+	  
+	  class WithFont(font : Font) {
+	    
+	    def this(font : JavaFont) = this(Font(font, FormulaToGraphics.defaultFont.deriveFont(font.getSize2D)))
+	    
+		def print(text : String) : FormulaRenderingResult =
+			if (text.length() < 1) print(" ")
+			else {
+				val subfont = font.deriveSubscript
+				
+				def render(font : Font, text : String) = {
+				  text.map(c => print(c)).foldLeft(FormulaRenderingResult.empty)(_ plus _)
+				}
+				
+				text.lastIndexOf('_') match {
+				  case -1 => render(font, text)
+				  case x => render(font, text.substring(0, x)) plus render(subfont, text.substring(x+1))
+				}
 			}
-	  }) (x)
+		
+		def print(c : Char) : FormulaRenderingResult = {
+			val glyphs = font.createGlyphVector(c)
+			
+			FormulaRenderingResult(glyphs.getLogicalBounds(), 
+			    glyphs.getVisualBounds().getMinY(),
+			    List((glyphs, new Point2D.Double(0, 0))),
+			    List());
+		}
+	
+		case class ImplicitFunc[A, B](func : A => B) {
+		  def apply(implicit a : A) : B = func(a);
+		}
+		
+		/*def render[Var](formula : BooleanFormula[Var]) = ImplicitFunc((useUnicode : UseUnicode) => ImplicitFunc((varPrinter : Var => String) => {
+		  
+		}))*/
+	
+		def renderM[M[_], Var] (formula : BooleanFormula[Var])(varPrinter : Var => M[String])(implicit monad : Monad[M]) : M[FormulaRenderingResult] = {
+		  class DefaultPrinter(p : BooleanFormula[Var] => M[FormulaRenderingResult]) extends BooleanVisitor[Var, M[FormulaRenderingResult]] {
+		    override def visit(v : Variable[Var]) = p(v)
+		    override def visit(v : Iff[Var]) = p(v)
+		    override def visit(v : Or[Var]) = p(v)
+		    override def visit(v : And[Var]) = p(v)
+		    override def visit(v : Xor[Var]) = p(v)
+		    override def visit(v : Not[Var]) = p(v)
+		    override def visit(v : Imply[Var]) = p(v)
+		    override def visit(v : One[Var]) = p(v)
+		    override def visit(v : Zero[Var]) = p(v)
+		  }
+		  def printIff(x : BooleanFormula[Var]) : M[FormulaRenderingResult] = (new DefaultPrinter(printImply(_)) {
+		    override def visit(v : Iff[Var]) = printBinary(printIff(_), " = ", v)
+		  }) (x);
+		  def printImply(x : BooleanFormula[Var]) : M[FormulaRenderingResult] = (new DefaultPrinter(printOr(_)) {
+		    override def visit(v : Imply[Var]) = printBinary(printOr(_), " => ", v)
+		  }) (x)
+		  def printOr(x : BooleanFormula[Var]) : M[FormulaRenderingResult] = (new DefaultPrinter(printXor(_)) {
+		    override def visit(v : Or[Var]) = printBinary(printOr(_), " + ", v)
+		  }) (x)
+		  def printXor(x : BooleanFormula[Var]) : M[FormulaRenderingResult] = (new DefaultPrinter(printAnd(_)) {
+		    override def visit(v : Xor[Var]) = printBinary(printXor(_), " ^ ", v)
+		  }) (x)
+		  def printAnd(x : BooleanFormula[Var]) : M[FormulaRenderingResult] = (new DefaultPrinter(printNot(_)) {
+		    override def visit(v : And[Var]) = printBinary(printAnd(_), " ^ ", v)
+		  }) (x)
+		  def printBinary(printer : BooleanFormula[Var] => M[FormulaRenderingResult], opSymbol : String, formula : BinaryBooleanFormula[Var]) : M[FormulaRenderingResult] = {
+			for (x <- printer(formula.getX()); y <- printer(formula.getY())) yield x plus print(opSymbol) plus y
+		  }
+		  
+		  def printNot(x : BooleanFormula[Var]) : M[FormulaRenderingResult] = (new DefaultPrinter(printNot(_)) {
+		    override def visit(node : Not[Var]) =
+				for (x <- printIff(node.getX())) yield x match {
+				  case FormulaRenderingResult(boundingBox, visualTop, glyphs, inversionLines) => {
+				    val inversionLines2 = new Line2D.Double(
+				    		boundingBox.getMinX(), visualTop,
+				    		boundingBox.getMaxX(), visualTop) :: inversionLines
+				    val boundingBox2 = boundingBox.plus(new Point2D.Double(boundingBox.getMaxX(), boundingBox.getMinY() - font.size / 8.0))
+				    FormulaRenderingResult(boundingBox2, visualTop - font.size / 8.0, glyphs, inversionLines2)
+				  }
+				}
+		  }) (x)
+		  
+		  def printLiteral(x : BooleanFormula[Var]) : M[FormulaRenderingResult] = (new DefaultPrinter(printParentheses(_)) {
+		    override def visit(zero : Zero[Var]) = monad.pure(print('0'))
+		    override def visit(one : One[Var]) = monad.pure(print('1'))
+		    override def visit(v : Variable[Var]) = for (str <- varPrinter(v.variable)) yield print(str)
+		  }) (x)
 
-	  
-	  null
+		  def printParentheses(x : BooleanFormula[Var]) = for(x <- printIff(x)) yield print('(') plus x plus print(')')
+		  
+		  printIff(formula)
+		}
+	  }
 	}
 }

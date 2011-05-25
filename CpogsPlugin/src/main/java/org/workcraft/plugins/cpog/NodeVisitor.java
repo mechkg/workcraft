@@ -4,7 +4,7 @@ import org.workcraft.util.Function;
 
 import org.workcraft.plugins.cpog.scala.nodes.*;
 
-public abstract class NodeVisitor<T> implements Function<org.workcraft.plugins.cpog.scala.nodes.Node, T> {
+public abstract class NodeVisitor<T> implements Function<Node, T> {
 	public abstract T visitArc(Arc arc);
 	public abstract T visitComponent(Component component);
 	
@@ -26,7 +26,7 @@ public abstract class NodeVisitor<T> implements Function<org.workcraft.plugins.c
 		};
 	}
 	
-	public final T apply(org.workcraft.plugins.cpog.scala.nodes.Node node) {
+	public final T apply(Node node) {
 		return node.<T>accept(this);
 	}
 	

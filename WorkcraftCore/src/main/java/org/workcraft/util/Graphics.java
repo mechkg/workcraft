@@ -63,7 +63,7 @@ public class Graphics {
 		};
 	}
 	
-	public static Function2<GraphicalContent, GraphicalContent, GraphicalContent> composeFunc = new Function2<GraphicalContent, GraphicalContent, GraphicalContent>(){
+	public static final Function2<GraphicalContent, GraphicalContent, GraphicalContent> composeFunc = new Function2<GraphicalContent, GraphicalContent, GraphicalContent>(){
 		@Override
 		public GraphicalContent apply(GraphicalContent bottom, GraphicalContent top) {
 			return compose(bottom, top);

@@ -52,6 +52,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
+import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.FormatException;
@@ -617,8 +618,21 @@ public class Framework {
 			throw new SerialisationException(e);			
 		}
 	}
+	
+	public interface CustomSaver {
+		public static final ServiceHandle<CustomSaver> SERVICE_HANDLE = ServiceHandle.createNewService(CustomSaver.class, "A custom model saver");
+		void write(OutputStream out);
+	}
 
 	public void save(ServiceProvider modelEntry, OutputStream out) throws SerialisationException, ServiceNotAvailableException {
+		try {
+			modelEntry.getImplementation(CustomSaver.SERVICE_HANDLE).write(out);
+		} catch(ServiceNotAvailableException ex) {
+			saveDefault(modelEntry, out);
+		}
+	}
+	
+	public void saveDefault(ServiceProvider modelEntry, OutputStream out) throws SerialisationException, ServiceNotAvailableException {
 		Model mathModel = modelEntry.getImplementation(ServiceHandle.LegacyMathModelService);
 
 		ZipOutputStream zos = new ZipOutputStream(out);

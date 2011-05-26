@@ -27,15 +27,15 @@ package org.workcraft.plugins.cpog.scala.nodes {
     }
   }
   
-  object Component {
+  /*object Component {
     final def unapply(node : Node) : Some[Component] = node match {
       case c : Vertex => Some(c)
       case c : Variable => Some(c)
       case c : RhoClause => Some(c)
     }
-  }
+  }*/
   
-  sealed abstract class Component(val visualProperties:VisualProperties) extends Node {
+  sealed abstract case class Component(val visualProperties:VisualProperties) extends Node {
     final def accept[A](visitor : org.workcraft.plugins.cpog.ComponentVisitor[A]) = this match {
       case v : Vertex => visitor.visitVertex(v)
       case v : Variable => visitor.visitVariable(v)
@@ -45,9 +45,9 @@ package org.workcraft.plugins.cpog.scala.nodes {
   
   case class Arc (first : Vertex, second : Vertex, condition: ModifiableExpression[BooleanFormula[Variable]], visual : ModifiableExpression[VisualArc]) extends Node
   
-  case class Vertex(condition: ModifiableExpression[BooleanFormula[Variable]], visualProperties:VisualProperties) extends Component (visualProperties)
+  case class Vertex(condition: ModifiableExpression[BooleanFormula[Variable]], override val visualProperties:VisualProperties) extends Component (visualProperties)
    
-  case class Variable(state:ModifiableExpression[VariableState], label: ModifiableExpression[String], visualProperties:VisualProperties) 
+  case class Variable(state:ModifiableExpression[VariableState], label: ModifiableExpression[String], override val visualProperties:VisualProperties) 
   			extends Component (visualProperties) with Comparable[Variable] {
   
     private def getLabel : String = eval(label)
@@ -55,7 +55,7 @@ package org.workcraft.plugins.cpog.scala.nodes {
     override def compareTo(other:Variable) : Int = getLabel.compareTo(other.getLabel)
   }
   
-  case class RhoClause(formula:ModifiableExpression[BooleanFormula[Variable]], visualProperties:VisualProperties) extends Component (visualProperties)
+  case class RhoClause(formula:ModifiableExpression[BooleanFormula[Variable]], override val visualProperties:VisualProperties) extends Component (visualProperties)
   
   object Arc {
     def create (storage: StorageManager, first : Vertex, second : Vertex) = {

@@ -49,10 +49,6 @@ object ControlPoints {
       case Component(_) => constant(Nil)
     }
     
-    implicit def kojojo[A](qwe : Expression[A]) = new {
-      def flatMap[A, B](f : A => Expression[B]) = null
-    }
-    
     val visibleControlPoints : Expression[java.util.Collection[_ <: ControlPoint]] = 
       for ((selectedNodes : Set[Node]) <- selection;
     	nodeLists : List[List[ControlPoint]] <- joinCollection(selectedNodes.map(getNodeControlPoints)))

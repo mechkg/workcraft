@@ -18,17 +18,22 @@ package object snapshot {
 	
 	sealed case class VisualProperties(label: String, labelPositioning: LabelPositioning, position: Point2D)
 	
-	sealed abstract class Component(val visualProperties:VisualProperties) extends Node
+	sealed abstract case class Component(val visualProperties:VisualProperties) extends Node
 	
-	sealed case class VisualArc ()
+	sealed abstract class VisualArc
+	
+	object VisualArc {
+		sealed case class Bezier(cp1 : Point2D, cp2 : Point2D) extends VisualArc
+		sealed case class Polyline(cps : List[Point2D]) extends VisualArc
+	}
 	
 	sealed case class Arc (first : Id[Vertex], second : Id[Vertex], condition: BooleanFormula[Id[Variable]], visual : VisualArc) extends Node
 	
-	case class Vertex(condition: BooleanFormula[Id[Variable]], visualProperties:VisualProperties) extends Component (visualProperties)
+	case class Vertex(condition: BooleanFormula[Id[Variable]], override val visualProperties:VisualProperties) extends Component (visualProperties)
 	
-	case class Variable(state : VariableState, label : String, visualProperties:VisualProperties) extends Component (visualProperties)
+	case class Variable(state : VariableState, label : String, override val visualProperties:VisualProperties) extends Component (visualProperties)
 	
-	case class RhoClause(formula : BooleanFormula[Id[Variable]], visualProperties : VisualProperties) extends Component (visualProperties)
+	case class RhoClause(formula : BooleanFormula[Id[Variable]], override val visualProperties : VisualProperties) extends Component (visualProperties)
 	
 	type Storage[A]=Map[Id[A],A]
 	

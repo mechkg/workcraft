@@ -20,10 +20,13 @@
 */
 package org.workcraft.plugins.cpog.optimisation.expressions;
 
+import java.io.Serializable;
+
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 
-public class Not<Var> implements BooleanFormula<Var> {
-
+public class Not<Var> implements BooleanFormula<Var>, Serializable {
+	private static final long serialVersionUID = 1L;
+	
 	private final BooleanFormula<Var> x;
 
 	private Not(BooleanFormula<Var> x) {

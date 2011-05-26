@@ -3,6 +3,11 @@ package org.workcraft.plugins.cpog;
 import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
 import static pcollections.TreePVector.*;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+
+import org.workcraft.Framework;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Model;
@@ -41,6 +46,18 @@ public class CpogModelDescriptor implements ModelDescriptor {
 				@Override
 				public Iterable<? extends GraphEditorTool> createTools(GraphEditor editor) {
 					return org.workcraft.plugins.cpog.scala.ToolsProvider.getTools(cpog, editor.snapFunction());
+				}
+			})
+			.plus(Framework.CustomSaver.SERVICE_HANDLE, new Framework.CustomSaver(){
+
+				@Override
+				public void write(OutputStream out) {
+					try {
+						new ObjectOutputStream(out).writeObject(org.workcraft.plugins.cpog.scala.nodes.snapshot.SnapshotMaker.makeSnapshot(cpog.nodes()));
+					}
+					catch(IOException e) {
+						throw new RuntimeException(e);
+					}
 				}
 			});
 	}

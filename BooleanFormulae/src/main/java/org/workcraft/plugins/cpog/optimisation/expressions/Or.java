@@ -20,11 +20,14 @@
 */
 package org.workcraft.plugins.cpog.optimisation.expressions;
 
+import java.io.Serializable;
+
 import org.workcraft.plugins.cpog.optimisation.BinaryBooleanFormula;
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 
-public class Or<Var> extends BinaryBooleanFormula<Var>
-{
+public class Or<Var> extends BinaryBooleanFormula<Var> implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private Or(BooleanFormula<Var> x, BooleanFormula<Var> y) {
 		super(x,y);
 	}

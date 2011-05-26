@@ -1,14 +1,17 @@
 package org.workcraft.plugins.cpog.scala.nodes.snapshot
 
 import org.workcraft.dependencymanager.advanced.core.Expression
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.exceptions.NotImplementedException
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.VariableReplacer
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import org.workcraft.plugins.cpog.scala.{nodes => M}
+import org.workcraft.plugins.cpog.scala.{VisualArc => MVisualArc}
 import org.workcraft.plugins.cpog.scala.Expressions._
 import org.workcraft.plugins.cpog.scala.Util._
 import org.workcraft.plugins.cpog.scala.Scalaz._
 import java.util.UUID
+import java.awt.geom.Point2D
 
 import scala.collection.immutable.Map
 
@@ -25,7 +28,7 @@ object SnapshotMaker {
   }
   import ExprCpogBuilder._
   
-  def asECB[T](expr : Expression[CpogBuilder[T]]) : ExprCpogBuilder[T] = new ExprCpogBuilder(expr)
+  def asECB[T](expr : Expression[_ <: CpogBuilder[T]]) : ExprCpogBuilder[T] = new ExprCpogBuilder(expr)
   
   import CpogBuilder.emptyBuilder
   
@@ -34,12 +37,29 @@ object SnapshotMaker {
     l.foldRight (default) (lift(_::(_:List[T])))
   }
   
+  def mapEC_(l : List[ExprCpogBuilder[Unit]]) : ExprCpogBuilder[Unit] = {
+    val default = asECB(constant(emptyBuilder(())))
+    l.foldRight (default) (lift((_, _) => ()))
+  }
+  
   def mapC[T](l : List[CpogBuilder[T]]) : CpogBuilder[List[T]] = {
     l.foldRight(emptyBuilder(Nil:List[T]))((h, t) => for(h <- h; t <- t) yield h :: t)
   }
   
-  def makeSnapshot(nodes: List[M.Node]): CpogBuilder[Any] = {
-    mapC(nodes.map(makeSnapshot(_: M.Node)))
+  def makeSnapshot(nodes: Expression[_ <: java.lang.Iterable[_ <: M.Node]]) : CPOG = {
+    GlobalCache.eval(
+    (for(
+      nodes <- nodes;
+      builder <- makeSnapshot(javaCollectionToList[M.Node](nodes));
+      cpog <- {
+        val (CpogBuilding(cpog, _, _), _) = builder.buildWithCpog(CpogBuilding(constant(CPOG(Map.empty, Map.empty, List.empty, List.empty)), Map.empty, Map.empty))
+        cpog
+      }) yield cpog))
+  }
+  
+  def makeSnapshot(nodes: List[M.Node]): Expression[_ <: CpogBuilder[Unit]] = {
+    val nodeSnapshoter : M.Node => ExprCpogBuilder[Unit] = (n: M.Node) => asECB[Unit](makeSnapshot(n))
+    mapEC_(nodes.map(nodeSnapshoter)).expr
   }
   
   def newId[T] : Id[T] = {
@@ -67,25 +87,76 @@ object SnapshotMaker {
       (resB, id)
     }
   }
-
-  def makeSnapshot(node: M.Node): CpogBuilder[Node] = {
-    node match {
-      case c: M.Component => makeSnapshot(c)
-      case a: M.Arc => makeSnapshot(a)
+  
+  def addArc(arc : Arc) : CpogBuilder[Unit] = new CpogBuilder[Unit] {
+    def buildWithCpog(builder : CpogBuilding) : (CpogBuilding, Unit) = {
+      val CpogBuilding(cpog, varCache, vertexCache) = builder
+      val cpog2 = for(cpog <- cpog) yield {
+        val CPOG(variables, vertices, arcs, rhoClauses) = cpog
+        CPOG(variables, vertices, arc :: arcs, rhoClauses)
+      }
+      (CpogBuilding(cpog2, varCache, vertexCache),())
     }
   }
 
-  def makeSnapshot(component: M.Component): ExprCpogBuilder[Component] = {
-    asECB(component match {
-      case M.Vertex(condition, visualProperties) =>
-        for (
-          condition <- condition;
-          visualProperties <- makeSnapshot(visualProperties)
-        ) yield {
-          for(c <- makeSnapshot(condition))
-        	  yield new Vertex(c, visualProperties) 
-        }
-    })
+  def makeSnapshot(node: M.Node): Expression[_ <: CpogBuilder[Unit]] = {
+    node match {
+      case c: M.Component => makeComponentSnapshot(c)
+      case a: M.Arc => makeArcSnapshot(a)
+    }
+  }
+  
+  def makeArcSnapshot(arc : M.Arc) : Expression[CpogBuilder[Unit]] = {
+    val M.Arc(first, second, condition, visual) = arc
+    for(first <- snapshotVertex(first);
+    	second <- snapshotVertex(second);
+    	condition <- condition;
+    	visual <- visual;
+    	visual <- makeVisualArcSnapshot(visual)
+        ) yield for(first <- first; second <- second; condition <- makeSnapshot(condition); unit <- addArc(Arc(first, second, condition, visual)))
+        	yield unit
+  }
+  
+  def makeVisualArcSnapshot(visualArc : MVisualArc) : Expression[VisualArc] = {
+    visualArc match {
+      case MVisualArc.Bezier(cp1, cp2) => for(cp1 <- cp1; cp2 <- cp2) yield VisualArc.Bezier(cp1, cp2)
+      case MVisualArc.Polyline(cps) => for(cps <- (cps : List[Expression[Point2D]]).sequence[Expression, Point2D](
+    		  implicitly[<:<[Expression[Point2D],Expression[Point2D]]], 
+    		  implicitly[scalaz.Traverse[List]], 
+    		  implicitly[scalaz.Applicative[Expression]])
+          ) yield VisualArc.Polyline(cps)
+    }
+  }
+
+  def snapshotVertex(vertex : M.Vertex) : Expression[CpogBuilder[Id[Vertex]]] = {
+    val M.Vertex(condition, visualProperties) = vertex
+    for (
+      condition <- condition
+    ) yield new CpogBuilder[Id[Vertex]] {
+      def buildWithCpog(builder : CpogBuilding) : (CpogBuilding, Id[Vertex]) = {
+        val CpogBuilding(_, _, vertexCache) = builder;
+        val res : Option[(CpogBuilding, Id[Vertex])] = for(id <- vertexCache.get(vertex)) yield (builder, id)
+        res.getOrElse({
+          val id = newId[Vertex]
+          
+          val (CpogBuilding(cpog, varCache, vertexCache), condition2) = makeSnapshot(condition).buildWithCpog(builder)
+          
+          val cpog2 = for(cpog <- cpog; visualProperties <- makeSnapshot(visualProperties)) yield {
+            val CPOG(variables, vertices, arcs, rhoClauses) = cpog
+            new CPOG(variables, vertices + ((id, Vertex(condition2, visualProperties))), arcs, rhoClauses)
+          }
+          (new CpogBuilding(cpog2, varCache, vertexCache+((vertex, id))), id)
+        })
+      }
+    }
+  }
+  
+  def ignore(e : Expression[_ <: CpogBuilder[_]]) : Expression[CpogBuilder[Unit]] = for (cb <- e) yield for (_ <- cb) yield ()
+  
+  def makeComponentSnapshot(component: M.Component): Expression[CpogBuilder[Unit]] = {
+    component match {
+      case v : M.Vertex => ignore(snapshotVertex(v))
+    }
   }
 
   def makeSnapshot(component: M.VisualProperties): Expression[VisualProperties] = {

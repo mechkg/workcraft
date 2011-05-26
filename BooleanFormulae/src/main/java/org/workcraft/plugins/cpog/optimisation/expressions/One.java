@@ -20,10 +20,14 @@
 */
 package org.workcraft.plugins.cpog.optimisation.expressions;
 
+import java.io.Serializable;
+
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula;
 
-public class One<Var> implements BooleanFormula<Var> // BooleanFormula<Nothing>, where Nothing is a subtype of every other type, would be better
-{
+//BooleanFormula<Nothing>, where Nothing is a subtype of every other type, would be better
+public class One<Var> implements BooleanFormula<Var>, Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private One(){}
 
 	private static final One<?> instance = new One<Object>();

@@ -26,6 +26,7 @@ import org.workcraft.plugins.cpog.optimisation.ReducedBooleanVisitor;
 import org.workcraft.plugins.cpog.optimisation.SimpleBooleanFormula;
 
 public class And<Var> extends BinaryBooleanFormula<Var> implements SimpleBooleanFormula<Var> {
+	private static final long serialVersionUID = 1L;
 
 	private And(BooleanFormula<Var> x, BooleanFormula<Var> y)
 	{

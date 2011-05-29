@@ -25,6 +25,9 @@ import org.workcraft.serialisation.Format;
 import checkers.nullness.quals.Nullable;
 
 public interface Exporter {
+	
+	public static final GlobalService<Exporter> SERVICE_HANDLE = GlobalService.createNewService(Exporter.class, "Exporter");
+	
 	public static final int GENERAL_COMPATIBILITY = 1;
 	public static final int BEST_COMPATIBILITY = 10;
 	

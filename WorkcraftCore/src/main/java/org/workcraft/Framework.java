@@ -63,7 +63,6 @@ import org.workcraft.gui.propertyeditor.SettingsPage;
 import org.workcraft.interop.ModelService;
 import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.plugins.PluginInfo;
 import org.workcraft.plugins.serialisation.XMLModelDeserialiser;
 import org.workcraft.plugins.serialisation.XMLModelSerialiser;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
@@ -214,14 +213,14 @@ public class Framework {
 	public void loadConfig(String fileName) {
 		config.load(fileName);
 
-		for (PluginInfo<? extends SettingsPage> info : pluginManager.getPlugins(SettingsPage.class)) {
-			info.getSingleton().load(config);
+		for (SettingsPage page : pluginManager.getPlugins(SettingsPage.SERVICE_HANDLE)) {
+			page.load(config);
 		}
 	}
 
 	public void saveConfig(String fileName) {
-		for (PluginInfo<? extends SettingsPage> info : pluginManager.getPlugins(SettingsPage.class)) {
-			info.getSingleton().save(config);
+		for (SettingsPage page : pluginManager.getPlugins(SettingsPage.SERVICE_HANDLE)) {
+			page.save(config);
 		}
 
 		config.save(fileName);

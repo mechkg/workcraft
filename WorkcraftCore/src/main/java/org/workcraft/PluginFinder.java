@@ -10,11 +10,9 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.workcraft.exceptions.PluginInstantiationException;
-
 public class PluginFinder {
 
-	static public List<Class<?>> search(File starting) throws PluginInstantiationException {
+	static public List<Class<?>> search(File starting) {
 		List<Class<?>> result = new ArrayList<Class<?>>();
 
 		search(starting, starting, result);
@@ -35,7 +33,7 @@ public class PluginFinder {
 
 	private static ClassFileFilter classFilter = new ClassFileFilter();
 
-	private static void search(File starting, File current, List<Class<?>> result) throws PluginInstantiationException {
+	private static void search(File starting, File current, List<Class<?>> result) {
 		if (!current.exists())
 			return;
 
@@ -59,12 +57,12 @@ public class PluginFinder {
 					}
 
 				} catch (IOException e) {
-					throw new PluginInstantiationException(e);
+					System.out.println("IO Exception while processing " + current.getPath() + ": " + e.getMessage());
 				}
 		}
 	}
 
-	private static void processPathEntry(String path, List<Class<?>> result) throws PluginInstantiationException {
+	private static void processPathEntry(String path, List<Class<?>> result) {
 		if (!path.endsWith(".class"))
 			return;
 

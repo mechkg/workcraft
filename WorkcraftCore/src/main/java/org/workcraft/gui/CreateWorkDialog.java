@@ -47,7 +47,6 @@ import javax.swing.ListSelectionModel;
 
 import org.workcraft.Framework;
 import org.workcraft.dom.ModelDescriptor;
-import org.workcraft.plugins.PluginInfo;
 import org.workcraft.util.GUI;
 
 public class CreateWorkDialog extends JDialog {
@@ -144,11 +143,11 @@ public class CreateWorkDialog extends JDialog {
 			}
 		});
 
-		final Collection<PluginInfo<? extends ModelDescriptor>> modelDescriptors = framework.getPluginManager().getPlugins(ModelDescriptor.class);
+		final Collection<ModelDescriptor> modelDescriptors = framework.getPluginManager().getPlugins(ModelDescriptor.GLOBAL_SERVICE_HANDLE);
 		ArrayList<ListElement> elements = new ArrayList<ListElement>();
 		
-		for(PluginInfo<? extends ModelDescriptor> plugin : modelDescriptors)
-			elements.add(new ListElement(plugin.newInstance()));
+		for(ModelDescriptor modelDescriptor : modelDescriptors)
+			elements.add(new ListElement(modelDescriptor));
 		
 		Collections.sort(elements);
 			

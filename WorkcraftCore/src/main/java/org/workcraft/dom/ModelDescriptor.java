@@ -1,10 +1,12 @@
 package org.workcraft.dom;
 
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.interop.GlobalService;
 import org.workcraft.interop.ModelService;
 import org.workcraft.interop.ModelServices;
 
 public interface ModelDescriptor {
+	GlobalService<ModelDescriptor> GLOBAL_SERVICE_HANDLE = GlobalService.createNewService(ModelDescriptor.class, "Model descriptor");
 	ModelService<ModelDescriptor> SERVICE_HANDLE = ModelService.createNewService(ModelDescriptor.class, "Model descriptor");
 	String getDisplayName();
 	/**

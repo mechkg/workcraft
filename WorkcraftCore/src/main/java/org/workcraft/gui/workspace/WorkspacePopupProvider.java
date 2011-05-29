@@ -39,7 +39,6 @@ import org.workcraft.ToolJob;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.gui.trees.TreePopupProvider;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.plugins.PluginInfo;
 import org.workcraft.util.ListMap;
 import org.workcraft.util.Pair;
 import org.workcraft.util.Tools;
@@ -140,8 +139,7 @@ public class WorkspacePopupProvider implements TreePopupProvider<Path<String>> {
 						popup.add(miOpen);
 					}
 
-					for (PluginInfo<? extends FileHandler> info : framework.getPluginManager().getPlugins(FileHandler.class)) {
-						FileHandler handler = info.getSingleton();
+					for (FileHandler handler : framework.getPluginManager().getPlugins(FileHandler.SERVICE_HANDLE)) {
 
 						if (!handler.accept(file))
 							continue;

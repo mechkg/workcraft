@@ -30,7 +30,6 @@ import org.workcraft.PluginProvider;
 import org.workcraft.dom.Container;
 import org.workcraft.dom.Node;
 import org.workcraft.exceptions.SerialisationException;
-import org.workcraft.plugins.PluginInfo;
 import org.workcraft.serialisation.ReferenceProducer;
 import org.workcraft.util.XmlUtil;
 
@@ -56,9 +55,8 @@ public class XMLSerialisationManager implements SerialiserFactory, NodeSerialise
 	}
 		
 	public void processPlugins(PluginProvider manager) {
-		for (PluginInfo<? extends XMLSerialiser> info : manager.getPlugins(XMLSerialiser.class)) {
-			final XMLSerialiser newInstance = info.newInstance();
-			registerSerialiser(newInstance);
+		for (XMLSerialiser serialiser : manager.getPlugins(XMLSerialiser.SERVICE_HANDLE)) {
+			registerSerialiser(serialiser);
 		}
 	}
 

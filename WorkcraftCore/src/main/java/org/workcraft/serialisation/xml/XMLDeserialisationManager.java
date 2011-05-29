@@ -30,7 +30,6 @@ import org.workcraft.dom.Container;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
 import org.workcraft.exceptions.DeserialisationException;
-import org.workcraft.plugins.PluginInfo;
 import org.workcraft.serialisation.ReferenceResolver;
 import org.workcraft.util.ConstructorParametersMatcher;
 import org.workcraft.util.XmlUtil;
@@ -60,8 +59,8 @@ public class XMLDeserialisationManager implements DeserialiserFactory, NodeIniti
 	}
 
 	public void processPlugins(PluginProvider manager) {
-		for (PluginInfo<? extends XMLDeserialiser> info : manager.getPlugins(XMLDeserialiser.class))
-			registerDeserialiser(info.newInstance());
+		for (XMLDeserialiser deserialiser : manager.getPlugins(XMLDeserialiser.SERVICE_HANDLE))
+			registerDeserialiser(deserialiser);
 	}
 
 	public Object initInstance (Element element, Object ... constructorParameters) throws DeserialisationException

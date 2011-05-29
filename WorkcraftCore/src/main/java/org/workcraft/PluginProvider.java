@@ -23,9 +23,8 @@ package org.workcraft;
 
 import java.util.Collection;
 
-import org.workcraft.plugins.PluginInfo;
-
+import org.workcraft.interop.GlobalService;
 
 public interface PluginProvider {
-	public <T> Collection<PluginInfo<? extends T>> getPlugins(Class<T> interfaceType);
+	public <T> Collection<T> getPlugins(GlobalService<T> interfaceType);
 }

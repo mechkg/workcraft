@@ -27,8 +27,8 @@ import java.io.OutputStream;
 import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.plugins.stg.serialisation.DotGSerialiser;
 import org.workcraft.serialisation.Format;
@@ -67,7 +67,7 @@ public class DotGExporter implements Exporter {
 	}
 
 	@Override
-	public ExportJob getExportJob(final ServiceProvider modelServices) throws ServiceNotAvailableException {
+	public ExportJob getExportJob(final ModelServices modelServices) throws ServiceNotAvailableException {
 
 		final STGModel model = modelServices.getImplementation(STGModel.SERVICE_HANDLE);
 

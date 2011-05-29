@@ -10,7 +10,7 @@ public class CpogModule implements Module {
 	public void init(Framework framework) {
 		final PluginManager p = framework.getPluginManager();
 		
-		p.registerClass(ModelDescriptor.class, CpogModelDescriptor.class);
+		p.registerClass(ModelDescriptor.GLOBAL_SERVICE_HANDLE, new CpogModelDescriptor());
 		
 		/*		p.registerClass(XMLSerialiser.class, VisualCPOGGroupSerialiser.class);
 		p.registerClass(XMLSerialiser.class, VertexSerialiser.class);

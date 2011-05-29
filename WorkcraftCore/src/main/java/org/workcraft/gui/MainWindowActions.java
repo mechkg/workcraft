@@ -2,7 +2,6 @@ package org.workcraft.gui;
 
 import org.workcraft.Framework;
 import org.workcraft.exceptions.OperationCancelledException;
-import org.workcraft.exceptions.PluginInstantiationException;
 import org.workcraft.gui.actions.Action;
 import org.workcraft.interop.ServiceNotAvailableException;
 
@@ -85,11 +84,7 @@ public class MainWindowActions {
 		}
 		@Override
 		public void run(Framework framework) {
-			try {
-				framework.getPluginManager().reconfigure();
-			} catch (PluginInstantiationException e) {
-				e.printStackTrace();
-			}
+			framework.getPluginManager().doReconfigure();
 		};
 	};
 

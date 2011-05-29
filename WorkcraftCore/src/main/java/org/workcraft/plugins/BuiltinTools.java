@@ -15,13 +15,13 @@ public class BuiltinTools implements Module {
 	@Override
 	public void init(final Framework framework) {
 		final PluginManager p = framework.getPluginManager();
-		//p.registerClass(Tool.class, DotLayout.class, framework);
-		p.registerClass(Tool.class, NullLayout.class);
-		p.registerClass(Tool.class, RandomLayout.class);
+		//p.registerClass(Tool.SERVICE_HANDLE, DotLayout.SERVICE_HANDLE, framework);
+		p.registerClass(Tool.SERVICE_HANDLE, new NullLayout());
+		p.registerClass(Tool.SERVICE_HANDLE, new RandomLayout());
 		
-		p.registerClass(SettingsPage.class, DotLayoutSettings.class);
-		p.registerClass(SettingsPage.class, RandomLayoutSettings.class);
-		p.registerClass(SettingsPage.class, CommonVisualSettings.class);
+		p.registerClass(SettingsPage.SERVICE_HANDLE, new DotLayoutSettings());
+		p.registerClass(SettingsPage.SERVICE_HANDLE, new RandomLayoutSettings());
+		p.registerClass(SettingsPage.SERVICE_HANDLE, new CommonVisualSettings());
 	}
 
 	@Override

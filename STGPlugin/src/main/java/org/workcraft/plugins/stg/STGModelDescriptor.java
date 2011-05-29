@@ -8,7 +8,11 @@ import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.dom.VisualModelDescriptor;
 import org.workcraft.dom.math.MathModel;
+import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.gui.graph.GraphEditable;
+import org.workcraft.interop.ModelService;
+import org.workcraft.interop.ModelServices;
+import org.workcraft.interop.ModelServicesImpl;
 import org.workcraft.interop.ServiceHandle;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.interop.ServiceProviderImpl;
@@ -33,17 +37,18 @@ public class STGModelDescriptor implements ModelDescriptor
 	}
 
 	@Override
-	public ServiceProvider createServiceProvider(Model model, StorageManager storage) {
+	public ModelServices createServiceProvider(Model model, StorageManager storage) {
 		if(model instanceof STG)
 			return getServices((STG)model, (HistoryPreservingStorageManager)storage);
 		else
 			if(model instanceof VisualSTG)
 				return getServices((VisualSTG)model, (HistoryPreservingStorageManager)storage);
-			return ServiceProviderImpl.createLegacyServiceProvider(model);
+		throw new NotSupportedException();
+			//return ModelServicesImpl.createLegacyServiceProvider(model);
 	}
 
-	private static ServiceProviderImpl getVisualServices(final Function0<VisualSTG> visualStg, HistoryPreservingStorageManager storage) {
-		return ServiceProviderImpl.EMPTY
+	private static ModelServicesImpl getVisualServices(final Function0<VisualSTG> visualStg, HistoryPreservingStorageManager storage) {
+		return ModelServicesImpl.EMPTY
 		.plusDeferred(STGModel.SERVICE_HANDLE, new Initialiser<STGModel>(){
 			@Override
 			public STGModel create() {
@@ -56,14 +61,14 @@ public class STGModelDescriptor implements ModelDescriptor
 				return new StgGraphEditable(visualModel);
 			}
 		})
-		.plusDeferred(ServiceHandle.LegacyVisualModelService, asInitialiser(visualStg));
+		.plusDeferred(ModelService.LegacyVisualModelService, asInitialiser(visualStg));
 	}
 
-	public static ServiceProvider getServices(VisualSTG model, HistoryPreservingStorageManager storage) {
+	public static ModelServices getServices(VisualSTG model, HistoryPreservingStorageManager storage) {
 		return getServices(model.stg, Function0.Util.constant(model), storage);
 	}
 
-	public static ServiceProvider getServices(final STG model, final HistoryPreservingStorageManager storage) {
+	public static ModelServices getServices(final STG model, final HistoryPreservingStorageManager storage) {
 		return getServices(model, lazy(new Initialiser<VisualSTG>(){
 			@Override
 			public VisualSTG create() {
@@ -71,12 +76,12 @@ public class STGModelDescriptor implements ModelDescriptor
 			}}), storage);
 	}
 	
-	private static ServiceProvider getServices(final STG stg, final Function0<VisualSTG> visualStg, final HistoryPreservingStorageManager storage) {
-		return ServiceProviderImpl.EMPTY
+	private static ModelServices getServices(final STG stg, final Function0<VisualSTG> visualStg, final HistoryPreservingStorageManager storage) {
+		return ModelServicesImpl.EMPTY
 		.plus(ModelDescriptor.SERVICE_HANDLE, new STGModelDescriptor())
 		.plus(STGModel.SERVICE_HANDLE, stg)
 		.plus(HistoryPreservingStorageManager.SERVICE_HANDLE, storage)
-		.plus(ServiceHandle.LegacyMathModelService, stg)
+		.plus(ModelService.LegacyMathModelService, stg)
 		.plusAll(getVisualServices(visualStg, storage));
 	}
 }

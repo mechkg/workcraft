@@ -32,7 +32,6 @@ import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
 import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.plugins.PluginInfo;
 import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.ProgressMonitor;
 import org.workcraft.tasks.Result;
@@ -62,14 +61,12 @@ public class Export {
 	}
 	
 	static public ExportJob chooseBestExporter (PluginProvider provider, ModelServices modelServices, Format targetFormat) throws ServiceNotAvailableException {
-		Iterable<PluginInfo<? extends Exporter>> plugins = provider.getPlugins(Exporter.class);
+		Iterable<Exporter> exporters = provider.getPlugins(Exporter.SERVICE_HANDLE);
 		
 		ExportJob best = null;
 		int bestCompatibility = -1;
 		
-		for (PluginInfo<? extends Exporter> info : plugins) {
-			Exporter exporter = info.getSingleton();
-			
+		for (Exporter exporter : exporters) {
 			if (exporter.getTargetFormat().equals(targetFormat)) {
 				ExportJob exportJob;
 				try {

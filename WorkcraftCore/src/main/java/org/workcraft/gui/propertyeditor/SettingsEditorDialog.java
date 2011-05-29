@@ -42,7 +42,6 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.workcraft.Framework;
 import org.workcraft.gui.MainWindow;
-import org.workcraft.plugins.PluginInfo;
 
 public class SettingsEditorDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -152,8 +151,7 @@ public class SettingsEditorDialog extends JDialog {
 	}
 	
 	private void loadSections() {
-		for (PluginInfo<? extends SettingsPage> info : framework.getPluginManager().getPlugins(SettingsPage.class)) {
-			SettingsPage e = info.getSingleton();
+		for (SettingsPage e : framework.getPluginManager().getPlugins(SettingsPage.SERVICE_HANDLE)) {
 			addItem (e.getSection(), e);
 		}
 		

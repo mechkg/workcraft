@@ -13,27 +13,22 @@ import org.workcraft.plugins.stg.serialisation.ImplicitPlaceArcDeserialiser;
 import org.workcraft.plugins.stg.serialisation.ImplicitPlaceArcSerialiser;
 import org.workcraft.serialisation.xml.XMLDeserialiser;
 import org.workcraft.serialisation.xml.XMLSerialiser;
-import org.workcraft.util.Initialiser;
 
 public class STGModule implements Module {
 
 	@Override
 	public void init(Framework framework) {
 		final PluginManager p = framework.getPluginManager();
-		p.registerClass(ModelDescriptor.class, STGModelDescriptor.class);
 		
-		p.registerClass(XMLSerialiser.class, ImplicitPlaceArcSerialiser.class);
-		p.registerClass(XMLDeserialiser.class, ImplicitPlaceArcDeserialiser.class);
+		p.registerClass(ModelDescriptor.GLOBAL_SERVICE_HANDLE, new STGModelDescriptor());
 		
-		p.registerClass(Exporter.class, new Initialiser<Exporter>(){
-
-			@Override
-			public Exporter create() {
-				return new DotGExporter();
-			}} );
-		p.registerClass(Importer.class, DotGImporter.class);
+		p.registerClass(XMLSerialiser.SERVICE_HANDLE, new ImplicitPlaceArcSerialiser());
+		p.registerClass(XMLDeserialiser.SERVICE_HANDLE, new ImplicitPlaceArcDeserialiser());
 		
-		p.registerClass(SettingsPage.class, STGSettings.class);
+		p.registerClass(Exporter.SERVICE_HANDLE, new DotGExporter());
+		p.registerClass(Importer.SERVICE_HANDLE, new DotGImporter());
+		
+		p.registerClass(SettingsPage.SERVICE_HANDLE, new STGSettings());
 	}
 
 	@Override

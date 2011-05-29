@@ -23,7 +23,11 @@ package org.workcraft.workspace;
 
 import java.io.File;
 
+import org.workcraft.interop.GlobalService;
+
 public interface FileHandler {
+	public static GlobalService<FileHandler> SERVICE_HANDLE = GlobalService.createNewService(FileHandler.class, "File handler");
+	
 	public boolean accept (File f);
 	public void execute (File f);
 	public String getDisplayName();

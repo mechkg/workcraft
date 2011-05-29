@@ -27,6 +27,8 @@ import java.io.InputStream;
 import org.workcraft.exceptions.DeserialisationException;
 
 public interface Importer {
+	public static final GlobalService<Importer> SERVICE_HANDLE = GlobalService.createNewService(Importer.class, "Importer");
+	
 	public boolean accept (File file);
 	public String getDescription();
 	public ModelServices importFrom (InputStream in) throws DeserialisationException, IOException;

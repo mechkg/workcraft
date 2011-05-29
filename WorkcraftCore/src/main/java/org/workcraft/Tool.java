@@ -21,10 +21,13 @@
 
 package org.workcraft;
 
+import org.workcraft.interop.GlobalService;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public interface Tool {
+	public static final GlobalService<Tool> SERVICE_HANDLE = GlobalService.createNewService(Tool.class, "Tool");
+	
 	public String getSection();
 	public String getDisplayName();
 	public ToolJob applyTo(WorkspaceEntry we) throws ServiceNotAvailableException;

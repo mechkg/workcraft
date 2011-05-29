@@ -8,10 +8,10 @@ import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.gui.workspace.Path;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.serialisation.Format;
 import org.workcraft.util.Export;
-import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.Workspace;
 import org.workcraft.workspace.WorkspaceEntry;
 
@@ -28,12 +28,12 @@ public class DotGProvider {
 		final WorkspaceEntry we = workspace.getOpenFile(source);
 
 		if (we != null) {
-			final ModelEntry modelEntry = we.getModelEntry();
+			final ModelServices modelEntry = we.getModelEntry();
 
 			try {
 				final String prefix = "workcraft-stg";
 				final File file = File.createTempFile(prefix, ".g");
-				Export.exportToFile(modelEntry.services, file, Format.STG, framework.getPluginManager());
+				Export.exportToFile(modelEntry, file, Format.STG, framework.getPluginManager());
 				return file;
 			} catch (final IOException e) {
 				throw new RuntimeException(e);

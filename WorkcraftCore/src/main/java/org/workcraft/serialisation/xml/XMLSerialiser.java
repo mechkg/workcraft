@@ -21,7 +21,11 @@
 
 package org.workcraft.serialisation.xml;
 
+import org.workcraft.interop.GlobalService;
+
 
 public interface XMLSerialiser {
+	public static final GlobalService<XMLSerialiser> SERVICE_HANDLE = GlobalService.createNewService(XMLSerialiser.class, "XML serialiser");
+	
 	public String getClassName();
 }

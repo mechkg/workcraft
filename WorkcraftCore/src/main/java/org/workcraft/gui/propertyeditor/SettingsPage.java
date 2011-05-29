@@ -22,8 +22,12 @@
 package org.workcraft.gui.propertyeditor;
 
 import org.workcraft.Config;
+import org.workcraft.interop.GlobalService;
 
 public interface SettingsPage extends Properties  {
+	
+	GlobalService<SettingsPage> SERVICE_HANDLE = GlobalService.createNewService(SettingsPage.class, "A Workcraft settings page");
+	
 	public void save (Config config);
 	public void load (Config config);
 	

@@ -2,9 +2,9 @@ package org.workcraft.plugins.stg;
 
 import java.io.File;
 
-import org.workcraft.interop.ServiceHandle;
+import org.workcraft.interop.ModelService;
 
 public interface DotGFile {
 	public File getFile();
-	public static ServiceHandle<DotGFile> SERVICE_HANDLE = ServiceHandle.createNewService(DotGFile.class, ".g file"); 
+	public static ModelService<DotGFile> SERVICE_HANDLE = ModelService.createNewService(DotGFile.class, ".g file"); 
 }

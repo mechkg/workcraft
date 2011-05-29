@@ -85,10 +85,7 @@ import org.workcraft.interop.Exporter;
 import org.workcraft.interop.Importer;
 import org.workcraft.interop.ModelService;
 import org.workcraft.interop.ModelServices;
-import org.workcraft.interop.ServiceHandle;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.interop.ServiceProvider;
-import org.workcraft.plugins.PluginInfo;
 import org.workcraft.tasks.Task;
 import org.workcraft.util.Export;
 import org.workcraft.util.FileUtils;
@@ -866,15 +863,7 @@ public class MainWindow extends JFrame {
 		if (lastOpenPath != null)
 			fc.setCurrentDirectory(new File(lastOpenPath));
 
-
-		Collection<PluginInfo<? extends Importer>> importerInfo = framework.getPluginManager().getPlugins(Importer.class);
-		Importer[] importers = new Importer[importerInfo.size()];
-
-		int cnt = 0;
-
-		for (PluginInfo<? extends Importer> info : importerInfo) {
-			importers[cnt++] = info.getSingleton();
-		}
+		Collection<Importer> importers = framework.getPluginManager().getPlugins(Importer.SERVICE_HANDLE);
 
 		fc.setAcceptAllFileFilterUsed(false);
 

@@ -10,16 +10,13 @@ import org.workcraft.Framework;
 import org.workcraft.Tool;
 import org.workcraft.ToolJob;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.plugins.PluginInfo;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class Tools {
 	public static ListMap<String, Pair<String, ToolJob>> getTools(WorkspaceEntry we, Framework framework) {
 		ListMap<String, Pair<String, ToolJob>> toolSections = new ListMap<String, Pair<String, ToolJob>>();
 
-		for (PluginInfo<? extends Tool> info : framework.getPluginManager().getPlugins(Tool.class)) {
-			Tool tool = info.getSingleton();
-
+		for (Tool tool : framework.getPluginManager().getPlugins(Tool.SERVICE_HANDLE)) {
 			try {
 				ToolJob toolJob = tool.applyTo(we);
 				toolSections.put(tool.getSection(), new Pair <String,ToolJob> (tool.getDisplayName(), toolJob));

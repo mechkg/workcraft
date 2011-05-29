@@ -72,6 +72,21 @@ public interface Maybe<T> {
 			});
 		};
 		
+		public static <T> T orElseDo(Maybe<? extends T> maybe, final Function0<T> fallBack) {
+			return maybe.accept(new MaybeVisitor<T, T>() {
+
+				@Override
+				public T visitJust(T just) {
+					return just;
+				}
+
+				@Override
+				public T visitNothing() {
+					return fallBack.apply();
+				}
+			});
+		};
+		
 		public static <T> void doIfJust(final Maybe<? extends T> maybe, final Action1<? super T> action) {
 			maybe.accept(new MaybeVisitor<T, Nothing>() {
 

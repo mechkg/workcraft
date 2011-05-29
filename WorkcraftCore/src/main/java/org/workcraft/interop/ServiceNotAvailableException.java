@@ -12,7 +12,7 @@ public class ServiceNotAvailableException extends Exception {
 		super(message);
 	}
 	
-	public ServiceNotAvailableException(ServiceHandle<?> service) {
+	public ServiceNotAvailableException(ServiceHandle<?, ?> service) {
 		super("Service not available: " + service.toString());
 	}
 

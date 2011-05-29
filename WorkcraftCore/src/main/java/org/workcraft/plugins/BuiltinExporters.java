@@ -3,8 +3,6 @@ package org.workcraft.plugins;
 import org.workcraft.Framework;
 import org.workcraft.Module;
 import org.workcraft.PluginManager;
-import org.workcraft.interop.Exporter;
-import org.workcraft.plugins.interop.AbstractSVGExporter;
 
 public class BuiltinExporters implements Module {
 	@Override

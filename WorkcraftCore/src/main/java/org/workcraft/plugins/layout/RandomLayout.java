@@ -21,6 +21,8 @@
 
 package org.workcraft.plugins.layout;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+
 import java.util.Random;
 
 import org.workcraft.Tool;
@@ -29,12 +31,10 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualTransformableNode;
-import org.workcraft.interop.ServiceHandle;
+import org.workcraft.interop.ModelService;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.interop.ServiceProvider;
 import org.workcraft.workspace.WorkspaceEntry;
-
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class RandomLayout implements Tool {
 	Random r = new Random();
@@ -46,8 +46,8 @@ public class RandomLayout implements Tool {
 
 	@Override
 	public ToolJob applyTo(WorkspaceEntry entry) throws ServiceNotAvailableException {
-		final ServiceProvider services = entry.getModelEntry();
-		final VisualModel model = services.getImplementation(ServiceHandle.LegacyVisualModelService);
+		final ModelServices services = entry.getModelEntry();
+		final VisualModel model = services.getImplementation(ModelService.LegacyVisualModelService);
 		return new ToolJob() {
 			
 			@Override

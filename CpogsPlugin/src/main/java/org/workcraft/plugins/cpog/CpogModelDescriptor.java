@@ -17,8 +17,8 @@ import org.workcraft.gui.graph.GraphEditable;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.propertyeditor.EditableProperty;
-import org.workcraft.interop.ServiceProvider;
-import org.workcraft.interop.ServiceProviderImpl;
+import org.workcraft.interop.ModelServices;
+import org.workcraft.interop.ModelServicesImpl;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 
 import pcollections.PVector;
@@ -31,10 +31,10 @@ public class CpogModelDescriptor implements ModelDescriptor {
 	}
 
 	@Override
-	public ServiceProvider newDocument() {
+	public ModelServices newDocument() {
 		final CPOG cpog = new CPOG(new HistoryPreservingStorageManager());
 		
-		return ServiceProviderImpl.EMPTY
+		return ModelServicesImpl.EMPTY
 			.plus(GraphEditable.SERVICE_HANDLE, new GraphEditable() {
 				
 				@Override
@@ -63,7 +63,7 @@ public class CpogModelDescriptor implements ModelDescriptor {
 	}
 
 	@Override
-	public ServiceProvider createServiceProvider(Model model, StorageManager storage) {
+	public ModelServices createServiceProvider(Model model, StorageManager storage) {
 		throw new NotSupportedException();
 	}
 }

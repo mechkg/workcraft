@@ -30,8 +30,8 @@ import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.PluginInfo;
 import org.workcraft.serialisation.Format;
 import org.workcraft.tasks.ProgressMonitor;
@@ -61,7 +61,7 @@ public class Export {
 		}
 	}
 	
-	static public ExportJob chooseBestExporter (PluginProvider provider, ServiceProvider modelServices, Format targetFormat) throws ServiceNotAvailableException {
+	static public ExportJob chooseBestExporter (PluginProvider provider, ModelServices modelServices, Format targetFormat) throws ServiceNotAvailableException {
 		Iterable<PluginInfo<? extends Exporter>> plugins = provider.getPlugins(Exporter.class);
 		
 		ExportJob best = null;
@@ -90,12 +90,12 @@ public class Export {
 		return best;
 	}
 	
-	static public void exportToFile (ServiceProvider modelServices, File file, Format targetFormat, PluginProvider provider) throws IOException, ModelValidationException, ServiceNotAvailableException, SerialisationException {
+	static public void exportToFile (ModelServices modelServices, File file, Format targetFormat, PluginProvider provider) throws IOException, ModelValidationException, ServiceNotAvailableException, SerialisationException {
 		ExportJob exporter = chooseBestExporter(provider, modelServices, targetFormat);
 		exportToFile(exporter, file);
 	}
 	
-	static public ExportTask createExportTask (ServiceProvider modelServices, File file, Format targetFormat, PluginProvider provider) throws ServiceNotAvailableException {
+	static public ExportTask createExportTask (ModelServices modelServices, File file, Format targetFormat, PluginProvider provider) throws ServiceNotAvailableException {
 		ExportJob exporter = chooseBestExporter(provider, modelServices, targetFormat);
 		return new ExportTask(exporter, file);
 	}

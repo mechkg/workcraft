@@ -38,7 +38,7 @@
 				<plugin>
 					<groupId>org.scala-tools</groupId>
 					<artifactId>maven-scala-plugin</artifactId>
-					<version>2.9.1</version>
+					<version>2.15.2</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -79,6 +79,7 @@
 			<plugin>
 				<groupId>org.scala-tools</groupId>
 				<artifactId>maven-scala-plugin</artifactId>
+    			<version>2.15.2</version>
 				<!-- <executions> <execution> <goals> <goal>add-source</goal> <goal>compile</goal> 
 					<goal>testCompile</goal> </goals> </execution> </executions> -->
 				<executions>
@@ -118,7 +119,6 @@
 <properties>
   <scala.version>2.9.0</scala.version>
 </properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -126,17 +126,15 @@
 			<version>4.8.2</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.workcraft</groupId>
 			<artifactId>WorkcraftCore</artifactId>
 			<version>2.1-SNAPSHOT</version>
 		</dependency>
-		
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
-			<version>2.9.0.RC3</version>
+			<version>2.9.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.workcraft</groupId>
@@ -145,17 +143,10 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		
-  <dependency>
-    <groupId>org.scalaz</groupId>
-    <artifactId>scalaz-core_${scala.version}</artifactId>
-    <version>6.0.RC2</version>
-  </dependency>
-  <dependency>
-    <groupId>org.scalaz</groupId>
-    <artifactId>scalaz-http_${scala.version}</artifactId>
-    <version>6.0.RC2</version>
-  </dependency>
-		
+        <dependency>
+          <groupId>org.scalaz</groupId>
+          <artifactId>scalaz-core_${scala.version}</artifactId>
+          <version>6.0.RC2</version>
+        </dependency>
 	</dependencies>
 </project>

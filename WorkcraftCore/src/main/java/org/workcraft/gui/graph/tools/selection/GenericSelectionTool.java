@@ -31,12 +31,10 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
-import org.workcraft.gui.graph.tools.AbstractTool;
 import org.workcraft.gui.graph.tools.DragHandle;
 import org.workcraft.gui.graph.tools.DragHandler;
 import org.workcraft.gui.graph.tools.DummyMouseListener;
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
-import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.HitTester;
 import org.workcraft.util.Geometry;
 

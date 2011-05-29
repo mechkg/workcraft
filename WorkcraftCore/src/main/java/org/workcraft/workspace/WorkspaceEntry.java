@@ -24,18 +24,18 @@ package org.workcraft.workspace;
 import java.io.File;
 
 import org.workcraft.gui.workspace.Path;
-import org.workcraft.interop.ServiceProvider;
+import org.workcraft.interop.ModelServices;
 
 import checkers.nullness.quals.Nullable;
 
 public class WorkspaceEntry 
 {
-	private final @Nullable ServiceProvider modelServices;
+	private final @Nullable ModelServices modelServices;
 	private boolean changed = true;
 	private boolean temporary = true;
 	private final Workspace workspace;
 
-	public WorkspaceEntry(Workspace workspace, @Nullable ServiceProvider modelServices) {
+	public WorkspaceEntry(Workspace workspace, @Nullable ModelServices modelServices) {
 		this.workspace = workspace;
 		this.modelServices = modelServices;
 	}
@@ -51,7 +51,7 @@ public class WorkspaceEntry
 		return changed;
 	}
 	
-	public ServiceProvider getModelEntry()
+	public ModelServices getModelEntry()
 	{
 		return modelServices;
 	}

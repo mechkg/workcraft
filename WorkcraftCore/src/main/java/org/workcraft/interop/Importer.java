@@ -29,5 +29,5 @@ import org.workcraft.exceptions.DeserialisationException;
 public interface Importer {
 	public boolean accept (File file);
 	public String getDescription();
-	public ServiceProvider importFrom (InputStream in) throws DeserialisationException, IOException;
+	public ModelServices importFrom (InputStream in) throws DeserialisationException, IOException;
 }

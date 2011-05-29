@@ -52,7 +52,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.ModelDescriptor;
-import org.workcraft.dom.math.MathModel;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.FormatException;
@@ -61,9 +60,9 @@ import org.workcraft.exceptions.PluginInstantiationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.propertyeditor.SettingsPage;
-import org.workcraft.interop.ServiceHandle;
+import org.workcraft.interop.ModelService;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.PluginInfo;
 import org.workcraft.plugins.serialisation.XMLModelDeserialiser;
 import org.workcraft.plugins.serialisation.XMLModelSerialiser;
@@ -498,7 +497,7 @@ public class Framework {
 		contextFactory.call(setargs);
 	}
 
-	public ServiceProvider load(String path) throws DeserialisationException {
+	public ModelServices load(String path) throws DeserialisationException {
 		try {
 			FileInputStream fis = new FileInputStream(path);
 			return load(fis);
@@ -570,7 +569,7 @@ public class Framework {
 		};
 	}
 	
-	public ServiceProvider load(InputStream is) throws DeserialisationException   {
+	public ModelServices load(InputStream is) throws DeserialisationException   {
 		try {
 			byte[] bufferedInput = DataAccumulator.loadStream(is);
 
@@ -606,7 +605,7 @@ public class Framework {
 		} 
 	}
 
-	public void save(ServiceProvider model, String path) throws SerialisationException, ServiceNotAvailableException {
+	public void save(ModelServices model, String path) throws SerialisationException, ServiceNotAvailableException {
 		File file = new File(path);
 		try {
 			FileOutputStream stream = new FileOutputStream(file);
@@ -620,11 +619,11 @@ public class Framework {
 	}
 	
 	public interface CustomSaver {
-		public static final ServiceHandle<CustomSaver> SERVICE_HANDLE = ServiceHandle.createNewService(CustomSaver.class, "A custom model saver");
+		public static final ModelService<CustomSaver> SERVICE_HANDLE = ModelService.createNewService(CustomSaver.class, "A custom model saver");
 		void write(OutputStream out);
 	}
 
-	public void save(ServiceProvider modelEntry, OutputStream out) throws SerialisationException, ServiceNotAvailableException {
+	public void save(ModelServices modelEntry, OutputStream out) throws SerialisationException, ServiceNotAvailableException {
 		try {
 			modelEntry.getImplementation(CustomSaver.SERVICE_HANDLE).write(out);
 		} catch(ServiceNotAvailableException ex) {
@@ -632,8 +631,8 @@ public class Framework {
 		}
 	}
 	
-	public void saveDefault(ServiceProvider modelEntry, OutputStream out) throws SerialisationException, ServiceNotAvailableException {
-		Model mathModel = modelEntry.getImplementation(ServiceHandle.LegacyMathModelService);
+	public void saveDefault(ModelServices modelEntry, OutputStream out) throws SerialisationException, ServiceNotAvailableException {
+		Model mathModel = modelEntry.getImplementation(ModelService.LegacyMathModelService);
 
 		ZipOutputStream zos = new ZipOutputStream(out);
 
@@ -669,7 +668,7 @@ public class Framework {
 			root.appendChild(math);
 
 			try {
-				VisualModel visualModel = modelEntry.getImplementation(ServiceHandle.LegacyVisualModelService);
+				VisualModel visualModel = modelEntry.getImplementation(ModelService.LegacyVisualModelService);
 				visualSerialiser = new XMLModelSerialiser(getPluginManager());
 
 				visualEntryName = "visualModel" + visualSerialiser.getExtension();

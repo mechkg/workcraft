@@ -1,14 +1,14 @@
 package org.workcraft.interop;
 
-import org.workcraft.dom.math.MathModel;
-import org.workcraft.dom.visual.VisualModel;
 
 /**
  * Instances of this class represent the service type keys for the ServiceProvider interface.
  * @param <T>
  * The type the service has to inherit from.
+ * @param <Scope>
+ * Identifies the scope this service makes sense in. Serves make unrelated service providers type-incompatible.  
  */
-public final class ServiceHandle<T> {
+public final class ServiceHandle<Scope, T> {
 	
 	private Class<T> type;
 	private String serviceName;
@@ -37,18 +37,12 @@ public final class ServiceHandle<T> {
 	 * @return
 	 * The new service handle with the specified type and serviceName.
 	 */
-	public static <T> ServiceHandle<T> createNewService(Class<T> type, String serviceName) {
-		return new ServiceHandle<T>(type, serviceName);
+	public static <S,T> ServiceHandle<S,T> createNewService(Class<T> type, String serviceName) {
+		return new ServiceHandle<S,T>(type, serviceName);
 	}
 	
 	@Override
 	public String toString() {
 		return serviceName + " (of type " + type + ")";
 	}
-	
-	
-	@Deprecated
-	public static ServiceHandle<MathModel> LegacyMathModelService = ServiceHandle.createNewService(MathModel.class, "A math model");
-	@Deprecated
-	public static ServiceHandle<VisualModel> LegacyVisualModelService = ServiceHandle.createNewService(VisualModel.class, "A visual model");
 }

@@ -39,10 +39,10 @@ public interface Exporter {
 	 * The job to export the model
 	 * @throws ServiceNotAvailableException
 	 */
-	public ExportJob getExportJob(ServiceProvider modelServices) throws ServiceNotAvailableException;
+	public ExportJob getExportJob(ModelServices modelServices) throws ServiceNotAvailableException;
 	
 	public class Util {
-		public static @Nullable ExportJob tryGetExportJob(Exporter exporter, ServiceProvider modelServices) {
+		public static @Nullable ExportJob tryGetExportJob(Exporter exporter, ModelServices modelServices) {
 			try { return exporter.getExportJob(modelServices); }
 			catch (ServiceNotAvailableException ex) { return null; }
 		}

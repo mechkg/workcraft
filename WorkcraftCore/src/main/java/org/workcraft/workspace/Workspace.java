@@ -41,7 +41,7 @@ import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.gui.workspace.Path;
 import org.workcraft.interop.Importer;
-import org.workcraft.interop.ServiceProvider;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.util.FileUtils;
 import org.workcraft.util.Import;
 import org.workcraft.util.LinkedTwoWayMap;
@@ -102,7 +102,7 @@ public class Workspace {
 				if(we.getWorkspacePath().equals(workspacePath))
 					return we;
 
-			final ServiceProvider modelServices;
+			final ModelServices modelServices;
 			if (file.getName().endsWith(".work")) {
 				if (workspacePath == null)
 					workspacePath = tempMountExternalFile(file);
@@ -185,7 +185,7 @@ public class Workspace {
 		return null;
 	}
 
-	public WorkspaceEntry add(Path<String> directory, String desiredName, ServiceProvider modelEntry, boolean temporary) {
+	public WorkspaceEntry add(Path<String> directory, String desiredName, ModelServices modelEntry, boolean temporary) {
 		final Path<String> path = newName(directory, desiredName);
 		WorkspaceEntry we = new WorkspaceEntry(this, modelEntry);
 		we.setTemporary(temporary);

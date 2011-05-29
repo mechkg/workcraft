@@ -1,6 +1,6 @@
 package org.workcraft.interop;
 
 
-public interface ServiceProvider {
-	<T> T getImplementation(ServiceHandle<T> service) throws ServiceNotAvailableException;
+public interface ServiceProvider<Scope> {
+	<T> T getImplementation(ServiceHandle<Scope, T> service) throws ServiceNotAvailableException;
 }

@@ -1,6 +1,6 @@
 package org.workcraft.plugins.interop;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
@@ -21,8 +21,8 @@ import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.interop.ServiceProvider;
 import org.workcraft.serialisation.Format;
 import org.workcraft.util.Action1;
 import org.workcraft.util.Maybe;
@@ -58,7 +58,7 @@ public class DotExporter implements Exporter {
 	}
 	
 	@Override
-	public ExportJob getExportJob(ServiceProvider modelServices) throws ServiceNotAvailableException {
+	public ExportJob getExportJob(ModelServices modelServices) throws ServiceNotAvailableException {
 		
 		DotExportableService exportableService = modelServices.getImplementation(DotExportableService.SERVICE_HANDLE);
 		final Model model = exportableService.getModel();

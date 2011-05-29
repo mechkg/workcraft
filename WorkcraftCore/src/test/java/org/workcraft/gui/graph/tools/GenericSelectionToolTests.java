@@ -7,8 +7,6 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.gui.graph.tools.selection.GenericSelectionTool;
 import org.workcraft.util.Function;
-import org.workcraft.util.Maybe;
-import static org.workcraft.util.Maybe.Util.*;
 
 import pcollections.HashTreePSet;
 import pcollections.PCollection;

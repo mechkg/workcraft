@@ -2,7 +2,6 @@ package org.workcraft.dom.visual;
 
 import java.awt.geom.Point2D;
 
-import org.workcraft.dependencymanager.advanced.core.Combinator;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dom.Node;

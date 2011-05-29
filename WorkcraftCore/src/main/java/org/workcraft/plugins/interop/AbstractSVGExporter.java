@@ -37,8 +37,8 @@ import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.interop.ServiceProvider;
 import org.workcraft.serialisation.Format;
 import org.workcraft.util.XmlUtil;
 
@@ -47,7 +47,7 @@ public abstract class AbstractSVGExporter implements Exporter {
 	public abstract void draw(Model model, Graphics2D g);
 
 	@Override
-	public ExportJob getExportJob(ServiceProvider modelServices) throws ServiceNotAvailableException {
+	public ExportJob getExportJob(ModelServices modelServices) throws ServiceNotAvailableException {
 		final SvgExportable exportable = modelServices.getImplementation(SvgExportable.SERVICE_HANDLE);
 
 		return new ExportJob() {

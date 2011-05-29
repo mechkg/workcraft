@@ -29,9 +29,9 @@ import org.workcraft.ToolJob;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualTransformableNode;
-import org.workcraft.interop.ServiceHandle;
+import org.workcraft.interop.ModelService;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.interop.ServiceProvider;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public class NullLayout implements Tool {
@@ -43,8 +43,8 @@ public class NullLayout implements Tool {
 
 	@Override
 	public ToolJob applyTo(WorkspaceEntry entry) throws ServiceNotAvailableException {
-		final ServiceProvider services = entry.getModelEntry();
-		final VisualModel model = services.getImplementation(ServiceHandle.LegacyVisualModelService);
+		final ModelServices services = entry.getModelEntry();
+		final VisualModel model = services.getImplementation(ModelService.LegacyVisualModelService);
 		return new ToolJob() {
 			
 			@Override

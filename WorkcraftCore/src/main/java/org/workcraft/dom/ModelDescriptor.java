@@ -1,16 +1,16 @@
 package org.workcraft.dom;
 
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.interop.ServiceHandle;
-import org.workcraft.interop.ServiceProvider;
+import org.workcraft.interop.ModelService;
+import org.workcraft.interop.ModelServices;
 
 public interface ModelDescriptor {
-	ServiceHandle<ModelDescriptor> SERVICE_HANDLE = ServiceHandle.createNewService(ModelDescriptor.class, "Model descriptor");
+	ModelService<ModelDescriptor> SERVICE_HANDLE = ModelService.createNewService(ModelDescriptor.class, "Model descriptor");
 	String getDisplayName();
 	/**
 	 * This method returns a ServiceProvider object representing all the services the model is capable of providing.
 	 */
-	ServiceProvider newDocument();
+	ModelServices newDocument();
 	/**
 	 * The method is called by the 'load' mechanism. This should be eliminated somehow.
 	 * @param model
@@ -18,5 +18,5 @@ public interface ModelDescriptor {
 	 * @return
 	 */
 	@Deprecated
-	ServiceProvider createServiceProvider(Model model, StorageManager storage);
+	ModelServices createServiceProvider(Model model, StorageManager storage);
 }

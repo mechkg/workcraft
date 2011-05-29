@@ -10,11 +10,11 @@ import java.util.Map;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.interop.ServiceHandle;
+import org.workcraft.interop.ModelService;
 
 public class HistoryPreservingStorageManager implements StorageManager {
 
-	public static final ServiceHandle<HistoryPreservingStorageManager> SERVICE_HANDLE = ServiceHandle.createNewService(HistoryPreservingStorageManager.class, "History preserving storage manager");
+	public static final ModelService<HistoryPreservingStorageManager> SERVICE_HANDLE = ModelService.createNewService(HistoryPreservingStorageManager.class, "History preserving storage manager");
 	HashSet<ModifiableExpression<?>> allVars = new HashSet<ModifiableExpression<?>>();
 	//private Map<ModifiableExpression<?>, Object> savedState;
 	

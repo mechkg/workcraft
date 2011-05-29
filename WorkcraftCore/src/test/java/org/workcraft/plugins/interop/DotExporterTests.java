@@ -23,8 +23,9 @@ import org.workcraft.exceptions.ModelValidationException;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.gui.propertyeditor.EditableProperty;
+import org.workcraft.interop.ModelServices;
+import org.workcraft.interop.ModelServicesImpl;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.interop.ServiceProviderImpl;
 
 import pcollections.PVector;
 import pcollections.TreePVector;
@@ -108,7 +109,7 @@ public class DotExporterTests {
 		DotExporter exporter = new DotExporter(TouchableProvider.DEFAULT);
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		final MockModel model = new MockModel(new MockNode(null, TreePVector.<MockNode>empty()));
-		ServiceProviderImpl serviceProviderImpl = ServiceProviderImpl.EMPTY.plus(DotExportableService.SERVICE_HANDLE, new DotExportableService(){
+		ModelServices serviceProviderImpl = ModelServicesImpl.EMPTY.plus(DotExportableService.SERVICE_HANDLE, new DotExportableService(){
 			@Override
 			public Model getModel() {
 				return model;

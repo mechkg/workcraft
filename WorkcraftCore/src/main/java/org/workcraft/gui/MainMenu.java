@@ -42,8 +42,8 @@ import org.workcraft.gui.actions.ActionMenuItem;
 import org.workcraft.gui.workspace.WorkspaceWindow;
 import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
-import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.PluginInfo;
 import org.workcraft.util.ListMap;
 import org.workcraft.util.Pair;
@@ -339,7 +339,7 @@ public class MainMenu extends JMenuBar {
 		mnExport.removeAll();
 		mnExport.setEnabled(false);
 
-		ServiceProvider modelServices = we.getModelEntry();
+		ModelServices modelServices = we.getModelEntry();
 		
 		for (PluginInfo<? extends Exporter> info : framework.getPluginManager().getPlugins(Exporter.class)) { 
 			Exporter exporter = info.getSingleton();

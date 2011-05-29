@@ -83,6 +83,8 @@ import org.workcraft.gui.workspace.WorkspaceWindow;
 import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
 import org.workcraft.interop.Importer;
+import org.workcraft.interop.ModelService;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceHandle;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.interop.ServiceProvider;
@@ -651,7 +653,7 @@ public class MainWindow extends JFrame {
 		if (dialog.getModalResult() == 1) {
 			ModelDescriptor info = dialog.getSelectedModel();
 			try {
-				ServiceProvider modelServices = info.newDocument();
+				ModelServices modelServices = info.newDocument();
 
 				String name = dialog.getModelTitle();
 
@@ -887,10 +889,10 @@ public class MainWindow extends JFrame {
 			for (File f : fc.getSelectedFiles()) {
 				for (Importer importer : importers) {
 					if (importer.accept(f)) {
-						ServiceProvider modelEntry;
+						ModelServices modelEntry;
 						try {
 							modelEntry = Import.importFromFile(importer, f);
-							try { modelEntry.getImplementation(ServiceHandle.LegacyMathModelService).setTitle(FileUtils.getFileNameWithoutExtension(f)); }
+							try { modelEntry.getImplementation(ModelService.LegacyMathModelService).setTitle(FileUtils.getFileNameWithoutExtension(f)); }
 							catch(ServiceNotAvailableException ex) {}
 							
 							WorkspaceEntry we = framework.getWorkspace().add(Path.<String>empty(), f.getName(), modelEntry, false);

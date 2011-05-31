@@ -9,14 +9,14 @@ import java.awt.geom.Point2D
 import org.workcraft.plugins.cpog.LabelPositioning
 import java.util.UUID
 
-package object snapshot {
+package snapshot {
 
 	sealed case class Id[Entity] (id : UUID) {
 	}
 	
 	sealed trait Node
 	
-	sealed case class VisualProperties(label: String, labelPositioning: LabelPositioning, position: Point2D)
+	sealed case class VisualProperties(label : String, labelPositioning: LabelPositioning, position: Point2D)
 	
 	sealed abstract case class Component(val visualProperties:VisualProperties) extends Node
 	
@@ -31,11 +31,14 @@ package object snapshot {
 	
 	case class Vertex(condition: BooleanFormula[Id[Variable]], override val visualProperties:VisualProperties) extends Component (visualProperties)
 	
-	case class Variable(state : VariableState, label : String, override val visualProperties:VisualProperties) extends Component (visualProperties)
+	case class Variable(state : VariableState, override val visualProperties:VisualProperties) extends Component (visualProperties)
 	
 	case class RhoClause(formula : BooleanFormula[Id[Variable]], override val visualProperties : VisualProperties) extends Component (visualProperties)
 	
-	type Storage[A]=Map[Id[A],A]
+	object CPOG {
+		type Storage[A]=Map[Id[A],A]
+	}
+	import CPOG._
 	
 	sealed case class CPOG(variables : Storage[Variable], vertices : Storage[Vertex], arcs : List[Arc], rhoClauses : List[RhoClause])
 }

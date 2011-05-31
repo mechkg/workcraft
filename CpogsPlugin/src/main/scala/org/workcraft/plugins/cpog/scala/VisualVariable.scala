@@ -24,7 +24,7 @@ package org.workcraft.plugins.cpog.scala {
       new ExpressionBase[BoundedColorisableGraphicalContent] {
         def evaluate(context: EvaluationContext) : BoundedColorisableGraphicalContent = {
           val state = context.resolve(variable.state)
-          val label = context.resolve(variable.label)
+          val label = context.resolve(variable.visualProperties.label)
           val fillColor = context.resolve(CommonVisualSettings.fillColor)
           val foreColor = context.resolve(CommonVisualSettings.foregroundColor)
           

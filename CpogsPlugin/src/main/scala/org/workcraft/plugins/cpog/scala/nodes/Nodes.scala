@@ -47,10 +47,10 @@ package org.workcraft.plugins.cpog.scala.nodes {
   
   case class Vertex(condition: ModifiableExpression[BooleanFormula[Variable]], override val visualProperties:VisualProperties) extends Component (visualProperties)
    
-  case class Variable(state:ModifiableExpression[VariableState], label: ModifiableExpression[String], override val visualProperties:VisualProperties) 
+  case class Variable(state:ModifiableExpression[VariableState], override val visualProperties:VisualProperties) 
   			extends Component (visualProperties) with Comparable[Variable] {
   
-    private def getLabel : String = eval(label)
+    private def getLabel : String = eval(visualProperties.label)
   
     override def compareTo(other:Variable) : Int = getLabel.compareTo(other.getLabel)
   }
@@ -68,7 +68,6 @@ package org.workcraft.plugins.cpog.scala.nodes {
     def create(storage:StorageManager, varName:ModifiableExpression[String]) : Variable = 
       Variable (
           storage.create(VariableState.UNDEFINED),
-          varName,
           VisualProperties(varName, storage.create(LabelPositioning.BOTTOM), storage.create(new Point2D.Double(0,0)))
           )
   }

@@ -47,14 +47,19 @@ object SnapshotMaker {
   }
   
   def makeSnapshot(nodes: Expression[_ <: java.lang.Iterable[_ <: M.Node]]) : CPOG = {
+    System.out.println("getting cpog")
     GlobalCache.eval(
     (for(
       nodes <- nodes;
-      builder <- makeSnapshot(javaCollectionToList[M.Node](nodes));
-      cpog <- {
-        val (CpogBuilding(cpog, _, _), _) = builder.buildWithCpog(CpogBuilding(constant(CPOG(Map.empty, Map.empty, List.empty, List.empty)), Map.empty, Map.empty))
-        cpog
-      }) yield cpog))
+      cpog <- doMakeSnapshot(javaCollectionToList[M.Node](nodes))
+      ) yield {System.out.println("here is your cpog"); cpog}))
+  }
+  
+  def doMakeSnapshot(nodes : List[M.Node]) : Expression[CPOG] = {
+    makeSnapshot(nodes).flatMap(builder => {
+      val (CpogBuilding(cpog, _, _), _) = builder.buildWithCpog(CpogBuilding(constant(CPOG(Map.empty, Map.empty, List.empty, List.empty)), Map.empty, Map.empty))
+	  cpog
+    })
   }
   
   def makeSnapshot(nodes: List[M.Node]): Expression[_ <: CpogBuilder[Unit]] = {
@@ -68,7 +73,7 @@ object SnapshotMaker {
   
   def snapshotVariableData(v : M.Variable) : Expression[Variable] = {
     v match {
-      case M.Variable(state, label, visualProperties) => for(state <- state ; label <- label; visualProperties <- makeSnapshot(visualProperties)) yield Variable(state, label, visualProperties)
+      case M.Variable(state, visualProperties) => for(state <- state ; visualProperties <- makeSnapshot(visualProperties)) yield Variable(state, visualProperties)
     }
   }
   
@@ -128,13 +133,38 @@ object SnapshotMaker {
     }
   }
 
+  def snapshotRhoClause(rho : M.RhoClause) : Expression[CpogBuilder[Unit]] = {
+    for(data <- snapshotRhoClauseData(rho)) yield 
+    data.flatMap(data =>
+    new CpogBuilder[Unit]{
+      def buildWithCpog(cpogBuilding : CpogBuilding) = {
+        val CpogBuilding(cpog, varCache, vertexCache) = cpogBuilding
+        val cpog2 = for(cpog <- cpog) yield {
+          val CPOG(variables, vertices, arcs, rhoClauses) = cpog
+          CPOG(variables, vertices, arcs, data :: rhoClauses)
+        }
+        (CpogBuilding(cpog2, varCache, vertexCache), ())
+      }
+    })
+  }
+  
+  def snapshotRhoClauseData(rho : M.RhoClause) : Expression[CpogBuilder[RhoClause]] = {
+    val M.RhoClause(formula, visual) = rho
+    for(formula <- formula; visual <- makeSnapshot(visual)) yield {
+      for(formula <- makeSnapshot(formula)) yield {
+        RhoClause(formula, visual)
+      }
+    }
+  }
+  
+  
   def snapshotVertex(vertex : M.Vertex) : Expression[CpogBuilder[Id[Vertex]]] = {
     val M.Vertex(condition, visualProperties) = vertex
     for (
       condition <- condition
     ) yield new CpogBuilder[Id[Vertex]] {
       def buildWithCpog(builder : CpogBuilding) : (CpogBuilding, Id[Vertex]) = {
-        val CpogBuilding(_, _, vertexCache) = builder;
+        val CpogBuilding(_, _, vertexCache) = builder
         val res : Option[(CpogBuilding, Id[Vertex])] = for(id <- vertexCache.get(vertex)) yield (builder, id)
         res.getOrElse({
           val id = newId[Vertex]
@@ -145,6 +175,7 @@ object SnapshotMaker {
             val CPOG(variables, vertices, arcs, rhoClauses) = cpog
             new CPOG(variables, vertices + ((id, Vertex(condition2, visualProperties))), arcs, rhoClauses)
           }
+          System.out.println(vertexCache.size.toString)
           (new CpogBuilding(cpog2, varCache, vertexCache+((vertex, id))), id)
         })
       }
@@ -156,6 +187,8 @@ object SnapshotMaker {
   def makeComponentSnapshot(component: M.Component): Expression[CpogBuilder[Unit]] = {
     component match {
       case v : M.Vertex => ignore(snapshotVertex(v))
+      case v : M.Variable => ignore(constant(snapshotVariable(v)))
+      case r : M.RhoClause => ignore(snapshotRhoClause(r))
     }
   }
 

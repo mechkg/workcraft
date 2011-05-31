@@ -32,7 +32,10 @@ public class CpogModelDescriptor implements ModelDescriptor {
 
 	@Override
 	public ModelServices newDocument() {
-		final CPOG cpog = new CPOG(new HistoryPreservingStorageManager());
+		return createCpogServices(new CPOG(new HistoryPreservingStorageManager()));
+	}
+	
+	public ModelServices createCpogServices(final CPOG cpog) {
 		
 		return ModelServicesImpl.EMPTY
 			.plus(GraphEditable.SERVICE_HANDLE, new GraphEditable() {

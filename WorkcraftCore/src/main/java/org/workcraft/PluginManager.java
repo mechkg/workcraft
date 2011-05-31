@@ -51,7 +51,7 @@ public class PluginManager implements PluginProvider {
 
 	private Framework framework;
 	
-	PluginCollection plugins;
+	PluginCollection plugins = PluginCollection.EMPTY;
 
 	public static class PluginInstanceHolder<T> implements PluginInfo<T>
 	{
@@ -235,6 +235,7 @@ public class PluginManager implements PluginProvider {
 	}
 
 	public void doReconfigure() {
+		plugins = PluginCollection.EMPTY;
 		initModules(reconfigure());
 	}
 }

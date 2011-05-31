@@ -753,18 +753,19 @@ public class MainWindow extends JFrame {
 	public void save(WorkspaceEntry we) throws OperationCancelledException, ServiceNotAvailableException {
 		if (!we.getFile().exists()) {
 			saveAs(we);
+		} else {
+			try {
+				if (we.getModelEntry() != null)
+					framework.save(we.getModelEntry(), we.getFile().getPath());
+				else
+					throw new RuntimeException ("Cannot save workspace entry - it does not have an associated Workcraft model.");
+			} catch (SerialisationException e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(this, e.getMessage(), "Model export failed", JOptionPane.ERROR_MESSAGE);			
+			}
+			we.setChanged(false);
+			lastSavePath = we.getFile().getParent();
 		}
-		try {
-			if (we.getModelEntry() != null)
-				framework.save(we.getModelEntry(), we.getFile().getPath());
-			else
-				throw new RuntimeException ("Cannot save workspace entry - it does not have an associated Workcraft model.");
-		} catch (SerialisationException e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(this, e.getMessage(), "Model export failed", JOptionPane.ERROR_MESSAGE);			
-		}
-		we.setChanged(false);
-		lastSavePath = we.getFile().getParent();
 	}
 
 	private static String removeSpecialFileNameCharacters(String fileName)

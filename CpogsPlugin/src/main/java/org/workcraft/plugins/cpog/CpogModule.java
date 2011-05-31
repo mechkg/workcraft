@@ -1,6 +1,7 @@
 package org.workcraft.plugins.cpog;
 
 import org.workcraft.Framework;
+import org.workcraft.Loader;
 import org.workcraft.Module;
 import org.workcraft.PluginManager;
 import org.workcraft.dom.ModelDescriptor;
@@ -11,6 +12,7 @@ public class CpogModule implements Module {
 		final PluginManager p = framework.getPluginManager();
 		
 		p.registerClass(ModelDescriptor.GLOBAL_SERVICE_HANDLE, new CpogModelDescriptor());
+		p.registerClass(Loader.SERVICE_HANDLE, new CpogLoader());
 		
 		/*		p.registerClass(XMLSerialiser.class, VisualCPOGGroupSerialiser.class);
 		p.registerClass(XMLSerialiser.class, VertexSerialiser.class);

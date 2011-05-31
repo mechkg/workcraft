@@ -36,7 +36,7 @@ package org.workcraft.plugins.cpog.scala {
     private def simpleLabel(label: String) = renderer.print(label)
 
     private def complexLabel(label: String, condition: BooleanFormula[Variable]) =
-        for(img <- renderer.renderM[Expression, Variable](condition)((v:Variable) => v.label))
+        for(img <- renderer.renderM[Expression, Variable](condition)((v:Variable) => v.visualProperties.label))
           yield simpleLabel(label + ": ") plus img 
 
     private def vertexGraphics(value: BooleanFormula[Variable], foreColor: Color, fillColor: Color) = {

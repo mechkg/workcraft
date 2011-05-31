@@ -33,7 +33,7 @@ case class FormulaRenderingResult(boundingBox : Rectangle2D,
 		val bb2 = boundingBox.plus(new Point2D.Double(
 				boundingBox.getMaxX() + summand.boundingBox.getWidth(), 
 				summand.boundingBox.getMinY()))
-		val visualTop2 = Math.min(visualTop, summand.visualTop);
+		val visualTop2 = math.min(visualTop, summand.visualTop);
 		
 		FormulaRenderingResult(bb2, visualTop2, glyphs2, inversionLines2)
 	}

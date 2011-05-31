@@ -37,14 +37,14 @@ import pcollections.TreePVector;
 import org.workcraft.plugins.cpog.scala.nodes.*;
 
 public class CPOG
-{
+{	
 	public final StorageManager storage;
 	
 	Function0<String> varNameGen = new CheckedPrefixNameGen("x_", new Function<String, Boolean>(){
 		@Override
 		public Boolean apply(String candidate) {
 			for(org.workcraft.plugins.cpog.scala.nodes.Variable var : eval(variables))
-				if(eval(var.label()).equals(candidate))
+				if(eval(var.visualProperties().label()).equals(candidate))
 					return false;
 			return true;
 		}
@@ -71,11 +71,23 @@ public class CPOG
 	}
 	
 	public CPOG(StorageManager storage) {
+		this(storage, 
+				TreePVector.<org.workcraft.plugins.cpog.scala.nodes.Variable>empty(),
+				TreePVector.<org.workcraft.plugins.cpog.scala.nodes.Vertex>empty(),
+				TreePVector.<org.workcraft.plugins.cpog.scala.nodes.RhoClause>empty(),
+				TreePVector.<org.workcraft.plugins.cpog.scala.nodes.Arc>empty());
+	}
+	
+	public CPOG(StorageManager storage,
+		PVector<org.workcraft.plugins.cpog.scala.nodes.Variable> variables,
+		PVector<org.workcraft.plugins.cpog.scala.nodes.Vertex> vertices,
+		PVector<org.workcraft.plugins.cpog.scala.nodes.RhoClause> rhoClauses,
+		PVector<org.workcraft.plugins.cpog.scala.nodes.Arc> arcs) {
+		this.variables = storage.create(variables);
+		this.vertices = storage.create(vertices);
+		this.rhoClauses = storage.create(rhoClauses);
+		this.arcs = storage.create(arcs);
 		this.storage = storage;
-		variables = createEmpty(storage);
-		vertices = createEmpty(storage);
-		rhoClauses = createEmpty(storage);
-		arcs = createEmpty(storage);
 	}
 	
 	static <T> void add(ModifiableExpression<PVector<T>> vec, T item) {

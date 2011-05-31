@@ -78,6 +78,7 @@ import org.workcraft.tasks.Task;
 import org.workcraft.tasks.TaskManager;
 import org.workcraft.util.DataAccumulator;
 import org.workcraft.util.FileUtils;
+import org.workcraft.util.Maybe;
 import org.workcraft.util.XmlUtil;
 import org.workcraft.workspace.Workspace;
 
@@ -569,9 +570,23 @@ public class Framework {
 	}
 	
 	public ModelServices load(InputStream is) throws DeserialisationException   {
+		byte[] bufferedInput;
 		try {
-			byte[] bufferedInput = DataAccumulator.loadStream(is);
-
+			bufferedInput = DataAccumulator.loadStream(is);
+		} catch (IOException e) {
+			throw new DeserialisationException(e);
+		}
+		
+		for(Loader loader : pluginManager.getPlugins(Loader.SERVICE_HANDLE)) {
+			ModelServices nullableModelServices = Maybe.Util.toNullable(loader.load(bufferedInput));
+			if(nullableModelServices != null)
+				return nullableModelServices;
+		}
+		return loadOld(bufferedInput);
+	}
+	
+	public ModelServices loadOld(byte [] bufferedInput)throws DeserialisationException {
+		try {
 			ModelFileMetadata metadata = getMetadata(new ByteArrayInputStream(bufferedInput));
 			
 			HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager(); 

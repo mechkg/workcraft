@@ -8,7 +8,7 @@ import org.workcraft.plugins.cpog.scala.{nodes=>M}
 
 trait CpogBuilder[+T] {
   self =>
-  def buildWithCpog(cpog: CpogBuilding): (CpogBuilding, T);
+  def buildWithCpog(cpog: CpogBuilding): (CpogBuilding, T)
   def map[R](f: T => R) = new CpogBuilder[R] {
     def buildWithCpog(cpog: CpogBuilding): (CpogBuilding, R) = {
       self.buildWithCpog(cpog) match {

@@ -32,7 +32,7 @@ package object formularendering {
 	  val withPodgonFontRenderContext = FormulaToGraphics(Label.podgonFontRenderContext()) 
 	  lazy val defaultFont = JavaFont.createFont(JavaFont.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/default.pfb")).deriveFont(0.5f);
 	  lazy val fancyFont = JavaFont.createFont(JavaFont.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/eurm10.pfb")).deriveFont(0.5f);
-	  def render(formula : BooleanFormula[VariableNode]) : Expression[FormulaRenderingResult] = withPodgonFontRenderContext.withFancyFont.renderM[Expression, VariableNode](formula)(variable => variable.label)
+	  def render(formula : BooleanFormula[VariableNode]) : Expression[FormulaRenderingResult] = withPodgonFontRenderContext.withFancyFont.renderM[Expression, VariableNode](formula)(variable => variable.visualProperties.label)
 	}
 	
 	case class FormulaToGraphics(fontRenderContext : FontRenderContext) {
@@ -125,7 +125,7 @@ package object formularendering {
 			for (x <- printer(formula.getX()); y <- printer(formula.getY())) yield x plus print(opSymbol) plus y
 		  }
 		  
-		  def printNot(x : BooleanFormula[Var]) : M[FormulaRenderingResult] = (new DefaultPrinter(printNot(_)) {
+		  def printNot(x : BooleanFormula[Var]) : M[FormulaRenderingResult] = (new DefaultPrinter(printLiteral(_)) {
 		    override def visit(node : Not[Var]) =
 				for (x <- printIff(node.getX())) yield x match {
 				  case FormulaRenderingResult(boundingBox, visualTop, glyphs, inversionLines) => {

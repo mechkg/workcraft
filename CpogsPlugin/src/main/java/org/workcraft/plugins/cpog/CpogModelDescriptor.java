@@ -37,18 +37,18 @@ public class CpogModelDescriptor implements ModelDescriptor {
 	
 	public ModelServices createCpogServices(final CPOG cpog) {
 		
+		final org.workcraft.plugins.cpog.scala.ToolsProvider tp = new org.workcraft.plugins.cpog.scala.ToolsProvider(cpog);
 		return ModelServicesImpl.EMPTY
 			.plus(GraphEditable.SERVICE_HANDLE, new GraphEditable() {
 				
 				@Override
 				public Expression<? extends PVector<EditableProperty>> properties() {
-					PVector<EditableProperty> empty = empty();
-					return constant(empty);
+					return tp.properties();
 				}
 				
 				@Override
 				public Iterable<? extends GraphEditorTool> createTools(GraphEditor editor) {
-					return org.workcraft.plugins.cpog.scala.ToolsProvider.getTools(cpog, editor.snapFunction());
+					return tp.tools(editor.snapFunction());
 				}
 			})
 			.plus(Framework.CustomSaver.SERVICE_HANDLE, new Framework.CustomSaver(){

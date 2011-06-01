@@ -10,6 +10,12 @@ import org.workcraft.plugins.cpog.LabelPositioning
 import pcollections.TreePVector
 import java.awt.geom.Rectangle2D
 import java.awt.BasicStroke
+import pcollections.PVector
+import org.workcraft.plugins.cpog.VariableState
+import org.workcraft.gui.propertyeditor.EditableProperty
+import org.workcraft.plugins.cpog.VisualComponent
+import org.workcraft.gui.propertyeditor.choice.ChoiceProperty
+import org.workcraft.util.Pair
 
 package org.workcraft.plugins.cpog.scala {
 
@@ -35,33 +41,29 @@ package org.workcraft.plugins.cpog.scala {
           compose (
         		  frame ::
         		  aligned (valueLabel, frame, HorizontalAlignment.Center, VerticalAlignment.Center) ::
-        		  sideways (nameLabel, frame, LabelPositioning.BOTTOM) ::
+        		  sideways (nameLabel, frame, context.resolve(variable.visualProperties.labelPositioning)) ::
         		  Nil
                 )
         }
       }
     }
+    
+	def getProperties(v : Variable) : PVector[EditableProperty] = {
+		val states = (TreePVector.empty[Pair[String, VariableState]]
+		.plus(Pair.of("[1] true", VariableState.TRUE))
+		.plus(Pair.of("[0] false", VariableState.FALSE))
+		.plus(Pair.of("[?] undefined", VariableState.UNDEFINED)))
+		
+		VisualComponent.getProperties(v.visualProperties)
+			.plus(ChoiceProperty.create("State", states, v.state));
+	}
+    
   }
 }
 /*
 
 public class VisualVariableGui
 {
-	private static double size = 1;
-	private static float strokeWidth = 0.08f;
-	
-	private static Font nameFont = FormulaRenderer.fancyFont;
-	private static Font valueFont = nameFont.deriveFont(0.75f);
-	
-	public static PVector<EditableProperty> getProperties(Variable var) {
-		PVector<Pair<String, VariableState>> states = TreePVector.<Pair<String, VariableState>>empty()
-		.plus(Pair.of("[1] true", VariableState.TRUE))
-		.plus(Pair.of("[0] false", VariableState.FALSE))
-		.plus(Pair.of("[?] undefined", VariableState.UNDEFINED));
-		
-		return VisualComponent.getProperties(var.visualVar)
-			.plus(ChoiceProperty.create("State", states, var.state));
-	}
 	
 	private static BoundedColorisableGraphicalContent makeLabel(final String formula) {
 		return FormulaToGraphics.print(formula, valueFont, Label.podgonFontRenderContext()).asBoundedColorisableImage();

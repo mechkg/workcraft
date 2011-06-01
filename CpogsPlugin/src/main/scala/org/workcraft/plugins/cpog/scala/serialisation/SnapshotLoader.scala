@@ -21,7 +21,7 @@ object SnapshotLoader {
       M.VisualProperties(sm.create(label), sm.create(labelPositioning), sm.create(position))
     }
     
-    val P.CPOG (variables : Map[P.Id[P.Variable],P.Variable], vertices, arcs, rhoClauses) = cpog
+    val P.CPOG (variables, vertices, arcs, rhoClauses) = cpog
     val mVariables = variables.map({ case (k, P.Variable(state, visual)) => (k, new M.Variable(sm.create(state), loadVisualProperties(visual))) }).toMap
     def formulaReplacer(formula : BooleanFormula[P.Id[P.Variable]]) = VariableReplacer.replace(asFunctionObject(mVariables.apply), formula)
     

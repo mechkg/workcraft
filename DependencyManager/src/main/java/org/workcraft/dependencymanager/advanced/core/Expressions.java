@@ -8,6 +8,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.PickyModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.PickyModifiableExpressionBase;
+import org.workcraft.dependencymanager.advanced.user.Setter;
 import org.workcraft.dependencymanager.util.listeners.Listener;
 import org.workcraft.util.Collections;
 import org.workcraft.util.Function;
@@ -67,7 +68,7 @@ public class Expressions {
 		};
 	}
 
-	public static <T> ModifiableExpression<T> modifiableExpression(final Expression<? extends T> getter, final ModifiableExpression<T> setter) {
+	public static <T> ModifiableExpression<T> modifiableExpression(final Expression<? extends T> getter, final Setter<T> setter) {
 		return new ModifiableExpression<T>() {
 
 			@Override

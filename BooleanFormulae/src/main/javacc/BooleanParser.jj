@@ -57,7 +57,7 @@ public class BooleanParser {
   
   public static BooleanFormula<String> parse(String text) throws ParseException
   {
-    return parse(text);
+    return new BooleanParser(new StringReader(text)).formula();
   }
 
   public static void main(String [] args) throws Exception

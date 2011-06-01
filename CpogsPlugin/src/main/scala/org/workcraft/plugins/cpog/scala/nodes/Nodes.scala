@@ -26,15 +26,6 @@ package org.workcraft.plugins.cpog.scala.nodes {
       case c : Component => visitor.visitComponent(c)
     }
   }
-  
-  /*object Component {
-    final def unapply(node : Node) : Some[Component] = node match {
-      case c : Vertex => Some(c)
-      case c : Variable => Some(c)
-      case c : RhoClause => Some(c)
-    }
-  }*/
-  
   sealed abstract case class Component(val visualProperties:VisualProperties) extends Node {
     final def accept[A](visitor : org.workcraft.plugins.cpog.ComponentVisitor[A]) = this match {
       case v : Vertex => visitor.visitVertex(v)

@@ -90,6 +90,10 @@ public class CPOG
 		this.storage = storage;
 	}
 	
+	public Expression<PVector<org.workcraft.plugins.cpog.scala.nodes.Variable>> variables() {
+		return variables;
+	}
+	
 	static <T> void add(ModifiableExpression<PVector<T>> vec, T item) {
 		vec.setValue(eval(vec).plus(item));
 	}

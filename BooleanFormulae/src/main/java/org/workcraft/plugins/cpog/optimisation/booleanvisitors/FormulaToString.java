@@ -49,6 +49,10 @@ public class FormulaToString extends BooleanVisitor<String, String>
 		}).apply(f).accept(new FormulaToString());
 	}
 	
+	public static <Var> String print(BooleanFormula<String> f) {
+		return f.accept(new FormulaToString());
+	}
+	
 	public static class Void{ private Void(){} }
 	public static class PrinterSuite
 	{

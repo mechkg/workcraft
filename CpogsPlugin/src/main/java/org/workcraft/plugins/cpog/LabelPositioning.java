@@ -1,12 +1,10 @@
 package org.workcraft.plugins.cpog;
 
-import static org.workcraft.dom.visual.BoundedColorisableGraphicalContent.*;
-import static pcollections.TreePVector.*;
+import static pcollections.TreePVector.empty;
 
-import java.awt.geom.Point2D;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
-import org.workcraft.dom.visual.BoundedColorisableGraphicalContent;
 import org.workcraft.util.Pair;
 
 import pcollections.PVector;
@@ -36,13 +34,10 @@ public enum LabelPositioning {
 		return positions;
 	}
 	
-	public static BoundedColorisableGraphicalContent positionRelative(Rectangle2D bb, LabelPositioning positioning, BoundedColorisableGraphicalContent image) {
-		BoundedColorisableGraphicalContent centered = centerToZero.apply(image);
+	public static AffineTransform positionRelative(Rectangle2D what, Rectangle2D relativeTo, LabelPositioning positioning) {
+		double tx = -what.getCenterX() + relativeTo.getCenterX() + 0.5 * positioning.dx * (relativeTo.getWidth() + what.getWidth() + 0.2);
+		double ty = -what.getCenterY() + relativeTo.getCenterY() + 0.5 * positioning.dy * (relativeTo.getHeight() + what.getHeight() + 0.2);
 		
-		Point2D labelPosition = new Point2D.Double(
-				bb.getCenterX() + 0.5 * positioning.dx * (bb.getWidth() + centered.boundingBox.getWidth() + 0.2),
-				bb.getCenterY() + 0.5 * positioning.dy * (bb.getHeight() + centered.boundingBox.getHeight() + 0.2));
-		
-		return translate(centered, labelPosition);
+		return AffineTransform.getTranslateInstance(tx, ty);
 	}
 }

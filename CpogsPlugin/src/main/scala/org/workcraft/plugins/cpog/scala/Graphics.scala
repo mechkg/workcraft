@@ -1,7 +1,5 @@
 import org.workcraft.dom.visual.DrawRequest
-
 import org.workcraft.gui.Coloriser
-
 import org.workcraft.dom.visual.GraphicalContent
 import org.workcraft.dom.visual.ColorisableGraphicalContent
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
@@ -9,27 +7,58 @@ import java.awt.geom.Ellipse2D
 import java.awt.geom.Rectangle2D
 import java.awt.Stroke
 import java.awt.Color
-
 import java.awt.BasicStroke
 import java.awt.Shape
 import java.awt.Font
 import org.workcraft.gui.Coloriser
 import java.awt.geom.AffineTransform
-
 import java.awt.geom.Point2D
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.dom.visual.VisualComponent
 import org.workcraft.plugins.cpog.scala.formularendering.FormulaToGraphics
-
 import org.workcraft.plugins.cpog.LabelPositioning
 import org.workcraft.plugins.cpog.scala.Util._
 import org.workcraft.plugins.cpog.scala.Expressions._
+import java.awt.geom.Path2D
+import org.workcraft.dom.visual.Touchable
+import org.workcraft.dom.visual.TransformHelper
+import java.awt.geom.PathIterator
+import org.workcraft.plugins.cpog.scala.touchable.TouchableUtil
 
 package org.workcraft.plugins.cpog.scala {
-  
   object Graphics {
+    
+  class RichGraphicalContent (val colorisableGraphicalContent : ColorisableGraphicalContent, val touchable : Touchable) { 
+    def transform (x:AffineTransform) : RichGraphicalContent = 
+      new RichGraphicalContent (Graphics.transform (colorisableGraphicalContent, x),
+                                TouchableUtil.transform (touchable, x))
+    
+    def translate (tx: Double, ty : Double) : RichGraphicalContent = transform (AffineTransform.getTranslateInstance(tx,ty))
+    
+    def translate (position : Point2D) : RichGraphicalContent = transform (AffineTransform.getTranslateInstance(position.getX, position.getY))
+    
+    def compose (a : RichGraphicalContent, b : RichGraphicalContent) : RichGraphicalContent =
+      new RichGraphicalContent (Graphics.compose(a.colorisableGraphicalContent, b.colorisableGraphicalContent),
+                                TouchableUtil.compose (a.touchable, b.touchable))
+    
+    
+    def `aligned to` (to : RichGraphicalContent, horizontalAlignment : HorizontalAlignment, verticalAlignment : VerticalAlignment) : RichGraphicalContent =
+      transform (alignTransform(touchable.getBoundingBox, to.touchable.getBoundingBox, horizontalAlignment, verticalAlignment))
+      
+    def `adjacent to` (relativeTo : RichGraphicalContent, position : LabelPositioning) : RichGraphicalContent =
+      transform (LabelPositioning.positionRelative (touchable.getBoundingBox, relativeTo.touchable.getBoundingBox, position))
+     
+    def over (x:RichGraphicalContent) = compose(this, x)
+  }
+  
+  object RichGraphicalContent {
+    val empty = new RichGraphicalContent ( BoundedColorisableGraphicalContent.EMPTY.graphics, TouchableUtil.empty)
+  }
+  
+  implicit def asBCGC (x : RichGraphicalContent) = new BoundedColorisableGraphicalContent (x.colorisableGraphicalContent, x.touchable.getBoundingBox) 
+  implicit def asTouchable (x : RichGraphicalContent) = x.touchable
     
   sealed trait HorizontalAlignment
   object HorizontalAlignment {
@@ -46,6 +75,7 @@ package org.workcraft.plugins.cpog.scala {
   	case object Center extends VerticalAlignment
   	case object None extends VerticalAlignment
   }
+  
         def transform (graphics : ColorisableGraphicalContent, transformation : AffineTransform) : ColorisableGraphicalContent =
       new ColorisableGraphicalContent {
         def draw (r : DrawRequest) {
@@ -71,38 +101,22 @@ package org.workcraft.plugins.cpog.scala {
     }
 
     def transform (graphics : BoundedColorisableGraphicalContent, transformation : AffineTransform) : BoundedColorisableGraphicalContent
-     = new BoundedColorisableGraphicalContent ( transform (graphics.graphics, transformation), transform (graphics.boundingBox, transformation)) 
+     = new BoundedColorisableGraphicalContent ( transform (graphics.graphics, transformation), transform (graphics.boundingBox, transformation))
     
+    def path (p: Path2D, stroke: BasicStroke, color : Color, touchThreshold : Double) = 
+      new RichGraphicalContent (Path.colorisableGraphicalContent(p, stroke, color), Path.touchable(p, touchThreshold))
     
-    def shape(s: Shape, stroke: BasicStroke, fillColor: Color, foregroundColor: Color) = new ColorisableGraphicalContent {
-      override def draw(r: DrawRequest) = {
-        val g = r.getGraphics();
-        val colorisation = r.getColorisation().getColorisation();
-
-        g.setStroke(stroke);
-
-        g.setColor(Coloriser.colorise(fillColor, colorisation));
-        g.fill(s);
-
-        g.setColor(Coloriser.colorise(foregroundColor, colorisation));
-        g.draw(s);
-      }
-    }
-
+   def shape (s: java.awt.Shape, stroke: BasicStroke, fillColor: Color, foregroundColor: Color) =
+     new RichGraphicalContent (Shape.colorisableGraphicalContent(s, stroke, fillColor, foregroundColor), Shape.touchable(s))
+    
     def rectangle(width: Double, height: Double, stroke: BasicStroke, fillColor: Color, foregroundColor: Color) =
-      shape(
+      shape (
         new Rectangle2D.Double(-width / 2, -height / 2, width, height),
         stroke,
         fillColor,
         foregroundColor
         )
-
-    def boundedRectangle(width: Double, height: Double, stroke: BasicStroke, fillColor: Color, foregroundColor: Color) =
-      new BoundedColorisableGraphicalContent(
-        rectangle(width, height, stroke, fillColor, foregroundColor),
-        new Rectangle2D.Double(-width / 2, -height / 2, width, height)
-        )
-
+        
     def circle(size: Double, stroke: BasicStroke, fillColor: Color, foregroundColor: Color) =
       shape(
         {
@@ -115,47 +129,28 @@ package org.workcraft.plugins.cpog.scala {
         foregroundColor
         )
         
-    def boundedCircle(size: Double, stroke: BasicStroke, fillColor: Color, foregroundColor: Color) = 
-      new BoundedColorisableGraphicalContent(
-        circle(size, stroke, fillColor, foregroundColor),
-        new Rectangle2D.Double(-size / 2, -size / 2, size, size)
-        )
+       
+    def label (text : String, font : Font, color : Color) = 
+      new RichGraphicalContent ( Label.colorisableGraphicalContent(text, font, color), Label.touchable(text, font))
     
-    def label (text : String, font : Font, color : Color) = new ColorisableGraphicalContent {
-      override def draw (r : DrawRequest) = {
-		val g = r.getGraphics
-        g.setFont(font)
-        g.setColor(Coloriser.colorise(color, r.getColorisation.getColorisation))
-		g.drawString(text, 0, 0)
-      }
-    }
-    
-    def boundedLabel(text : String, font : Font, color : Color) = 
-      new BoundedColorisableGraphicalContent(
-          label (text, font, color),
-          font.createGlyphVector (VisualComponent.podgonFontRenderContext, text).getVisualBounds
-          )
-    
-    def boundedFormulaLabel (formula : String, font : Font, color : Color) = 
-      formularendering.FormulaToGraphics(VisualComponent.podgonFontRenderContext).WithFont(font).print(formula).asBoundedColorisableImage(color)
+        
+    def formulaLabel (formula : String, font : Font, color : Color) =
+      formularendering.FormulaToGraphics(VisualComponent.podgonFontRenderContext).WithFont(font).print(formula).asRichGraphicalContent(color)
       
     def compose (a : BoundedColorisableGraphicalContent, b : BoundedColorisableGraphicalContent) = BoundedColorisableGraphicalContent.compose (a,b)
     
-    val compose = (a : GraphicalContent, b : GraphicalContent) => org.workcraft.util.Graphics.compose (a,b)
+    def compose (a : ColorisableGraphicalContent, b : ColorisableGraphicalContent) = org.workcraft.util.Graphics.compose (a,b)
     
-    def compose (list : List[BoundedColorisableGraphicalContent]) : BoundedColorisableGraphicalContent = list match {
-      case Nil => BoundedColorisableGraphicalContent.EMPTY
+    def compose (a : GraphicalContent, b : GraphicalContent) = org.workcraft.util.Graphics.compose (a,b)
+    
+    def compose (list : List[RichGraphicalContent]) : RichGraphicalContent = list match {
+      case Nil => RichGraphicalContent.empty
       case head :: Nil  => head
-      case head :: tail => tail.foldRight(head)((a,b)=>BoundedColorisableGraphicalContent.compose(a,b)) 
+      case head :: tail => tail.foldRight(head)((a,b)=> a over b) 
     }
     
-    def aligned (what: BoundedColorisableGraphicalContent, to : BoundedColorisableGraphicalContent, 
-        horizontalAlignment : HorizontalAlignment, verticalAlignment : VerticalAlignment) =
-      transform (what, alignTransform(what.boundingBox, to.boundingBox, horizontalAlignment, verticalAlignment))
       
-    def sideways (what: BoundedColorisableGraphicalContent, relativeTo : BoundedColorisableGraphicalContent, position : LabelPositioning) =
-      LabelPositioning.positionRelative (relativeTo.boundingBox, position, what)
-    
+   
     def alignTransform (what : Rectangle2D, to : Rectangle2D, horizontalAlignment : HorizontalAlignment, verticalAlignment : VerticalAlignment) : AffineTransform  = {
       val xTranslate = horizontalAlignment match {
         case HorizontalAlignment.Left   => to.getMinX - what.getMinX
@@ -173,6 +168,5 @@ package org.workcraft.plugins.cpog.scala {
       
       AffineTransform.getTranslateInstance(xTranslate, yTranslate)
     }
-      
   }
 }

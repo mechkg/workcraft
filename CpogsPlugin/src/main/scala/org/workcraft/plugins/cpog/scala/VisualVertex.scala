@@ -50,16 +50,16 @@ package org.workcraft.plugins.cpog.scala {
       else
         new BasicStroke(strokeWidth)
 
-      boundedCircle(size, stroke, fillColor, effectiveForeColor)
+      circle(size, stroke, fillColor, effectiveForeColor)
     }
     
-    private def labelGraphics(label: String, condition: BooleanFormula[Variable]) : Expression[BoundedColorisableGraphicalContent] =
+    private def labelGraphics(label: String, condition: BooleanFormula[Variable]) : Expression[RichGraphicalContent] =
       for(img <- if (condition == One.instance)
         implicitly[Monad[Expression]].pure(simpleLabel(label))
       else
-        complexLabel(label, condition)) yield img.asBoundedColorisableImage(Color.BLACK)
+        complexLabel(label, condition)) yield img.asRichGraphicalContent(Color.BLACK)
 
-    def image(vertex: Vertex): Expression[BoundedColorisableGraphicalContent] =
+    def image(vertex: Vertex): Expression[RichGraphicalContent] =
       for(
       	label <- vertex.visualProperties.label;
       	condition <- vertex.condition;
@@ -70,9 +70,8 @@ package org.workcraft.plugins.cpog.scala {
       	labelGraphics <- labelGraphics(label, condition)
       ) yield {
         val vg = vertexGraphics(value, foreColor, fillColor)
-        val lg = LabelPositioning.positionRelative(vg.boundingBox, labelPositioning, labelGraphics)
-
-        BoundedColorisableGraphicalContent.compose(vg, lg)
+        
+        labelGraphics `adjacent to` (vg, labelPositioning) over vg
       }
   }
 }

@@ -11,6 +11,7 @@ import pcollections.TreePVector
 import java.awt.geom.Rectangle2D
 import java.awt.BasicStroke
 import pcollections.PVector
+import org.workcraft.plugins.cpog.scala.Expressions._
 import org.workcraft.plugins.cpog.VariableState
 import org.workcraft.gui.propertyeditor.EditableProperty
 import org.workcraft.plugins.cpog.VisualComponent
@@ -22,31 +23,26 @@ package org.workcraft.plugins.cpog.scala {
   object VisualVariable {
     val size = 1;
     private val strokeWidth = 0.08f;
-    
-    private val nameFont = FormulaToGraphics.fancyFont;
-	private val valueFont = nameFont.deriveFont(0.75f);
 
-    def image(variable: Variable): Expression[BoundedColorisableGraphicalContent] = {
-      new ExpressionBase[BoundedColorisableGraphicalContent] {
-        def evaluate(context: EvaluationContext) : BoundedColorisableGraphicalContent = {
-          val state = context.resolve(variable.state)
-          val label = context.resolve(variable.visualProperties.label)
-          val fillColor = context.resolve(CommonVisualSettings.fillColor)
-          val foreColor = context.resolve(CommonVisualSettings.foregroundColor)
-          
-          val frame      = boundedRectangle (size, size, new BasicStroke (strokeWidth), fillColor, foreColor)
-          val valueLabel = boundedFormulaLabel (state.toString, valueFont, foreColor)
-          val nameLabel  = boundedFormulaLabel (label, nameFont, foreColor)
-          
-          compose (
-        		  frame ::
-        		  aligned (valueLabel, frame, HorizontalAlignment.Center, VerticalAlignment.Center) ::
-        		  sideways (nameLabel, frame, context.resolve(variable.visualProperties.labelPositioning)) ::
-        		  Nil
-                )
-        }
+    private val nameFont = FormulaToGraphics.fancyFont;
+    private val valueFont = nameFont.deriveFont(0.75f);
+
+    def image(variable: Variable): Expression[RichGraphicalContent] =
+      for (
+        state <- variable.state;
+        label <- variable.visualProperties.label;
+        fillColor <- CommonVisualSettings.fillColor;
+        foreColor <- CommonVisualSettings.foregroundColor;
+        labelPositioning <- variable.visualProperties.labelPositioning
+      ) yield {
+        val frame = rectangle(size, size, new BasicStroke(strokeWidth), fillColor, foreColor)
+        val valueLabel = formulaLabel(state.toString, valueFont, foreColor)
+        val nameLabel = formulaLabel(label, nameFont, foreColor)
+
+        valueLabel `aligned to` (frame, HorizontalAlignment.Center, VerticalAlignment.Center) over
+        nameLabel `adjacent to` (frame, labelPositioning) over
+        frame
       }
-    }
     
 	def getProperties(v : Variable) : PVector[EditableProperty] = {
 		val states = (TreePVector.empty[Pair[String, VariableState]]

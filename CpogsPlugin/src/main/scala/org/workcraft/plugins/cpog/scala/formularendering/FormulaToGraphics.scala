@@ -68,7 +68,7 @@ package object formularendering {
 				val subfont = font.deriveSubscript
 				
 				def render(font : Font, text : String) = {
-				  text.map(c => print(c)).foldLeft(FormulaRenderingResult.empty)(_ plus _)
+				  text.map(c => print(font, c)).foldLeft(FormulaRenderingResult.empty)(_ plus _)
 				}
 				
 				text.lastIndexOf('_') match {
@@ -77,7 +77,9 @@ package object formularendering {
 				}
 			}
 		
-		def print(c : Char) : FormulaRenderingResult = {
+	    def print(c : Char) : FormulaRenderingResult = print(font, c)
+	    
+		def print(font : Font, c : Char) : FormulaRenderingResult = {
 			val glyphs = font.createGlyphVector(c)
 			
 			FormulaRenderingResult(glyphs.getLogicalBounds(), 

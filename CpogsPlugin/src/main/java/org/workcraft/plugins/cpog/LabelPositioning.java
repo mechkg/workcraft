@@ -43,6 +43,6 @@ public enum LabelPositioning {
 				bb.getCenterX() + 0.5 * positioning.dx * (bb.getWidth() + centered.boundingBox.getWidth() + 0.2),
 				bb.getCenterY() + 0.5 * positioning.dy * (bb.getHeight() + centered.boundingBox.getHeight() + 0.2));
 		
-		return translate(image, labelPosition);
+		return translate(centered, labelPosition);
 	}
 }

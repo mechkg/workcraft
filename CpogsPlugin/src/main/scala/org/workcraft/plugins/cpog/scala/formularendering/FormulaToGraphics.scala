@@ -22,14 +22,16 @@ import org.workcraft.dependencymanager.advanced.core.Expression
 
 package object formularendering {
 	import RichRectangle2D._
-	
 
-	case class UseUnicode(value : Boolean) {}
-	implicit def useUnicode(value : Boolean) : UseUnicode = UseUnicode(value)
+	class UseUnicode(v : Boolean) {
+	  val value = v
+	}
+	
+	implicit def useUnicode(value : Boolean) : UseUnicode = new UseUnicode(value)
 	implicit val defaultUseUnicode : UseUnicode = true
 	
 	object FormulaToGraphics {
-	  val withPodgonFontRenderContext = FormulaToGraphics(Label.podgonFontRenderContext()) 
+	  val withPodgonFontRenderContext = FormulaToGraphics(org.workcraft.dom.visual.Label.podgonFontRenderContext()) 
 	  lazy val defaultFont = JavaFont.createFont(JavaFont.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/default.pfb")).deriveFont(0.5f);
 	  lazy val fancyFont = JavaFont.createFont(JavaFont.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/eurm10.pfb")).deriveFont(0.5f);
 	  def render(formula : BooleanFormula[VariableNode]) : Expression[FormulaRenderingResult] = withPodgonFontRenderContext.withFancyFont.renderM[Expression, VariableNode](formula)(variable => variable.visualProperties.label)

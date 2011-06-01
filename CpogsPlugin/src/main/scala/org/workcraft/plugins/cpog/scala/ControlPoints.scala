@@ -14,7 +14,6 @@ import java.awt.BasicStroke
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import java.awt.geom.Point2D
 import org.workcraft.gui.graph.tools.selection.MoveDragHandler
-import org.workcraft.plugins.cpog.ControlPoint
 import nodes._
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
@@ -26,12 +25,38 @@ import VisualArc._
 import scala.collection.JavaConversions.{ collectionAsScalaIterable, asJavaCollection }
 import org.workcraft.util.Maybe.Util.just
 import org.workcraft.plugins.cpog.gui.TouchableProvider.bbToTouchable
+import org.workcraft.plugins.cpog.scala.Graphics._
+import java.awt.geom.Path2D
+import java.awt.geom.Ellipse2D
+import org.workcraft.dom.visual.Touchable
 
 object ControlPoints {
-
   import Scalaz._
-
-
+  
+  val controlPointSize = 0.15
+  
+  def controlPointGraphics (position : Point2D) =
+    circle(controlPointSize, new BasicStroke(0), Color.BLUE, Color.BLUE) translate position
+  
+  def bezierControlPointGraphics(position : Expression[Point2D], vertexPosition : Expression[Point2D]) = 
+    for (
+        position <- position;
+        vertexPosition <- vertexPosition
+    ) yield {
+      
+     val p = new Path2D.Double()
+     p.moveTo(vertexPosition.getX, vertexPosition.getY)
+     p.lineTo(position.getX, position.getY)
+     
+     controlPointGraphics(position) over path (p, new BasicStroke(0.02f), Color.GRAY.brighter, 0)
+  }
+  
+  def polylineControlPointGraphics (position : Expression[Point2D]) =
+  for (
+        position <- position
+    ) yield 
+    controlPointGraphics(position)
+  
   def gogo (selection: Expression[Set[Node]], painter : Expression[GraphicalContent]) = {
     val snap: Point2D => Point2D = x => x
 	val highlightedColorisation = new Colorisation {
@@ -42,9 +67,10 @@ object ControlPoints {
     val selectedControlPoints = org.workcraft.dependencymanager.advanced.user.Variable.create[PSet[ControlPoint]](HashTreePSet.empty());
 
     def getNodeControlPoints(node: Node): Expression[List[ControlPoint]] = node match {
-      case Arc(_, _, _, visual) => for (visual <- visual : Expression[VisualArc]) yield visual match {
-        case Polyline(cps) => cps.map(x => new ControlPoint(x))
-        case Bezier(cp1, cp2) => new ControlPoint(cp1) :: new ControlPoint(cp2) :: Nil
+      case arc@Arc(_, _, _, visual) => for (visual <- visual : Expression[VisualArc]) yield visual match {
+        case Polyline(cps) => cps.map(x => new ControlPoint(x, polylineControlPointGraphics(x)))
+        case Bezier(cp1, cp2) => new ControlPoint(cp1, bezierControlPointGraphics(cp1, arc.first.visualProperties.position)) :: 
+                                 new ControlPoint(cp2, bezierControlPointGraphics(cp2, arc.second.visualProperties.position)) :: Nil
       }
       case Component(_) => constant(Nil)
     }
@@ -56,10 +82,10 @@ object ControlPoints {
     
     def controlPointMovableController(cp: ControlPoint) = just(cp.position)
     val cpDragHandler = new MoveDragHandler[ControlPoint](selectedControlPoints, asFunctionObject(controlPointMovableController), asFunctionObject(snap))
-    def cpGc(cp: ControlPoint) = for (position <- cp.position : Expression[Point2D])
-      yield BoundedColorisableGraphicalContent.translate(org.workcraft.plugins.cpog.scala.Graphics.boundedCircle(1, new BasicStroke(0), Color.BLUE, Color.RED), position);
-    val cpHitTester = CustomToolsProvider.createHitTester[ControlPoint](visibleControlPoints, asFunctionObject((cp : ControlPoint) => for (gc <- cpGc(cp)) yield bbToTouchable(gc.boundingBox)))
-    def cpPainter(cp: ControlPoint) = for (gc <- cpGc(cp)) yield gc.graphics
+        
+    val cpHitTester = CustomToolsProvider.createHitTester[ControlPoint](visibleControlPoints, asFunctionObject((cp : ControlPoint) => for (g <- cp.graphics) yield g.touchable))
+    def cpPainter(cp: ControlPoint) = for (g <- cp.graphics) yield g.graphics
+    
     val gcpet = new GenericSelectionTool[ControlPoint](selectedControlPoints, cpHitTester, cpDragHandler)
     val controlPointGC = CustomToolsProvider.drawWithHighlight[ControlPoint](highlightedColorisation, selectedControlPoints, asFunctionObject(cpPainter), visibleControlPoints);
     val controlPointEditorTool = new AbstractTool {

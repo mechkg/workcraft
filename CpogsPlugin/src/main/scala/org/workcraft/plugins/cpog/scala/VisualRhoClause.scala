@@ -21,7 +21,7 @@ package org.workcraft.plugins.cpog.scala {
     private val size: Double = 1
     private val strokeWidth: Float = 0.1f
 
-    def image(rhoClause: RhoClause) =
+    def image(rhoClause: RhoClause): Expression[RichGraphicalContent] =
       for (
         formula <- rhoClause.formula;
         value <- Util.formulaValue(formula);
@@ -36,17 +36,16 @@ package org.workcraft.plugins.cpog.scala {
         else
           foreColor
 
-		val formulaImage = printedFormula.asBoundedColorisableImage(formulaColor)
-		
-		val frameImage = boundedRectangle(
-		    formulaImage.boundingBox.getWidth + 0.4,
-		    formulaImage.boundingBox.getHeight + 0.4,
-		    new BasicStroke(strokeWidth),
-		    fillColor,
-		    foreColor)
-		
-		compose(frameImage,
-				  aligned(formulaImage, frameImage, HorizontalAlignment.Center, VerticalAlignment.Center)) : BoundedColorisableGraphicalContent
+        val formulaImage = printedFormula.asRichGraphicalContent(formulaColor)
+
+        val frameImage = rectangle(
+          formulaImage.boundingBox.getWidth + 0.4,
+          formulaImage.boundingBox.getHeight + 0.4,
+          new BasicStroke(strokeWidth),
+          fillColor,
+          foreColor)
+
+        formulaImage `aligned to` (frameImage, HorizontalAlignment.Center, VerticalAlignment.Center) over frameImage
       }
   }
 }

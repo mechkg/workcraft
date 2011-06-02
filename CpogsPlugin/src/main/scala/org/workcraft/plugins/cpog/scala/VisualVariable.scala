@@ -39,8 +39,8 @@ package org.workcraft.plugins.cpog.scala {
         val valueLabel = formulaLabel(state.toString, valueFont, foreColor)
         val nameLabel = formulaLabel(label, nameFont, foreColor)
 
-        valueLabel `aligned to` (frame, HorizontalAlignment.Center, VerticalAlignment.Center) over
-        nameLabel `adjacent to` (frame, labelPositioning) over
+        (valueLabel `aligned to` (frame, HorizontalAlignment.Center, VerticalAlignment.Center)) over
+        (nameLabel `adjacent to` (frame, labelPositioning)) over
         frame
       }
     

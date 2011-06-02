@@ -50,7 +50,7 @@ package org.workcraft.plugins.cpog.scala {
     def `adjacent to` (relativeTo : RichGraphicalContent, position : LabelPositioning) : RichGraphicalContent =
       transform (LabelPositioning.positionRelative (touchable.getBoundingBox, relativeTo.touchable.getBoundingBox, position))
      
-    def over (x:RichGraphicalContent) = compose(this, x)
+    def over (x:RichGraphicalContent) = compose(x, this)
   }
   
   object RichGraphicalContent {

@@ -41,11 +41,11 @@ package org.workcraft.plugins.cpog.scala {
         val frameImage = rectangle(
           formulaImage.boundingBox.getWidth + 0.4,
           formulaImage.boundingBox.getHeight + 0.4,
-          new BasicStroke(strokeWidth),
-          fillColor,
-          foreColor)
+          Some ((new BasicStroke(strokeWidth),foreColor)),
+          Some (fillColor)
+          )
 
-        formulaImage `aligned to` (frameImage, HorizontalAlignment.Center, VerticalAlignment.Center) over frameImage
+        (formulaImage align (frameImage, HorizontalAlignment.Center, VerticalAlignment.Center)) over frameImage
       }
   }
 }

@@ -25,13 +25,15 @@ object TouchableProvider {
    
   def localTouchable (c : Component) : Expression[Touchable] =
     c match {
-      case _ : Vertex => Expressions.constant(vertexTouchable)
+      case v : Vertex => 
+        for ( image <- VisualVertex.image(v))
+        yield image.touchable
       case v : Variable =>
         for ( image <- VisualVariable.image(v) ) 
-        yield org.workcraft.plugins.cpog.gui.TouchableProvider.bbToTouchable(image.boundingBox);
+        yield image.touchable
       case r : RhoClause =>
         for ( image <- VisualRhoClause.image(r) ) 
-        yield org.workcraft.plugins.cpog.gui.TouchableProvider.bbToTouchable(image.boundingBox);
+        yield image.touchable
     }
   
   def touchable (transform: Component => Expression[AffineTransform])(node : Node) : Expression[Touchable] = node match {

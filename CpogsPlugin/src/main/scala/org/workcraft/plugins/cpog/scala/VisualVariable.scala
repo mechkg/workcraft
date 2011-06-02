@@ -35,12 +35,12 @@ package org.workcraft.plugins.cpog.scala {
         foreColor <- CommonVisualSettings.foregroundColor;
         labelPositioning <- variable.visualProperties.labelPositioning
       ) yield {
-        val frame = rectangle(size, size, new BasicStroke(strokeWidth), fillColor, foreColor)
+        val frame = rectangle(size, size, Some ((new BasicStroke(strokeWidth), foreColor)), Some(fillColor))
         val valueLabel = formulaLabel(state.toString, valueFont, foreColor)
         val nameLabel = formulaLabel(label, nameFont, foreColor)
 
-        (valueLabel `aligned to` (frame, HorizontalAlignment.Center, VerticalAlignment.Center)) over
-        (nameLabel `adjacent to` (frame, labelPositioning)) over
+        (valueLabel align (frame, HorizontalAlignment.Center, VerticalAlignment.Center)) over
+        (nameLabel alignSideways (frame, labelPositioning)) over
         frame
       }
     

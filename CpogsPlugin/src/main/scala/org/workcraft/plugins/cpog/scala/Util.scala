@@ -17,11 +17,11 @@ import org.workcraft.util.FieldAccessor
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import org.workcraft.util.Maybe
 import org.workcraft.dependencymanager.advanced.core.Expressions.{ fmap => javafmap, bind => javabind, asFunction, constant }
-
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.util.Function
 import org.workcraft.util.Function0
 import org.workcraft.util.Function2
+import org.workcraft.util.MaybeVisitor
 
 object Util {
   
@@ -36,6 +36,12 @@ object Util {
   implicit def asFunctionObject2[T1, T2, R](f: ((T1, T2) => R)) = new Function2[T1, T2, R] {
     def apply(x: T1, y: T2) = f(x, y)
   }
+  
+  implicit def asOption[T] (mb : Maybe[T]) : Option[T] = 
+    mb.accept ( new MaybeVisitor[T, Option[T]] {
+      def visitNothing = None
+      def visitJust (t : T) = Some(t)
+    })
 
   def bindFunc[A, B](a: Expression[_ <: A])(f: A => B): Expression[B] = javafmap(asFunctionObject(f), a)
   def bindFunc[A, B, C](a: Expression[_ <: A], b: Expression[_ <: B])(f: (A, B) => C): Expression[C] = javafmap(asFunctionObject2(f), a, b)

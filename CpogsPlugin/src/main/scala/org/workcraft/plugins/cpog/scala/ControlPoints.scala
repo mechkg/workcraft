@@ -36,7 +36,7 @@ object ControlPoints {
   val controlPointSize = 0.15
   
   def controlPointGraphics (position : Point2D) =
-    circle(controlPointSize, new BasicStroke(0), Color.BLUE, Color.BLUE) translate position
+    circle(controlPointSize, None, Some(Color.BLUE)) translate position
   
   def bezierControlPointGraphics(position : Expression[Point2D], vertexPosition : Expression[Point2D]) = 
     for (
@@ -48,7 +48,9 @@ object ControlPoints {
      p.moveTo(vertexPosition.getX, vertexPosition.getY)
      p.lineTo(position.getX, position.getY)
      
-     controlPointGraphics(position) over path (p, new BasicStroke(0.02f), Color.GRAY.brighter, 0)
+     val cpg = controlPointGraphics(position)
+     
+     cpg over (path (p, new BasicStroke(0.02f), Color.GRAY.brighter, 0), cpg.touchable) 
   }
   
   def polylineControlPointGraphics (position : Expression[Point2D]) =
@@ -69,7 +71,7 @@ object ControlPoints {
     def getNodeControlPoints(node: Node): Expression[List[ControlPoint]] = node match {
       case arc@Arc(_, _, _, visual) => for (visual <- visual : Expression[VisualArc]) yield visual match {
         case Polyline(cps) => cps.map(x => new ControlPoint(x, polylineControlPointGraphics(x)))
-        case Bezier(cp1, cp2) => new ControlPoint(cp1, bezierControlPointGraphics(cp1, arc.first.visualProperties.position)) :: 
+        case Bezier(cp1, cp2) => new ControlPoint(cp1, bezierControlPointGraphics(cp1, arc.first.visualProperties.position)) ::
                                  new ControlPoint(cp2, bezierControlPointGraphics(cp2, arc.second.visualProperties.position)) :: Nil
       }
       case Component(_) => constant(Nil)

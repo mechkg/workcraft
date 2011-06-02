@@ -18,5 +18,12 @@ object Label {
     }
   }
   
+  def visualBounds (text : String, font : Font) = font.createGlyphVector(VisualComponent.podgonFontRenderContext, text).getVisualBounds
+  
   def touchable (text : String, font : Font) = TouchableUtil.fromRectangle(font.createGlyphVector (VisualComponent.podgonFontRenderContext, text).getVisualBounds)
+  
+  def richGraphicalContent (text : String, font : Font, color : Color) = {
+    val bb = visualBounds(text, font)
+    new RichGraphicalContent(colorisableGraphicalContent(text, font, color), bb, TouchableUtil.fromRectangle(bb))
+  }
 }

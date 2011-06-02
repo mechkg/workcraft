@@ -22,6 +22,8 @@ object Path {
       g.draw(p)
     }
   }
+  
+  def visualBounds (p: Path2D) = p.getBounds2D
 
   def touchable(p: Path2D, threshold: Double) = new Touchable {
     val pathError = 0.01
@@ -80,8 +82,11 @@ object Path {
     override def hitTest(point: Point2D) = {
       testSegments(segments, point, threshold)
     }
-    override def getBoundingBox = p.getBounds
+    override def getBoundingBox = p.getBounds2D
     override def getCenter = new Point2D.Double(0, 0)
   }
+
+  def richGraphicalContent(p: Path2D, stroke: BasicStroke, color: Color, touchThreshold: Double) =
+    new RichGraphicalContent(colorisableGraphicalContent(p, stroke, color), visualBounds(p), touchable(p, touchThreshold))
 
 }

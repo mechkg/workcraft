@@ -1,6 +1,7 @@
 package org.workcraft.dom.visual.connections;
 
 import java.awt.geom.Point2D;
+import java.io.Serializable;
 
 import org.workcraft.util.Maybe;
 import org.workcraft.util.Function;
@@ -10,7 +11,8 @@ import static org.workcraft.util.Geometry.*;
 /**
  * A connection control point coordinate, in a coordinate system where the first connected component is at (0, 0) and the second one is at (1, 0)
  */
-public class RelativePoint {
+public class RelativePoint implements Serializable {
+	private static final long serialVersionUID = 1L;
 	public RelativePoint(Point2D point) {
 		this.point = point;
 	}

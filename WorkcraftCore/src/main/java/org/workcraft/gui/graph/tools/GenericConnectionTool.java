@@ -29,10 +29,8 @@ import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 
 import javax.swing.Icon;
 
@@ -45,10 +43,11 @@ import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
+import org.workcraft.gui.graph.tools.GraphEditorTool.Button;
 import org.workcraft.util.Function;
 import org.workcraft.util.GUI;
 
-public class ConnectionTool<N> extends AbstractTool {
+public class GenericConnectionTool<N>  {
 	private final ModifiableExpression<N> mouseOverObject = Variable.create(null);
 	private final ModifiableExpression<N> first = Variable.create(null);
 
@@ -61,23 +60,13 @@ public class ConnectionTool<N> extends AbstractTool {
 	private final Function<? super Point2D, ? extends N> hitTester;
 	private final Function<? super N, ? extends Expression<? extends Point2D>> centerProvider;
 
-	public ConnectionTool (Function<? super N, ? extends Expression<? extends Point2D>> centerProvider, ConnectionController<? super N> connectionManager, Function<? super Point2D, ? extends N> hitTester) {
+	public GenericConnectionTool (Function<? super N, ? extends Expression<? extends Point2D>> centerProvider, ConnectionController<? super N> connectionManager, Function<? super Point2D, ? extends N> hitTester) {
 		this.centerProvider = centerProvider;
 		this.connectionManager = connectionManager;
 		this.hitTester = hitTester;
 	}
 
-	public Ellipse2D getBoundingCircle(Rectangle2D boundingRect) {
-
-		double w_2 = boundingRect.getWidth()/2;
-		double h_2 = boundingRect.getHeight()/2;
-		double r = Math.sqrt(w_2 * w_2 + h_2 * h_2);
-
-		return new Ellipse2D.Double(boundingRect.getCenterX() - r, boundingRect.getCenterY() - r, r*2, r*2);
-	}
-
-	@Override
-	public Expression<? extends GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
+	public Expression<GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
 		return connectingLineGraphicalContent(viewport);
 	}
 
@@ -89,7 +78,7 @@ public class ConnectionTool<N> extends AbstractTool {
 		return mouseOverObject;
 	}
 	
-	private Expression<? extends GraphicalContent> connectingLineGraphicalContent(final Viewport viewport) {
+	private Expression<GraphicalContent> connectingLineGraphicalContent(final Viewport viewport) {
 		return new ExpressionBase<GraphicalContent>(){
 
 			@Override
@@ -118,6 +107,7 @@ public class ConnectionTool<N> extends AbstractTool {
 				};
 			}
 			
+			
 		};
 	}
 
@@ -130,7 +120,6 @@ public class ConnectionTool<N> extends AbstractTool {
 		g.draw(line);
 	}
 
-	@Override
 	public GraphEditorMouseListener mouseListener() {
 		return new DummyMouseListener() {
 			@Override
@@ -182,9 +171,6 @@ public class ConnectionTool<N> extends AbstractTool {
 		};
 	}
 
-
-	
-	@Override
 	public Expression<? extends GraphicalContent> screenSpaceContent(final Viewport viewport, final Expression<Boolean> hasFocus) {
 		return new ExpressionBase<GraphicalContent>(){
 			@Override
@@ -211,8 +197,7 @@ public class ConnectionTool<N> extends AbstractTool {
 		};
 	}
 	
-	@Override
-	public Button getButton() {
+	public final Button button() {
 		return new Button() {
 			
 			@Override
@@ -227,12 +212,11 @@ public class ConnectionTool<N> extends AbstractTool {
 
 			@Override
 			public String getLabel() {
-				return "Connect";
+				return "Connection tool";
 			}
 		};
 	}
-
-	@Override
+	
 	public void deactivated() {
 		first.setValue(null);
 		mouseOverObject.setValue(null);

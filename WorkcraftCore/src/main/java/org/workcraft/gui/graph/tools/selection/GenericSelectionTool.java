@@ -23,8 +23,11 @@ package org.workcraft.gui.graph.tools.selection;
 
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+
+import javax.swing.Icon;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
@@ -36,6 +39,8 @@ import org.workcraft.gui.graph.tools.DragHandler;
 import org.workcraft.gui.graph.tools.DummyMouseListener;
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
 import org.workcraft.gui.graph.tools.HitTester;
+import org.workcraft.gui.graph.tools.GraphEditorTool.Button;
+import org.workcraft.util.GUI;
 import org.workcraft.util.Geometry;
 
 import pcollections.HashTreePSet;
@@ -235,4 +240,21 @@ public class GenericSelectionTool<Node> {
 			}
 		};
 	}
+	
+	final public static Button button = new Button() {
+		@Override
+		public String getLabel() {
+			return "Selection tool";
+		}
+		
+		@Override
+		public int getHotKeyCode() {
+			return KeyEvent.VK_S;
+		}
+		
+		@Override
+		public Icon getIcon() {
+			return GUI.createIconFromSVG("images/icons/svg/select.svg");
+		}
+	};
 }

@@ -32,7 +32,7 @@ package org.workcraft.plugins.cpog.scala.nodes {
       case r : RhoClause => visitor.visitRho(r)
     }
   }
-  
+   
   case class Arc (first : Vertex, second : Vertex, condition: ModifiableExpression[BooleanFormula[Variable]], visual : ModifiableExpression[VisualArc]) extends Node
   
   case class Vertex(condition: ModifiableExpression[BooleanFormula[Variable]], override val visualProperties:VisualProperties) extends Component (visualProperties)

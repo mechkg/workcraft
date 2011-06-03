@@ -20,6 +20,7 @@ import org.workcraft.dom.visual.VisualComponent
 import org.workcraft.plugins.cpog.scala.formularendering.FormulaToGraphics
 import org.workcraft.plugins.cpog.LabelPositioning
 import org.workcraft.plugins.cpog.scala.Util._
+import org.workcraft.plugins.cpog.scala.Scalaz._
 import org.workcraft.plugins.cpog.scala.Expressions._
 import java.awt.geom.Path2D
 import org.workcraft.dom.visual.Touchable
@@ -28,6 +29,7 @@ import java.awt.geom.PathIterator
 import org.workcraft.plugins.cpog.scala.touchable.TouchableUtil
 import org.workcraft.plugins.cpog.scala.RichGraphicalContent
 import org.workcraft.util.Maybe
+import org.workcraft.gui.graph.tools.Colorisation
 
 package org.workcraft.plugins.cpog.scala {
   object Graphics {
@@ -74,6 +76,24 @@ package org.workcraft.plugins.cpog.scala {
       
       new Rectangle2D.Double (minX, minY, maxX-minX, maxY-minY)
     }
+    
+    def colouriseWithHighlights[N](
+        highlightedColorisation : Colorisation, 
+        highlighted : Expression[_ <: java.util.Set[_ >: N]],
+        painter : N => Expression[ColorisableGraphicalContent]
+        ) : N => Expression[GraphicalContent] = {
+      (node : N) => 
+        for(highlighted <- highlighted; painter <- painter(node))
+        yield ColorisableGraphicalContent.Util.applyColourisation(painter, if (highlighted.contains(node)) highlightedColorisation else Colorisation.EMPTY)
+    }
+    
+    def dontColourise[N] (painter: N => Expression[ColorisableGraphicalContent]) : N => Expression[GraphicalContent]
+      = colouriseWithHighlights[N](Colorisation.EMPTY, constant(java.util.Collections.emptySet()), painter)
+      
+    def paint[N] (painter: N => Expression[GraphicalContent], nodes : Expression[_ <: Iterable[N]]) =
+        	for (nodes <- nodes;
+    	    graphics <- joinCollection (nodes.map(painter)))
+    	yield graphics.foldLeft(GraphicalContent.EMPTY)(Graphics.compose)
 
     def transform (graphics : BoundedColorisableGraphicalContent, transformation : AffineTransform) : BoundedColorisableGraphicalContent
      = new BoundedColorisableGraphicalContent ( transform (graphics.graphics, transformation), transform (graphics.boundingBox, transformation))
@@ -109,6 +129,9 @@ package org.workcraft.plugins.cpog.scala {
     def compose (a : ColorisableGraphicalContent, b : ColorisableGraphicalContent) = org.workcraft.util.Graphics.compose (a,b)
     
     def compose (a : GraphicalContent, b : GraphicalContent) = org.workcraft.util.Graphics.compose (a,b)
+    
+    def compose (a: Expression[GraphicalContent], b : Expression[GraphicalContent]) : Expression[GraphicalContent] = 
+      for (a <- a; b <- b) yield compose (a, b)
     
     def compose (list : List[RichGraphicalContent]) : RichGraphicalContent = list match {
       case Nil => RichGraphicalContent.empty

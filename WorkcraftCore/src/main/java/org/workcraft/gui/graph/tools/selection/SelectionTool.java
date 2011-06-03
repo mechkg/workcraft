@@ -22,7 +22,7 @@ import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
 import org.workcraft.gui.graph.tools.HierarchicalColorisator;
 import org.workcraft.util.GUI;
-
+@Deprecated // this needs to be thrown  out
 public class SelectionTool implements GraphEditorTool, DecorationProvider<Colorisator> {
 
 	private final GenericSelectionTool<Node> selectionTool;
@@ -96,22 +96,7 @@ public class SelectionTool implements GraphEditorTool, DecorationProvider<Colori
 		};
 	}
 	
-	public static Button identification = new Button() {
-		@Override
-		public String getLabel() {
-			return "Select";
-		}
-		
-		@Override
-		public int getHotKeyCode() {
-			return KeyEvent.VK_S;
-		}
-		
-		@Override
-		public Icon getIcon() {
-			return GUI.createIconFromSVG("images/icons/svg/select.svg");
-		}
-	};
+	
 	
 	protected static Color selectionColor = new Color(99, 130, 191).brighter();
 
@@ -145,6 +130,6 @@ public class SelectionTool implements GraphEditorTool, DecorationProvider<Colori
 
 	@Override
 	public Button getButton() {
-		return identification;
+		throw new RuntimeException ("This class is deprecated");
 	}
 }

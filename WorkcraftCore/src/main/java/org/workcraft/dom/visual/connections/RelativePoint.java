@@ -1,0 +1,34 @@
+package org.workcraft.dom.visual.connections;
+
+import java.awt.geom.Point2D;
+
+import org.workcraft.util.Maybe;
+import org.workcraft.util.Function;
+
+import static org.workcraft.util.Geometry.*;
+
+/**
+ * A connection control point coordinate, in a coordinate system where the first connected component is at (0, 0) and the second one is at (1, 0)
+ */
+public class RelativePoint {
+	public RelativePoint(Point2D point) {
+		this.point = point;
+	}
+	
+	public static RelativePoint ONE_THIRD = new RelativePoint(new Point2D.Double(1.0/3.0, 0.0));
+	public static RelativePoint TWO_THIRDS = new RelativePoint(new Point2D.Double(2.0/3.0, 0.0));
+	
+	public final Point2D point;
+	public Point2D toSpace(Point2D p1, Point2D p2) {
+		return add(p1, complexMultiply(point, subtract(p2, p1)));
+	}
+	
+	public static Maybe<RelativePoint> fromSpace(final Point2D p1, final Point2D p2, final Point2D p) {
+		return Maybe.Util.applyFunc(complexInverse(subtract(p2, p1)), new Function<Point2D, RelativePoint>(){
+			@Override
+			public RelativePoint apply(Point2D inverted) {
+				return new RelativePoint(complexMultiply(subtract(p, p1), inverted));
+			}
+		});
+	}
+}

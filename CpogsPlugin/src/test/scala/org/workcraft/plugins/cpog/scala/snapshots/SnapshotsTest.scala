@@ -8,6 +8,7 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache.eval
 import org.workcraft.plugins.cpog.LabelPositioning
 import java.awt.geom.Point2D
 import scala.collection.JavaConversions._
+import org.workcraft.dom.visual.connections.RelativePoint
 
 class SnapshotsTest {
     val sm = new org.workcraft.plugins.stg.HistoryPreservingStorageManager
@@ -38,8 +39,8 @@ class SnapshotsTest {
             , sm.create(one)
             , sm.create
                 (VisualArc.Bezier
-                    ( sm.create(new Point2D.Double(0.3, 0))
-                    , sm.create(new Point2D.Double(0.7, 0))
+                    ( sm.create(RelativePoint.ONE_THIRD)
+                    , sm.create(RelativePoint.TWO_THIRDS)
                     )
                 )
             )

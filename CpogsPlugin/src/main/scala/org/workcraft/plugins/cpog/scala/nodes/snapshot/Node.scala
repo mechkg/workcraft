@@ -8,6 +8,13 @@ import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import java.awt.geom.Point2D
 import org.workcraft.plugins.cpog.LabelPositioning
 import java.util.UUID
+import org.workcraft.dom.visual.connections.VisualConnectionData
+import org.workcraft.dom.visual.connections.StaticConnectionDataVisitor
+import org.workcraft.dom.visual.connections.StaticBezierData
+import org.workcraft.dom.visual.connections.StaticPolylineData
+import scala.collection.JavaConversions.asJavaList
+import org.workcraft.dom.visual.connections.StaticVisualConnectionData
+import org.workcraft.dom.visual.connections.RelativePoint
 
 package snapshot {
 
@@ -20,11 +27,20 @@ package snapshot {
 	
 	sealed abstract case class Component(val visualProperties:VisualProperties) extends Node
 	
-	sealed abstract class VisualArc
+	sealed abstract class VisualArc extends StaticVisualConnectionData
 	
 	object VisualArc {
-		sealed case class Bezier(cp1 : Point2D, cp2 : Point2D) extends VisualArc
-		sealed case class Polyline(cps : List[Point2D]) extends VisualArc
+		sealed case class Bezier(override val cp1 : RelativePoint, override val cp2 : RelativePoint) extends VisualArc with StaticBezierData {
+		  override def accept[T](visitor : StaticConnectionDataVisitor[T]) = {
+      		visitor.visitBezier(this)
+		  }
+		}
+		sealed case class Polyline(cps : List[Point2D]) extends VisualArc with StaticPolylineData {
+		  override def controlPoints = asJavaList(cps)
+		  override def accept[T](visitor : StaticConnectionDataVisitor[T]) = {
+      		visitor.visitPolyline(this)
+		  }
+		}
 	}
 	
 	sealed case class Arc (first : Id[Vertex], second : Id[Vertex], condition: BooleanFormula[Id[Variable]], visual : VisualArc) extends Node

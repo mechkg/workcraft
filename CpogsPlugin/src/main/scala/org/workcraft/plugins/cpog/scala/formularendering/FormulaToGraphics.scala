@@ -85,7 +85,7 @@ package object formularendering {
 			val glyphs = font.createGlyphVector(c)
 			
 			FormulaRenderingResult(glyphs.getLogicalBounds(), 
-			    glyphs.getVisualBounds().getMinY(),
+			    glyphs.getVisualBounds(),
 			    List((glyphs, new Point2D.Double(0, 0))),
 			    List());
 		}
@@ -132,12 +132,14 @@ package object formularendering {
 		  def printNot(x : BooleanFormula[Var]) : M[FormulaRenderingResult] = (new DefaultPrinter(printLiteral(_)) {
 		    override def visit(node : Not[Var]) =
 				for (x <- printIff(node.getX())) yield x match {
-				  case FormulaRenderingResult(boundingBox, visualTop, glyphs, inversionLines) => {
+				  case FormulaRenderingResult(logicalBounds, visualBounds, glyphs, inversionLines) => {
+				    val lineOffset = -font.size / 8.0
+				    
 				    val inversionLines2 = new Line2D.Double(
-				    		boundingBox.getMinX(), visualTop,
-				    		boundingBox.getMaxX(), visualTop) :: inversionLines
-				    val boundingBox2 = boundingBox.plus(new Point2D.Double(boundingBox.getMaxX(), boundingBox.getMinY() - font.size / 8.0))
-				    FormulaRenderingResult(boundingBox2, visualTop - font.size / 8.0, glyphs, inversionLines2)
+				    		visualBounds.getMinX(), visualBounds.getMinY + lineOffset,
+				    		visualBounds.getMaxX(), visualBounds.getMinY + lineOffset) :: inversionLines
+				    val logicalBounds2 = logicalBounds.plus(new Point2D.Double(logicalBounds.getMaxX(), logicalBounds.getMinY() + lineOffset))
+				    FormulaRenderingResult(logicalBounds2, visualBounds.plus (new Point2D.Double(visualBounds.getMinX, visualBounds.getMinY + lineOffset)), glyphs, inversionLines2)
 				  }
 				}
 		  }) (x)

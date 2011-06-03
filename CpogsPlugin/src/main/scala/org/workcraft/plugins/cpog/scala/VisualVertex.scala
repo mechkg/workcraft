@@ -50,7 +50,7 @@ package org.workcraft.plugins.cpog.scala {
       else
         new BasicStroke(strokeWidth)
 
-      circle(size, stroke, fillColor, effectiveForeColor)
+      circle(size, Some((stroke, effectiveForeColor)), Some(fillColor))
     }
     
     private def labelGraphics(label: String, condition: BooleanFormula[Variable]) : Expression[RichGraphicalContent] =
@@ -71,7 +71,7 @@ package org.workcraft.plugins.cpog.scala {
       ) yield {
         val vg = vertexGraphics(value, foreColor, fillColor)
         
-        labelGraphics `adjacent to` (vg, labelPositioning) over vg
+        (labelGraphics alignSideways (vg, labelPositioning)) over (vg, vg.touchable)
       }
   }
 }

@@ -1,5 +1,4 @@
 
-
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.user.StorageManager
 import org.workcraft.plugins.cpog.optimisation.expressions.One

@@ -7,26 +7,41 @@ import java.awt.Color
 import java.awt.geom.Point2D
 import java.awt.BasicStroke
 import org.workcraft.dom.visual.Touchable
+import org.workcraft.util.Maybe
+import java.awt.Stroke
 
 object Shape {
-  def colorisableGraphicalContent(s: java.awt.Shape, stroke: BasicStroke, fillColor: Color, foregroundColor: Color) = new ColorisableGraphicalContent {
+  def colorisableGraphicalContent(s: java.awt.Shape, stroke: Option[(Stroke, Color)], fillColor: Option[Color]) = new ColorisableGraphicalContent {
     override def draw(r: DrawRequest) = {
-      val g = r.getGraphics();
-      val colorisation = r.getColorisation().getColorisation();
-
-      g.setStroke(stroke);
-
-      g.setColor(Coloriser.colorise(fillColor, colorisation));
-      g.fill(s);
-
-      g.setColor(Coloriser.colorise(foregroundColor, colorisation));
-      g.draw(s);
+      val g = r.getGraphics()
+      val colorisation = r.getColorisation().getColorisation()
+      
+      for (color <- fillColor) {
+        g.setColor(Coloriser.colorise(color, colorisation))
+        g.fill(s)
+      }
+      
+      for ((stroke, color) <- stroke) {
+        g.setStroke(stroke)
+        g.setColor(Coloriser.colorise(color, colorisation))
+        g.draw(s)
+      }
     }
   }
-
-  def touchable(s: java.awt.Shape) = new Touchable {
-    override def hitTest(point: Point2D) = s.contains(point)
-    override def getBoundingBox = s.getBounds
-    override def getCenter = new Point2D.Double(0, 0)
+  
+  def richGraphicalContent (s: java.awt.Shape, stroke: Option[(Stroke, Color)], fillColor: Option[Color]) = 
+  {
+    val gc = colorisableGraphicalContent(s, stroke, fillColor)
+    
+    val outline = stroke match {
+      case Some((stroke, _)) => stroke.createStrokedShape(s)
+      case None => s
+    }
+    
+    new RichGraphicalContent(gc, outline.getBounds2D, new Touchable {
+      def hitTest(p:Point2D) = outline.contains(p.getX, p.getY) || s.contains(p.getX, p.getY)
+      def getBoundingBox = outline.getBounds2D
+      def getCenter = new Point2D.Double(0,0)
+    })
   }
 }

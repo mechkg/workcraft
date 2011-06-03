@@ -15,31 +15,28 @@ import java.awt.geom.Point2D
 import org.workcraft.plugins.cpog.scala.formularendering.RichRectangle2D._
 import org.workcraft.plugins.cpog.scala.touchable.TouchableUtil
 import org.workcraft.plugins.cpog.scala.Graphics._
+import org.workcraft.plugins.cpog.scala.RichGraphicalContent
 
-case class FormulaRenderingResult(boundingBox: Rectangle2D,
-  visualTop: Double,
-  glyphs: List[(GlyphVector, Point2D)],
-  inversionLines: List[Line2D]) {
+case class FormulaRenderingResult(logicalBounds: Rectangle2D, visualBounds: Rectangle2D,
+  glyphs: List[(GlyphVector, Point2D)], inversionLines: List[Line2D]) {
 
   def plus(summand: FormulaRenderingResult): FormulaRenderingResult = {
     val glyphs2 = glyphs ::: summand.glyphs.map({
       case (glyph, p) =>
         (glyph, new Point2D.Double(
-          p.getX() + boundingBox.getWidth(),
+          p.getX() + logicalBounds.getWidth(),
           p.getY()))
     });
 
     val inversionLines2 = inversionLines ::: summand.inversionLines.map(line =>
       new Line2D.Double(
-        line.getX1() + boundingBox.getWidth(), line.getY1(),
-        line.getX2() + boundingBox.getWidth(), line.getY2()));
+        line.getX1() + logicalBounds.getWidth(), line.getY1(),
+        line.getX2() + logicalBounds.getWidth(), line.getY2()));
 
-    val bb2 = boundingBox.plus(new Point2D.Double(
-      boundingBox.getMaxX() + summand.boundingBox.getWidth(),
-      summand.boundingBox.getMinY()))
-    val visualTop2 = math.min(visualTop, summand.visualTop);
+    val theirLogicalBounds = summand.logicalBounds.offset (logicalBounds.getMaxX, 0)
+    val theirVisualBounds  = summand.visualBounds.offset (logicalBounds.getMaxX, 0)
 
-    FormulaRenderingResult(bb2, visualTop2, glyphs2, inversionLines2)
+    FormulaRenderingResult(logicalBounds.createUnion(theirLogicalBounds), visualBounds.createUnion(theirVisualBounds), glyphs2, inversionLines2)
   }
 
   final def draw(g: Graphics2D, color: Color) {
@@ -60,9 +57,9 @@ case class FormulaRenderingResult(boundingBox: Rectangle2D,
           FormulaRenderingResult.this.draw(request.getGraphics(), Coloriser.colorise(color, request.getColorisation().getColorisation()));
         }
       }
-      new RichGraphicalContent(gc, TouchableUtil.fromRectangle(boundingBox))
+      new RichGraphicalContent(gc, visualBounds, TouchableUtil.fromRectangle(visualBounds))
     }
 }
 object FormulaRenderingResult {
-  val empty = FormulaRenderingResult(new Rectangle2D.Double(0, 0, 0, 0), 0, Nil, Nil)
+  val empty = FormulaRenderingResult(new Rectangle2D.Double(0, 0, 0, 0), new Rectangle2D.Double(0, 0, 0, 0), Nil, Nil)
 }

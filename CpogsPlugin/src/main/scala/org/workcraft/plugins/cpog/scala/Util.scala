@@ -22,6 +22,7 @@ import org.workcraft.util.Function
 import org.workcraft.util.Function0
 import org.workcraft.util.Function2
 import org.workcraft.dependencymanager.advanced.user.Setter
+import org.workcraft.util.MaybeVisitor
 import org.workcraft.util.Action1
 
 object Util {
@@ -43,6 +44,12 @@ object Util {
       setter.setValue(t)
     }
   }
+  
+  implicit def asOption[T] (mb : Maybe[T]) : Option[T] = 
+    mb.accept ( new MaybeVisitor[T, Option[T]] {
+      def visitNothing = None
+      def visitJust (t : T) = Some(t)
+    })
 
   def bindFunc[A, B](a: Expression[_ <: A])(f: A => B): Expression[B] = javafmap(asFunctionObject(f), a)
   def bindFunc[A, B, C](a: Expression[_ <: A], b: Expression[_ <: B])(f: (A, B) => C): Expression[C] = javafmap(asFunctionObject2(f), a, b)

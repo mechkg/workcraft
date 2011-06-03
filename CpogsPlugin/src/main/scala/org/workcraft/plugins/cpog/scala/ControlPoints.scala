@@ -42,7 +42,7 @@ object ControlPoints {
   val controlPointSize = 0.15
   
   def controlPointGraphics (position : Point2D) =
-    circle(controlPointSize, new BasicStroke(0), Color.BLUE, Color.BLUE) translate position
+    circle(controlPointSize, None, Some(Color.BLUE)) translate position
   
   def bezierControlPointGraphics(position : Expression[Point2D], vertexPosition : Expression[Point2D]) = 
     for (
@@ -54,7 +54,9 @@ object ControlPoints {
      p.moveTo(vertexPosition.getX, vertexPosition.getY)
      p.lineTo(position.getX, position.getY)
      
-     controlPointGraphics(position) over path (p, new BasicStroke(0.02f), Color.GRAY.brighter, 0)
+     val cpg = controlPointGraphics(position)
+     
+     cpg over (path (p, new BasicStroke(0.02f), Color.GRAY.brighter, 0), cpg.touchable) 
   }
   
   def polylineControlPointGraphics (position : Expression[Point2D]) =

@@ -16,6 +16,21 @@ import org.workcraft.gui.graph.tools.Colorisation
 import java.awt.Color
 import org.workcraft.dependencymanager.advanced.core.Expressions
 import org.workcraft.dom.visual.GraphicalContent
+import org.workcraft.gui.graph.tools.GraphEditorMouseListener
+import org.workcraft.util.Maybe
+
+class SelectionTool[N](val mouseListener: GraphEditorMouseListener,
+  val selectionBoxGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent],
+  val effectiveSelection: Expression[PSet[N]]) {
+  def asGraphEditorTool ( paint: (Colorisation, Expression[_ <: java.util.Set[N]]) => Expression[GraphicalContent]) =
+  {
+    def graphics (viewport : Viewport, hasFocus: Expression[java.lang.Boolean]) =
+      compose (paint (SelectionTool.highlightedColorisation, effectiveSelection), selectionBoxGraphics(viewport, hasFocus))
+      
+    ToolHelper.asGraphEditorTool(Some(mouseListener), None, 
+        Some(graphics), None, None, GenericSelectionTool.button)
+  }
+}
 
 object SelectionTool {
   val highlightedColorisation = new Colorisation {
@@ -23,24 +38,16 @@ object SelectionTool {
     override def getBackground = null
   }
 
-  def create(
-    selection: ModifiableExpression[PSet[Node]],
-    nodes: Expression[_ <: Iterable[Node]],
+  def create[N](
+    nodes: Expression[_ <: Iterable[N]],
+    selection: ModifiableExpression[PSet[N]],
+    movableController: N => Maybe[ModifiableExpression[Point2D]],
     snap: Point2D => Point2D,
-    touchable: Node => Expression[Touchable],
-    painter: Node => Expression[ColorisableGraphicalContent]) = {
-    val dragHandler = new MoveDragHandler[Node](selection, MovableController.position(_: Node), snap)
+    touchableProvider: N => Expression[Touchable]
+    ) = {
+    val dragHandler = new MoveDragHandler[N](selection, movableController, snap)
+    val genericSelectionTool = new GenericSelectionTool[N](selection, HitTester.create(nodes, touchableProvider), dragHandler)
 
-    val genericSelectionTool = new GenericSelectionTool[Node](selection, HitTester.create(nodes, touchable), dragHandler)
-
-    new AbstractTool {
-      override def mouseListener = genericSelectionTool.getMouseListener
-      override def userSpaceContent(viewport: Viewport, hasFocus: Expression[Boolean]) =
-        compose(
-          paint(colouriseWithHighlights[Node](highlightedColorisation, genericSelectionTool.effectiveSelection(), painter), nodes),
-          genericSelectionTool.userSpaceContent(viewport))
-      override def screenSpaceContent(viewport: Viewport, hasFocus: Expression[Boolean]) = Expressions.constant(GraphicalContent.EMPTY)
-      override def getButton = GenericSelectionTool.button
-    }
+    new SelectionTool[N](genericSelectionTool.getMouseListener, (viewport, focus) => genericSelectionTool.userSpaceContent(viewport), genericSelectionTool.effectiveSelection)
   }
 }

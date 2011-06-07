@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog.scala
+package org.workcraft.plugins.cpog.scala.tools
 
 import org.workcraft.dom.visual.ColorisableGraphicalContent
 import org.workcraft.gui.graph.tools.GraphEditorToolUtil
@@ -14,14 +14,14 @@ import java.awt.BasicStroke
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import java.awt.geom.Point2D
 import org.workcraft.gui.graph.tools.selection.MoveDragHandler
-import nodes._
+import org.workcraft.plugins.cpog.scala.nodes._
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import pcollections.HashTreePSet
 import pcollections.PSet
 import org.workcraft.plugins.cpog.scala.Util._
 import org.workcraft.plugins.cpog.scala.Expressions._
-import VisualArc._
+import org.workcraft.plugins.cpog.scala.VisualArc._
 import scala.collection.JavaConversions.{ collectionAsScalaIterable, asJavaCollection }
 import org.workcraft.util.Maybe.Util.just
 import org.workcraft.plugins.cpog.gui.TouchableProvider.bbToTouchable
@@ -29,9 +29,12 @@ import org.workcraft.plugins.cpog.scala.Graphics._
 import java.awt.geom.Path2D
 import java.awt.geom.Ellipse2D
 import org.workcraft.dom.visual.Touchable
+import org.workcraft.plugins.cpog.scala.ControlPoint
+import org.workcraft.plugins.cpog.scala.VisualArc
 
-object ControlPoints {
-  import Scalaz._
+
+object ControlPointsTool {
+  import org.workcraft.plugins.cpog.scala.Scalaz._
   
   val controlPointSize = 0.15
   
@@ -59,7 +62,7 @@ object ControlPoints {
     ) yield 
     controlPointGraphics(position)
   
-  def gogo (selection: Expression[Set[Node]], painter : Expression[GraphicalContent]) = {
+  def create (selection: Expression[Set[Node]], painter : Expression[GraphicalContent]) = {
     val snap: Point2D => Point2D = x => x
 	val highlightedColorisation = new Colorisation {
 			override def getColorisation = new Color(99, 130, 191).brighter();

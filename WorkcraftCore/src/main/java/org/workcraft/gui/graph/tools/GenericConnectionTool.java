@@ -60,7 +60,7 @@ public class GenericConnectionTool<N>  {
 	private final Function<? super Point2D, ? extends N> hitTester;
 	private final Function<? super N, ? extends Expression<? extends Point2D>> centerProvider;
 
-	public GenericConnectionTool (Function<? super N, ? extends Expression<? extends Point2D>> centerProvider, ConnectionController<? super N> connectionManager, Function<? super Point2D, ? extends N> hitTester) {
+	public GenericConnectionTool (Function<N, Expression<Point2D>> centerProvider, ConnectionController<? super N> connectionManager, Function<? super Point2D, ? extends N> hitTester) {
 		this.centerProvider = centerProvider;
 		this.connectionManager = connectionManager;
 		this.hitTester = hitTester;
@@ -171,7 +171,7 @@ public class GenericConnectionTool<N>  {
 		};
 	}
 
-	public Expression<? extends GraphicalContent> screenSpaceContent(final Viewport viewport, final Expression<Boolean> hasFocus) {
+	public Expression<GraphicalContent> screenSpaceContent(final Viewport viewport, final Expression<Boolean> hasFocus) {
 		return new ExpressionBase<GraphicalContent>(){
 			@Override
 			protected GraphicalContent evaluate(final EvaluationContext context) {
@@ -197,8 +197,8 @@ public class GenericConnectionTool<N>  {
 		};
 	}
 	
-	public final Button button() {
-		return new Button() {
+	public static final Button button =
+		new Button() {
 			
 			@Override
 			public int getHotKeyCode() {
@@ -215,7 +215,7 @@ public class GenericConnectionTool<N>  {
 				return "Connection tool";
 			}
 		};
-	}
+	
 	
 	public void deactivated() {
 		first.setValue(null);

@@ -15,31 +15,41 @@ import org.workcraft.gui.graph.Viewport
 import org.workcraft.gui.graph.tools.Colorisation
 import org.workcraft.dom.visual.GraphicalContent
 import java.awt.Color
+import org.workcraft.gui.graph.tools.GraphEditorMouseListener
+import org.workcraft.gui.graph.tools.GraphEditorKeyListener
+import org.workcraft.util.Maybe
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
+
+class ConnectionTool[N](val mouseListener: GraphEditorMouseListener,
+  val connectingLineGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent],
+  val hintGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent],
+  val mouseOver: Expression[N]) {
+  
+  def asGraphEditorTool[Q >: N](paint: (Colorisation, Expression[_ <: java.util.Set[Q]]) => Expression[GraphicalContent]) =
+    {
+      def graphics(viewport: Viewport, hasFocus: Expression[java.lang.Boolean]) =
+        compose(paint(ConnectionTool.highlightedColorisation, for (mo <- mouseOver) yield java.util.Collections.singleton(mo)),
+            connectingLineGraphics(viewport, hasFocus))
+
+     ToolHelper.asGraphEditorTool(Some(mouseListener), None, Some(graphics), Some(hintGraphics), None, GenericConnectionTool.button)
+    }
+}
 
 object ConnectionTool {
   val highlightedColorisation = new Colorisation {
     override def getColorisation = new Color(99, 130, 191).brighter()
     override def getBackground = null
-  }  
-  
-  def create (
-        components : Expression[_ <: Iterable[Component]], 
-        touchable: Component => Expression[Touchable],
-        painter: (Component => Expression[Colorisation]) => Expression[GraphicalContent],
-        controller: ConnectionController[Component]
-        ) = {
-    val connectionHitTester = HitTester.create (components, touchable) 
-    val genericConnectionTool = new GenericConnectionTool[Component](MovableController.position(_:Component), controller, connectionHitTester.hitTest(_:Point2D))
+  }
+
+  def create[N](
+    components: Expression[_ <: Iterable[N]],
+    touchableProvider: N => Expression[Touchable],
+    centerProvider: N => Expression[Point2D],
+    connectionController: ConnectionController[N]) = {
+    val connectionHitTester = HitTester.create(components, touchableProvider)
+    val genericConnectionTool = new GenericConnectionTool[N](centerProvider, connectionController, connectionHitTester.hitTest(_: Point2D))
     
-    new AbstractTool {
-      override def mouseListener = genericConnectionTool.mouseListener
-      override def userSpaceContent(viewport: Viewport, hasFocus: Expression[java.lang.Boolean]) = 
-          compose (
-                    painter ( c => for (over <- genericConnectionTool.mouseOverNode) yield if (over == c) highlightedColorisation else Colorisation.EMPTY ),
-                    genericConnectionTool.userSpaceContent(viewport, hasFocus)
-                  )
-      override def screenSpaceContent(viewport: Viewport, hasFocus: Expression[java.lang.Boolean]) = genericConnectionTool.screenSpaceContent(viewport, hasFocus)
-      override def getButton = genericConnectionTool.button
-    }
+    new ConnectionTool[N] ( genericConnectionTool.mouseListener, (viewport, focus) => genericConnectionTool.userSpaceContent(viewport, focus),
+        (viewport, focus) => genericConnectionTool.screenSpaceContent(viewport, focus), genericConnectionTool.mouseOverNode)
   }
 }

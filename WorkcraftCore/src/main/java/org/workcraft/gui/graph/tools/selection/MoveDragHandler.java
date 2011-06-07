@@ -1,17 +1,20 @@
 package org.workcraft.gui.graph.tools.selection;
 
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static org.workcraft.util.Maybe.Util.applyFunc;
+import static org.workcraft.util.Maybe.Util.doIfJust;
 import static org.workcraft.util.Maybe.Util.orElse;
 
 import java.awt.geom.Point2D;
+import java.util.HashMap;
 
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Setter;
-import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.gui.graph.tools.DragHandle;
 import org.workcraft.gui.graph.tools.DragHandler;
+import org.workcraft.util.Action1;
 import org.workcraft.util.Function;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Maybe;
@@ -30,34 +33,64 @@ public class MoveDragHandler<Node> implements DragHandler<Node> {
 		this.snap = snap;
 		this.movableController = movableController;
 	}
-
-	private void offsetSelection (final Point2D offset) {
-		for(Node node : GlobalCache.eval(selection)) {
-			ModifiableExpression<Point2D> pos = nodePos(node, movableController);
-			pos.setValue(Geometry.add(eval(pos), offset));
-		}
-	}
 	
 	@Override
-	public DragHandle startDrag(Node hitNode) {
+	public DragHandle startDrag(final Node hitNode) {
 		assert (hitNode != null);
-		final ModifiableExpression<Point2D> nodePos = nodePos(hitNode, movableController);
-
-		final Point2D originalPosition = eval(nodePos);
 		
-		final Setter<Point2D> snapper = new Setter<Point2D>() {
-			@Override
-			public void setValue(Point2D newValue) {
-				Point2D current = eval(nodePos);
-				Point2D newSnapped = snap.apply(newValue);
-				Point2D offset = Geometry.subtract(newSnapped, current);
-				offsetSelection(offset);
-			}
-		};
 		
-		snapper.setValue(originalPosition);
-
+		
 		return new DragHandle() {
+
+			final Point2D originalPosition = getNodePos(hitNode, movableController);
+			
+			HashMap<Node, Point2D> originalPositions = new HashMap<Node, Point2D>();
+			
+			private Point2D getOriginalPositionWithDefault(Node node, Point2D pos) {
+				final Point2D res = originalPositions.get(node);
+				if(res != null)
+					return res;
+				else {
+					originalPositions.put(node, pos);
+					return pos;
+				}
+			}
+			
+			private void offsetSelection (final Point2D totalOffset) {
+				for(final Node node : GlobalCache.eval(selection)) {
+					doIfJust(movableController.apply(node), new Action1<ModifiableExpression<Point2D>>(){
+						@Override
+						public void run(ModifiableExpression<Point2D> pos) {
+							Point2D posVal = eval(pos);
+							Point2D origPosVal = getOriginalPositionWithDefault(node, posVal);
+							pos.setValue(Geometry.add(origPosVal, totalOffset));
+						}
+					});
+				}
+			}
+			
+			final Setter<Point2D> snapper = new Setter<Point2D>() {
+				@Override
+				public void setValue(Point2D newValue) {
+					Point2D newSnapped = snap.apply(newValue);
+					Point2D totalOffset = Geometry.subtract(newSnapped, originalPosition);
+					offsetSelection(totalOffset);
+				}
+			};
+			
+			{
+				snapper.setValue(originalPosition);
+			}
+			
+			private Point2D getNodePos(Node hitNode, Function<Node, Maybe<? extends ModifiableExpression<Point2D>>> movableController) {
+				return orElse(applyFunc(movableController.apply(hitNode), new Function<ModifiableExpression<Point2D>, Point2D>(){
+					@Override
+					public Point2D apply(ModifiableExpression<Point2D> argument) {
+						return eval(argument);
+					}
+				}), new Point2D.Double(0, 0));
+			}
+			
 			@Override
 			public void setOffset(Point2D offset) {
 				snapper.setValue(Geometry.add(originalPosition, offset));
@@ -69,13 +102,8 @@ public class MoveDragHandler<Node> implements DragHandler<Node> {
 			
 			@Override
 			public void cancel() {
-				nodePos.setValue(originalPosition);
+				setOffset(new Point2D.Double(0,0));
 			}
 		};
-	}
-
-	private static <Node> ModifiableExpression<Point2D> nodePos(Node hitNode,
-			Function<Node, Maybe<? extends ModifiableExpression<Point2D>>> movableController) {
-		return orElse(movableController.apply(hitNode), Variable.<Point2D>create(new Point2D.Double(0,0)));
 	}
 }

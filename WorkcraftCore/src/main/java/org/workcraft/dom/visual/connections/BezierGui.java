@@ -10,9 +10,13 @@ import org.workcraft.util.Geometry.CurveSplitResult;
 
 public class BezierGui {
 	
-	public static ParametricCurve makeCurve(VisualConnectionProperties connectionInfo, VisualConnectionContext context, Point2D cp1, Point2D cp2) {
+	public static ParametricCurve makeCurve(VisualConnectionProperties connectionInfo, VisualConnectionContext context, RelativePoint cp1, RelativePoint cp2) {
 		CubicCurve2D curve2D = new CubicCurve2D.Double();
-		curve2D.setCurve(context.component1().getCenter(), cp1, cp2, context.component2().getCenter());
+		Point2D c1 = context.component1().getCenter();
+		Point2D c2 = context.component2().getCenter();
+		Point2D absoluteCp1 = cp1.toSpace(c1, c2);
+		Point2D absoluteCp2 = cp2.toSpace(c1, c2);
+		curve2D.setCurve(c1, absoluteCp1, absoluteCp2, c2);
 		return new Curve(curve2D);
 	}
 	

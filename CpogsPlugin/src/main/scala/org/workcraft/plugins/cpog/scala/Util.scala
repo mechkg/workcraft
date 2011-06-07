@@ -21,7 +21,9 @@ import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.util.Function
 import org.workcraft.util.Function0
 import org.workcraft.util.Function2
+import org.workcraft.dependencymanager.advanced.user.Setter
 import org.workcraft.util.MaybeVisitor
+import org.workcraft.util.Action1
 
 object Util {
   
@@ -35,6 +37,12 @@ object Util {
 
   implicit def asFunctionObject2[T1, T2, R](f: ((T1, T2) => R)) = new Function2[T1, T2, R] {
     def apply(x: T1, y: T2) = f(x, y)
+  }
+  
+  implicit def setterAsAction[T](setter : Setter[T]) : Action1[T] = new Action1[T] {
+    override def run(t : T) {
+      setter.setValue(t)
+    }
   }
   
   implicit def asOption[T] (mb : Maybe[T]) : Option[T] = 

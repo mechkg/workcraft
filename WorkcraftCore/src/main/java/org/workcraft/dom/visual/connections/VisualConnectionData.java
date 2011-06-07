@@ -66,19 +66,19 @@ public interface VisualConnectionData {
 		}
 
 		public static Expression<? extends StaticBezierData> getStatic(BezierData data) {
-			return fmap(new Function2<Point2D, Point2D, StaticBezierData>(){
+			return fmap(new Function2<RelativePoint, RelativePoint, StaticBezierData>(){
 
 				@Override
-				public StaticBezierData apply(final Point2D cp1, final Point2D cp2) {
+				public StaticBezierData apply(final RelativePoint cp1, final RelativePoint cp2) {
 					return new StaticBezierData() {
 
 						@Override
-						public Point2D cp1() {
+						public RelativePoint cp1() {
 							return cp1;
 						}
 
 						@Override
-						public Point2D cp2() {
+						public RelativePoint cp2() {
 							return cp2;
 						}
 					};

@@ -211,6 +211,22 @@ public class Geometry {
 		return info;
 	}
 	
+	/**
+	 * Interpretes points as complex numbers and multiplies them.
+	 * Can be used for the scale-with-rotate (translates 'a' from the basis of (b, rotate90CCW(b)) to the basis of ((1, 0), (0, 1))) 
+	 */
+	public static Point2D complexMultiply(Point2D a, Point2D b) {
+		return new Point2D.Double(a.getX() * b.getX() - a.getY() * b.getY(), a.getX() * b.getY() + a.getY() * b.getX());
+	}
+	
+	public static Maybe<Point2D> complexInverse(Point2D a) {
+		double sq = a.distanceSq(0, 0);
+		if(sq < 0.0000001)
+			return Maybe.Util.nothing();
+		else
+			return Maybe.Util.<Point2D>just(new Point2D.Double(a.getX() / sq, -a.getY() / sq));
+	}
+	
 	public static Point2D changeBasis (Point2D p, Point2D vx, Point2D vy) {
 		Point2D result = (Point2D)p.clone();
 		

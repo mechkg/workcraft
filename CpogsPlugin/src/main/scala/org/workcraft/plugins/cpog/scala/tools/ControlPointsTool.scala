@@ -16,6 +16,7 @@ import java.awt.geom.Point2D
 import org.workcraft.gui.graph.tools.selection.MoveDragHandler
 import org.workcraft.plugins.cpog.scala.nodes._
 import org.workcraft.dependencymanager.advanced.core.Expression
+import org.workcraft.dependencymanager.advanced.core.GlobalCache
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import pcollections.HashTreePSet
 import pcollections.PSet
@@ -31,6 +32,10 @@ import java.awt.geom.Ellipse2D
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.plugins.cpog.scala.ControlPoint
 import org.workcraft.plugins.cpog.scala.VisualArc
+import org.workcraft.dom.visual.connections.RelativePoint
+import org.workcraft.dependencymanager.advanced.core.{Expressions => JExpressions}
+import org.workcraft.dependencymanager.advanced.user.Setter
+import org.workcraft.util.Maybe
 
 
 object ControlPointsTool {
@@ -74,8 +79,25 @@ object ControlPointsTool {
     def getNodeControlPoints(node: Node): Expression[List[ControlPoint]] = node match {
       case arc@Arc(_, _, _, visual) => for (visual <- visual : Expression[VisualArc]) yield visual match {
         case Polyline(cps) => cps.map(x => new ControlPoint(x, polylineControlPointGraphics(x)))
-        case Bezier(cp1, cp2) => new ControlPoint(cp1, bezierControlPointGraphics(cp1, arc.first.visualProperties.position)) ::
-                                 new ControlPoint(cp2, bezierControlPointGraphics(cp2, arc.second.visualProperties.position)) :: Nil
+        case Bezier(cp1, cp2) => {
+          val p1 = arc.first.visualProperties.position
+          val p2 = arc.second.visualProperties.position
+          def convertCp(cp : ModifiableExpression[RelativePoint]) = JExpressions.modifiableExpression(
+              for(cp <- cp; p1 <- p1; p2 <- p2) yield cp.toSpace(p1, p2),
+              new Setter[Point2D] {
+            	  override def setValue(v : Point2D) = {
+            	    val p1_ = GlobalCache.eval(p1)
+            	    val p2_ = GlobalCache.eval(p2)
+            	    Maybe.Util.doIfJust(RelativePoint.fromSpace(p1_, p2_, v), cp) 
+            	  }
+              }
+              )
+          val cp1_ = convertCp(cp1)
+          val cp2_ = convertCp(cp2)
+          
+          new ControlPoint(cp1_, bezierControlPointGraphics(cp1_, p1)) :: 
+          new ControlPoint(cp2_, bezierControlPointGraphics(cp2_, p2)) :: Nil
+        }
       }
       case Component(_) => constant(Nil)
     }

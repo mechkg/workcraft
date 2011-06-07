@@ -16,6 +16,7 @@ import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer
 import java.util.HashMap
 import org.workcraft.plugins.cpog.scala.VisualArc
 import org.workcraft.plugins.cpog.scala.VisualArc.Bezier
+import org.workcraft.dom.visual.connections.RelativePoint
 
 package org.workcraft.plugins.cpog.scala.nodes {
 
@@ -50,7 +51,7 @@ package org.workcraft.plugins.cpog.scala.nodes {
   object Arc {
     def create (storage: StorageManager, first : Vertex, second : Vertex) = {
       Arc (first, second, storage.create (One.instance[Variable]), 
-          storage.create (Bezier(storage.create(new Point2D.Double(1/3.0,0)), storage.create(new Point2D.Double(2/3.0,0)))))    
+          storage.create (Bezier(storage.create(RelativePoint.ONE_THIRD), storage.create(RelativePoint.TWO_THIRDS))))    
     }
   }
   

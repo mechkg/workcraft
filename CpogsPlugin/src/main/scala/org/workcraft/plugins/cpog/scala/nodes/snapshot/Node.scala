@@ -18,8 +18,7 @@ import org.workcraft.dom.visual.connections.RelativePoint
 
 package snapshot {
 
-	sealed case class Id[Entity] (id : UUID) {
-	}
+	sealed case class Id[Entity] (id : UUID)
 	
 	sealed trait Node
 	

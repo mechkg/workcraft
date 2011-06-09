@@ -22,7 +22,11 @@ object NodePainter {
   
   def nodeColorisableGraphicalContent (componentTransform: Component => Expression[AffineTransform])(node : Node) : Expression[ColorisableGraphicalContent] = node match {
     case c : Component => for (t <- componentTransform(c); image <- componentColorisableGraphicalContentLocal(c)) yield transform (image, t).graphics
-    case a : Arc => for (gui <- VisualArc.gui(TouchableProvider.touchable(componentTransform))(a)) yield gui.graphicalContent 
+    case a : Arc =>
+      for (first  <- TouchableProvider.touchable(componentTransform)(a.first); 
+           second <- TouchableProvider.touchable(componentTransform)(a.second);
+           visual <- a.visual;
+           gui <- VisualArc.gui(first, second, visual)) yield gui.graphicalContent 
   }
   
   def nodeGraphicalContent (componentTransform : Component => Expression[AffineTransform])(colourisation : Node => Colorisation)(node : Node) : Expression[GraphicalContent] =

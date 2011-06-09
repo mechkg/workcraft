@@ -56,6 +56,7 @@ import org.workcraft.gui.propertyeditor.string.StringProperty
 import org.workcraft.plugins.cpog.scala.tools.SelectionTool
 import org.workcraft.plugins.cpog.scala.tools.ConnectionTool
 import org.workcraft.plugins.cpog.scala.tools.MovableController
+import org.workcraft.plugins.cpog.scala.tools.ControlPointsTool
 
 package org.workcraft.plugins.cpog.scala {
 
@@ -131,7 +132,18 @@ import Scalaz._
         case node :: Nil => getProperties(node)
         case _ => TreePVector.empty[EditableProperty]
       }
-      
+    
+    def selectedArcs (selection: Expression[Set[Node]]): Expression[List[(Point2D, Point2D, VisualArc)]] =
+      for (selection <- selection;
+           result <-
+           {
+             val list = for (arc@Arc(first,second,_,visual) <- selection) yield
+                           for (first <- first.visualProperties.position; second<- second.visualProperties.position; visual <- visual)
+                             yield (first, second, visual)
+             list.toList.sequence
+           }
+          ) yield result
+        
     
     def tools(snap: Function[Point2D, Point2D]) = {
       def paintUncolorised = GraphicsHelper.paint(painter, nodes)
@@ -141,14 +153,16 @@ import Scalaz._
       
       val connectionController = ConnectionController.Util.fromSafe(new CpogConnectionManager(cpog))
       
-      val connectionTool = ConnectionTool.create[Component](components, touchable, MovableController.positionWithDefaultZero(_), connectionController)   
+      val connectionTool = ConnectionTool.create[Component](components, touchable, MovableController.positionWithDefaultZero(_), connectionController)
+      
+      val controlPointsTool = ControlPointsTool.create(selectedArcs(selection), (x=>snap(x)))
 
       //val controlPointsEditorTool = ControlPoints.gogo(selection, uncolorised)
 
       asJavaCollection (
           selectionTool.asGraphEditorTool(paintWithHighlights) ::
           connectionTool.asGraphEditorTool(paintWithHighlights) ::
-                         
+          controlPointsTool.asGraphEditorTool(paintUncolorised) ::
         attachPainter(new NodeGeneratorTool(generators.vertexGenerator, snap), paintUncolorised) ::
         attachPainter(new NodeGeneratorTool(generators.variableGenerator, snap), paintUncolorised) ::
         attachPainter(new NodeGeneratorTool(generators.rhoClauseGenerator, snap), paintUncolorised) ::

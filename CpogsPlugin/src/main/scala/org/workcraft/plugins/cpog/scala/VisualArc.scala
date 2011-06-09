@@ -60,20 +60,15 @@ object VisualArc {
     override def getStroke = new BasicStroke(0.05f)
   }
 
-  def gui(touchable: Component => Expression[Touchable])(arc: Arc): Expression[ConnectionGui] =
+  def gui(first: Touchable, second: Touchable, visualArc : VisualArc): Expression[ConnectionGui] =
     {
-      for (
-        c1 <- touchable(arc.first);
-        c2 <- touchable(arc.second);
-
         val context = new VisualConnectionContext {
-          override def component1 = c1
-          override def component2 = c2
-        };
+          override def component1 = first
+          override def component2 = second
+        }
 
-        visualArc: VisualArc <- arc.visual;
-        gui <- SnapshotMaker.makeVisualArcSnapshot(visualArc): Expression[_ <: StaticVisualConnectionData]
-      ) yield VisualConnectionGui.getConnectionGui(properties, context, gui)
+        for (gui <- SnapshotMaker.makeVisualArcSnapshot(visualArc): Expression[_ <: StaticVisualConnectionData])
+        yield VisualConnectionGui.getConnectionGui(properties, context, gui)
     }
   
   def image( gui : Expression[ConnectionGui] ) : Expression[BoundedColorisableGraphicalContent] = 

@@ -25,9 +25,9 @@ import java.awt.geom.AffineTransform;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.workcraft.dom.visual.NotAnAncestorException;
 import org.workcraft.dom.visual.TransformHelper;
 import org.workcraft.dom.visual.VisualGroup;
-import org.workcraft.exceptions.NotAnAncestorException;
 import org.workcraft.util.Hierarchy;
 
 public class VisualNodeTests {

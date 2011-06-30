@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog.scala.formularendering
+package org.workcraft.graphics.formularendering
 
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D

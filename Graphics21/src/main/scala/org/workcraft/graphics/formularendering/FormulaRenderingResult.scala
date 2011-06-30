@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog.scala.formularendering
+package org.workcraft.graphics.formularendering
 
 import org.workcraft.gui.Coloriser
 import org.workcraft.dom.visual.GraphicalContent
@@ -12,10 +12,10 @@ import java.awt.geom.Rectangle2D
 import java.awt.font.GlyphVector
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
-import org.workcraft.plugins.cpog.scala.formularendering.RichRectangle2D._
-import org.workcraft.plugins.cpog.scala.touchable.TouchableUtil
-import org.workcraft.plugins.cpog.scala.Graphics._
-import org.workcraft.plugins.cpog.scala.RichGraphicalContent
+import org.workcraft.graphics.formularendering.RichRectangle2D._
+import org.workcraft.graphics.TouchableUtil
+import org.workcraft.graphics.Graphics._
+import org.workcraft.graphics.RichGraphicalContent
 
 case class FormulaRenderingResult(logicalBounds: Rectangle2D, visualBounds: Rectangle2D,
   glyphs: List[(GlyphVector, Point2D)], inversionLines: List[Line2D]) {

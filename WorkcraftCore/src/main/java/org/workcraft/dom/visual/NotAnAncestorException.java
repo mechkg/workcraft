@@ -19,7 +19,7 @@
 *
 */
 
-package org.workcraft.exceptions;
+package org.workcraft.dom.visual;
 
 import org.workcraft.dom.Node;
 

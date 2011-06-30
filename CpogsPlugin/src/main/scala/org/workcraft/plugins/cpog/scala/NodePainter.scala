@@ -4,7 +4,7 @@ import org.workcraft.gui.graph.tools.Colorisation
 import org.workcraft.dom.visual.GraphicalContent
 import org.workcraft.dom.visual.ColorisableGraphicalContent
 import org.workcraft.dom.visual.ColorisableGraphicalContent.Util._
-import org.workcraft.plugins.cpog.scala.Graphics._
+import org.workcraft.graphics.Graphics._
 import org.workcraft.plugins.cpog.scala.Scalaz._
 import org.workcraft.plugins.cpog.scala.Expressions._
 import java.awt.geom.AffineTransform

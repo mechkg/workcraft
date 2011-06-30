@@ -1,6 +1,3 @@
-package org.workcraft.plugins.cpog.scala
-
-import org.workcraft.dom.visual.Label
 import org.workcraft.exceptions.NotImplementedException
 import java.awt.font.GlyphVector
 import java.awt.font.TextAttribute
@@ -14,13 +11,13 @@ import org.workcraft.plugins.cpog.optimisation.BinaryBooleanFormula
 import org.workcraft.plugins.cpog.optimisation.expressions._
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import scalaz.Monad
-import org.workcraft.plugins.cpog.scala.Scalaz._
+import org.workcraft.plugins.cpog.scala.Scalaz._ 
 import scala.collection.JavaConversions._
 import org.workcraft.plugins.cpog.scala.Expressions._
 import org.workcraft.plugins.cpog.scala.nodes.{Variable => VariableNode}
 import org.workcraft.dependencymanager.advanced.core.Expression
 
-package object formularendering {
+package org.workcraft.graphics.formularendering {
 	import RichRectangle2D._
 
 	class UseUnicode(v : Boolean) {

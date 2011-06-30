@@ -31,7 +31,6 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dom.Node;
-import org.workcraft.exceptions.NotAnAncestorException;
 import org.workcraft.util.Function2;
 import org.workcraft.util.Geometry;
 import org.workcraft.util.Hierarchy;

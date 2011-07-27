@@ -38,6 +38,10 @@ object TouchableProvider {
   
   def touchable (transform: Component => Expression[AffineTransform])(node : Node) : Expression[Touchable] = node match {
     case c : Component => for ( lt <- localTouchable(c); t <- transform(c) ) yield TransformHelper.transform(lt,t)
-    case a : Arc => for (gui <- VisualArc.gui(touchable(transform))(a)) yield gui.shape
+    case a : Arc => 
+      for ( first <- touchable(transform)(a.first);
+            second <- touchable(transform)(a.second);
+            visual <- a.visual;
+            gui <- VisualArc.gui(first, second, visual)) yield gui.shape
   }
 }

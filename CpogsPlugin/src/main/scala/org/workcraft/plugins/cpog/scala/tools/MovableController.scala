@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog.scala
+package org.workcraft.plugins.cpog.scala.tools
 
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dependencymanager.advanced.core.Expression

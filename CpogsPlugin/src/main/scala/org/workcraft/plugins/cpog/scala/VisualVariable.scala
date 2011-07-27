@@ -21,11 +21,11 @@ import org.workcraft.util.Pair
 package org.workcraft.plugins.cpog.scala {
 
   object VisualVariable {
-    val size = 1;
-    private val strokeWidth = 0.08f;
+    val size = 1
+    private val strokeWidth = 0.08f
 
-    private val nameFont = FormulaToGraphics.fancyFont;
-    private val valueFont = nameFont.deriveFont(0.75f);
+    private val nameFont = FormulaToGraphics.fancyFont
+    private val valueFont = nameFont.deriveFont(0.75f)
 
     def image(variable: Variable): Expression[RichGraphicalContent] =
       for (

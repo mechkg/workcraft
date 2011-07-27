@@ -33,7 +33,8 @@ public class CpogModelDescriptor implements ModelDescriptor {
 
 	@Override
 	public ModelServices newDocument() {
-		return createCpogServices(new CPOG(new HistoryPreservingStorageManager()));
+		HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
+		return createCpogServices(new CPOG(storage), storage);
 	}
 	
 	public ModelServices createCpogServices(final CPOG cpog, HistoryPreservingStorageManager storage) {
@@ -63,7 +64,7 @@ public class CpogModelDescriptor implements ModelDescriptor {
 					}
 				}
 			})
-			.plus(WorkspaceEntry.CHANGED_STATUS_SERVICE, tp);
+			.plus(WorkspaceEntry.CHANGED_STATUS_SERVICE, storage.changedStatus());
 	}
 
 	@Override

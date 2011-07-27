@@ -66,6 +66,7 @@ import org.flexdock.plaf.common.border.ShadowBorder;
 import org.pushingpixels.substance.api.SubstanceConstants.TabContentPaneBorderKind;
 import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 import org.workcraft.Framework;
+import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dom.ModelDescriptor;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.OperationCancelledException;
@@ -449,7 +450,7 @@ public class MainWindow extends JFrame {
 			// handle editor window close
 			WorkspaceEntry we = editor.getWorkspaceEntry();
 
-			if (we.isChanged()) {
+			if (GlobalCache.eval(we.isChanged())) {
 				int result = JOptionPane.showConfirmDialog(this, "Document \""+we.getTitle() + "\" has unsaved changes.\nSave before closing?",
 						"Confirm", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE); 
 
@@ -763,7 +764,6 @@ public class MainWindow extends JFrame {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(this, e.getMessage(), "Model export failed", JOptionPane.ERROR_MESSAGE);			
 			}
-			we.setChanged(false);
 			lastSavePath = we.getFile().getParent();
 		}
 	}
@@ -847,7 +847,6 @@ public class MainWindow extends JFrame {
 				framework.save(we.getModelEntry(), we.getFile().getPath());
 			else
 				throw new RuntimeException ("Cannot save workspace entry - it does not have an associated Workcraft model.");
-			we.setChanged(false);
 			lastSavePath = fc.getCurrentDirectory().getPath();
 		} catch (SerialisationException e) {
 			e.printStackTrace();

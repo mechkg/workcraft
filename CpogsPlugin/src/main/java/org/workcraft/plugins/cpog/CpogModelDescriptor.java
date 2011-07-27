@@ -20,6 +20,7 @@ import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ModelServicesImpl;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
+import org.workcraft.workspace.WorkspaceEntry;
 
 import pcollections.PVector;
 
@@ -35,9 +36,9 @@ public class CpogModelDescriptor implements ModelDescriptor {
 		return createCpogServices(new CPOG(new HistoryPreservingStorageManager()));
 	}
 	
-	public ModelServices createCpogServices(final CPOG cpog) {
-		
+	public ModelServices createCpogServices(final CPOG cpog, HistoryPreservingStorageManager storage) {
 		final org.workcraft.plugins.cpog.scala.ToolsProvider tp = new org.workcraft.plugins.cpog.scala.ToolsProvider(cpog);
+		
 		return ModelServicesImpl.EMPTY
 			.plus(GraphEditable.SERVICE_HANDLE, new GraphEditable() {
 				
@@ -52,7 +53,6 @@ public class CpogModelDescriptor implements ModelDescriptor {
 				}
 			})
 			.plus(Framework.CustomSaver.SERVICE_HANDLE, new Framework.CustomSaver(){
-
 				@Override
 				public void write(OutputStream out) {
 					try {
@@ -62,7 +62,8 @@ public class CpogModelDescriptor implements ModelDescriptor {
 						throw new RuntimeException(e);
 					}
 				}
-			});
+			})
+			.plus(WorkspaceEntry.CHANGED_STATUS_SERVICE, tp);
 	}
 
 	@Override

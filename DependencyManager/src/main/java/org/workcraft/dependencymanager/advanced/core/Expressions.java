@@ -1,5 +1,7 @@
 package org.workcraft.dependencymanager.advanced.core;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Collection;
 
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleTuple;
@@ -327,5 +329,21 @@ public class Expressions {
 				};
 			}
 		};
+	}
+
+	public static <T> Expression<T> swingTimerRefreshed(int period, final Function0<T> function0) {
+		final ExpressionBase<T> result = new ExpressionBase<T>(){
+			@Override
+			protected T evaluate(EvaluationContext context) {
+				return function0.apply();
+			}
+		};
+		new javax.swing.Timer(period, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				result.refresh();
+			}
+		}).start();
+		return result;
 	}
 }

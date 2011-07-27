@@ -45,4 +45,9 @@ public final class ServiceHandle<Scope, T> {
 	public String toString() {
 		return serviceName + " (of type " + type + ")";
 	}
+
+	@SuppressWarnings("unchecked")
+	public static <S,T> ServiceHandle<S, T> createServiceUnchecked(String serviceName) {
+		return new ServiceHandle<S,T>((Class<T>)Object.class, serviceName);
+	}
 }

@@ -23,15 +23,20 @@ package org.workcraft.workspace;
 
 import java.io.File;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.gui.workspace.Path;
+import org.workcraft.interop.ModelService;
 import org.workcraft.interop.ModelServices;
+import org.workcraft.interop.ServiceNotAvailableException;
 
 import checkers.nullness.quals.Nullable;
 
 public class WorkspaceEntry 
 {
+	public static final ModelService<Expression<Boolean>> CHANGED_STATUS_SERVICE = ModelService.createServiceUnchecked("Document 'changed' status notifier");
 	private final @Nullable ModelServices modelServices;
-	private boolean changed = true;
+	
 	private boolean temporary = true;
 	private final Workspace workspace;
 
@@ -40,15 +45,12 @@ public class WorkspaceEntry
 		this.modelServices = modelServices;
 	}
 
-	public void setChanged(boolean changed) {
-		if(this.changed != changed) {
-			this.changed = changed;
-			workspace.fireEntryChanged(this);
+	public Expression<Boolean> isChanged() {
+		try{
+			return modelServices.getImplementation(CHANGED_STATUS_SERVICE);
+		} catch(ServiceNotAvailableException e) {
+			return Expressions.constant(true);
 		}
-	}
-
-	public boolean isChanged() {
-		return changed;
 	}
 	
 	public ModelServices getModelEntry()
@@ -74,7 +76,7 @@ public class WorkspaceEntry
 		
 		return res;
 	}
-
+	/*
 	@Override
 	public String toString() {
 		String res = getTitle();
@@ -86,7 +88,7 @@ public class WorkspaceEntry
 			res = res + " (not in workspace)";
 
 		return res;
-	}
+	}*/
 	
 	public boolean isTemporary() {
 		return temporary;

@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog.scala
+package org.workcraft.graphics
 
 import org.workcraft.dom.visual.DrawRequest
 import java.awt.Color

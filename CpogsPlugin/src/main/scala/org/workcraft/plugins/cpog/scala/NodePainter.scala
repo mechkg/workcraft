@@ -1,15 +1,25 @@
 package org.workcraft.plugins.cpog.scala
-import java.awt.Color
-import org.workcraft.gui.graph.tools.Colorisation
-import org.workcraft.dom.visual.GraphicalContent
-import org.workcraft.dom.visual.ColorisableGraphicalContent
-import org.workcraft.dom.visual.ColorisableGraphicalContent.Util._
-import org.workcraft.graphics.Graphics._
-import org.workcraft.plugins.cpog.scala.Scalaz._
-import org.workcraft.plugins.cpog.scala.Expressions._
-import java.awt.geom.AffineTransform
+import java.awt.geom.AffineTransform
+
 import org.workcraft.dependencymanager.advanced.core.Expression
-import nodes._
+import org.workcraft.dependencymanager.advanced.core.Expressions
+import org.workcraft.dom.visual.ColorisableGraphicalContent.Util.applyColourisation
+import org.workcraft.dom.visual.ColorisableGraphicalContent
+import org.workcraft.dom.visual.GraphicalContent
+import org.workcraft.graphics.Graphics.asBCGC
+import org.workcraft.graphics.Graphics.compose
+import org.workcraft.graphics.Graphics.transform
+import org.workcraft.gui.graph.tools.Colorisation
+import org.workcraft.scala.Expressions.ExpressionMonad
+import org.workcraft.scala.Expressions.monadicSyntax
+import org.workcraft.scala.Scalaz.maImplicit
+
+import nodes.Arc
+import nodes.Component
+import nodes.Node
+import nodes.RhoClause
+import nodes.Variable
+import nodes.Vertex
 
 
 object NodePainter {

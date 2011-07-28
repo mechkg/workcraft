@@ -6,6 +6,7 @@ import java.awt.geom.Point2D;
 
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
+import org.workcraft.graphics.LabelPositioning;
 import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty;
 import org.workcraft.gui.propertyeditor.dubble.DoubleProperty;

@@ -1,10 +1,10 @@
 package org.workcraft.plugins.cpog.scala.tools
 import org.workcraft.gui.graph.tools.GenericConnectionTool
 import org.workcraft.plugins.cpog.scala.nodes._
-import org.workcraft.plugins.cpog.scala.Util._
-import org.workcraft.plugins.cpog.scala.Graphics._
-import org.workcraft.plugins.cpog.scala.Scalaz._
-import org.workcraft.plugins.cpog.scala.Expressions._
+import org.workcraft.scala.Util._
+import org.workcraft.graphics.Graphics._
+import org.workcraft.scala.Scalaz._
+import org.workcraft.scala.Expressions._
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dom.visual.ColorisableGraphicalContent

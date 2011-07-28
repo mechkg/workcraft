@@ -1,15 +1,13 @@
-package org.workcraft.plugins.cpog.scala
+package org.workcraft.graphics
 
 import org.workcraft.dom.visual.ColorisableGraphicalContent
 import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
-import org.workcraft.plugins.cpog.LabelPositioning
 import java.awt.geom.Path2D
 import java.awt.BasicStroke
 import org.workcraft.dom.visual.Touchable
-import org.workcraft.plugins.cpog.scala.touchable.TouchableUtil
-import org.workcraft.plugins.cpog.scala.Graphics._
+import org.workcraft.graphics.Graphics._
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import java.awt.Color
 

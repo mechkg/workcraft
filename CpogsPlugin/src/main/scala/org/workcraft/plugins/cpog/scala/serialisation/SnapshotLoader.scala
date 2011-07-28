@@ -5,7 +5,7 @@ import org.workcraft.plugins.cpog.scala.{VisualArc => MVisualArc}
 import org.workcraft.plugins.cpog.scala.nodes.{snapshot => P}
 import org.workcraft.dependencymanager.advanced.user.StorageManager
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.VariableReplacer
-import org.workcraft.plugins.cpog.scala.Util._
+import org.workcraft.scala.Util._
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import java.awt.geom.Point2D
 import pcollections.TreePVector

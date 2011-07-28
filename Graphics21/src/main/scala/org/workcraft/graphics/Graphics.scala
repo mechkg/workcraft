@@ -17,21 +17,21 @@ import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.dom.visual.VisualComponent
-import org.workcraft.plugins.cpog.scala.formularendering.FormulaToGraphics
-import org.workcraft.plugins.cpog.LabelPositioning
-import org.workcraft.plugins.cpog.scala.Util._
-import org.workcraft.plugins.cpog.scala.Scalaz._
-import org.workcraft.plugins.cpog.scala.Expressions._
+import org.workcraft.graphics.formularendering.FormulaToGraphics
+import org.workcraft.graphics.LabelPositioning
+import org.workcraft.scala.Util._
+import org.workcraft.scala.Scalaz._
+import org.workcraft.scala.Expressions._
 import java.awt.geom.Path2D
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dom.visual.TransformHelper
 import java.awt.geom.PathIterator
-import org.workcraft.plugins.cpog.scala.touchable.TouchableUtil
-import org.workcraft.plugins.cpog.scala.RichGraphicalContent
+import org.workcraft.graphics.TouchableUtil
+import org.workcraft.graphics.RichGraphicalContent
 import org.workcraft.util.Maybe
 import org.workcraft.gui.graph.tools.Colorisation
 
-package org.workcraft.plugins.cpog.scala {
+package org.workcraft.graphics {
   object Graphics {
   
   implicit def asBCGC (x : RichGraphicalContent) = new BoundedColorisableGraphicalContent (x.colorisableGraphicalContent, x.visualBounds) 

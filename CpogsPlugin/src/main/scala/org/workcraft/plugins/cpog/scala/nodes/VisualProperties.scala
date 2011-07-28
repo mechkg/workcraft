@@ -1,4 +1,4 @@
-import org.workcraft.plugins.cpog.scala.Util._
+import org.workcraft.scala.Util._
 import org.workcraft.gui.propertyeditor.dubble.DoubleProperty
 import org.workcraft.gui.propertyeditor.string.StringProperty
 import pcollections.TreePVector
@@ -7,7 +7,7 @@ import org.workcraft.gui.propertyeditor.EditableProperty
 import pcollections.PVector
 import java.awt.geom.Point2D
 import org.workcraft.dependencymanager.advanced.user.StorageManager
-import org.workcraft.plugins.cpog.LabelPositioning
+import org.workcraft.graphics.LabelPositioning
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty
 

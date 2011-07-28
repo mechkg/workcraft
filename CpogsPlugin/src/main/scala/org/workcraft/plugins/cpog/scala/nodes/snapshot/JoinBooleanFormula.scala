@@ -7,7 +7,7 @@ import org.workcraft.plugins.cpog.optimisation.booleanvisitors.CachedVisitor
 import org.workcraft.plugins.cpog.optimisation.expressions.Or
 import org.workcraft.plugins.cpog.optimisation.expressions.interfaces.FoldVisitor
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
-import org.workcraft.plugins.cpog.scala.Scalaz._
+import org.workcraft.scala.Scalaz._
 
 object JoinBooleanFormula {
   

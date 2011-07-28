@@ -1,17 +1,16 @@
 package org.workcraft.plugins.cpog.scala.tools
-import org.workcraft.gui.graph.tools.GraphEditorMouseListener
-import org.workcraft.gui.graph.tools.GraphEditorKeyListener
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.GraphicalContent
 import org.workcraft.gui.graph.tools.GraphEditorTool.Button
-import org.workcraft.gui.graph.tools.AbstractTool
-import javax.swing.JPanel
-import javax.swing.Icon
-import org.workcraft.gui.graph.tools.GraphEditorTool
 import org.workcraft.gui.graph.tools.DummyKeyListener
 import org.workcraft.gui.graph.tools.DummyMouseListener
+import org.workcraft.gui.graph.tools.GraphEditorKeyListener
+import org.workcraft.gui.graph.tools.GraphEditorMouseListener
+import org.workcraft.gui.graph.tools.GraphEditorTool
 import org.workcraft.gui.graph.Viewport
-import org.workcraft.plugins.cpog.scala.Expressions
+import org.workcraft.scala.Expressions
+
+import javax.swing.JPanel
 
 object ToolHelper {
   def asGraphEditorTool (

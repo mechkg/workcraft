@@ -1,11 +1,10 @@
-package org.workcraft.plugins.cpog.scala
+package org.workcraft.graphics
 import org.workcraft.dom.visual.ColorisableGraphicalContent
 import org.workcraft.dom.visual.DrawRequest
 import org.workcraft.gui.Coloriser
 import java.awt.Font
 import java.awt.Color
 import org.workcraft.dom.visual.TouchableHelper
-import org.workcraft.plugins.cpog.scala.touchable.TouchableUtil
 import org.workcraft.dom.visual.VisualComponent
 
 object Label {

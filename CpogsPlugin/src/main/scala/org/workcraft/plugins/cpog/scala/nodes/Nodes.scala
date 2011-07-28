@@ -9,7 +9,7 @@ import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor
 import org.workcraft.plugins.cpog.VariableState
 import java.awt.geom.Point2D
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero
-import org.workcraft.plugins.cpog.LabelPositioning
+import org.workcraft.graphics.LabelPositioning
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer

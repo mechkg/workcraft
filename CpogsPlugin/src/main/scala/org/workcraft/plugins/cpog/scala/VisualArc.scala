@@ -20,9 +20,9 @@ import nodes._
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.connections.ConnectionGui
-import Expressions._
-import Util._
-import Scalaz._
+import org.workcraft.scala.Expressions._
+import org.workcraft.scala.Util._
+import org.workcraft.scala.Scalaz._
 import _root_.scala.collection.JavaConversions._
 import org.workcraft.plugins.cpog.scala.nodes.snapshot.SnapshotMaker
 import org.workcraft.dom.visual.connections.RelativePoint

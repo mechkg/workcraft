@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog.scala.touchable
+package org.workcraft.graphics
 import org.workcraft.dom.visual.Touchable
 import java.awt.geom.AffineTransform
 import org.workcraft.dom.visual.TransformHelper

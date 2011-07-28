@@ -2,8 +2,8 @@ package org.workcraft.plugins.cpog.scala.tools
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import pcollections.PSet
 import org.workcraft.plugins.cpog.scala.nodes._
-import org.workcraft.plugins.cpog.scala.Util._
-import org.workcraft.plugins.cpog.scala.Graphics._
+import org.workcraft.scala.Util._
+import org.workcraft.graphics.Graphics._
 import org.workcraft.dependencymanager.advanced.core.Expression
 import java.awt.geom.Point2D
 import org.workcraft.dom.visual.Touchable

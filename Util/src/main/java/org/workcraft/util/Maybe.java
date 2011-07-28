@@ -160,7 +160,7 @@ public interface Maybe<T> {
 			return new Function<Function<? super A,? extends B>, Function<Maybe<? extends A>,Maybe<B>>>(){
 				@Override
 				public Function<Maybe<? extends A>, Maybe<B>> apply(Function<? super A, ? extends B> argument) {
-					Function<Maybe<? extends A>, Maybe<B>> res = lift(argument);
+					Function<Maybe<? extends A>, Maybe<B>> res = Maybe.Util.<A,B>lift(argument);
 					return res;
 				}
 			};

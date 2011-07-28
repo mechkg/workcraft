@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog.scala
+package org.workcraft.scala
 
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import scalaz.Monad
@@ -7,9 +7,9 @@ import scala.collection.TraversableLike
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.Expressions.{joinCollection => joinCollectionJ, constant => constantJ, bind => bindJ, fmap => fmapJ}
 import scala.collection.JavaConversions.{asJavaCollection, asScalaIterable}
-import Util._
 import Expressions._
-import Scalaz._
+import org.workcraft.scala.Scalaz._
+import org.workcraft.scala.Util._
 
 object Expressions {
   

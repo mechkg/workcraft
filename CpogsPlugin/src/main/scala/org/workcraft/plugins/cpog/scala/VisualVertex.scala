@@ -3,11 +3,11 @@ import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
-import org.workcraft.plugins.cpog.scala.Expressions._
+import org.workcraft.scala.Expressions._
 import org.workcraft.plugins.cpog.scala.nodes._
-import org.workcraft.plugins.cpog.scala.Util._
-import org.workcraft.plugins.cpog.scala.Scalaz._
-import org.workcraft.plugins.cpog.scala.Graphics._
+import org.workcraft.scala.Util._
+import org.workcraft.scala.Scalaz._
+import org.workcraft.graphics.Graphics._
 import org.workcraft.dom.visual.DrawRequest
 import java.awt.geom.Ellipse2D
 import org.workcraft.plugins.shared.CommonVisualSettings
@@ -17,14 +17,15 @@ import org.workcraft.gui.Coloriser
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.geom.Rectangle2D
-import org.workcraft.plugins.cpog.scala.formularendering._
-import org.workcraft.plugins.cpog.LabelPositioning
+import org.workcraft.graphics.formularendering._
+import org.workcraft.graphics.LabelPositioning
 import org.workcraft.dom.visual.Label
 import org.workcraft.dependencymanager.advanced.core.Expressions.{ fmap => javafmap }
 import pcollections.PVector
 import org.workcraft.gui.propertyeditor.EditableProperty
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import scalaz._
+import org.workcraft.graphics.RichGraphicalContent
 
 package org.workcraft.plugins.cpog.scala {
   object VisualVertex {
@@ -63,7 +64,7 @@ package org.workcraft.plugins.cpog.scala {
       for(
       	label <- vertex.visualProperties.label;
       	condition <- vertex.condition;
-      	value <- Util.formulaValue(condition);
+      	value <- FormulaValue(condition);
       	labelPositioning <- vertex.visualProperties.labelPositioning;
       	fillColor <- CommonVisualSettings.fillColor;
       	foreColor <- CommonVisualSettings.foregroundColor;

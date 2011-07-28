@@ -5,7 +5,7 @@ import org.workcraft.plugins.cpog.scala.nodes._
 import org.workcraft.plugins.cpog.scala.VisualArc
 import org.workcraft.plugins.cpog.scala.nodes.snapshot.SnapshotMaker
 import org.workcraft.dependencymanager.advanced.core.GlobalCache.eval
-import org.workcraft.plugins.cpog.LabelPositioning
+import org.workcraft.graphics.LabelPositioning
 import java.awt.geom.Point2D
 import scala.collection.JavaConversions._
 import org.workcraft.dom.visual.connections.RelativePoint

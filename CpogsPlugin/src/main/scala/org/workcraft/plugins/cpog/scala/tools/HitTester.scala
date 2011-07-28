@@ -4,7 +4,7 @@ import org.workcraft.dom.visual.Touchable
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.GlobalCache._
 import org.workcraft.plugins.cpog.scala.nodes._
-import org.workcraft.plugins.cpog.scala.Util._
+import org.workcraft.scala.Util._
 import scala.collection.JavaConversions._
 
 object HitTester {

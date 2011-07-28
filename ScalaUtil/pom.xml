@@ -6,131 +6,29 @@
   <artifactId>ScalaUtil</artifactId>
   <version>2.1-SNAPSHOT</version>
 
-  <name>Workcraft 2.1 utility classes for Scala language</name>
+  <name>Workcraft 2.1 utility classes for projects that use Scala language</name>
   <url>http://workcraft.org</url>
 
-	<repositories>
-		<repository>
-			<id>scala-tools.org</id>
-			<name>Scala-tools Maven2 Repository</name>
-			<url>http://scala-tools.org/repo-releases</url>
-		</repository>
-<!--		<repository>
-			<id>scala-tools.org-snapshots</id>
-			<name>Scala-tools Maven2 Repository - Snapshots</name>
-			<url>http://scala-tools.org/repo-snapshots</url>
-		</repository> -->
-	</repositories>
-
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-    <build>
-    	<plugins>
-             <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-             </plugin>
-
-           <plugin>
-             <artifactId>maven-assembly-plugin</artifactId>
-             
-             <executions>
-               <execution>
-                 <id>assembly</id>
-                 <phase>package</phase>
-                 <goals>
-                   <goal>single</goal>
-                 </goals>
-                 <configuration>
-                   <descriptorRefs>
-                     <descriptorRef>
-                       jar-with-dependencies
-                     </descriptorRef>
-                   </descriptorRefs>
-                 </configuration>
-               </execution>
-             </executions>
-           </plugin>
-
-			<plugin>
-				<groupId>org.scala-tools</groupId>
-				<artifactId>maven-scala-plugin</artifactId>
-    			<version>2.15.2</version>
-				<!-- <executions> <execution> <goals> <goal>add-source</goal> <goal>compile</goal> 
-					<goal>testCompile</goal> </goals> </execution> </executions> -->
-				<executions>
-					<execution>
-						<id>compile</id>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-						<phase>compile</phase>
-					</execution>
-
-					<execution>
-						<id>test-compile</id>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-						<phase>test-compile</phase>
-					</execution>
-
-					<execution>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<args>
-						<arg>-deprecation</arg>
-						<arg>-unchecked</arg>
-					</args>
-				</configuration>
-			</plugin>
-
-
-    	</plugins>
-    </build>
-    
+  <parent>
+    <groupId>org.workcraft</groupId>
+    <artifactId>ScalaProject</artifactId>
+    <version>2.1-SNAPSHOT</version>
+  </parent>
+              
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
-			<scope>test</scope>
+			<groupId>org.workcraft</groupId>
+			<artifactId>Util</artifactId>
+			<version>2.1-SNAPSHOT</version>
+			<type>jar</type>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-			<version>2.9.0.RC3</version>
+			<groupId>org.workcraft</groupId>
+			<artifactId>DependencyManager</artifactId>
+			<version>2.1-SNAPSHOT</version>
+			<type>jar</type>
+			<scope>compile</scope>
 		</dependency>
-        <dependency>
-          <groupId>org.scalaz</groupId>
-          <artifactId>scalaz-core_2.9.0</artifactId>
-          <version>6.0.RC2</version>
-        </dependency>
-        <dependency>
-        	<groupId>org.workcraft</groupId>
-        	<artifactId>Util</artifactId>
-        	<version>2.1-SNAPSHOT</version>
-        	<type>jar</type>
-        	<scope>compile</scope>
-        </dependency>
-        <dependency>
-        	<groupId>org.workcraft</groupId>
-        	<artifactId>BooleanFormulae</artifactId>
-        	<version>2.1-SNAPSHOT</version>
-        	<type>jar</type>
-        	<scope>compile</scope>
-        </dependency>
 	</dependencies>
 </project>

@@ -20,13 +20,13 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import pcollections.HashTreePSet
 import pcollections.PSet
-import org.workcraft.plugins.cpog.scala.Util._
-import org.workcraft.plugins.cpog.scala.Expressions._
+import org.workcraft.scala.Util._
+import org.workcraft.scala.Expressions._
 import org.workcraft.plugins.cpog.scala.VisualArc._
 import scala.collection.JavaConversions.{ collectionAsScalaIterable, asJavaCollection }
 import org.workcraft.util.Maybe.Util.just
 import org.workcraft.plugins.cpog.gui.TouchableProvider.bbToTouchable
-import org.workcraft.plugins.cpog.scala.Graphics._
+import org.workcraft.graphics.Graphics._
 import java.awt.geom.Path2D
 import java.awt.geom.Ellipse2D
 import org.workcraft.dom.visual.Touchable
@@ -37,8 +37,7 @@ import org.workcraft.dependencymanager.advanced.core.{ Expressions => JExpressio
 import org.workcraft.dependencymanager.advanced.user.Setter
 import org.workcraft.util.Maybe
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener
-import org.workcraft.plugins.cpog.scala.Graphics._
-import org.workcraft.plugins.cpog.scala.GraphicsHelper
+import org.workcraft.graphics.GraphicsHelper
 
 class ControlPointsTool (val mouseListener: GraphEditorMouseListener,
     userSpaceGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent]) {
@@ -51,7 +50,7 @@ class ControlPointsTool (val mouseListener: GraphEditorMouseListener,
 }
 
 object ControlPointsTool {
-  import org.workcraft.plugins.cpog.scala.Scalaz._
+  import org.workcraft.scala.Scalaz._
 
   val controlPointSize = 0.15
 
@@ -109,7 +108,7 @@ object ControlPointsTool {
     val visibleControlPoints: Expression[List[_ <: ControlPoint]] =
       for (
         (selectedArcs) <- selectedArcs;
-        val nodeLists: List[List[ControlPoint]] = selectedArcs.map(getControlPoints).toList
+        val nodeLists = selectedArcs.map(getControlPoints).toList
       ) yield nodeLists.flatten: List[ControlPoint]
     
 

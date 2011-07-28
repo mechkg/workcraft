@@ -6,7 +6,7 @@ import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor
 import org.workcraft.plugins.cpog.VariableState
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import java.awt.geom.Point2D
-import org.workcraft.plugins.cpog.LabelPositioning
+import org.workcraft.graphics.LabelPositioning
 import java.util.UUID
 import org.workcraft.dom.visual.connections.VisualConnectionData
 import org.workcraft.dom.visual.connections.StaticConnectionDataVisitor

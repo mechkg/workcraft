@@ -1,5 +1,5 @@
-package org.workcraft.plugins.cpog.scala.touchable
-import org.workcraft.plugins.cpog.scala.Path
+package org.workcraft.graphics.touchable
+import org.workcraft.graphics.Path
 
 
 import org.junit.Assert._

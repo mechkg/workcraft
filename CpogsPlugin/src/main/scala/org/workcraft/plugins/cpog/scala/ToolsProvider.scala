@@ -1,69 +1,61 @@
 
-import org.workcraft.dom.visual.HitMan
-import org.workcraft.plugins.cpog.CPOG
-import org.workcraft.plugins.cpog.gui.Generators._
-import org.workcraft.plugins.cpog.gui.TouchableProvider._
-import org.workcraft.Tool
-import java.awt.geom.Point2D
-import pcollections.HashTreePSet
-import pcollections.PSet
-import org.workcraft.util.Maybe
-import org.workcraft.dependencymanager.advanced.core.Expression
-import org.workcraft.dependencymanager.advanced.core.GlobalCache.eval
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
-import org.workcraft.util.Function.Util.composition
-import org.workcraft.util.Function
-import org.workcraft.util.Function2
-import org.workcraft.dom.visual.Touchable
-import org.workcraft.dom.visual.connections._
-import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
-import org.workcraft.dom.visual.GraphicalContent
-import org.workcraft.dom.visual.ColorisableGraphicalContent
-import org.workcraft.gui.graph.tools.HitTester
-import org.workcraft.gui.graph.tools.AbstractTool
-import org.workcraft.gui.graph.tools.GraphEditorToolUtil._
-import java.awt.Color
-import java.awt.BasicStroke
-import org.workcraft.gui.graph.tools.GraphEditorTool
-import org.workcraft.gui.graph.tools.Colorisation
-import org.workcraft.gui.graph.tools.Colorisation.{EMPTY => emptyColorisation}
-import org.workcraft.gui.graph.tools.ConnectionController
-import org.workcraft.gui.graph.tools.selection.MoveDragHandler
-import org.workcraft.gui.graph.tools.NodeGeneratorTool
-import org.workcraft.dom.visual.ColorisableGraphicalContent.Util._
-import org.workcraft.dom.visual.DrawMan
-import org.workcraft.gui.graph.tools.selection.GenericSelectionTool
-import org.workcraft.gui.graph.Viewport
-import java.lang.Boolean
-import org.workcraft.plugins.cpog.scala.Util._
-import org.workcraft.plugins.cpog.scala.nodes._
-import org.workcraft.plugins.cpog.scala.NodePainter
-import org.workcraft.gui.graph.tools.GraphEditorConfiguration
-import scala.collection.JavaConversions._
 import java.awt.geom.AffineTransform
+import java.awt.geom.Point2D
+import java.awt.BasicStroke
+import java.awt.Color
+
+import scala.collection.JavaConversions.asJavaCollection
+import scala.collection.JavaConversions.collectionAsScalaIterable
 import scala.collection.immutable.Set
-import pcollections.TreePVector
-import pcollections.PVector
-import org.workcraft.gui.propertyeditor.EditableProperty
-import org.workcraft.plugins.cpog.optimisation.BooleanFormula
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.VariableReplacer
+
+import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.{Expressions => JExpressions}
 import org.workcraft.dependencymanager.advanced.core.GlobalCache
-import org.workcraft.plugins.cpog.scala.nodes.snapshot.JoinBooleanFormula
-import org.workcraft.plugins.cpog.optimisation.javacc.BooleanParser
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
+import org.workcraft.dom.visual.connections.VisualConnectionProperties
+import org.workcraft.graphics.GraphicsHelper
+import org.workcraft.gui.graph.tools.GraphEditorToolUtil.attachPainter
+import org.workcraft.gui.graph.tools.ConnectionController
+import org.workcraft.gui.graph.tools.NodeGeneratorTool
 import org.workcraft.gui.propertyeditor.string.StringProperty
-import org.workcraft.plugins.cpog.scala.tools.SelectionTool
+import org.workcraft.gui.propertyeditor.EditableProperty
+import org.workcraft.plugins.cpog.gui.Generators.createFor
+import org.workcraft.plugins.cpog.optimisation.booleanvisitors.FormulaToString
+import org.workcraft.plugins.cpog.optimisation.booleanvisitors.VariableReplacer
+import org.workcraft.plugins.cpog.optimisation.javacc.BooleanParser
+import org.workcraft.plugins.cpog.optimisation.BooleanFormula
+import org.workcraft.plugins.cpog.scala.nodes.snapshot.JoinBooleanFormula
+import org.workcraft.plugins.cpog.scala.nodes.Arc
+import org.workcraft.plugins.cpog.scala.nodes.Component
+import org.workcraft.plugins.cpog.scala.nodes.Node
+import org.workcraft.plugins.cpog.scala.nodes.RhoClause
+import org.workcraft.plugins.cpog.scala.nodes.Variable
+import org.workcraft.plugins.cpog.scala.nodes.Vertex
 import org.workcraft.plugins.cpog.scala.tools.ConnectionTool
-import org.workcraft.plugins.cpog.scala.tools.MovableController
 import org.workcraft.plugins.cpog.scala.tools.ControlPointsTool
+import org.workcraft.plugins.cpog.scala.tools.MovableController
+import org.workcraft.plugins.cpog.scala.tools.SelectionTool
+import org.workcraft.plugins.cpog.CPOG
+import org.workcraft.plugins.cpog.CpogConnectionManager
+import org.workcraft.scala.Expressions.ExpressionMonad
+import org.workcraft.scala.Expressions.monadicSyntax
+import org.workcraft.scala.Scalaz.SeqMA
+import org.workcraft.scala.Scalaz.maImplicit
+import org.workcraft.scala.Util.asFunctionObject
+import org.workcraft.scala.Util.javaCollectionToList
+import org.workcraft.util.Function
+
+import pcollections.PVector
+import pcollections.HashTreePSet
+import pcollections.PSet
+import pcollections.TreePVector
 
 package org.workcraft.plugins.cpog.scala {
 
 import org.workcraft.plugins.cpog.CpogConnectionManager
-import Expressions._
-import Util._
-import Scalaz._
+import org.workcraft.scala.Expressions._
+import org.workcraft.scala.Util._
+import org.workcraft.scala.Scalaz._
 
   case class ToolsProvider(cpog : CPOG) {
 

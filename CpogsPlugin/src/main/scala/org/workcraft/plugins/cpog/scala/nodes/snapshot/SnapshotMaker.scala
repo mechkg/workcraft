@@ -7,9 +7,9 @@ import org.workcraft.plugins.cpog.optimisation.booleanvisitors.VariableReplacer
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import org.workcraft.plugins.cpog.scala.{nodes => M}
 import org.workcraft.plugins.cpog.scala.{VisualArc => MVisualArc}
-import org.workcraft.plugins.cpog.scala.Expressions._
-import org.workcraft.plugins.cpog.scala.Util._
-import org.workcraft.plugins.cpog.scala.Scalaz._
+import org.workcraft.scala.Expressions._
+import org.workcraft.scala.Util._
+import org.workcraft.scala.Scalaz._
 import java.util.UUID
 import java.awt.geom.Point2D
 

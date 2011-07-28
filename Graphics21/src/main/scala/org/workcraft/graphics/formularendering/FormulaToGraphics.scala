@@ -11,13 +11,13 @@ import org.workcraft.plugins.cpog.optimisation.BinaryBooleanFormula
 import org.workcraft.plugins.cpog.optimisation.expressions._
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
 import scalaz.Monad
-import org.workcraft.plugins.cpog.scala.Scalaz._ 
+import org.workcraft.scala.Scalaz._ 
 import scala.collection.JavaConversions._
-import org.workcraft.plugins.cpog.scala.Expressions._
-import org.workcraft.plugins.cpog.scala.nodes.{Variable => VariableNode}
+import org.workcraft.scala.Expressions._
 import org.workcraft.dependencymanager.advanced.core.Expression
 
-package org.workcraft.graphics.formularendering {
+package org.workcraft.graphics {
+package object formularendering {
 	import RichRectangle2D._
 
 	class UseUnicode(v : Boolean) {
@@ -31,7 +31,6 @@ package org.workcraft.graphics.formularendering {
 	  val withPodgonFontRenderContext = FormulaToGraphics(org.workcraft.dom.visual.Label.podgonFontRenderContext()) 
 	  lazy val defaultFont = JavaFont.createFont(JavaFont.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/default.pfb")).deriveFont(0.5f);
 	  lazy val fancyFont = JavaFont.createFont(JavaFont.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/eurm10.pfb")).deriveFont(0.5f);
-	  def render(formula : BooleanFormula[VariableNode]) : Expression[FormulaRenderingResult] = withPodgonFontRenderContext.withFancyFont.renderM[Expression, VariableNode](formula)(variable => variable.visualProperties.label)
 	}
 	
 	case class FormulaToGraphics(fontRenderContext : FontRenderContext) {
@@ -153,4 +152,5 @@ package org.workcraft.graphics.formularendering {
 		}
 	  }
 	}
+}
 }

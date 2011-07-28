@@ -1,10 +1,10 @@
-package org.workcraft.plugins.cpog.scala
+package org.workcraft.graphics
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.ColorisableGraphicalContent
 import org.workcraft.dom.visual.GraphicalContent
-import org.workcraft.plugins.cpog.scala.Util._
-import org.workcraft.plugins.cpog.scala.Scalaz._
-import org.workcraft.plugins.cpog.scala.Expressions._
+import org.workcraft.scala.Util._
+import org.workcraft.scala.Scalaz._
+import org.workcraft.scala.Expressions._
 import org.workcraft.gui.graph.tools.Colorisation
 
 object GraphicsHelper {

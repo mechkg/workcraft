@@ -1,19 +1,21 @@
-import org.workcraft.plugins.shared.CommonVisualSettings
+import java.awt.BasicStroke
+import java.awt.Color
 
-import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
-import org.workcraft.plugins.cpog.scala.nodes.RhoClause
-import org.workcraft.plugins.cpog.scala.Expressions._
-import org.workcraft.plugins.cpog.scala.Scalaz._
-import org.workcraft.plugins.cpog.scala.Graphics._
-import org.workcraft.plugins.cpog.scala.formularendering.FormulaToGraphics
-import java.awt.geom.Rectangle2D
 import org.workcraft.dependencymanager.advanced.core.Expression
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext
+import org.workcraft.graphics.Graphics.HorizontalAlignment
+import org.workcraft.graphics.Graphics.VerticalAlignment
+import org.workcraft.graphics.Graphics.asBCGC
+import org.workcraft.graphics.Graphics.rectangle
+import org.workcraft.graphics.formularendering.FormulaToGraphics
+import org.workcraft.graphics.RichGraphicalContent
 import org.workcraft.plugins.cpog.optimisation.expressions.One
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero
-import java.awt.Color
-import java.awt.BasicStroke
+import org.workcraft.plugins.cpog.scala.nodes.RhoClause
+import org.workcraft.plugins.cpog.scala.nodes.Variable
+import org.workcraft.plugins.shared.CommonVisualSettings
+import org.workcraft.scala.Expressions.ExpressionMonad
+import org.workcraft.scala.Expressions.monadicSyntax
+import org.workcraft.scala.Scalaz.maImplicit
 
 package org.workcraft.plugins.cpog.scala {
 
@@ -24,10 +26,10 @@ package org.workcraft.plugins.cpog.scala {
     def image(rhoClause: RhoClause): Expression[RichGraphicalContent] =
       for (
         formula <- rhoClause.formula;
-        value <- Util.formulaValue(formula);
+        value <- FormulaValue(formula);
         fillColor <- CommonVisualSettings.fillColor;
         foreColor <- CommonVisualSettings.foregroundColor;
-        printedFormula <- FormulaToGraphics.render(formula)
+        printedFormula <- FormulaToGraphics.withPodgonFontRenderContext.withFancyFont.renderM[Expression, Variable](formula)(variable => variable.visualProperties.label)
       ) yield {
         val formulaColor = if (value == One.instance)
           new Color(0x00cc00)
@@ -41,9 +43,8 @@ package org.workcraft.plugins.cpog.scala {
         val frameImage = rectangle(
           formulaImage.boundingBox.getWidth + 0.4,
           formulaImage.boundingBox.getHeight + 0.4,
-          Some ((new BasicStroke(strokeWidth),foreColor)),
-          Some (fillColor)
-          )
+          Some((new BasicStroke(strokeWidth), foreColor)),
+          Some(fillColor))
 
         (formulaImage align (frameImage, HorizontalAlignment.Center, VerticalAlignment.Center)) over frameImage
       }

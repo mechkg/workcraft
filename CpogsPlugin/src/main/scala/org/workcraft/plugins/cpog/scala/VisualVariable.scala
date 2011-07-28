@@ -3,20 +3,21 @@ import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.plugins.cpog.scala.nodes._
-import org.workcraft.plugins.cpog.scala.Graphics._
+import org.workcraft.graphics.Graphics._
 import org.workcraft.plugins.shared.CommonVisualSettings
-import org.workcraft.plugins.cpog.scala.formularendering.FormulaToGraphics
-import org.workcraft.plugins.cpog.LabelPositioning
+import org.workcraft.graphics.formularendering.FormulaToGraphics
+import org.workcraft.graphics.LabelPositioning
 import pcollections.TreePVector
 import java.awt.geom.Rectangle2D
 import java.awt.BasicStroke
 import pcollections.PVector
-import org.workcraft.plugins.cpog.scala.Expressions._
+import org.workcraft.scala.Expressions._
 import org.workcraft.plugins.cpog.VariableState
 import org.workcraft.gui.propertyeditor.EditableProperty
 import org.workcraft.plugins.cpog.VisualComponent
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty
 import org.workcraft.util.Pair
+import org.workcraft.graphics.RichGraphicalContent
 
 package org.workcraft.plugins.cpog.scala {
 

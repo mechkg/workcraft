@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog;
+package org.workcraft.graphics;
 
 import static pcollections.TreePVector.empty;
 

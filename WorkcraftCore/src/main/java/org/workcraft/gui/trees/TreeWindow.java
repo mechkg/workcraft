@@ -44,6 +44,10 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleTuple;
+import org.workcraft.dependencymanager.advanced.core.Handle;
+import org.workcraft.dependencymanager.util.listeners.Listener;
 import org.workcraft.gui.workspace.Path;
 
 public class TreeWindow<Node> extends JPanel
@@ -60,8 +64,29 @@ public class TreeWindow<Node> extends JPanel
 	private CheckBoxMode checkBoxMode = CheckBoxMode.NONE;
 
 	private JCheckBox checkBox;
+	
+	
+	InvalidateListener invalidateListener = new InvalidateListener();
+	
+	class InvalidateListener implements Listener {
 
-	public TreeWindow(TreeSource<Node> source, TreeDecorator<Node> decorator, TreePopupProvider<Node> popupProvider)
+		List<Handle> handles = new ArrayList<Handle>();
+		
+		@Override
+		public void changed() {
+			handles.clear();
+			tree.repaint();
+		}
+		
+		public <T> T eval(Expression<T> expr) {
+			ValueHandleTuple<? extends T> res = expr.getValue(this);
+			handles.add(res.handle);
+			return res.value;
+		}
+		
+	}
+
+	public TreeWindow(TreeSource<Node> source, ReactiveTreeDecorator<Node> decorator, TreePopupProvider<Node> popupProvider)
 	{
 		this.popupProvider = popupProvider;
 		startup(source, decorator);
@@ -95,7 +120,7 @@ public class TreeWindow<Node> extends JPanel
 		return Collections.unmodifiableSet(checkedNodes);
 	}
 
-	public void startup(final TreeSource<Node> source, final TreeDecorator<Node> decorator) 
+	public void startup(final TreeSource<Node> source, final ReactiveTreeDecorator<Node> decorator) 
 	{
 		tree = new JTree();
 		tree.setFocusable(true);
@@ -205,7 +230,7 @@ public class TreeWindow<Node> extends JPanel
 
 				Node node = (Node)value;
 
-				String name = decorator.getName(node);
+				String name = invalidateListener.eval(decorator.name(node));
 				boolean tricky = name.startsWith("!");
 				if (tricky)
 					name = name.substring(1);
@@ -217,7 +242,7 @@ public class TreeWindow<Node> extends JPanel
 				else
 					res.setFont(res.getFont().deriveFont(Font.PLAIN));
 
-				final Icon icon = decorator.getIcon(node);
+				final Icon icon = invalidateListener.eval(decorator.icon(node));
 				//if(icon!=null)
 				setIcon(icon);
 
@@ -267,7 +292,7 @@ public class TreeWindow<Node> extends JPanel
 		tree.makeVisible(new TreePath(Path.getPath(node).toArray()));
 	}
 
-	public static <Node> TreeWindow<Node> create(TreeSource<Node> source, TreeDecorator<Node> decorator, TreePopupProvider<Node> popupProvider) {
+	public static <Node> TreeWindow<Node> create(TreeSource<Node> source, ReactiveTreeDecorator<Node> decorator, TreePopupProvider<Node> popupProvider) {
 		return new TreeWindow<Node>(source, decorator, popupProvider);
 	}
 

@@ -21,5 +21,10 @@ public final class ModelService<T> {
 	public static <T> ModelService<T> createNewService(Class<T> type, String serviceName) {
 		ServiceHandle<ModelScope, T> newService = ServiceHandle.createNewService(type, serviceName);
 		return new ModelService<T>(newService);
-	} 
+	}
+
+	public static <T> ModelService<T> createServiceUnchecked(String serviceName) {
+		ServiceHandle<ModelScope, T> newService = ServiceHandle.createServiceUnchecked(serviceName);
+		return new ModelService<T>(newService);
+	}
 }

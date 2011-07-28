@@ -31,7 +31,8 @@ public class CpogLoader implements Loader {
 	}
 
 	private ModelServices reconstructModel(org.workcraft.plugins.cpog.scala.nodes.snapshot.CPOG readObject) {
-		CPOG cpog = org.workcraft.plugins.cpog.scala.serialisation.SnapshotLoader.load(readObject, new HistoryPreservingStorageManager());
-		return new CpogModelDescriptor().createCpogServices(cpog);
+		HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
+		CPOG cpog = org.workcraft.plugins.cpog.scala.serialisation.SnapshotLoader.load(readObject, storage);
+		return new CpogModelDescriptor().createCpogServices(cpog, storage);
 	}
 }

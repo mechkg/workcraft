@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dependencymanager.advanced.user.Variable;
@@ -91,5 +92,11 @@ public class HistoryPreservingStorageManager implements StorageManager {
 			restore(history.get(historyPosition+1));
 			historyPosition++;
 		}
+	}
+	
+	private final ModifiableExpression<Boolean> changedStatus = Variable.create(false);
+	
+	public Expression<Boolean> changedStatus() {
+		return changedStatus;
 	}
 }

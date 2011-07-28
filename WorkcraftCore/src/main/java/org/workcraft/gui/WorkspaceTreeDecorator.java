@@ -22,12 +22,15 @@ package org.workcraft.gui;
 
 import javax.swing.Icon;
 
-import org.workcraft.gui.trees.TreeDecorator;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+import org.workcraft.gui.trees.ReactiveTreeDecorator;
 import org.workcraft.gui.workspace.Path;
+import org.workcraft.util.Function;
 import org.workcraft.workspace.Workspace;
 import org.workcraft.workspace.WorkspaceEntry;
 
-public class WorkspaceTreeDecorator implements TreeDecorator<Path<String>>
+public class WorkspaceTreeDecorator implements ReactiveTreeDecorator<Path<String>>
 {
 	private final Workspace workspace;
 
@@ -37,7 +40,7 @@ public class WorkspaceTreeDecorator implements TreeDecorator<Path<String>>
 	}
 	
 	@Override
-	public Icon getIcon(Path<String> node) {
+	public Expression<Icon> icon(Path<String> node) {
 	
 /*		try {
 			return GUI.loadIconFromResource("images/place.png");
@@ -45,15 +48,23 @@ public class WorkspaceTreeDecorator implements TreeDecorator<Path<String>>
 			System.out.println(e.getLocalizedMessage());
 			return null;
 		}*/
-		return null;
+		return Expressions.constant(null);
 	}
 
 	@Override
-	public String getName(Path<String> node) {
+	public Expression<String> name(Path<String> node) {
 		final WorkspaceEntry openFile = workspace.getOpenFile(node);
-		String name = node.isEmpty() ? "!Workspace" : node.getNode();
-		if(openFile != null && openFile.isChanged())
-			name += " *";
-		return name;
+		final String name = node.isEmpty() ? "!Workspace" : node.getNode();
+		return openFile == null ? Expressions.constant(name) : Expressions.fmap(new Function<Boolean, String>(){
+
+			@Override
+			public String apply(Boolean isChanged) {
+				if(isChanged)
+					return name + " *";
+				else
+					return name;
+			}
+			
+		}, openFile.isChanged());
 	}
 }

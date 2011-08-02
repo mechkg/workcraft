@@ -73,7 +73,7 @@ public class HitMan
 			});
 		}
 		
-		public N hit(Point2D point, Function<? super N, Boolean> filter) {
+		public Maybe<N> hit(Point2D point, Function<? super N, Boolean> filter) {
 			return instance.hitFirstChild(point, null, filter);
 		}
 		
@@ -85,11 +85,11 @@ public class HitMan
 			return new HitTester<N>() {
 
 				@Override
-				public N hitTest(Point2D point) {
+				public Maybe<N> hitTest(Point2D point) {
 					for(Function<? super N, Boolean> tester : testers) {
 						
-						N n = hit(point, tester);
-						if(n != null)
+						Maybe<N> n = hit(point, tester);
+						if(Maybe.Util.isJust(n))
 							return n;
 					}
 					return null;
@@ -137,30 +137,29 @@ public class HitMan
 			return reverse(filterByBB(hierarchy.apply(node), point));
 		}
 
-		public N hitDeepest(Point2D point, N node, Function<? super N, Boolean> filter) {
+		public Maybe<N> hitDeepest(Point2D point, N node, Function<? super N, Boolean> filter) {
 			
 			for (N n : getFilteredChildren(point, node)) {
-				N result = hitDeepest(point, n, filter);
-				if(result!=null)
-					return result;
+				Maybe<N> result = hitDeepest(point, n, filter);
+				if(Maybe.Util.isJust(result)) return result;
 			}
 
 			if (filter.apply(node))
 				return hitBranch(point, node);
-			return null;
+			return Maybe.Util.nothing();
 		}
 		
-		private N hitBranch(Point2D point, N node) {
+		private Maybe<N> hitBranch(Point2D point, N node) {
 			if (isBranchHit(point, node))
-				return node;
+				return Maybe.Util.just(node);
 			else
-				return null;
+				return Maybe.Util.nothing();
 		}
 		
 		public boolean isBranchHit (Point2D point, N node) {
 			Touchable touchable = toNullable(tp.apply(node));
 			if (touchable != null && touchable.hitTest(point))	{
-					return true;
+				return true;
 			}
 
 			for (N n : getFilteredChildren(point, node)) {
@@ -171,7 +170,7 @@ public class HitMan
 			return false;
 		}
 		
-		public N hitFirst(Point2D point, N node, Function<? super N, Boolean> filter) {
+		public Maybe<N> hitFirst(Point2D point, N node, Function<? super N, Boolean> filter) {
 			if (filter.apply(node)) {
 				return hitBranch(point, node);
 			} else {
@@ -179,16 +178,17 @@ public class HitMan
 			}
 		}
 
-		public N hitFirstChild(Point2D point, N node, Function<? super N, Boolean> filter) {
+		public Maybe<N> hitFirstChild(Point2D point, N node, Function<? super N, Boolean> filter) {
 			for (N n : getFilteredChildren(point, node)) {
-				N hit = hitFirst(point, n, filter);
-				if (hit != null)
+				Maybe<N> hit = hitFirst(point, n, filter);
+				
+				if (Maybe.Util.isJust(hit))
 					return hit;
 			}
-			return null;
+			return Maybe.Util.nothing();
 		}
 
-		public N hitFirst(Point2D point, N node) {
+		public Maybe<N> hitFirst(Point2D point, N node) {
 			return hitFirst(point, node, new Function<N, Boolean>(){
 				public Boolean apply(N arg0) {
 					return true;
@@ -254,7 +254,7 @@ public class HitMan
 		};
 	}
 	
-	public static <N extends Node> N hitTestForSelection(Function<? super N, ? extends Maybe<? extends Touchable>> tp, Point2D point, N node, final Class<N> type) {
+	public static <N extends Node> Maybe<N> hitTestForSelection(Function<? super N, ? extends Maybe<? extends Touchable>> tp, Point2D point, N node, final Class<N> type) {
 		Function<N, Iterable<? extends N>> children = new Function<N, Iterable<? extends N>>() {
 			@Override
 			public Iterable<? extends N> apply(N argument) {
@@ -267,14 +267,14 @@ public class HitMan
 		
 		Instance<N> hitMan = new Instance<N>(children, tp);
 		
-		N nd = hitMan.hitFirstChild(point, node, new Function<N, Boolean>() {
+		Maybe<N> nd = hitMan.hitFirstChild(point, node, new Function<N, Boolean>() {
 			@Override
 			public Boolean apply(N n) {
 				return n instanceof MovableNew;
 			}
 		});
 
-		if (nd == null)
+		if (Maybe.Util.isJust(nd))
 			nd = hitMan.hitFirstChild(point, node, new Function<Node, Boolean>() {
 				public Boolean apply(Node n) {
 					return n instanceof VisualConnection;
@@ -284,16 +284,16 @@ public class HitMan
 		return nd;
 	}
 
-	public static Node hitTestForConnection(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
+	public static Maybe<Node> hitTestForConnection(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
 		Instance<Node> hitMan = new Instance<Node>(Hierarchy.children, tp);
 		
-		Node nd = hitMan.hitDeepest(point, node, new Function<Node, Boolean>() {
+		Maybe<Node> nd = hitMan.hitDeepest(point, node, new Function<Node, Boolean>() {
 			public Boolean apply(Node n) {
 				return n instanceof MovableNew && ! (n instanceof Container);
 			}
 		});
 
-		if (nd == null)
+		if (Maybe.Util.isJust(nd))
 			nd = hitMan.hitDeepest(point, node, new Function<Node, Boolean>() {
 				public Boolean apply(Node n) {
 					return n instanceof VisualConnection;
@@ -316,7 +316,7 @@ public class HitMan
 		Rectangle2D rect = Geometry.createRectangle(p1, p2);
 
 		for (N n : nodes) {
-			Touchable touchable = Maybe.Util.orElse(t.apply(n), null);
+			Touchable touchable = Maybe.Util.toNullable(t.apply(n));
 			if(touchable != null) {
 				if (p1.getX()<=p2.getX()) {
 					if (TouchableHelper.insideRectangle(touchable, rect))

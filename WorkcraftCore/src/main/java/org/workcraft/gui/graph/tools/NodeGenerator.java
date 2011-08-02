@@ -23,9 +23,7 @@ package org.workcraft.gui.graph.tools;
 
 import java.awt.geom.Point2D;
 
-import org.workcraft.exceptions.NodeCreationException;
-
 public interface NodeGenerator {
 	GraphEditorTool.Button getIdentification();
-	public void generate(Point2D where) throws NodeCreationException;
+	public void generate(Point2D where);
 }

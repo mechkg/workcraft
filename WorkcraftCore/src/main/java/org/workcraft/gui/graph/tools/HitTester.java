@@ -15,14 +15,14 @@ import org.workcraft.util.Maybe;
 import pcollections.PCollection;
 
 public interface HitTester<N> {
-	N hitTest(Point2D point);
+	Maybe<N> hitTest(Point2D point);
 	PCollection<N> boxHitTest(Point2D boxStart, Point2D boxEnd);
 	
 	public class Util {
-		public static <N> Function <Point2D, N> asPointHitTester (final HitTester<N> hitTester) {
-			return new Function<Point2D, N>() {
+		public static <N> Function <Point2D, Maybe<N>> asPointHitTester (final HitTester<N> hitTester) {
+			return new Function<Point2D, Maybe<N>>() {
 				@Override
-				public N apply(Point2D argument) {
+				public Maybe<N> apply(Point2D argument) {
 					return hitTester.hitTest(argument);
 				}
 			};
@@ -32,7 +32,7 @@ public interface HitTester<N> {
 		public static HitTester<VisualNode> reflectiveHitTestForSelection(final VisualModel model, final Function<? super Node, ? extends Maybe<? extends Touchable>> tp) {
 			return new HitTester<VisualNode>() {
 				@Override
-				public VisualNode hitTest(Point2D point) {
+				public Maybe<VisualNode> hitTest(Point2D point) {
 					return HitMan.hitTestForSelection(tp, point, (VisualNode)model.getRoot(), VisualNode.class);
 				}
 

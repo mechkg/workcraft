@@ -236,6 +236,21 @@ public interface Maybe<T> {
 				}
 			});
 		}
+		
+		public static <A> boolean isJust(Maybe<A> m) {
+			return m.accept(new MaybeVisitor<A, Boolean>() {
+
+				@Override
+				public Boolean visitJust(A just) {
+					return true;
+				}
+
+				@Override
+				public Boolean visitNothing() {
+					return false;
+				}
+			});
+		}
 	}
 	
 	public <R> R accept(MaybeVisitor<? super T, ? extends R> visitor);

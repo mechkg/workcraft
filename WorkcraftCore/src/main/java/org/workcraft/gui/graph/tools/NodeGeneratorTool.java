@@ -30,7 +30,6 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.visual.GraphicalContent;
-import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.events.GraphEditorMouseEvent;
 import org.workcraft.gui.graph.Viewport;
 import org.workcraft.util.Function;
@@ -50,11 +49,7 @@ public class NodeGeneratorTool extends AbstractTool {
 	public GraphEditorMouseListener mouseListener() {
 		return new DummyMouseListener() {
 			public void mousePressed(GraphEditorMouseEvent e) {
-				try {
-					generator.generate(snap.apply(e.getPosition()));
-				} catch (NodeCreationException e1) {
-					throw new RuntimeException (e1);
-				}
+				generator.generate(snap.apply(e.getPosition()));
 			}
 		};
 	}

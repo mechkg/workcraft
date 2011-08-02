@@ -48,7 +48,7 @@ public class STGSimulationTool {
 		return new Function<Point2D, Maybe<String>>(){
 			@Override
 			public Maybe<String> apply(Point2D position) {
-				Node node = new HitMan.Instance<Node>(Hierarchy.children, tp).hitDeepest(position, visualRoot, new Function<Node, Boolean>() {
+				Maybe<Node> node = new HitMan.Instance<Node>(Hierarchy.children, tp).hitDeepest(position, visualRoot, new Function<Node, Boolean>() {
 					@Override
 					public Boolean apply(Node node) {
 						return node instanceof VisualSignalTransition && net.isEnabled(((VisualSignalTransition) node).getReferencedTransition());

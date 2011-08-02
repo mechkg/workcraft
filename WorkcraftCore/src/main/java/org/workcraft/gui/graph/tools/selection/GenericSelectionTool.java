@@ -42,6 +42,8 @@ import org.workcraft.gui.graph.tools.HitTester;
 import org.workcraft.gui.graph.tools.GraphEditorTool.Button;
 import org.workcraft.util.GUI;
 import org.workcraft.util.Geometry;
+import org.workcraft.util.MaybeVisitor;
+import org.workcraft.util.Nothing;
 
 import pcollections.HashTreePSet;
 import pcollections.PSet;
@@ -93,7 +95,7 @@ public class GenericSelectionTool<Node> {
 	
 	public final ModifiableExpression<PSet<Node>> selection;
 	
-	public void mouseClicked(GraphEditorMouseEvent e) {
+	public void mouseClicked(final GraphEditorMouseEvent e) {
 
 		if(notClick1 && e.getButton() == MouseEvent.BUTTON1)
 			return;
@@ -101,24 +103,31 @@ public class GenericSelectionTool<Node> {
 			return;
 		
 		if(e.getButton()==MouseEvent.BUTTON1) {
-			Node node = hitTester.hitTest(e.getPosition());
-			if (node != null)
-			{
-				switch(e.getKeyModifiers()) {
-					case 0:
-						selection.setValue(HashTreePSet.singleton(node));
-						break;
-					case MouseEvent.SHIFT_DOWN_MASK:
-						selection.setValue(eval(selection).plus(node));
-						break;
-					case MouseEvent.CTRL_DOWN_MASK:
-						selection.setValue(eval(selection).minus(node));
-						break;
+			hitTester.hitTest(e.getPosition()).accept(new MaybeVisitor<Node, Nothing>(){
+
+				@Override
+				public Nothing visitJust(Node node) {
+					switch(e.getKeyModifiers()) {
+						case 0:
+							selection.setValue(HashTreePSet.singleton(node));
+							break;
+						case MouseEvent.SHIFT_DOWN_MASK:
+							selection.setValue(eval(selection).plus(node));
+							break;
+						case MouseEvent.CTRL_DOWN_MASK:
+							selection.setValue(eval(selection).minus(node));
+							break;
+						}
+					return Nothing.VALUE;
 				}
-			} else {
-				if (e.getKeyModifiers()==0)
-					selection.setValue(HashTreePSet.<Node>empty());
-			}
+
+				@Override
+				public Nothing visitNothing() {
+					if (e.getKeyModifiers()==0)
+						selection.setValue(HashTreePSet.<Node>empty());
+					return Nothing.VALUE;
+				}
+			});
 		}
 	}
 	
@@ -126,48 +135,53 @@ public class GenericSelectionTool<Node> {
 		currentDrag.setOffset(Geometry.subtract(e.getPosition(), e.getStartPosition()));
 	}
 
-	public void startDrag(GraphEditorMouseEvent e) {
+	public void startDrag(final GraphEditorMouseEvent e) {
 
 		assert(!isDragging());
 		if(e.getButtonModifiers()==MouseEvent.BUTTON1_DOWN_MASK) {
-			Node hitNode = hitTester.hitTest(e.getStartPosition());
+			hitTester.hitTest(e.getStartPosition()).accept(new MaybeVisitor<Node, Nothing>() {
 
-			if (hitNode == null) {
-				// hit nothing, so start select-drag
-				
-				SelectionMode mode;
-				
-				switch(e.getKeyModifiers()) {
-					case 0:
-						mode = SelectionMode.REPLACE;
-						break;
-					case MouseEvent.CTRL_DOWN_MASK:
-						mode = SelectionMode.REMOVE;
-						break;
-					case MouseEvent.SHIFT_DOWN_MASK:
-						mode = SelectionMode.ADD;
-						break;
-					default:
-						mode = SelectionMode.NONE;
-				}
-				
-				if(mode!=SelectionMode.NONE) {
-					// selection will not actually be changed until drag completes
-					currentDrag = selectDragHandler.startDrag(e.getStartPosition(), mode);
+				@Override
+				public Nothing visitJust(Node hitNode) {
+					// hit something
+					if(e.getKeyModifiers()==0) {
+						// mouse down without modifiers, begin move-drag
+						if(hitNode!=null && !eval(selection).contains(hitNode))
+							selection.setValue(HashTreePSet.singleton(hitNode));
+
+						currentDrag = nodeDragHandler.startDrag(hitNode);
+					}
+					// do nothing if pressed on a node with modifiers
+					return Nothing.VALUE;
 				}
 
-			} else {
-				// hit something
-				if(e.getKeyModifiers()==0) {
-					// mouse down without modifiers, begin move-drag
-					if(hitNode!=null && !eval(selection).contains(hitNode))
-						selection.setValue(HashTreePSet.singleton(hitNode));
-
-					currentDrag = nodeDragHandler.startDrag(hitNode);
+				@Override
+				public Nothing visitNothing() {
+					// hit nothing, so start select-drag
+					
+					SelectionMode mode;
+					
+					switch(e.getKeyModifiers()) {
+						case 0:
+							mode = SelectionMode.REPLACE;
+							break;
+						case MouseEvent.CTRL_DOWN_MASK:
+							mode = SelectionMode.REMOVE;
+							break;
+						case MouseEvent.SHIFT_DOWN_MASK:
+							mode = SelectionMode.ADD;
+							break;
+						default:
+							mode = SelectionMode.NONE;
+					}
+					
+					if(mode!=SelectionMode.NONE) {
+						// selection will not actually be changed until drag completes
+						currentDrag = selectDragHandler.startDrag(e.getStartPosition(), mode);
+					}
+					return Nothing.VALUE;
 				}
-				// do nothing if pressed on a node with modifiers
-				
-			}
+			});
 		}
 	}
 

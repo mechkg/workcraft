@@ -34,12 +34,12 @@ class StgGraphEditable extends GraphEditable {
     val dh = new DragHandler[Id[VisualNode]] {
       def startDrag(hitNode : Id[VisualNode]) : DragHandle = {
         new DragHandle {
-          def cancel() {
+          def cancel {
           }
-      	  def commit() {
+      	  def commit {
       	  
       	  }
-      	  def setOffset(Point2D offset) {
+      	  def setOffset(offset : Point2D) {
       	  
           }
         }

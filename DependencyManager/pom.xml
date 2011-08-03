@@ -21,6 +21,15 @@
 		<url>http://bazaar.launchpad.net/~rotsor/workcraft/dependencymanager_0.1</url>
 		<connection>http://svn.apache.org/viewcvs.cgi/maven</connection>
 	</scm>
+
+
+  <repositories>
+    <repository>
+      <id>workcraft</id>
+      <url>http://workcraft.org/maven2</url>
+    </repository>
+  </repositories>
+
 	<developers>
 		<developer>
 			<id>rotsor</id>

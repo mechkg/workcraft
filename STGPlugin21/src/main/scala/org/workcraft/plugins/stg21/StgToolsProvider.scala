@@ -14,7 +14,7 @@ class StgToolsProvider extends CustomToolsProvider {
   
   val sm : StorageManager
 
-  def createPlace(where : Point2D)(visualStg : VisualStg[ModifiableExpression]) : Unit {
+  def createPlace(where : Point2D) : State[VisualStg, Id[Place]] = {
     val p = Place[ModifiableExpression](sm.create(0))
     val pr = sm.create(p)
     visualStg.stg.places.modify(places => p :: places)
@@ -30,7 +30,7 @@ class StgToolsProvider extends CustomToolsProvider {
 			VisualPlace place = visualStg.createPlace();
 			place.position().setValue(where);
 		}
-
+		
 		@Override
 		public int getHotKeyCode() {
 			return KeyEvent.VK_P;

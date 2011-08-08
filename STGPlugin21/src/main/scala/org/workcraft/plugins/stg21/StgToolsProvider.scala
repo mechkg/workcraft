@@ -3,96 +3,24 @@ import org.workcraft.gui.graph.tools.CustomToolsProvider
 import org.workcraft.gui.graph.tools.NodeGenerator
 import org.workcraft.util.GUI
 import java.awt.geom.Point2D
-import org.workcraft.exceptions.NodeCreationException
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import org.workcraft.dependencymanager.advanced.user.StorageManager
+import org.workcraft.gui.graph.tools.GraphEditor
+import org.workcraft.gui.graph.tools.GraphEditorTool
+import java.awt.event.KeyEvent
 
-class StgToolsProvider extends CustomToolsProvider {
+abstract class StgToolsProvider extends CustomToolsProvider {
 
 /*	private final VisualSTG visualStg;
 	private final StgEditorState editorState;*/
+
+  val generators = List(
+		  (StgOperations.createPlace(_ : Point2D), "images/icons/svg/place.svg", "Place", KeyEvent.VK_P),
+		  (StgOperations.createSignalTransition(_ : Point2D), "images/icons/svg/signal-transition.svg", "Signal Transition", KeyEvent.VK_T),
+		  (StgOperations.createDummyTransition(_ : Point2D), "images/icons/svg/transition.svg", "Dummy Transition", KeyEvent.VK_D)
+  )
   
-  val sm : StorageManager
-
-  def createPlace(where : Point2D) : State[VisualStg, Id[Place]] = {
-    val p = Place[ModifiableExpression](sm.create(0))
-    val pr = sm.create(p)
-    visualStg.stg.places.modify(places => p :: places)
-    visualStg.visual += ()
-  }
-  
-	private final class PlaceGenerator extends NodeGenerator {
-		override lazy val getIcon = GUI.createIconFromSVG("images/icons/svg/place.svg");
-		override val getLabel = "Place"
-		
-		@throws(classOf[NodeCreationException])
-		override def generate(where : Point2D) {
-			VisualPlace place = visualStg.createPlace();
-			place.position().setValue(where);
-		}
-		
-		@Override
-		public int getHotKeyCode() {
-			return KeyEvent.VK_P;
-		}
-	}
-
-	private final class SignalTransitionGenerator implements NodeGenerator {
-		Icon icon = GUI.createIconFromSVG("images/icons/svg/signal-transition.svg");
-
-		@Override
-		public Icon getIcon() {
-			return icon;
-		}
-
-		@Override
-		public String getLabel() {
-			return "Signal Transition";
-		}
-
-		@Override
-		public void generate(Point2D where) throws NodeCreationException {
-			VisualSignalTransition transition = visualStg.createSignalTransition();
-			transition.position().setValue(where);
-		}
-
-		@Override
-		public int getHotKeyCode() {
-			return KeyEvent.VK_T;
-		}
-	}
-	
-	private final class DummyTransitionGenerator implements NodeGenerator {
-		Icon icon = GUI.createIconFromSVG("images/icons/svg/transition.svg");
-
-		@Override
-		public Icon getIcon() {
-			return icon;
-		}
-
-		@Override
-		public String getLabel() {
-			return "Dummy Transition";
-		}
-
-		@Override
-		public void generate(Point2D where) throws NodeCreationException {
-			VisualDummyTransition transition = visualStg.createDummyTransition();
-			transition.position().setValue(where);
-		}
-
-		@Override
-		public int getHotKeyCode() {
-			return KeyEvent.VK_D;
-		}
-	}
-	
-
-	public STGToolsProvider(VisualSTG visualStg, StgEditorState editorState) {
-		this.visualStg = visualStg;
-		this.editorState = editorState;
-	}
-
+/*  
 	private Expression<? extends String> transitionName(final STG stg, final VisualSignalTransition vst) {
 		return Expressions.fmap(new Function<ReferenceManager, String>() {
 			@Override
@@ -102,8 +30,6 @@ class StgToolsProvider extends CustomToolsProvider {
 		}, stg.referenceManager());
 	}
 	
-	@Override
-	public Iterable<GraphEditorTool> getTools(final GraphEditor editor) {
 
 		final STG stg = visualStg.stg;
 		
@@ -195,5 +121,5 @@ class StgToolsProvider extends CustomToolsProvider {
 				attachPainter(new NodeGeneratorTool(new SignalTransitionGenerator(), snap), simpleModelPainter),
 				attachPainter(new NodeGeneratorTool(new DummyTransitionGenerator(), snap), simpleModelPainter),
 				attachParameterisedPainter(STGSimulationTool.createSimulationTool(visualStg.getRoot(), visualStg.stg, tp), painterProvider));
-	}
+	}*/
 }

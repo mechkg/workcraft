@@ -1,51 +1,44 @@
 package org.workcraft.plugins.stg21
 
 import types._
+import java.awt.geom.Point2D
+import org.workcraft.plugins.stg21.fields.Field
+import org.workcraft.plugins.stg21.fields.VisualStgFields
 
 object StgOperations {
   
-  import scalaz.State
-  import scalaz.State._
+import scalaz.State
+import StateExtensions._
+
+ val createMathPlace : State[MathStg, Id[Place]] =
+    Col.add(Place(0)).on(MathStg.places)
   
-  val createMathPlace : State[MathStg, Id[Place]] =
-    MathStg.withPlaces(Col.add(Place(0)))
   
+  def createSignalTransition(where : Point2D) : State[VisualStg, Id[Transition]] = {
+    null // TODO
+  }
+    
+  def createDummyTransition(where : Point2D) : State[VisualStg, Id[Transition]] = {
+    null // TODO
+  }
   
   def createPlace(where : Point2D) : State[VisualStg, Id[Place]] ={
     import VisualStg._
-    for(p <- onMathStg(createMathPlace);
-      _ <- onVisualModel(VisualModel.addNode(PlaceNode(p), where)))
+    for(p <- createMathPlace.on(VisualStgFields.math);
+      _ <- VisualModel.addNode[StgNode,Id[Arc]](PlaceNode(p), where).on(VisualStgFields.visual))
       yield p;
   }
   
   def removePlaceS(place : Id[Place]) : State[VisualStg, Unit] = {
     import VisualStg._
-    for(_ <- onMathStg(MathStg.withPlaces(Col.remove(place))));
-      _ <- onVisualModel()
+    for(_ <- Col.remove(place).on(MathStg.places).on(VisualStg.math);
+      _ <- VisualModel.removeNode[StgNode, Id[Arc]](PlaceNode(place)).on(VisualStg.visual))
+      yield ()
   }
   
   def removePlace(place : Id[Place]) (visualStg : VisualStg) : VisualStg = 
     VisualStg(
-        visualStg.stg.copy(places = visualStg.stg.places - place)),
-        visualStg.visualStg.copy(nodesInfo = visualStg.visualStg.nodesInfo - PlaceNode(place))
-  
-  def createPlace(where : Point2D) (visualStg : VisualStg) : (VisualStg, Id[Place]) = visualStg match {
-    case VisualStg (Stg(signals, transitions, places, arcs), visual) => {
-      
-      withPlaces(_.add(Place(0)))
-      val (newPlaces, p) = places.add(Place(0))
-      (VisualStg(Stg(signals, transitions, newPlaces, arcs), visual + ), p)
-    }
-  }
-  
-  def removePlace(place : Id[Place])(visualStg : VisualStg) : VisualStg = visualStg match {
-    case 
-  }
-    
-    val p = Place[ModifiableExpression](sm.create(0))
-    val pr = sm.create(p)
-    visualStg.stg.places.modify(places => p :: places)
-    visualStg.visual += ()
-  }
-  
+        visualStg.math.copy(places = visualStg.math.places.remove(place)),
+        visualStg.visual.copy(nodesInfo = visualStg.visual.nodesInfo - PlaceNode(place))
+        )
 }

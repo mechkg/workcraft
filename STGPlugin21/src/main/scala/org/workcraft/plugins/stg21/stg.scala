@@ -1,11 +1,17 @@
+
 package org.workcraft.plugins
 
-package object stg21 {
+package stg21 {
+
+import org.workcraft.util.Maybe
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 
 import java.awt.geom.Point2D
 import org.workcraft.dom.visual.connections.RelativePoint
 import scala.collection.mutable.WeakHashMap
-
+import scalaz.State
 
 object types {
   
@@ -15,9 +21,17 @@ object types {
     case object Output extends SignalType
     case object Internal extends SignalType
   }
+  
+  sealed trait TransitionDirection
+  
+  object TransitionDirection {
+    case object Rise extends TransitionDirection
+    case object Fall extends TransitionDirection
+    case object Toggle extends TransitionDirection
+  }
 
   sealed trait Transition
-  case class DummyTransition extends Transition
+  case object DummyTransition extends Transition
   case class SignalTransition(signal : Id[Signal], direction : TransitionDirection) extends Transition
   
   
@@ -33,12 +47,21 @@ object types {
 
   case class Col[T] (map : Map[Id[T], T], nextFreeId : Id[T]) {
 	  def remove(id : Id[T]) : Col[T] = Col[T](map - id, nextFreeId)
+	  def lookup(key : Id[T]) : Option[T] = map.get(key)
+	  def insert(key : Id[T])(value : T) = copy(map = map + ((key, value)))
+	  def keys : List[Id[T]] = map.keys.toList
   }
+
+  import StateExtensions._
   
   object Col {
-	  def add(t : T) : State[Col[T], Id[T]] = state (col -> {
-	    (Col[T](col.map + (col.nextFreeId, t), Id[T](col.nextFreeId.id + 1)), col.nextFreeId)
-	  })  
+    def empty[T] = Col[T](Map.empty, Id[T](0))
+    def add[T](t : T) : State[Col[T], Id[T]] = state (col => {
+      (Col[T](col.map + ((col.nextFreeId, t)), Id[T](col.nextFreeId.id + 1)), col.nextFreeId)
+    })
+    def remove[T](t : Id[T]) : State[Col[T], Boolean] = state (col => {
+      (Col[T](col.map - t, col.nextFreeId), col.map.contains(t))
+    })
   }
 
   case class MathStg (
@@ -62,6 +85,10 @@ object types {
 
   case class VisualInfo(position : Point2D, parent : Option[Id[Group]])
   
+  sealed trait VisualNode
+  case class StgVisualNode(n : StgNode) extends VisualNode
+  case class GroupVisualNode(g : Id[Group]) extends VisualNode
+  
   case class VisualModel[N,A] (
     groups : Col[Group],
     arcs : Map[A, VisualArc],
@@ -69,53 +96,22 @@ object types {
   )
   
   case class VisualStg (
-    stg : MathStg,
-    visualStg : VisualModel[StgNode, Id[Arc]]
+    math : MathStg,
+    visual : VisualModel[StgNode, Id[Arc]]
   )
+
+  object VisualStg extends fields.VisualStgFields {
+	val empty = VisualStg(MathStg.empty, VisualModel.empty)
+  }
   
-  object MathStg {
-    def onPlaces[T] (action : State[Col[Place], T]) : State[MathStg, T] = state (stg -> {
-        val (newPlaces, x) = action(stg.places)
-        (stg.copy(places = newPlaces), x)
-      })
+  object VisualModel extends fields.VisualModelFields {
+    def empty[N,A] = VisualModel[N,A](Col.empty, Map.empty, Map.empty)
+    def addNode[N,A](node : N, where : Point2D) : State[VisualModel[N,A], Unit] = state ((m : Map[N, VisualInfo]) => (m + ((node, VisualInfo(where, None))), ())) .on(nodesInfo)
+    def removeNode[N,A](node : N) : State[VisualModel[N,A], Boolean] = state ((m : Map[N, VisualInfo]) => (m - node, m.contains(node))) .on(nodesInfo)
+  }
+  
+  object MathStg extends org.workcraft.plugins.stg21.fields.MathStgFields {
+    val empty = MathStg(Col.empty, Col.empty, Col.empty, Col.empty)
   }
 }
 }
-
-/*
-
-class VisualInfo[M[_]] (position : M[Point2D], group : Option[Group])
-
-
-
-sealed trait TransitionDirection
-object TransitionDirection {
-	case object Plus extends TransitionDirection
-	case object Minus extends TransitionDirection
-	case object Toggles extends TransitionDirection
-}
-
-class Signal[M[_]](name : M[String], direction : M[SignalType])
-
-
-
-
-    
-case class Stg[M[_]](
-    signals : M[List[Signal[M]]],
-    transitions : M[List[Transition[M]]],
-    places : M[List[Place[M]]],
-    arcs : M[List[Arc[M]]]
- )
-
-class VisualStg[M[_]] (stg : Stg[M], visual : WeakHashMap[VisualNode[M], VisualInfo[M]])
-
-class Group
-
-sealed trait VisualNode[M[_]]
-
-case class TransitionNode[M[_]] (t : M[Transition[M]]) extends VisualNode[M]
-case class PlaceNode[M[_]] (p : M[Place[M]]) extends VisualNode[M]
-case class GroupNode[M[_]] (g : M[Group]) extends VisualNode[M]
-
-}*/

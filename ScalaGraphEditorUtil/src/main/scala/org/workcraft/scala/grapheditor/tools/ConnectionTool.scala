@@ -1,6 +1,6 @@
-package org.workcraft.plugins.cpog.scala.tools
+package org.workcraft.scala.grapheditor.tools
+
 import org.workcraft.gui.graph.tools.GenericConnectionTool
-import org.workcraft.plugins.cpog.scala.nodes._
 import org.workcraft.scala.Util._
 import org.workcraft.graphics.Graphics._
 import org.workcraft.scala.Scalaz._
@@ -19,7 +19,6 @@ import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener
 import org.workcraft.util.Maybe
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
-import org.workcraft.tools._
 
 class ConnectionTool[N](val mouseListener: GraphEditorMouseListener,
   val connectingLineGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent],

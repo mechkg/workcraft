@@ -25,4 +25,6 @@ object Label {
     val bb = visualBounds(text, font)
     new RichGraphicalContent(colorisableGraphicalContent(text, font, color), bb, TouchableUtil.fromRectangle(bb))
   }
+  
+  def image (text : String, font : Font, color : Color)= richGraphicalContent (text, font, color)
 }

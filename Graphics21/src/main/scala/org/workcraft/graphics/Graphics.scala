@@ -93,9 +93,9 @@ package org.workcraft.graphics {
           fill
         )
         
-    def circle(size: Double, stroke: Option[(Stroke, Color)], fill: Option[Color]) =
+    def circle(diameter: Double, stroke: Option[(Stroke, Color)], fill: Option[Color]) =
       shape(
-          new Ellipse2D.Double(-size / 2, -size / 2, size, size),
+          new Ellipse2D.Double(-diameter / 2, -diameter / 2, diameter, diameter),
           stroke,
           fill
         )
@@ -115,7 +115,7 @@ package org.workcraft.graphics {
     def compose (a: Expression[GraphicalContent], b : Expression[GraphicalContent]) : Expression[GraphicalContent] = 
       for (a <- a; b <- b) yield compose (a, b)
     
-    def compose (list : List[RichGraphicalContent]) : RichGraphicalContent = list match {
+    def compose (list : Seq[RichGraphicalContent]) : RichGraphicalContent = list match {
       case Nil => RichGraphicalContent.empty
       case head :: Nil  => head
       case head :: tail => tail.foldRight(head)((a,b)=> a over b) 

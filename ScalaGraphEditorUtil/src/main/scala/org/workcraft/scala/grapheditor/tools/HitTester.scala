@@ -1,4 +1,4 @@
-package org.workcraft.tools
+package org.workcraft.scala.grapheditor.tools
 import org.workcraft.dom.visual.HitMan
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dependencymanager.advanced.core.Expression

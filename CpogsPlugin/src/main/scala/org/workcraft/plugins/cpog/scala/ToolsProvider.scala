@@ -34,7 +34,7 @@ import org.workcraft.plugins.cpog.scala.nodes.Vertex
 import org.workcraft.plugins.cpog.scala.tools.ConnectionTool
 import org.workcraft.plugins.cpog.scala.tools.ControlPointsTool
 import org.workcraft.plugins.cpog.scala.tools.MovableController
-import org.workcraft.plugins.cpog.scala.tools.SelectionTool
+import org.workcraft.tools.SelectionTool
 import org.workcraft.plugins.cpog.CPOG
 import org.workcraft.plugins.cpog.CpogConnectionManager
 import org.workcraft.scala.Expressions.ExpressionMonad

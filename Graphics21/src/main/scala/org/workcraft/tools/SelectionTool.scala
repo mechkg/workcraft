@@ -1,7 +1,6 @@
-package org.workcraft.plugins.cpog.scala.tools
+package org.workcraft.tools
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import pcollections.PSet
-import org.workcraft.plugins.cpog.scala.nodes._
 import org.workcraft.scala.Util._
 import org.workcraft.graphics.Graphics._
 import org.workcraft.dependencymanager.advanced.core.Expression

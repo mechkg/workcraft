@@ -7,6 +7,7 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.gui.graph.tools.selection.GenericSelectionTool;
 import org.workcraft.util.Function;
+import org.workcraft.util.Maybe;
 
 import pcollections.HashTreePSet;
 import pcollections.PCollection;
@@ -53,8 +54,8 @@ public class GenericSelectionToolTests {
 		HitTester<? extends Dummy> hitTester = new HitTester<Dummy>() {
 
 			@Override
-			public Dummy hitTest(Point2D point) {
-				return obj;
+			public Maybe<Dummy> hitTest(Point2D point) {
+				return Maybe.Util.just(obj);
 			}
 
 			@Override

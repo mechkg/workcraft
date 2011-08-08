@@ -253,7 +253,7 @@ public class HitMan
 			}
 		};
 	}
-	
+
 	public static <N extends Node> Maybe<N> hitTestForSelection(Function<? super N, ? extends Maybe<? extends Touchable>> tp, Point2D point, N node, final Class<N> type) {
 		Function<N, Iterable<? extends N>> children = new Function<N, Iterable<? extends N>>() {
 			@Override

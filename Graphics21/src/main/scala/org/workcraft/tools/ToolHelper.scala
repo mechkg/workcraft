@@ -1,4 +1,4 @@
-package org.workcraft.plugins.cpog.scala.tools
+package org.workcraft.tools
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.GraphicalContent
 import org.workcraft.gui.graph.tools.GraphEditorTool.Button

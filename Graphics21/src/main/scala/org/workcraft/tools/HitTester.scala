@@ -1,9 +1,8 @@
-package org.workcraft.plugins.cpog.scala.tools
+package org.workcraft.tools
 import org.workcraft.dom.visual.HitMan
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.GlobalCache._
-import org.workcraft.plugins.cpog.scala.nodes._
 import org.workcraft.scala.Util._
 import scala.collection.JavaConversions._
 

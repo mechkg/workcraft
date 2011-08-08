@@ -19,6 +19,7 @@ import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener
 import org.workcraft.util.Maybe
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
+import org.workcraft.tools._
 
 class ConnectionTool[N](val mouseListener: GraphEditorMouseListener,
   val connectingLineGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent],

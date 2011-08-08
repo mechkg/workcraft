@@ -38,6 +38,7 @@ import org.workcraft.dependencymanager.advanced.user.Setter
 import org.workcraft.util.Maybe
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.graphics.GraphicsHelper
+import org.workcraft.tools._
 
 class ControlPointsTool (val mouseListener: GraphEditorMouseListener,
     userSpaceGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent]) {

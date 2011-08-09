@@ -21,6 +21,7 @@
 
 package org.workcraft.plugins.shared;
 import java.awt.Color;
+import java.awt.Font;
 
 import org.workcraft.Config;
 import org.workcraft.dependencymanager.advanced.user.Variable;
@@ -41,6 +42,8 @@ public class CommonVisualSettings implements SettingsPage {
 	public static final Variable<Color> backgroundColor = Variable.create(Color.WHITE);
 	public static final Variable<Color> foregroundColor = Variable.create(Color.BLACK);
 	public static final Variable<Color> fillColor = Variable.create(Color.WHITE);
+	public static final Variable<Font> serifFont = Variable.create(new Font("Serif", Font.PLAIN, 1));
+	public static final Variable<Font> sansSerifFont = Variable.create(new Font("SansSerif", Font.PLAIN, 1));
 	
 	@Override
 	public PVector<EditableProperty> getProperties() {

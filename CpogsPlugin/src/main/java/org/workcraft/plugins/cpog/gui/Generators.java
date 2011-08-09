@@ -3,7 +3,6 @@ package org.workcraft.plugins.cpog.gui;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 
-import org.workcraft.exceptions.NodeCreationException;
 import org.workcraft.gui.graph.tools.GraphEditorTool.Button;
 import org.workcraft.gui.graph.tools.NodeGenerator;
 import org.workcraft.plugins.cpog.CPOG;
@@ -33,7 +32,7 @@ public class Generators {
 		}
 
 		@Override
-		public void generate(Point2D where) throws NodeCreationException {
+		public void generate(Point2D where) {
 			Vertex vertex = cpog.createVertex();
 			vertex.visualProperties().position().setValue(where);
 		}
@@ -48,7 +47,7 @@ public class Generators {
 		}
 
 		@Override
-		public void generate(Point2D where) throws NodeCreationException {
+		public void generate(Point2D where) {
 			Variable variable = cpog.createVariable();
 			variable.visualProperties().position().setValue(where);
 		}
@@ -63,7 +62,7 @@ public class Generators {
 		}
 
 		@Override
-		public void generate(Point2D where) throws NodeCreationException {
+		public void generate(Point2D where) {
 			RhoClause rhoClause = cpog.createRhoClause();
 			rhoClause.visualProperties().position().setValue(where);
 		}

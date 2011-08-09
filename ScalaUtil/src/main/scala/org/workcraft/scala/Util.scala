@@ -58,15 +58,6 @@ object Util {
       override def evaluate(context: EvaluationContext): FieldT = accessor(context.resolve(expr))
     }
 
-  /*def formulaValue(formula: BooleanFormula[Variable]): Expression[BooleanFormula[Variable]] = new ExpressionBase[BooleanFormula[Variable]] {
-    override def evaluate(context: EvaluationContext) =
-        BooleanReplacer.cachedReplacer(BooleanOperations.worker, asFunctionObject[Variable, BooleanFormula[Variable]]((v:Variable) => context.resolve(v.state) match {
-            case VariableState.TRUE => One.instance[Variable]
-            case VariableState.FALSE => Zero.instance[Variable]
-            case _ => BooleanOperations.worker.`var`(v)
-          })) (formula)
-  }*/
-
   def javaCollectionToList[A](c : java.lang.Iterable[_ <: A]) = {
     var res : List[A] = Nil
     val it = c.iterator

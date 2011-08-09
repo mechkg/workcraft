@@ -28,6 +28,10 @@
     <module>CpogsPlugin</module>
     <module>DependencyManager</module>
     <module>BooleanFormulae</module>
+    <module>ScalaGraphEditorUtil</module>
+    <module>STGPlugin21</module>
+    <module>PetriNetPlugin21</module>
+    
     
 <!--    <module>STGPlugin</module>
     <module>PetriNetPlugin</module>

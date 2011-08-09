@@ -1,4 +1,4 @@
-package org.workcraft.tools
+package org.workcraft.scala.grapheditor.tools
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import pcollections.PSet
 import org.workcraft.scala.Util._

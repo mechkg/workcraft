@@ -1,6 +1,6 @@
-package org.workcraft.plugins.cpog.scala.tools
+package org.workcraft.scala.grapheditor.tools
+
 import org.workcraft.gui.graph.tools.GenericConnectionTool
-import org.workcraft.plugins.cpog.scala.nodes._
 import org.workcraft.scala.Util._
 import org.workcraft.graphics.Graphics._
 import org.workcraft.scala.Scalaz._
@@ -18,18 +18,21 @@ import java.awt.Color
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener
 import org.workcraft.util.Maybe
+import org.workcraft.util.MaybeVisitor
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
-import org.workcraft.tools._
 
 class ConnectionTool[N](val mouseListener: GraphEditorMouseListener,
   val connectingLineGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent],
   val hintGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent],
-  val mouseOver: Expression[N]) {
+  val mouseOver: Expression[_ <: Maybe[_ <: N]]) {
   
   def asGraphEditorTool[Q >: N](paint: (Colorisation, Expression[_ <: java.util.Set[Q]]) => Expression[GraphicalContent]) =
     {
       def graphics(viewport: Viewport, hasFocus: Expression[java.lang.Boolean]) =
-        compose(paint(ConnectionTool.highlightedColorisation, for (mo <- mouseOver) yield java.util.Collections.singleton(mo)),
+        compose(paint(ConnectionTool.highlightedColorisation, for (mo <- mouseOver) yield mo.accept(new MaybeVisitor[N, java.util.Set[Q]] {
+                override def visitNothing = java.util.Collections.emptySet[Q]
+                override def visitJust(n : N) =  java.util.Collections.singleton(n)
+              })),
             connectingLineGraphics(viewport, hasFocus))
 
      ToolHelper.asGraphEditorTool(Some(mouseListener), None, Some(graphics), Some(hintGraphics), None, GenericConnectionTool.button)

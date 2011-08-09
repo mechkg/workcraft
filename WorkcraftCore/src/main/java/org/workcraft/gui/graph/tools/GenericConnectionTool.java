@@ -46,10 +46,15 @@ import org.workcraft.gui.graph.Viewport;
 import org.workcraft.gui.graph.tools.GraphEditorTool.Button;
 import org.workcraft.util.Function;
 import org.workcraft.util.GUI;
+import org.workcraft.util.Maybe;
+import org.workcraft.util.MaybeVisitor;
+import static org.workcraft.util.Maybe.Util.*;
+import org.workcraft.util.Maybe.Util.NothingFound;
+import org.workcraft.util.Nothing;
 
 public class GenericConnectionTool<N>  {
-	private final ModifiableExpression<N> mouseOverObject = Variable.create(null);
-	private final ModifiableExpression<N> first = Variable.create(null);
+	private final ModifiableExpression<Maybe<? extends N>> mouseOverObject = Variable.<Maybe<? extends N>>create(Maybe.Util.<N>nothing());
+	private final ModifiableExpression<Maybe<? extends N>> first = Variable.<Maybe<? extends N>>create(Maybe.Util.<N>nothing());
 
 	private boolean mouseExitRequiredForSelfLoop = true;
 	private boolean leftFirst = false;
@@ -57,10 +62,10 @@ public class GenericConnectionTool<N>  {
 	private String warningMessage = null;
 	private final ConnectionController<? super N> connectionManager;
 	
-	private final Function<? super Point2D, ? extends N> hitTester;
+	private final Function<? super Point2D, ? extends Maybe<? extends N>> hitTester;
 	private final Function<? super N, ? extends Expression<? extends Point2D>> centerProvider;
 
-	public GenericConnectionTool (Function<N, Expression<Point2D>> centerProvider, ConnectionController<? super N> connectionManager, Function<? super Point2D, ? extends N> hitTester) {
+	public GenericConnectionTool (Function<N, Expression<Point2D>> centerProvider, ConnectionController<? super N> connectionManager, Function<? super Point2D, ? extends Maybe<? extends N>> hitTester) {
 		this.centerProvider = centerProvider;
 		this.connectionManager = connectionManager;
 		this.hitTester = hitTester;
@@ -70,11 +75,11 @@ public class GenericConnectionTool<N>  {
 		return connectingLineGraphicalContent(viewport);
 	}
 
-	public Expression<N> mouseOverNode() {
+	public Expression<Maybe<? extends N>> mouseOverNode() {
 		return mouseOverObject;
 	}
 	
-	public Expression<N> firstNode() {
+	public Expression<Maybe<? extends N>> firstNode() {
 		return mouseOverObject;
 	}
 	
@@ -86,23 +91,45 @@ public class GenericConnectionTool<N>  {
 				return new GraphicalContent(){
 
 					@Override
-					public void draw(Graphics2D g) {
+					public void draw(final Graphics2D g) {
 						g.setStroke(new BasicStroke((float)viewport.pixelSizeInUserSpace().getX()));
 
-						if (context.resolve(first) != null) {
-							warningMessage = null;
-							if (context.resolve(mouseOverObject) != null) {
-								try {
-									connectionManager.validateConnection(context.resolve(first), context.resolve(mouseOverObject));
-									drawConnectingLine(g, Color.GREEN, context);
-								} catch (InvalidConnectionException e) {
-									warningMessage = e.getMessage();
-									drawConnectingLine(g, Color.RED, context);
+						context.resolve(first).accept(
+							new MaybeVisitor<N, Nothing>(){
+								@Override
+								public Nothing visitNothing() {
+									return Nothing.VALUE;
 								}
-							} else {
-								drawConnectingLine(g, Color.BLUE, context);
+
+								@Override
+								public Nothing visitJust(final N first) {
+									warningMessage = null;
+									context.resolve(mouseOverObject).accept(
+										new MaybeVisitor<N, Nothing>() {
+
+											@Override
+											public Nothing visitNothing() {
+												drawConnectingLine(g, Color.BLUE, context);
+												return Nothing.VALUE;
+											}
+
+											@Override
+											public Nothing visitJust(N mouseOver) {
+												try {
+													connectionManager.validateConnection(first, mouseOver);
+													drawConnectingLine(g, Color.GREEN, context);
+												} catch (InvalidConnectionException e) {
+													warningMessage = e.getMessage();
+													drawConnectingLine(g, Color.RED, context);
+												}
+												return Nothing.VALUE;
+											}
+										}
+									);
+									return Nothing.VALUE;
+								}
 							}
-						}
+						);
 					}
 				};
 			}
@@ -112,12 +139,17 @@ public class GenericConnectionTool<N>  {
 	}
 
 	private void drawConnectingLine(Graphics2D g, Color color, EvaluationContext context) {
-		g.setColor(color);
+		try {
+			g.setColor(color);
 		
-		Point2D center = context.resolve(centerProvider.apply(context.resolve(first)));
-		
-		Line2D line = new Line2D.Double(center.getX(), center.getY(), context.resolve(lastMouseCoords).getX(), context.resolve(lastMouseCoords).getY());
-		g.draw(line);
+			Point2D center = context.resolve(centerProvider.apply(extract(context.resolve(first))));
+			
+			Line2D line = new Line2D.Double(center.getX(), center.getY(), context.resolve(lastMouseCoords).getX(), context.resolve(lastMouseCoords).getY());
+			g.draw(line);
+		}
+		catch (NothingFound e) {
+			throw new RuntimeException("Should not happen!");
+		}
 	}
 
 	public GraphEditorMouseListener mouseListener() {
@@ -126,45 +158,75 @@ public class GenericConnectionTool<N>  {
 			public void mouseMoved(GraphEditorMouseEvent e) {
 				lastMouseCoords.setValue(e.getPosition());
 				
-				N newMouseOverObject = hitTester.apply(e.getPosition());
+				Maybe<? extends N> newMouseOverObject = hitTester.apply(e.getPosition());
 				
 				mouseOverObject.setValue(newMouseOverObject);
 
 				if (!leftFirst && mouseExitRequiredForSelfLoop) {
-					if (eval(mouseOverObject) == eval(first))
-						mouseOverObject.setValue(null);
+					if (eval(mouseOverObject).equals(eval(first)))
+						mouseOverObject.setValue(Maybe.Util.<N>nothing());
 					else
 						leftFirst = true;
 				}
 			}
 			
 			@Override
-			public void mousePressed(GraphEditorMouseEvent e) {
+			public void mousePressed(final GraphEditorMouseEvent e) {
 				if (e.getButton() == MouseEvent.BUTTON1) {
-					if (eval(first) == null) {
-						if (eval(mouseOverObject) != null) { 
-							assign(first, mouseOverObject);
-							leftFirst = false;
-							mouseMoved(e);
-						}
-					} else if (eval(mouseOverObject) != null) {
-						try {
-							connectionManager.connect(eval(first), eval(mouseOverObject));
+					eval(first).accept(
+						new MaybeVisitor<N, Nothing> (){
+							@Override
+							public Nothing visitNothing() {
+								return eval(mouseOverObject).accept(
+									new MaybeVisitor<N, Nothing> () {
+										@Override
+										public Nothing visitNothing () {
+											return Nothing.VALUE;
+										}
 
-							if ((e.getModifiers() & MouseEvent.CTRL_DOWN_MASK) != 0) {
-								assign(first, mouseOverObject);
-								mouseOverObject.setValue(null);
-							} else {
-								first.setValue(null);
+										@Override
+										public Nothing visitJust(N mouseOver) {
+											assign(first, mouseOverObject);
+											leftFirst = false;
+											mouseMoved(e);
+											return Nothing.VALUE;
+										}
+									}
+								);
 							}
-						} catch (InvalidConnectionException e1) {
-							Toolkit.getDefaultToolkit().beep();
-						}
 
-					}
+							public Nothing visitJust(final N currentFirst) {
+								return eval(mouseOverObject).accept(
+									new MaybeVisitor<N, Nothing> () {
+										@Override
+										public Nothing visitNothing () {
+											return Nothing.VALUE;
+										}
+
+										@Override
+										public Nothing visitJust(N mouseOver) {
+											try {
+												connectionManager.connect(currentFirst, mouseOver);
+
+												if ((e.getModifiers() & MouseEvent.CTRL_DOWN_MASK) != 0) {
+													assign(first, mouseOverObject);
+													mouseOverObject.setValue(Maybe.Util.<N>nothing());
+												} else {
+													first.setValue(Maybe.Util.<N>nothing());
+												}
+											} catch (InvalidConnectionException e1) {
+												Toolkit.getDefaultToolkit().beep();
+											}
+											return Nothing.VALUE;
+										}
+									}
+								);
+							}
+						}
+					);
 				} else if (e.getButton() == MouseEvent.BUTTON3) {
-					first.setValue(null);
-					mouseOverObject.setValue(null);
+					first.setValue(Maybe.Util.<N>nothing());
+					mouseOverObject.setValue(Maybe.Util.<N>nothing());
 				}
 			}
 			
@@ -184,7 +246,7 @@ public class GenericConnectionTool<N>  {
 						if (context.resolve(hasFocus)) {
 							if (warningMessage != null)
 								message = warningMessage;
-							else if (eval(first) == null)
+							else if (isNothing(eval(first)))
 								message = "Click on the first component";
 							else
 								message = "Click on the second component (control+click to connect continuously)";
@@ -202,7 +264,7 @@ public class GenericConnectionTool<N>  {
 			
 			@Override
 			public int getHotKeyCode() {
-				return KeyEvent.VK_C;		
+				return KeyEvent.VK_C;
 			}
 
 			@Override
@@ -218,7 +280,7 @@ public class GenericConnectionTool<N>  {
 	
 	
 	public void deactivated() {
-		first.setValue(null);
-		mouseOverObject.setValue(null);
+		first.setValue(Maybe.Util.<N>nothing());
+		mouseOverObject.setValue(Maybe.Util.<N>nothing());
 	}
 }

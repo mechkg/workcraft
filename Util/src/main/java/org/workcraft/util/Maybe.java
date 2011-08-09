@@ -236,6 +236,10 @@ public interface Maybe<T> {
 				}
 			});
 		}
+
+		public static <A> boolean isNothing(Maybe<A> m) {
+			return !isJust(m);
+		}
 		
 		public static <A> boolean isJust(Maybe<A> m) {
 			return m.accept(new MaybeVisitor<A, Boolean>() {

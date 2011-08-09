@@ -18,7 +18,7 @@ import pcollections.PSet
 import org.workcraft.gui.graph.tools.DragHandle
 import org.workcraft.gui.graph.tools.DragHandler
 import org.workcraft.plugins.stg21.types._
-import org.workcraft.tools.SelectionTool
+import org.workcraft.scala.grapheditor.tools.SelectionTool
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import org.workcraft.exceptions.NotImplementedException

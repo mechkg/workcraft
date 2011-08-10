@@ -6,6 +6,7 @@ import scala.collection.generic.CanBuildFrom
 import scala.collection.TraversableLike
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.Expressions.{joinCollection => joinCollectionJ, constant => constantJ, bind => bindJ, fmap => fmapJ}
+import org.workcraft.dependencymanager.advanced.core.GlobalCache.eval
 import scala.collection.JavaConversions.{asJavaCollection, asScalaIterable}
 import Expressions._
 import org.workcraft.scala.Scalaz._
@@ -43,4 +44,10 @@ object Expressions {
 //  implicit def asExpresion[A](e : ModifiableExpression[A]) : Expression[A] = e
   
   def joinCollection[A](collection : Iterable[Expression[_ <: A]]) : Expression[List[A]] = collection.foldRight(constant(Nil : List[A]))((head : Expression[_ <: A], tail : Expression[List[A]]) => for(tail <- tail; head <- head) yield head::tail)
+  
+  implicit def decorateModifiableExpression[T](me : ModifiableExpression[T]) = new {
+    def modify(f : T => T) {
+      me.setValue(f(eval(me)))
+    }
+  }
 }

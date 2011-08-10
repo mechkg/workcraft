@@ -92,7 +92,7 @@ public class HitMan
 						if(Maybe.Util.isJust(n))
 							return n;
 					}
-					return null;
+					return Maybe.Util.nothing();
 				}
 
 				@Override

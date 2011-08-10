@@ -80,13 +80,16 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
     
     val selectionJ = Variable.create[PSet[VisualNode]](HashTreePSet.empty())
     
-    val touchable = throw new NotImplementedException
+    def touchable(n : VisualNode) = visual(n)
     
     val selectionTool = SelectionTool.create[VisualNode](visualNodes, selectionJ, movableController, (x => /*snap */x), touchable)
     
-    val gst = new GenericSelectionTool[VisualNode](selection, hitTester, dh);
+    val nodeGeneratorTools = org.workcraft.plugins.stg21.StgToolsProvider(visualStg).nodeGeneratorTools
+    
     scala.collection.JavaConversions.asJavaIterable(
-      List(selectionTool.asGraphEditorTool((_, _) => Expressions.constant(GraphicalContent.EMPTY))))
+      selectionTool.asGraphEditorTool((_, _) => Expressions.constant(GraphicalContent.EMPTY)) ::
+      nodeGeneratorTools
+    )
   }
   def properties : Expression[_ <: PVector[EditableProperty]] = Expressions.constant(TreePVector.empty())
 }

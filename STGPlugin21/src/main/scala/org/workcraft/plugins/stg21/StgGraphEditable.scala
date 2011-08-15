@@ -25,6 +25,12 @@ import org.workcraft.exceptions.NotImplementedException
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Expressions._
 import org.workcraft.dom.visual.GraphicalContent
+import org.workcraft.graphics.Graphics
+import org.workcraft.graphics.RichGraphicalContent
+import java.awt.BasicStroke
+import java.awt.Color
+import org.workcraft.dom.visual.ColorisableGraphicalContent
+import org.workcraft.gui.graph.tools.Colorisation
 
 class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends GraphEditable {
   def createTools (editor : GraphEditor) : java.lang.Iterable[_ <: GraphEditorTool] = {
@@ -80,14 +86,26 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
     
     val selectionJ = Variable.create[PSet[VisualNode]](HashTreePSet.empty())
     
-    def touchable(n : VisualNode) = visual(n)
+    def visual(n : VisualNode) = for (vstg <- visualStg) yield {
+      n match {
+        case StgVisualNode(PlaceNode(p)) => Visual.place(vstg.math.places.lookup(p).get)
+        case StgVisualNode(TransitionNode(t)) => Visual.transition(t)(vstg).getOrElse(RichGraphicalContent.empty)
+        case GroupVisualNode(g) => Graphics.rectangle(1, 1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE)) : RichGraphicalContent // todo: recursively draw all? 
+      }
+    }
+    
+    def touchable(n : VisualNode) = for(v <- visual(n)) yield v.touchable
     
     val selectionTool = SelectionTool.create[VisualNode](visualNodes, selectionJ, movableController, (x => /*snap */x), touchable)
     
     val nodeGeneratorTools = org.workcraft.plugins.stg21.StgToolsProvider(visualStg).nodeGeneratorTools
     
+    implicit def decorateColorisable(c : ColorisableGraphicalContent) = new {
+      val noColorisation = ColorisableGraphicalContent.Util.applyColourisation(c, Colorisation.EMPTY)
+    }
+    
     scala.collection.JavaConversions.asJavaIterable(
-      selectionTool.asGraphEditorTool((_, _) => Expressions.constant(GraphicalContent.EMPTY)) ::
+      selectionTool.asGraphEditorTool((colorisation, selection) => for(nodes <- visualNodes; visuals <- nodes.map(visual).toList.sequence) yield (visuals.foldl(RichGraphicalContent.empty)((a: RichGraphicalContent,b: RichGraphicalContent) => b over a).colorisableGraphicalContent.noColorisation)) ::
       nodeGeneratorTools
     )
   }

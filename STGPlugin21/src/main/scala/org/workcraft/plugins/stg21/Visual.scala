@@ -1,103 +1,46 @@
 package org.workcraft.plugins.stg21
 import java.awt.Color
 import java.awt.Font
-import org.workcraft.graphics.Label
+import org.workcraft.graphics.Graphics
 import org.workcraft.plugins.stg21.types.SignalType
-import org.workcraft.util.Graphics
+import org.workcraft.graphics.RichGraphicalContent
+import org.workcraft.plugins.stg21.types._
+import org.workcraft.exceptions.NotImplementedException
+import java.awt.BasicStroke
+import org.workcraft.graphics.Graphics._
 
 object Visual {
   object VisualSignalTransition {
-    val inputsColor = Color.RED.darker
-    val outputsColor = Color.BLUE.darker
-    val internalsColor = Color.GREEN.darker
-
     val font = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.75f);
-
 	
-  def color(t : SignalType) =
-    t match {
-      case SignalType.Internal => internalsColor
-      case SignalType.Output => outputsColor
-      case SignalType.Input => inputsColor
+	def graphicalContent(text : String, t : SignalType, background : Option[Color]) = {
+	  val color = t match {
+        case SignalType.Internal => Color.GREEN.darker
+        case SignalType.Output => Color.BLUE.darker
+        case SignalType.Input => Color.RED.darker
+	  }
+	  
+	  def zeroCentered(img : RichGraphicalContent) = img.align(rectangle(0,0,None,None), HorizontalAlignment.Center,VerticalAlignment.Center)
+	  
+	  val label = zeroCentered(Graphics.label(text, font, color))
+	  label.over(rectangle(label.visualBounds.getWidth, label.visualBounds.getHeight, None, background))
 	}
-	
-	def graphicalContent(text : String) = {
-	  val color = color()
-	  val label = Graphics.label(text, font, color)
-	}
-	public Expression<? extends ColorisableGraphicalContent> getGraphicalContent(final Expression<? extends String> text) {
-		final Label label = label(text);
-		final Expression<Touchable> shapeExpr = localSpaceTouchable(text);
-		final Expression<Color> colorExpr = color();
-		return new ExpressionBase<ColorisableGraphicalContent>() {
-			@Override
-			protected ColorisableGraphicalContent evaluate(final EvaluationContext context) {
-				return new ColorisableGraphicalContent() {
-					@Override
-					public void draw(DrawRequest r) {
-						
-						final ColorisableGraphicalContent labelGraphics = context.resolve(labelGraphics());
-						final ColorisableGraphicalContent nameLabelGraphics = context.resolve(label.graphics);
-						final Color color = context.resolve(colorExpr);
-						final Touchable shape = context.resolve(shapeExpr);
-						
-						labelGraphics.draw(r);
-						
-						Graphics2D g = r.getGraphics();
-						
-						Color background = r.getColorisation().getBackground();
-						if(background!=null)
-						{
-							g.setColor(background);
-							g.fill(shape.getBoundingBox());
-						}
-						
-						g.setColor(Coloriser.colorise(color, r.getColorisation().getColorisation()));
-						
-						nameLabelGraphics.draw(r);
-					}
-				};
-			}
-		};
-	}
-
-	private Label label(final Expression<? extends String> text) {
-		return new Label(font, text);
-	}
-	
-	public Expression<Touchable> localSpaceTouchable(final Expression<? extends String> text) {
-		final Label label = label(text);
-		return new ExpressionBase<Touchable>() {
-			@Override
-			protected Touchable evaluate(final EvaluationContext context) {
-				return new Touchable() {
-					@Override
-					public Rectangle2D getBoundingBox() {
-						return context.resolve(label.centeredBB);
-					}
-					
-					@Override
-					public Point2D getCenter() {
-						return new Point2D.Double(0, 0);
-					}
-					
-					@Override
-					public boolean hitTest(Point2D point) {
-						return getBoundingBox().contains(point);
-					}
-				};
-			}
-		};
-	}
-
-	@NoAutoSerialisation
-	public SignalTransition getReferencedTransition() {
-		return (SignalTransition)getReferencedComponent();
-	}
-	
-	@NoAutoSerialisation
-	public ModifiableExpression<Type> signalType() {
-		return getReferencedTransition().signalType();
-	}
-}
+  }
+  
+  def place(p : Place) = {
+    circle(1, Some(new BasicStroke(1), Color.BLACK), Some(Color.WHITE)) // todo: tokens
+  }
+  
+  def transition(t : Id[Transition])(stg : VisualStg) = {
+    for(
+        t <- stg.math.transitions.lookup(t);
+        res <- t match {
+          case DummyTransition => throw new NotImplementedException();
+          case SignalTransition(signalId, direction) => 
+            for(sig <- stg.math.signals.lookup(signalId)) yield
+            VisualSignalTransition.graphicalContent(sig.name + direction, sig.direction, None)// TODO: Background for simulation
+        }
+    )
+    yield res
+  }
 }

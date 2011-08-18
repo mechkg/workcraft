@@ -4,14 +4,14 @@ import org.junit.Assert._
 import org.workcraft.plugins.cpog.scala.nodes._
 import org.workcraft.plugins.cpog.scala.VisualArc
 import org.workcraft.plugins.cpog.scala.nodes.snapshot.SnapshotMaker
-import org.workcraft.dependencymanager.advanced.core.GlobalCache.eval
 import org.workcraft.graphics.LabelPositioning
 import java.awt.geom.Point2D
 import scala.collection.JavaConversions._
 import org.workcraft.dom.visual.connections.RelativePoint
+import org.workcraft.scala.Expressions.eval
 
 class SnapshotsTest {
-    val sm = new org.workcraft.plugins.stg.HistoryPreservingStorageManager
+    val sm = new org.workcraft.scala.StorageManager(new org.workcraft.plugins.stg.HistoryPreservingStorageManager)
 
     def mkSnapshot = {
         val one = org.workcraft.plugins.cpog.optimisation.expressions.One.instance[Variable]

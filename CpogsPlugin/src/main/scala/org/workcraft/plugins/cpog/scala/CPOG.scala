@@ -68,16 +68,16 @@ class CPOG(val storage : StorageManager,
     return v;
   }
 
-  val nodes : Expression[List[Node]] = {
-    for(c <- components;
-    a <- arcs)
-      yield c ::: a
-  }
-
   val components : Expression[List[Component]] = {
     for(variables <- variables;
       vertices <- vertices;
       rhoClauses <- rhoClauses)
     yield variables ::: vertices ::: rhoClauses
+  }
+
+  val nodes : Expression[List[Node]] = {
+    for(c <- components;
+    a <- arcs)
+      yield c ::: a
   }
 }

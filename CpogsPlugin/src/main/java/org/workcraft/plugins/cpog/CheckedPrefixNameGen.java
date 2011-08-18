@@ -22,5 +22,4 @@ public class CheckedPrefixNameGen implements Function0<String> {
 				return nextName;
 		}
 	}
-
 }

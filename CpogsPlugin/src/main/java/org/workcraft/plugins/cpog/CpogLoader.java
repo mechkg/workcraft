@@ -9,6 +9,8 @@ import org.workcraft.interop.ModelServices;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.util.Maybe;
 
+import org.workcraft.plugins.cpog.scala.CPOG;
+
 public class CpogLoader implements Loader {
 
 	@Override
@@ -32,7 +34,7 @@ public class CpogLoader implements Loader {
 
 	private ModelServices reconstructModel(org.workcraft.plugins.cpog.scala.nodes.snapshot.CPOG readObject) {
 		HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
-		CPOG cpog = org.workcraft.plugins.cpog.scala.serialisation.SnapshotLoader.load(readObject, storage);
+		CPOG cpog = org.workcraft.plugins.cpog.scala.serialisation.SnapshotLoader.load(readObject, new org.workcraft.scala.StorageManager(storage));
 		return new CpogModelDescriptor().createCpogServices(cpog, storage);
 	}
 }

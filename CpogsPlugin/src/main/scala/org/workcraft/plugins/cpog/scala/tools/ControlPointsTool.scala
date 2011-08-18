@@ -15,12 +15,10 @@ import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import java.awt.geom.Point2D
 import org.workcraft.gui.graph.tools.selection.MoveDragHandler
 import org.workcraft.plugins.cpog.scala.nodes._
-import org.workcraft.dependencymanager.advanced.core.Expression
-import org.workcraft.dependencymanager.advanced.core.GlobalCache
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import pcollections.HashTreePSet
 import pcollections.PSet
 import org.workcraft.scala.Util._
+import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Expressions._
 import org.workcraft.plugins.cpog.scala.VisualArc._
 import scala.collection.JavaConversions.{ collectionAsScalaIterable, asJavaCollection }
@@ -44,7 +42,7 @@ class ControlPointsTool (val mouseListener: GraphEditorMouseListener,
     userSpaceGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent]) {
   def asGraphEditorTool (modelGraphics : Expression[GraphicalContent]) = {
     def graphics (viewport:Viewport, hasFocus: Expression[java.lang.Boolean]) =
-      compose (modelGraphics, userSpaceGraphics (viewport, hasFocus))
+      (modelGraphics <**> userSpaceGraphics (viewport, hasFocus)) (compose(_, _))
       
     ToolHelper.asGraphEditorTool(Some(mouseListener), None, Some(graphics), None, None, ControlPointsTool.button)
   }
@@ -91,11 +89,10 @@ object ControlPointsTool {
           case Polyline(cps) => cps.map(x => new ControlPoint(x, for (x <- x) yield controlPointGraphics(x)))
           case Bezier(cp1, cp2) => {
 
-            def convertCp(cp: ModifiableExpression[RelativePoint]) = JExpressions.modifiableExpression(
+            def convertCp(cp: ModifiableExpression[RelativePoint]) = ModifiableExpression(
               for (cp <- cp) yield cp.toSpace(firstPos, secondPos),
-              new Setter[Point2D] {
-                override def setValue(v: Point2D) = Maybe.Util.doIfJust(RelativePoint.fromSpace(firstPos, secondPos, v), cp)
-              })
+              (v: Point2D) => Maybe.Util.doIfJust(RelativePoint.fromSpace(firstPos, secondPos, v), cp.setValue)
+              )
             val cp1_ = convertCp(cp1)
             val cp2_ = convertCp(cp2)
 
@@ -106,7 +103,7 @@ object ControlPointsTool {
       }
     
     // FIXME: eliminate the need for this
-    val visibleControlPoints: Expression[List[_ <: ControlPoint]] =
+    val visibleControlPoints: Expression[List[ControlPoint]] =
       for (
         (selectedArcs) <- selectedArcs;
         val nodeLists = selectedArcs.map(getControlPoints).toList
@@ -118,15 +115,15 @@ object ControlPointsTool {
     
 
     def controlPointMovableController(cp: ControlPoint) = just(cp.position)
-    val cpDragHandler = new MoveDragHandler[ControlPoint](selectedControlPoints, asFunctionObject(controlPointMovableController), asFunctionObject(snap))
+    val cpDragHandler = new MoveDragHandler[ControlPoint](selectedControlPoints, asFunctionObject(((x : Maybe[ModifiableExpression[Point2D]]) => asMaybe(for(x <- x) yield x.jexpr)) compose controlPointMovableController), asFunctionObject(snap))
 
-    val cpHitTester = CustomToolsProvider.createHitTester[ControlPoint](visibleControlPointsJ, asFunctionObject((cp: ControlPoint) => for (g <- cp.graphics) yield g.touchable))
+    val cpHitTester = CustomToolsProvider.createHitTester[ControlPoint](visibleControlPointsJ.jexpr, asFunctionObject((cp: ControlPoint) => for (g <- cp.graphics) yield g.touchable))
     def cpPainter(cp: ControlPoint) = for (g <- cp.graphics) yield g.graphics
 
     val gcpet = new GenericSelectionTool[ControlPoint](selectedControlPoints, cpHitTester, cpDragHandler)
     val controlPointGC =
       GraphicsHelper.paintWithHighlights[ControlPoint](cpPainter, visibleControlPoints) (highlightedColorisation, selectedControlPoints)
     
-    new ControlPointsTool (gcpet.getMouseListener, (viewport, _) => compose (controlPointGC, gcpet.userSpaceContent(viewport)))
+    new ControlPointsTool (gcpet.getMouseListener, (viewport, _) => (controlPointGC <**> gcpet.userSpaceContent(viewport)) (compose(_,_)))
   }
 }

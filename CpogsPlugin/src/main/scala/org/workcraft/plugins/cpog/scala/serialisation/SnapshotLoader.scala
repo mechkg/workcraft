@@ -3,7 +3,7 @@ package org.workcraft.plugins.cpog.scala.serialisation
 import org.workcraft.plugins.cpog.scala.{nodes => M}
 import org.workcraft.plugins.cpog.scala.{VisualArc => MVisualArc}
 import org.workcraft.plugins.cpog.scala.nodes.{snapshot => P}
-import org.workcraft.dependencymanager.advanced.user.StorageManager
+import org.workcraft.scala.StorageManager
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.VariableReplacer
 import org.workcraft.scala.Util._
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
@@ -15,7 +15,7 @@ object SnapshotLoader {
 
   def makePVector[A](iter : Iterable[A]) = ((TreePVector.empty[A] : PVector[A]) /: iter)((v : PVector[A], a : A) => v.plus(a))
   
-  def load(cpog : P.CPOG, sm : StorageManager) : org.workcraft.plugins.cpog.CPOG = {
+  def load(cpog : P.CPOG, sm : StorageManager) : org.workcraft.plugins.cpog.scala.CPOG = {
     def loadVisualProperties(prop : P.VisualProperties) = {
       val P.VisualProperties(label, labelPositioning, position) = prop
       M.VisualProperties(sm.create(label), sm.create(labelPositioning), sm.create(position))
@@ -36,6 +36,6 @@ object SnapshotLoader {
     
     val mRhoClauses = for(P.RhoClause(formula, visual) <- rhoClauses) yield M.RhoClause(sm.create(formulaReplacer(formula)), loadVisualProperties(visual))
     
-    new org.workcraft.plugins.cpog.CPOG(sm, makePVector(mVariables.values), makePVector(mVertices.values), makePVector(mRhoClauses), makePVector(mArcs))
+    org.workcraft.plugins.cpog.scala.CPOG(sm, mVariables.values.toList, mVertices.values.toList, mRhoClauses.toList, mArcs.toList)
   }
 }

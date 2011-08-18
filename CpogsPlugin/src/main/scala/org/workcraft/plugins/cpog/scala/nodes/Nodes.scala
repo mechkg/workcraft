@@ -1,18 +1,13 @@
 
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase
-import org.workcraft.dependencymanager.advanced.user.StorageManager
+import org.workcraft.scala.Expressions._
+import org.workcraft.scala.StorageManager
 import org.workcraft.plugins.cpog.optimisation.expressions.One
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
-import org.workcraft.dependencymanager.advanced.core.GlobalCache._
 import org.workcraft.plugins.cpog.optimisation.expressions.BooleanVisitor
 import org.workcraft.plugins.cpog.VariableState
 import java.awt.geom.Point2D
 import org.workcraft.plugins.cpog.optimisation.expressions.Zero
 import org.workcraft.graphics.LabelPositioning
-import org.workcraft.dependencymanager.advanced.core.Expression
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext
-import org.workcraft.plugins.cpog.optimisation.booleanvisitors.BooleanReplacer
 import java.util.HashMap
 import org.workcraft.plugins.cpog.scala.VisualArc
 import org.workcraft.plugins.cpog.scala.VisualArc.Bezier

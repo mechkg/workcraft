@@ -28,7 +28,7 @@ object Visual {
   }
   
   def place(p : Place) = {
-    circle(1, Some(new BasicStroke(1), Color.BLACK), Some(Color.WHITE)) // todo: tokens
+    circle(1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE)) // todo: tokens
   }
   
   def transition(t : Id[Transition])(stg : VisualStg) = {

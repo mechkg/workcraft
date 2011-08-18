@@ -23,6 +23,7 @@ import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.workspace.WorkspaceEntry;
 
 import pcollections.PVector;
+import org.workcraft.plugins.cpog.scala.CPOG;
 
 public class CpogModelDescriptor implements ModelDescriptor {
 
@@ -34,7 +35,7 @@ public class CpogModelDescriptor implements ModelDescriptor {
 	@Override
 	public ModelServices newDocument() {
 		HistoryPreservingStorageManager storage = new HistoryPreservingStorageManager();
-		return createCpogServices(new CPOG(storage), storage);
+		return createCpogServices(CPOG.apply(new org.workcraft.scala.StorageManager(storage)), storage);
 	}
 	
 	public ModelServices createCpogServices(final CPOG cpog, HistoryPreservingStorageManager storage) {
@@ -45,7 +46,7 @@ public class CpogModelDescriptor implements ModelDescriptor {
 				
 				@Override
 				public Expression<? extends PVector<EditableProperty>> properties() {
-					return tp.properties();
+					return tp.properties().jexpr();
 				}
 				
 				@Override

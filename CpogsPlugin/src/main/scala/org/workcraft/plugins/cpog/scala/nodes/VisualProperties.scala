@@ -6,9 +6,9 @@ import org.workcraft.util.FieldAccessor
 import org.workcraft.gui.propertyeditor.EditableProperty
 import pcollections.PVector
 import java.awt.geom.Point2D
-import org.workcraft.dependencymanager.advanced.user.StorageManager
+import org.workcraft.scala.StorageManager
+import org.workcraft.scala.Expressions.ModifiableExpression
 import org.workcraft.graphics.LabelPositioning
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty
 
 package org.workcraft.plugins.cpog.scala.nodes {

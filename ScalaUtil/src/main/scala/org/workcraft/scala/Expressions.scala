@@ -1,23 +1,48 @@
 package org.workcraft.scala
 
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
+import org.workcraft.dependencymanager.advanced.user.{ModifiableExpression => JModifiableExpression}
 import scalaz.Monad
 import scala.collection.generic.CanBuildFrom
 import scala.collection.TraversableLike
-import org.workcraft.dependencymanager.advanced.core.Expression
-import org.workcraft.dependencymanager.advanced.core.Expressions.{joinCollection => joinCollectionJ, constant => constantJ, bind => bindJ, fmap => fmapJ}
-import org.workcraft.dependencymanager.advanced.core.GlobalCache.eval
+import org.workcraft.dependencymanager.advanced.core.{Expression => JExpression}
+import org.workcraft.dependencymanager.advanced.core.Expressions.{constant => jConstant, modifiableExpression => jModifiableExpression, joinCollection => joinCollectionJ, bind => bindJ, fmap => fmapJ}
+import org.workcraft.dependencymanager.advanced.core.GlobalCache
 import scala.collection.JavaConversions.{asJavaCollection, asScalaIterable}
 import Expressions._
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Util._
+import org.workcraft.dependencymanager.advanced.user.Setter
 
 object Expressions {
   
-  implicit object ExpressionMonad extends Monad[Expression] {
-    override def pure[A] (x : => A) = Expressions.constant(x)
-    override def bind[A,B](a : Expression[A], f : A => Expression[B]) : Expression[B] = bindJ(a, asFunctionObject(f))
+  case class ModifiableExpression[T](expr : Expression[T], val setValue : T => Unit) {
+    def jexpr : JModifiableExpression[T] = {
+      def sv(t : T) = setValue(t)
+      jModifiableExpression((this : Expression[T]).jexpr, new Setter[T]{
+      override def setValue(t : T) {
+        sv(t)
+      }
+    })
+    }
   }
+  
+  implicit def convertModifiableExpression[T](me : JModifiableExpression[T]) = ModifiableExpression[T](decorateExpression(me), x => me.setValue(x))
+  
+  implicit object JExpressionMonad extends Monad[JExpression] {
+    override def pure[A] (x : => A) = jConstant(x)
+    override def bind[A,B](a : JExpression[A], f : A => JExpression[B]) : JExpression[B] = bindJ(a, asFunctionObject(f))
+  }
+  
+  implicit def decorateExpression[T](e : JExpression[_ <: T]) = Expression[T](e)
+  
+  implicit def modifiableExpressionAsReadonly[T](m : ModifiableExpression[T]) : Expression[T] = m.expr
+  
+  implicit object ExpressionMonad extends Monad[Expression] {
+    override def pure[A] (x : => A) = constant(x)
+    override def bind[A,B](a : Expression[A], f : A => Expression[B]) : Expression[B] = decorateExpression(bindJ[A,B](a.jexpr : JExpression[_ <: A], asFunctionObject(((_ : Expression[B]).jexpr).compose(f))))
+  }
+  
+  def constant[T](x : T) : Expression[T] = jConstant(x)
   
   /**
    *  Needed because Scala is stupid!
@@ -27,8 +52,6 @@ object Expressions {
     def flatMap[B](f: A => Expression[B]) = implicitly[Monad[Expression]].bind(m, f)
   }
   
-  def constant[A](a : A) = constantJ(a)
-  
   trait ExpressionOps[+A] {
     def mapE[B](f : A => Expression[_ <: B]) : Expression[List[B]]
   }
@@ -36,18 +59,23 @@ object Expressions {
   implicit def augmentWithExpressionOps[A, Coll <: Iterable[A]](coll : Coll) : ExpressionOps[A] = {
     new ExpressionOps[A]() {
       def mapE[B](f : A => Expression[_ <: B]) = {
-        joinCollection[B](coll.map(f))
+        sequenceExpressions[B](coll.map(f))
       }
     }
   }
   
-//  implicit def asExpresion[A](e : ModifiableExpression[A]) : Expression[A] = e
+  implicit def implicitJexpr[T](e : Expression[T]) : JExpression[_ <: T] = e.jexpr
+  implicit def implicitMJexpr[T](e : ModifiableExpression[T]) : JModifiableExpression[T] = e.jexpr
   
-  def joinCollection[A](collection : Iterable[Expression[_ <: A]]) : Expression[List[A]] = collection.foldRight(constant(Nil : List[A]))((head : Expression[_ <: A], tail : Expression[List[A]]) => for(tail <- tail; head <- head) yield head::tail)
+  def sequenceExpressions[A](collection : Iterable[Expression[_ <: A]]) : Expression[List[A]] = collection.foldRight(constant(Nil : List[A]))((head : Expression[_ <: A], tail : Expression[List[A]]) => for(tail <- tail; head <- head) yield head::tail)
   
   implicit def decorateModifiableExpression[T](me : ModifiableExpression[T]) = new {
     def modify(f : T => T) {
-      me.setValue(f(eval(me)))
+      me.setValue(f(eval(me.jexpr)))
     }
   }
+  
+  case class Expression[+T](jexpr : JExpression[_ <: T])
+  
+  def eval[T](e : Expression[T]) : T = GlobalCache.eval(e.jexpr)
 }

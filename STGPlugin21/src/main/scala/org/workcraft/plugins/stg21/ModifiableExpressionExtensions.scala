@@ -1,8 +1,7 @@
 package org.workcraft.plugins.stg21
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import java.awt.geom.Point2D
+import scalaz.State
+import org.workcraft.scala.Expressions._
 
 object modifiable {
   import org.workcraft.plugins.stg21.fields._
@@ -11,16 +10,15 @@ object modifiable {
       (getter : W => P)
       (setter : P => W => W)
       : ModifiableExpression[P] = {
-      new ModifiableExpressionBase[P] {
-        override def setValue(v : P) {
-          we.setValue(setter(v)(org.workcraft.dependencymanager.advanced.core.GlobalCache.eval(we)))
-        }
-        override def evaluate(context : EvaluationContext) = {
-          getter(context.resolve(we))
-        }
-      }
+      ModifiableExpression (for(w <- we) yield getter(w)
+      , (v : P) => we.setValue(setter(v)(eval(we))))
     }
     def modifiableField[P] (field : Field[W,P]) : ModifiableExpression[P] = modifiableField[P](field.get)(field.set)
+    def runState[R](state : State[W,R]) : R = {
+      val (nw,r) = state(eval(we))
+      we.setValue(nw)
+      r
+    }
   }
   import types._
   implicit def decorateModifiableVisualStg (stg : ModifiableExpression[VisualStg]) = new {
@@ -38,24 +36,24 @@ object modifiable {
     val arcs : ModifiableExpression[Map[A, VisualArc]] = visual.modifiableField ((_ : VisualModel[N,A]).arcs) (x => _.copy(arcs=x))
     val nodesInfo : ModifiableExpression[Map[N, VisualInfo]] = visual.modifiableField ((_ : VisualModel[N,A]).nodesInfo) (x => _.copy(nodesInfo=x))
   }
-  implicit def decorateModifiableMap[K,V] (map : ModifiableExpression[Map[K,V]]) = {
-    class Q {
-    def lookup(key : K) : ModifiableExpression[Option[V]] = 
+
+  class DecoratedModifiableMap[K,V] (map : ModifiableExpression[Map[K,V]]) {
+    def lookup(key : K) : ModifiableExpression[Option[V]] = { 
       map.modifiableField ((_ : Map[K,V]).get(key)) ((x : Option[V]) => x match {
         case None => _ - key
         case Some(value) => _ + ((key, value))
       }
       )
     }
-    new Q
   }
   
-  implicit def decorateModifiableOption[V] (o : ModifiableExpression[Option[V]]) = {
-    class Q{
+  implicit def decorateModifiableMap[K,V] (map : ModifiableExpression[Map[K,V]]) = new DecoratedModifiableMap[K,V](map)
+  
+  class DecoratedModifiableOption[V](o : ModifiableExpression[Option[V]]) {
     def orElse(v : V) : ModifiableExpression[V] = o.modifiableField ((_ : Option[V]).getOrElse(v)) (x => _ => Some(x))
-    }
-    new Q
   }
+  implicit def decorateModifiableOption[V] (o : ModifiableExpression[Option[V]]) = new DecoratedModifiableOption[V](o)
+  
   implicit def decorateVisualInfo (v : ModifiableExpression[VisualInfo]) = new {
     def position : ModifiableExpression[Point2D] = v.modifiableField(VisualInfoFields.position)
     def parent : ModifiableExpression[Option[Id[Group]]] = v.modifiableField ((_ : VisualInfo).parent) (x => _.copy(parent = x))

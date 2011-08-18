@@ -5,7 +5,6 @@ import org.workcraft.scala.Util._
 import org.workcraft.graphics.Graphics._
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Expressions._
-import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dom.visual.ColorisableGraphicalContent
 import org.workcraft.gui.graph.tools.ConnectionController
@@ -19,21 +18,20 @@ import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener
 import org.workcraft.util.Maybe
 import org.workcraft.util.MaybeVisitor
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 
 class ConnectionTool[N](val mouseListener: GraphEditorMouseListener,
   val connectingLineGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent],
   val hintGraphics: (Viewport, Expression[java.lang.Boolean]) => Expression[GraphicalContent],
-  val mouseOver: Expression[_ <: Maybe[_ <: N]]) {
+  val mouseOver: Expression[Maybe[_ <: N]]) {
   
-  def asGraphEditorTool[Q >: N](paint: (Colorisation, Expression[_ <: java.util.Set[Q]]) => Expression[GraphicalContent]) =
+  def asGraphEditorTool[Q >: N](paint: (Colorisation, Expression[java.util.Set[Q]]) => Expression[GraphicalContent]) =
     {
       def graphics(viewport: Viewport, hasFocus: Expression[java.lang.Boolean]) =
-        compose(paint(ConnectionTool.highlightedColorisation, for (mo <- mouseOver) yield mo.accept(new MaybeVisitor[N, java.util.Set[Q]] {
+        (paint(ConnectionTool.highlightedColorisation, for (mo <- mouseOver) yield mo.accept(new MaybeVisitor[N, java.util.Set[Q]] {
                 override def visitNothing = java.util.Collections.emptySet[Q]
                 override def visitJust(n : N) =  java.util.Collections.singleton(n)
-              })),
-            connectingLineGraphics(viewport, hasFocus))
+              })) <**>
+            connectingLineGraphics(viewport, hasFocus)) (compose(_,_))
 
      ToolHelper.asGraphEditorTool(Some(mouseListener), None, Some(graphics), Some(hintGraphics), None, GenericConnectionTool.button)
     }
@@ -51,9 +49,9 @@ object ConnectionTool {
     centerProvider: N => Expression[Point2D],
     connectionController: ConnectionController[N]) = {
     val connectionHitTester = HitTester.create(components, touchableProvider)
-    val genericConnectionTool = new GenericConnectionTool[N](centerProvider, connectionController, connectionHitTester.hitTest(_: Point2D))
+    val genericConnectionTool = new GenericConnectionTool[N](((_:Expression[Point2D]).jexpr) compose centerProvider, connectionController, connectionHitTester.hitTest(_: Point2D))
     
-    new ConnectionTool[N] ( genericConnectionTool.mouseListener, (viewport, focus) => genericConnectionTool.userSpaceContent(viewport, focus),
-        (viewport, focus) => genericConnectionTool.screenSpaceContent(viewport, focus), genericConnectionTool.mouseOverNode)
+    new ConnectionTool[N] ( genericConnectionTool.mouseListener, (viewport, focus) => genericConnectionTool.userSpaceContent(viewport, focus.jexpr),
+        (viewport, focus) => genericConnectionTool.screenSpaceContent(viewport, focus.jexpr), genericConnectionTool.mouseOverNode)
   }
 }

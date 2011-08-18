@@ -38,13 +38,17 @@ object types {
   case class Signal(name : String, direction : SignalType)
   case class Id[T] (id : Int)
 
-  case class Place(initialMarking : Integer)
+  case class Place(initialMarking : Int)
   
   sealed trait Arc
-  class ConsumingArc(from : Id[Place], to : Id[Transition]) extends Arc
-  class ProducingArc(from : Id[Transition], to : Id[Place]) extends Arc
-  class ImplicitPlaceArc[M[_]](from : Id[Transition], to : Id[Transition], initialMarking : Integer) extends Arc
+  case class ConsumingArc(from : Id[Place], to : Id[Transition]) extends Arc
+  case class ProducingArc(from : Id[Transition], to : Id[Place]) extends Arc
+  case class ImplicitPlaceArc[M[_]](from : Id[Transition], to : Id[Transition], initialMarking : Int) extends Arc
 
+  sealed trait StgConnectable
+  case class NodeConnectable(n : StgNode) extends StgConnectable 
+  case class ArcConnectable(a : Id[Arc]) extends StgConnectable
+  
   case class Col[T] (map : Map[Id[T], T], nextFreeId : Id[T]) {
 	  def remove(id : Id[T]) : Col[T] = Col[T](map - id, nextFreeId)
 	  def lookup(key : Id[T]) : Option[T] = map.get(key)
@@ -88,6 +92,10 @@ object types {
   sealed trait VisualNode
   case class StgVisualNode(n : StgNode) extends VisualNode
   case class GroupVisualNode(g : Id[Group]) extends VisualNode
+  
+  sealed trait VisualEntity
+  case class NodeVisualEntity(n : VisualNode) extends VisualEntity
+  case class ArcVisualEntity(a : Id[Arc]) extends VisualEntity
   
   case class VisualModel[N,A] (
     groups : Col[Group],

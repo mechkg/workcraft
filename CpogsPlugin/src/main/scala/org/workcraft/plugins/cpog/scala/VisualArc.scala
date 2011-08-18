@@ -11,14 +11,12 @@ import org.workcraft.dom.visual.connections.ConnectionDataVisitor
 import org.workcraft.dom.visual.connections.VisualConnectionData
 import org.workcraft.dom.visual.connections.VisualConnectionContext
 import org.workcraft.dom.visual.connections.VisualConnectionGui
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import java.awt.geom.Point2D
 import java.awt.BasicStroke
 import java.awt.Color
 import org.workcraft.dom.visual.connections.VisualConnectionProperties
 import nodes._
 import org.workcraft.dom.visual.Touchable
-import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.connections.ConnectionGui
 import org.workcraft.scala.Expressions._
 import org.workcraft.scala.Util._
@@ -36,9 +34,12 @@ sealed trait VisualArc extends org.workcraft.dom.visual.connections.VisualConnec
 }
 
 object VisualArc {
-  case class Bezier(cp1: ModifiableExpression[RelativePoint], cp2: ModifiableExpression[RelativePoint]) extends VisualArc with org.workcraft.dom.visual.connections.BezierData
+  case class Bezier(p1: ModifiableExpression[RelativePoint], p2: ModifiableExpression[RelativePoint]) extends VisualArc with org.workcraft.dom.visual.connections.BezierData {
+    override def cp1 = p1.jexpr
+    override def cp2 = p2.jexpr
+  }
   case class Polyline(cp: List[ModifiableExpression[Point2D]]) extends VisualArc with org.workcraft.dom.visual.connections.PolylineData {
-    override def controlPoints = asJavaCollection(cp)
+    override def controlPoints = asJavaCollection(for(m <- cp) yield m.jexpr)
   }
 
   

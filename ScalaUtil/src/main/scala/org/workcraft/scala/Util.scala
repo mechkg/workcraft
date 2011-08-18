@@ -38,11 +38,20 @@ object Util {
     }
   }
   
+  implicit def unitFunctionAsAction1[T](f : T => Unit) : Action1[T] = new Action1[T]{
+    override def run(t : T) = f(t)
+  }
+  
   implicit def asOption[T] (mb : Maybe[T]) : Option[T] = 
     mb.accept ( new MaybeVisitor[T, Option[T]] {
       def visitNothing = None
       def visitJust (t : T) = Some(t)
     })
+    
+  implicit def asMaybe[T] (o : Option[T]) : Maybe[T] = o match {
+    case None => Maybe.Util.nothing[T]
+    case Some(x) => Maybe.Util.just(x)
+  }
 
   def bindFunc[A, B](a: Expression[_ <: A])(f: A => B): Expression[B] = javafmap(asFunctionObject(f), a)
   def bindFunc[A, B, C](a: Expression[_ <: A], b: Expression[_ <: B])(f: (A, B) => C): Expression[C] = javafmap(asFunctionObject2(f), a, b)
@@ -64,5 +73,5 @@ object Util {
     while(it.hasNext)
     	res = it.next :: res
     res.reverse
-  }  
+  }
 }

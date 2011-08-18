@@ -3,8 +3,6 @@ import org.workcraft.gui.graph.tools.CustomToolsProvider
 import org.workcraft.gui.graph.tools.NodeGenerator
 import org.workcraft.util.GUI
 import java.awt.geom.Point2D
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
-import org.workcraft.dependencymanager.advanced.user.StorageManager
 import org.workcraft.gui.graph.tools.GraphEditor
 import org.workcraft.gui.graph.tools.GraphEditorTool
 import java.awt.event.KeyEvent
@@ -45,26 +43,7 @@ case class StgToolsProvider(visualStg : ModifiableExpression[VisualStg]) {
 			}
 		}, stg.referenceManager());
 	}
-	
 
-		final STG stg = visualStg.stg;
-		
-		TouchableProvider<Node> localTP = new TouchableProvider<Node>(){
-			@Override
-			public Expression<? extends Maybe<? extends Touchable>> apply(Node node) {
-				final Expression<Touchable> res;
-				if(node instanceof VisualSignalTransition) {
-					final VisualSignalTransition vst = (VisualSignalTransition)node;
-					res = vst.localSpaceTouchable(transitionName(stg, vst));
-				} else 
-					if(node instanceof VisualDummyTransition) {
-						final VisualDummyTransition vdt = (VisualDummyTransition)node;
-						res = vdt.shape(stg.name(vdt.getReferencedTransition()));
-					} else
-						return LOCAL_REFLECTIVE.apply(node);
-				return fmap(Maybe.Util.<Touchable>just(), res);
-			}
-		};
 		
 		final TouchableProvider<Node> tp = TouchableProvider.Util.applyTransformAndAddVisualGroupsAndConnections(localTP);
 

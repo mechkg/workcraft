@@ -65,13 +65,13 @@ public class GenericConnectionTool<N>  {
 	private final Function<? super Point2D, ? extends Maybe<? extends N>> hitTester;
 	private final Function<? super N, ? extends Expression<? extends Point2D>> centerProvider;
 
-	public GenericConnectionTool (Function<N, Expression<Point2D>> centerProvider, ConnectionController<? super N> connectionManager, Function<? super Point2D, ? extends Maybe<? extends N>> hitTester) {
+	public GenericConnectionTool (Function<N, Expression<? extends Point2D>> centerProvider, ConnectionController<? super N> connectionManager, Function<? super Point2D, ? extends Maybe<? extends N>> hitTester) {
 		this.centerProvider = centerProvider;
 		this.connectionManager = connectionManager;
 		this.hitTester = hitTester;
 	}
 
-	public Expression<GraphicalContent> userSpaceContent(Viewport viewport, Expression<Boolean> hasFocus) {
+	public Expression<GraphicalContent> userSpaceContent(Viewport viewport, Expression<? extends Boolean> hasFocus) {
 		return connectingLineGraphicalContent(viewport);
 	}
 
@@ -233,7 +233,7 @@ public class GenericConnectionTool<N>  {
 		};
 	}
 
-	public Expression<GraphicalContent> screenSpaceContent(final Viewport viewport, final Expression<Boolean> hasFocus) {
+	public Expression<GraphicalContent> screenSpaceContent(final Viewport viewport, final Expression<? extends Boolean> hasFocus) {
 		return new ExpressionBase<GraphicalContent>(){
 			@Override
 			protected GraphicalContent evaluate(final EvaluationContext context) {

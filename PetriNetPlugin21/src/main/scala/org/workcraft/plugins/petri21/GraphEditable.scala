@@ -5,5 +5,4 @@ import org.workcraft.scala.ScalaGraphEditable
 
 class PetriNetGraphEditable extends ScalaGraphEditable {
   def createTools (editor: GraphEditor) = null
-    
 }

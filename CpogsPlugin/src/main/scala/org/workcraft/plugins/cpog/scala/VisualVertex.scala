@@ -1,8 +1,5 @@
 import org.workcraft.dom.visual.ColorisableGraphicalContent
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
-import org.workcraft.dependencymanager.advanced.core.Expression
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.scala.Expressions._
 import org.workcraft.plugins.cpog.scala.nodes._
 import org.workcraft.scala.Util._
@@ -66,8 +63,8 @@ package org.workcraft.plugins.cpog.scala {
       	condition <- vertex.condition;
       	value <- FormulaValue(condition);
       	labelPositioning <- vertex.visualProperties.labelPositioning;
-      	fillColor <- CommonVisualSettings.fillColor;
-      	foreColor <- CommonVisualSettings.foregroundColor;
+      	fillColor <- CommonVisualSettings.fillColor : Expression[java.awt.Color];
+      	foreColor <- CommonVisualSettings.foregroundColor : Expression[java.awt.Color];
       	labelGraphics <- labelGraphics(label, condition)
       ) yield {
         val vg = vertexGraphics(value, foreColor, fillColor)

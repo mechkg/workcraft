@@ -1,9 +1,11 @@
 package org.workcraft.scala.grapheditor.tools
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
+import org.workcraft.dependencymanager.advanced.user.{ModifiableExpression => JModifiableExpression}
 import pcollections.PSet
+import org.workcraft.scala.Expressions._
 import org.workcraft.scala.Util._
+import org.workcraft.scala.Scalaz._
 import org.workcraft.graphics.Graphics._
-import org.workcraft.dependencymanager.advanced.core.Expression
+import org.workcraft.dependencymanager.advanced.core.{Expression => JExpression}
 import java.awt.geom.Point2D
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dom.visual.ColorisableGraphicalContent
@@ -24,7 +26,7 @@ class SelectionTool[N](val mouseListener: GraphEditorMouseListener,
   def asGraphEditorTool ( paint: (Colorisation, Expression[_ <: java.util.Set[N]]) => Expression[GraphicalContent]) =
   {
     def graphics (viewport : Viewport, hasFocus: Expression[java.lang.Boolean]) =
-      compose (paint (SelectionTool.highlightedColorisation, effectiveSelection), selectionBoxGraphics(viewport, hasFocus))
+      (paint (SelectionTool.highlightedColorisation, effectiveSelection) <**> selectionBoxGraphics(viewport, hasFocus)) (compose(_,_))
       
     ToolHelper.asGraphEditorTool(Some(mouseListener), None, 
         Some(graphics), None, None, GenericSelectionTool.button)
@@ -38,14 +40,14 @@ object SelectionTool {
   }
 
   def create[N](
-    nodes: Expression[_ <: Iterable[N]],
+    nodes: Expression[Iterable[N]],
     selection: ModifiableExpression[PSet[N]],
     movableController: N => Maybe[ModifiableExpression[Point2D]],
     snap: Point2D => Point2D,
     touchableProvider: N => Expression[Touchable]
     ) = {
-    val dragHandler = new MoveDragHandler[N](selection, movableController, snap)
-    val genericSelectionTool = new GenericSelectionTool[N](selection, HitTester.create(nodes, touchableProvider), dragHandler)
+    val dragHandler = new MoveDragHandler[N](selection.jexpr, ((m : Maybe[ModifiableExpression[Point2D]]) => asMaybe(for (m <- m) yield m.jexpr)) compose movableController, snap)
+    val genericSelectionTool = new GenericSelectionTool[N](selection.jexpr, HitTester.create(nodes, touchableProvider), dragHandler)
 
     new SelectionTool[N](genericSelectionTool.getMouseListener, (viewport, focus) => genericSelectionTool.userSpaceContent(viewport), genericSelectionTool.effectiveSelection)
   }

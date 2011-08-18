@@ -38,18 +38,11 @@ public class VisualStgConnectionManager implements ConnectionController<Node> {
 		if (first==second) {
 			throw new InvalidConnectionException ("Connections are only valid between different objects");
 		}
-		
-		if (first instanceof VisualPlace) {
-			if (second instanceof VisualPlace)
-				throw new InvalidConnectionException ("Arcs between places are not allowed");
-			if (second instanceof VisualConnection)
-				throw new InvalidConnectionException ("Arcs between places and implicit places are not allowed");
-		}
 
 		if (first instanceof VisualTransition) {
 			if (second instanceof VisualConnection)
 				if (! (second  instanceof VisualImplicitPlaceArc))
-					throw new InvalidConnectionException ("Only connections with arcs having implicit places are allowed");
+					throw new InvalidConnectionException ();
 		}
 
 		if (first instanceof VisualConnection) {
@@ -62,7 +55,7 @@ public class VisualStgConnectionManager implements ConnectionController<Node> {
 
 			VisualImplicitPlaceArc con = (VisualImplicitPlaceArc) first;
 			if (con.getFirst() == second || con.getSecond() == second)
-				throw new InvalidConnectionException ("Arc already exists");
+				throw new InvalidConnectionException ();
 		}
 	}
 

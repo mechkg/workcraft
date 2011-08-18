@@ -1,5 +1,4 @@
 package org.workcraft.graphics
-import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.ColorisableGraphicalContent
 import org.workcraft.dom.visual.GraphicalContent
 import org.workcraft.scala.Util._
@@ -11,7 +10,7 @@ object GraphicsHelper {
   def paintNodes[N](painter: N => Expression[GraphicalContent], nodes: Expression[_ <: Iterable[N]]) =
     for (
       nodes <- nodes;
-      graphics <- joinCollection(nodes.map(painter))
+      graphics <- nodes.map(painter).toList.sequence
     ) yield graphics.foldLeft(GraphicalContent.EMPTY)(Graphics.compose)
 
   def paint[N](painter: N => Expression[ColorisableGraphicalContent], nodes: Expression[_ <: Iterable[N]]) = paintNodes(dontColourise(painter), nodes)

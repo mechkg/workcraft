@@ -1,13 +1,11 @@
 package org.workcraft.plugins.cpog.scala.tools
 
 import org.workcraft.dom.visual.Touchable
-import org.workcraft.dependencymanager.advanced.core.Expression
 import java.awt.Point
 import org.workcraft.util.Maybe
-import org.workcraft.dependencymanager.advanced.core.Expressions._
+import org.workcraft.scala.Expressions._
 import org.workcraft.util.Maybe.Util._
 import java.awt.geom.Point2D
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 
 import org.workcraft.plugins.cpog.scala.nodes._
 

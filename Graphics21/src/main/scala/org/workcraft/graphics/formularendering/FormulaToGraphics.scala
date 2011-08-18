@@ -14,7 +14,6 @@ import scalaz.Monad
 import org.workcraft.scala.Scalaz._ 
 import scala.collection.JavaConversions._
 import org.workcraft.scala.Expressions._
-import org.workcraft.dependencymanager.advanced.core.Expression
 
 package org.workcraft.graphics {
 package object formularendering {

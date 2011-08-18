@@ -4,7 +4,6 @@ import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 
-import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dom.visual.TransformHelper
 import org.workcraft.plugins.cpog.scala.nodes.Arc
@@ -13,8 +12,7 @@ import org.workcraft.plugins.cpog.scala.nodes.Node
 import org.workcraft.plugins.cpog.scala.nodes.RhoClause
 import org.workcraft.plugins.cpog.scala.nodes.Variable
 import org.workcraft.plugins.cpog.scala.nodes.Vertex
-import org.workcraft.scala.Expressions.ExpressionMonad
-import org.workcraft.scala.Expressions.monadicSyntax
+import org.workcraft.scala.Expressions._
 import org.workcraft.scala.Scalaz.maImplicit
 
 

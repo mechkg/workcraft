@@ -1,7 +1,4 @@
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
-import org.workcraft.dependencymanager.advanced.core.Expression
-import org.workcraft.dependencymanager.advanced.core.ExpressionBase
-import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.plugins.cpog.scala.nodes._
 import org.workcraft.graphics.Graphics._
 import org.workcraft.plugins.shared.CommonVisualSettings
@@ -12,6 +9,7 @@ import java.awt.geom.Rectangle2D
 import java.awt.BasicStroke
 import pcollections.PVector
 import org.workcraft.scala.Expressions._
+import org.workcraft.scala.Scalaz._
 import org.workcraft.plugins.cpog.VariableState
 import org.workcraft.gui.propertyeditor.EditableProperty
 import org.workcraft.plugins.cpog.VisualComponent
@@ -32,8 +30,8 @@ package org.workcraft.plugins.cpog.scala {
       for (
         state <- variable.state;
         label <- variable.visualProperties.label;
-        fillColor <- CommonVisualSettings.fillColor;
-        foreColor <- CommonVisualSettings.foregroundColor;
+        fillColor <- CommonVisualSettings.fillColor : Expression[java.awt.Color];
+        foreColor <- CommonVisualSettings.foregroundColor : Expression[java.awt.Color];
         labelPositioning <- variable.visualProperties.labelPositioning
       ) yield {
         val frame = rectangle(size, size, Some ((new BasicStroke(strokeWidth), foreColor)), Some(fillColor))

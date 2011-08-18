@@ -3,7 +3,7 @@ package org.workcraft.plugins.cpog.scala.nodes.snapshot
 import scalaz.Bind
 import scalaz.Pure
 import scalaz.Monad
-import org.workcraft.dependencymanager.advanced.core.Expression
+import org.workcraft.scala.Expressions.Expression
 import org.workcraft.plugins.cpog.scala.{nodes=>M}
 
 trait CpogBuilder[+T] {
@@ -26,16 +26,13 @@ trait CpogBuilder[+T] {
 }
 
 object CpogBuilder {
+  implicit object MonadInstance extends Monad[CpogBuilder] {
+    override def bind[A,B](a : CpogBuilder[A], b : A => CpogBuilder[B]) = a.flatMap(b)
+    override def pure[A](a: => A): CpogBuilder[A] = emptyBuilder[A](a)
+  }
+  
   def emptyBuilder[T](result : T) : CpogBuilder[T] = new CpogBuilder[T] {
     override def buildWithCpog(cpog : CpogBuilding) = (cpog, result)
-  }
-  
-  implicit object CpogBuilderPure extends Pure[CpogBuilder] {
-    override def pure[A](a : =>A) = CpogBuilder.emptyBuilder(a)
-  }
-  
-  implicit object CpogBuilderBind extends Bind[CpogBuilder] {
-    override def bind[A,B](a : CpogBuilder[A], b : A => CpogBuilder[B]) = a.flatMap(b)
   }
 }
 

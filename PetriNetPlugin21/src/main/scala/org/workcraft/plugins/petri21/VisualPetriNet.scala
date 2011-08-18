@@ -1,5 +1,4 @@
 package org.workcraft.plugins.petri21
-import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.graphics.RichGraphicalContent
 import org.workcraft.scala.Expressions._
 import org.workcraft.scala.Scalaz._

@@ -42,14 +42,14 @@ import org.workcraft.util.Memoise;
 import static org.workcraft.plugins.cpog.optimisation.booleanvisitors.Fix.*;
 
 
-public class BooleanReplacer<Var> extends BooleanVisitor<Var, BooleanFormula<Var>> implements Endo<BooleanFormula<Var>>
+public class BooleanReplacer<Var1, Var2> extends BooleanVisitor<Var1, BooleanFormula<Var2>> implements Function<BooleanFormula<Var1>, BooleanFormula<Var2>>
 {
-	private final Function<Var, BooleanFormula<Var>> replacer;
-	private final Function<BooleanFormula<Var>, BooleanFormula<Var>> recurse;
+	private final Function<Var1, BooleanFormula<Var2>> replacer;
+	private final Function<BooleanFormula<Var1>, BooleanFormula<Var2>> recurse;
 	private final BooleanWorker worker;
 
-	private static <Var> HashMap<Var, BooleanFormula<Var>> createMap(List<Var> from, List<BooleanFormula<Var>> to) {
-		HashMap<Var, BooleanFormula<Var>> m = new HashMap<Var, BooleanFormula<Var>>();
+	private static <Var1, Var2> HashMap<Var1, BooleanFormula<Var2>> createMap(List<Var1> from, List<BooleanFormula<Var2>> to) {
+		HashMap<Var1, BooleanFormula<Var2>> m = new HashMap<Var1, BooleanFormula<Var2>>();
 		if(from.size() != to.size())
 			throw new RuntimeException("lengths must be equal");
 		for(int i=0;i<from.size();i++)
@@ -57,11 +57,11 @@ public class BooleanReplacer<Var> extends BooleanVisitor<Var, BooleanFormula<Var
 		return m;
 	}
 	
-	public static <Var> Endo<BooleanFormula<Var>> cachedReplacer(final BooleanWorker worker, final Function<Var, BooleanFormula<Var>> f) {
-		return fix(new Function<Function<BooleanFormula<Var>, BooleanFormula<Var>>, Endo<BooleanFormula<Var>>>() {
+	public static <Var1, Var2> Function<BooleanFormula<Var1>, BooleanFormula<Var2>> cachedReplacer(final BooleanWorker worker, final Function<Var1, BooleanFormula<Var2>> f) {
+		return fix(new Function<Function<BooleanFormula<Var1>, BooleanFormula<Var2>>, Function<BooleanFormula<Var1>, BooleanFormula<Var2>>>() {
 			@Override
-			public Endo<BooleanFormula<Var>> apply(Function<BooleanFormula<Var>, BooleanFormula<Var>> rec) {
-				return new BooleanReplacer<Var>(rec, worker, Memoise.memoise(f));
+			public Function<BooleanFormula<Var1>, BooleanFormula<Var2>> apply(Function<BooleanFormula<Var1>, BooleanFormula<Var2>> rec) {
+				return new BooleanReplacer<Var1, Var2>(rec, worker, Memoise.memoise(f));
 			}
 		});
 	}
@@ -83,19 +83,16 @@ public class BooleanReplacer<Var> extends BooleanVisitor<Var, BooleanFormula<Var
 		}).apply(formula);
 	}
 	
-	public BooleanReplacer(Function<BooleanFormula<Var>, BooleanFormula<Var>> recurse, BooleanWorker worker, Function<Var, BooleanFormula<Var>> replacer) {
+	public BooleanReplacer(Function<BooleanFormula<Var1>, BooleanFormula<Var2>> recurse, BooleanWorker worker, Function<Var1, BooleanFormula<Var2>> replacer) {
 		this.recurse = recurse;
 		this.worker = worker;
 		this.replacer = replacer;
 	}
 
-	protected BooleanFormula<Var> visitBinaryFunc(BinaryBooleanFormula<Var> node, BinaryOperation op) {
-		BooleanFormula<Var> x = recurse.apply(node.getX());
-		BooleanFormula<Var> y = recurse.apply(node.getY());
-		if(node.getX() == x && node.getY() == y)
-			return node;
-		else
-			return op.apply(x, y);
+	protected BooleanFormula<Var2> visitBinaryFunc(BinaryBooleanFormula<Var1> node, BinaryOperation op) {
+		BooleanFormula<Var2> x = recurse.apply(node.getX());
+		BooleanFormula<Var2> y = recurse.apply(node.getY());
+		return op.apply(x, y);
 	}
 	
 	interface BinaryOperation
@@ -104,7 +101,7 @@ public class BooleanReplacer<Var> extends BooleanVisitor<Var, BooleanFormula<Var
 	}
 	
 	@Override
-	public BooleanFormula<Var> visit(And<Var> node) {
+	public BooleanFormula<Var2> visit(And<Var1> node) {
 		return visitBinaryFunc(node, new BinaryOperation()
 		{
 			@Override
@@ -115,7 +112,7 @@ public class BooleanReplacer<Var> extends BooleanVisitor<Var, BooleanFormula<Var
 	}
 	
 	@Override
-	public BooleanFormula<Var> visit(Or<Var> node) {
+	public BooleanFormula<Var2> visit(Or<Var1> node) {
 		return visitBinaryFunc(node, new BinaryOperation()
 		{
 			@Override
@@ -126,12 +123,12 @@ public class BooleanReplacer<Var> extends BooleanVisitor<Var, BooleanFormula<Var
 	}
 	
 	@Override
-	public BooleanFormula<Var> visit(Variable<Var> var) {
+	public BooleanFormula<Var2> visit(Variable<Var1> var) {
 		return replacer.apply(var.variable());
 	}
 
 	@Override
-	public BooleanFormula<Var> visit(Iff<Var> node) {
+	public BooleanFormula<Var2> visit(Iff<Var1> node) {
 		return visitBinaryFunc(node, new BinaryOperation()
 		{
 			@Override
@@ -142,7 +139,7 @@ public class BooleanReplacer<Var> extends BooleanVisitor<Var, BooleanFormula<Var
 	}
 
 	@Override
-	public BooleanFormula<Var> visit(Xor<Var> node) {
+	public BooleanFormula<Var2> visit(Xor<Var1> node) {
 		return visitBinaryFunc(node, new BinaryOperation()
 		{
 			@Override
@@ -153,26 +150,23 @@ public class BooleanReplacer<Var> extends BooleanVisitor<Var, BooleanFormula<Var
 	}
 
 	@Override
-	public BooleanFormula<Var> visit(Zero<Var> node) {
-		return node;
+	public BooleanFormula<Var2> visit(Zero<Var1> node) {
+		return Zero.instance();
 	}
 
 	@Override
-	public BooleanFormula<Var> visit(One<Var> node) {
-		return node;
+	public BooleanFormula<Var2> visit(One<Var1> node) {
+		return One.instance();
 	}
 
 	@Override
-	public BooleanFormula<Var> visit(Not<Var> node) {
-		BooleanFormula<Var> x = recurse.apply(node.getX());
-		if(node.getX() == x)
-			return node;
-		else
-			return worker.not(x);
+	public BooleanFormula<Var2> visit(Not<Var1> node) {
+		BooleanFormula<Var2> x = recurse.apply(node.getX());
+		return worker.not(x);
 	}
 
 	@Override
-	public BooleanFormula<Var> visit(Imply<Var> node) {
+	public BooleanFormula<Var2> visit(Imply<Var1> node) {
 		return visitBinaryFunc(node, new BinaryOperation()
 		{
 			@Override

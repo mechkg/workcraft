@@ -1,7 +1,5 @@
 package org.workcraft.plugins.cpog.scala.nodes.snapshot
 
-import org.workcraft.dependencymanager.advanced.core.Expression
-import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.exceptions.NotImplementedException
 import org.workcraft.plugins.cpog.optimisation.booleanvisitors.VariableReplacer
 import org.workcraft.plugins.cpog.optimisation.BooleanFormula
@@ -12,6 +10,7 @@ import org.workcraft.scala.Util._
 import org.workcraft.scala.Scalaz._
 import java.util.UUID
 import java.awt.geom.Point2D
+import org.workcraft.plugins.cpog.scala.BooleanFormulaInstances._
 
 import scala.collection.immutable.Map
 
@@ -46,13 +45,12 @@ object SnapshotMaker {
     l.foldRight(emptyBuilder(Nil:List[T]))((h, t) => for(h <- h; t <- t) yield h :: t)
   }
   
-  def makeSnapshot(nodes: Expression[_ <: java.lang.Iterable[_ <: M.Node]]) : CPOG = {
-    System.out.println("getting cpog")
-    GlobalCache.eval(
+  def makeSnapshot(nodes: Expression[List[M.Node]]) : CPOG = {
+    eval(
     (for(
       nodes <- nodes;
-      cpog <- doMakeSnapshot(javaCollectionToList[M.Node](nodes))
-      ) yield {System.out.println("here is your cpog"); cpog}))
+      cpog <- doMakeSnapshot(nodes)
+      ) yield {cpog}))
   }
   
   def doMakeSnapshot(nodes : List[M.Node]) : Expression[CPOG] = {
@@ -125,7 +123,7 @@ object SnapshotMaker {
   def makeVisualArcSnapshot(visualArc : MVisualArc) : Expression[VisualArc] = {
     visualArc match {
       case MVisualArc.Bezier(cp1, cp2) => for(cp1 <- cp1; cp2 <- cp2) yield VisualArc.Bezier(cp1, cp2)
-      case MVisualArc.Polyline(cps) => for(cps <- (cps : List[Expression[Point2D]]).sequence[Expression, Point2D](
+      case MVisualArc.Polyline(cps) => for(cps <- (for( me <- cps) yield me.expr).sequence[Expression, Point2D](
     		  implicitly[<:<[Expression[Point2D],Expression[Point2D]]], 
     		  implicitly[scalaz.Traverse[List]], 
     		  implicitly[scalaz.Applicative[Expression]])
@@ -201,6 +199,6 @@ object SnapshotMaker {
   }
 
   def makeSnapshot(condition: BooleanFormula[M.Variable]): CpogBuilder[BooleanFormula[Id[Variable]]] = {
-    JoinBooleanFormula.joinBooleanFormula(VariableReplacer.replace(asFunctionObject((v: M.Variable) => snapshotVariable(v)), condition))
+    (for(v <- condition) yield snapshotVariable(v)).sequence
   }
 }

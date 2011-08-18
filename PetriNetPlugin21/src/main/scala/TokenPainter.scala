@@ -1,20 +1,21 @@
 package org.workcraft.plugins.petri21
 
-import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.graphics.RichGraphicalContent
 import org.workcraft.scala.Expressions._
 import org.workcraft.scala.Scalaz._
 import org.workcraft.plugins.shared.CommonVisualSettings
 import org.workcraft.graphics.Graphics._
+import java.awt.Color
+import java.awt.Font
 
 object TokenPainter {
   def image(tokens: Expression[Int]): Expression[RichGraphicalContent] =
     for (
       tokens <- tokens;
-      size <- CommonVisualSettings.size;
-      strokeWidth <- CommonVisualSettings.strokeWidth;
-      foreColor <- CommonVisualSettings.foregroundColor;
-      font <- CommonVisualSettings.serifFont;
+      size <- CommonVisualSettings.size : Expression[java.lang.Double];
+      strokeWidth <- CommonVisualSettings.strokeWidth : Expression[java.lang.Double];
+      foreColor <- CommonVisualSettings.foregroundColor : Expression[Color];
+      font <- CommonVisualSettings.serifFont : Expression[Font];
       val singleTokenSize = size / 1.9;
       val multipleTokenSeparation = strokeWidth / 8
     ) yield if (tokens == 0)

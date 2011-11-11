@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.w3c.dom.Element;
-import org.workcraft.annotations.Annotations;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.visual.DependentNode;

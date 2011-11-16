@@ -1,8 +1,13 @@
 import org.workcraft.pluginmanager.Plugin
-
-package org.workcraft.pluginmanager {
+ 
+/*
+// Commented because otherwise they get on the default class-path
+ 
+package org.workcraft.plugins {
   class NotAPlugin
-  class GoodPlugin extends Plugin
+  class GoodPluginA extends Plugin
+  class GoodPluginB extends Plugin
+  class GoodPluginC extends Plugin
   abstract class AbstractPlugin extends Plugin
   class PluginWithNoDefaultConstructor(val x: Int) extends Plugin
 }
@@ -10,3 +15,4 @@ package org.workcraft.pluginmanager {
 package somepackage {
   class PluginInAWrongPackage extends Plugin
 }
+*/

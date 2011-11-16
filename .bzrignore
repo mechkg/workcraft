@@ -9,10 +9,10 @@ config
 desij.logfile*
 generated
 /.metadata
-*.jar
 
 target
 .project
 .classpath
 .settings
 .scala_dependencies
+.cache

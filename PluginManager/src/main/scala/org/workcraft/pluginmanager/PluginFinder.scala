@@ -7,7 +7,7 @@ import java.util.Enumeration
 import java.lang.reflect.Modifier
 import java.net.URL
 
-object PluginFinder {
+class PluginFinder(val packages: Traversable[String]) {
   def isClass(file: File): Boolean = file.getName.endsWith(".class")
   def isJar(file: File): Boolean = file.getName.endsWith(".jar")
 
@@ -18,59 +18,50 @@ object PluginFinder {
     }
   }
 
-  def searchClassPath(packages: List[String]) : Seq[Class[_]] = {
-	 val classPathLocations = System.getProperty("java.class.path").split(System.getProperty("path.separator")).toSeq
-	 
-	 classPathLocations.flatMap (searchPath)
-  }
-  
-  def searchPath (path: String) : Seq[Class[_]] = search (new File(path))
+  /**
+   * Takes a file system name and converts it into a class name provided that
+   * it is contained in one of the packages whose names are passed to the
+   * constructor.
+   * @return Some string if the class name was successfully extracted or
+   * None otherwise
+   */
+  def className(path: String): Option[String] = {
+    val dotSeparatedName =
+      if (path.endsWith(".class"))
+        Some(path.replace(File.separatorChar, '.').replace('/', '.').substring(0, path.length() - ".class".length))
+      else
+        None
 
-  def search(file: File): Seq[Class[_]] = {
+    for (
+      n <- dotSeparatedName;
+      pack <- packages.find(n.contains(_))
+    ) yield n.substring(n.lastIndexOf(pack))
+  }
+
+  def searchClassPath(): Traversable[String] = {
+    val classPathLocations = System.getProperty("java.class.path").split(System.getProperty("path.separator")).toList
+    
+    // duplicates may appear because the same location may be reachable
+    // from several locations listed in the class path
+    classPathLocations.flatMap(searchPath).distinct
+  }
+
+  def searchPath(path: String): Traversable[String] = search(new File(path))
+
+  def search(file: File): Traversable[String] = {
     if (file.isDirectory)
-      file.listFiles(classFileFilter).toSeq.flatMap(search)
+      file.listFiles(classFileFilter).toList.flatMap(search)
     else if (file.isFile) {
       if (isClass(file)) {
-        processClass(className(file.getPath()))
+        className(file.getPath())
       } else if (isJar(file)) {
         val entries = new JarFile(file).entries()
-        val seq = scala.collection.mutable.Seq()
+        val buffer = scala.collection.mutable.ListBuffer[Option[String]]()
 
-        while (entries.hasMoreElements()) seq :+ className(entries.nextElement.getName)
+        while (entries.hasMoreElements()) { buffer += className(entries.nextElement.getName) }
 
-        seq.flatMap(processClass)
+        buffer.toList.flatten
       } else Nil
     } else Nil
-  }
-
-  def className(path: String) = {
-    val name = if (path.startsWith(File.separator))
-      path.substring(File.separator.length());
-    else
-      path
-
-    name.replace(File.separatorChar, '.').replace('/', '.').substring(0, name.length() - ".class".length)
-  }
-
-  def processClass(className: String): Seq[Class[_]] = {
-    try {
-      val cls = Class.forName(className)
-
-      if (!Modifier.isAbstract(cls.getModifiers()) && classOf[Plugin].isAssignableFrom(cls)) {
-        val defCons = cls.getConstructor()
-        Seq(cls)
-      } else
-        Nil
-
-    } catch {
-      case e: NoSuchMethodException =>
-        {
-          System.err.println("Plugin " + className + " does not have a default constructor. skipping.")
-          Nil
-        }
-      case e =>
-        System.err.println("Bad class " + className + ": " + e.getMessage())
-        Nil
-    }
   }
 }

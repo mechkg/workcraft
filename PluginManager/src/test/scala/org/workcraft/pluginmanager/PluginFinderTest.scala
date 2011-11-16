@@ -6,11 +6,35 @@ import org.workcraft.pluginmanager.PluginFinder
 @RunWith(classOf[JUnitRunner])
 class PluginFinderTest extends Spec {
   describe("PluginFinder") {
-   
-    it("should pop values in last-in-first-out order") {
-      PluginFinder.searchClassPath(List("org.workcraft")) map println  
+    val classPathLocations = System.getProperty("java.class.path").split(System.getProperty("path.separator")).toList
+
+    println("Class path location: " + classPathLocations)
+
+    val result = new PluginFinder(List("org.workcraft.plugins")).searchClassPath()
+
+    println(result)
+
+    it("should have found the GoodPlugin A directly in a classpath folder") {
+      assert(result.exists(_.equals("org.workcraft.plugins.GoodPluginA")))
+    }
+    it("should have found the GoodPlugin B in a subfolder of a classpath folder") {
+      assert(result.exists(_.equals("org.workcraft.plugins.GoodPluginB")))
+    }
+    it("should have found the Bad class in a subfolder of a classpath folder") {
+      assert(result.exists(_.equals("org.workcraft.plugins.Bad")))
+    }
+    it("should have found the AbstractPlugin") {
+      assert(result.exists(_.equals("org.workcraft.plugins.AbstractPlugin")))
+    }
+    it("should have found the GoodPlugin C in a jar file on the classpath") {
+      assert(result.exists(_.equals("org.workcraft.plugins.GoodPluginC")))
+    }
+    it("should have found the NotAPlugin in a jar file on the classpath") {
+      assert(result.exists(_.equals("org.workcraft.plugins.NotAPlugin")))
     }
 
-    it("should throw NoSuchElementException if an empty stack is popped") (pending)
+    it("should have ignored the PluginInAWrongPackage") {
+      assert(!result.exists(_.equals("somepackage.PluginInAWrongPackage")))
+    }
   }
 }

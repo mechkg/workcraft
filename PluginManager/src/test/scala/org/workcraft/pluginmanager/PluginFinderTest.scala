@@ -1,7 +1,8 @@
+package org.workcraft.pluginmanager
+
 import org.scalatest.Spec
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.workcraft.pluginmanager.PluginFinder
 
 @RunWith(classOf[JUnitRunner])
 class PluginFinderTest extends Spec {

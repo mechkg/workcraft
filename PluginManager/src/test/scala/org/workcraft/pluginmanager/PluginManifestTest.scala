@@ -55,9 +55,9 @@ class PluginManifestTest extends Spec {
     }
 
     it("should correctly read back the manifest that it has written") {
-      PluginManifest.write(guid1, "target/test-classes/manifest", List("org.workcraft.GoodPluginA", "org.workcraft.GoodPluginB")) match {
+      PluginManifest.write(guid1, "target/test-classes/testManifest", List("org.workcraft.GoodPluginA", "org.workcraft.GoodPluginB")) match {
         case Some(error) => fail("did not expect an error value while writing, got " + error.getClass().getSimpleName())
-        case None => PluginManifest.read(guid1, "target/test-classes/manifest") match {
+        case None => PluginManifest.read(guid1, "target/test-classes/testManifest") match {
           case Left(x) => fail("did not expect an error value while reading, got " + x.getClass().getSimpleName())
           case Right(list) => assert(correct(list))
         }

@@ -49,26 +49,38 @@
 					<executions>
 						<execution>
 							<id>scala-compile</id>
-							<phase>test-compile</phase>
+							<phase>compile</phase>
 							<goals>
-								<goal>cc</goal>
+								<goal>compile</goal>
 							</goals>
 							<configuration>
-								<useFsc>true</useFsc>
-								<once>true</once>
+								<displayCmd>true</displayCmd>
 							</configuration>
 						</execution>
+				<!--		<execution>
+							<id>scala-test-compile</id>
+							<phase>test-compile</phase>
+							<goals>
+								<goal>cctest</goal>
+							</goals>
+							<configuration>
+							        <displayCmd>true</displayCmd>
+								<useFsc>false</useFsc>
+								<once>true</once>
+							</configuration>
+						</execution> -->
 
 						<execution>
 							<id>scala-test-compile</id>
 							<phase>test-compile</phase>
 							<goals>
-								<goal>cc</goal>
+								<goal>testCompile</goal>
 							</goals>
 							<configuration>
-								<mainSourceDir>${project.build.sourceDirectory}/../../test/scala</mainSourceDir>
-								<useFsc>true</useFsc>
-								<once>true</once>
+							<!--	<mainSourceDir>${project.build.sourceDirectory}/../../test/scala</mainSourceDir>-->
+								<displayCmd>true</displayCmd>
+							<!--	<useFsc>true</useFsc>
+								<once>true</once>-->
 							</configuration>
 						</execution>
 					</executions>

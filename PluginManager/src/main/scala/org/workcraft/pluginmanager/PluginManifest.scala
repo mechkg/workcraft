@@ -14,18 +14,19 @@ import scala.collection.mutable.ListBuffer
 sealed trait ManifestReadError
 
 object ManifestReadError {
+  case class Empty() extends ManifestReadError
   case class VersionMismatch() extends ManifestReadError
   case class Exception(e: Throwable) extends ManifestReadError
 }
 
 object PluginManifest {
-  def write(version: UUID, path: String, plugins: Traversable[Class[_]]) : Option[Throwable] = {
+  def write(version: UUID, path: String, plugins: Traversable[String]) : Option[Throwable] = {
     try {
       val writer = new PrintWriter(path, "UTF-8")
 
       writer.println(version.toString())
 
-      plugins.foreach(cls => writer.println(cls.getName))
+      plugins.foreach(writer.println(_))
 
       writer.close()
       
@@ -50,7 +51,7 @@ object PluginManifest {
         val manifestString = reader.readLine()
 
         if (manifestString == null)
-          Left(ManifestReadError.VersionMismatch())
+          Left(ManifestReadError.Empty())
         else if (!UUID.fromString(manifestString).equals(version))
           Left(ManifestReadError.VersionMismatch())
         else Right(readList)

@@ -20,7 +20,7 @@
   	<dependency>
   		<groupId>org.workcraft</groupId>
   		<artifactId>PluginManager</artifactId>
-  		<version>2.1-SNAPSHOT</version>
+  		<version>1.0-SNAPSHOT</version>
   	</dependency>
   </dependencies>
 </project>

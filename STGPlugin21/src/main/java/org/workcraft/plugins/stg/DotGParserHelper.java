@@ -1,26 +1,24 @@
 package org.workcraft.plugins.stg;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dom.Node;
-import org.workcraft.dom.references.ReferenceManager;
-import org.workcraft.exceptions.FormatException;
-import org.workcraft.exceptions.InvalidConnectionException;
-import org.workcraft.plugins.stg.SignalTransition.Direction;
-import org.workcraft.plugins.stg.SignalTransition.Type;
-import org.workcraft.plugins.stg.javacc.generated.DotGParser;
 import org.workcraft.plugins.stg.javacc.generated.ParseException;
 import org.workcraft.util.Pair;
 import org.workcraft.util.Triple;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+public interface DotGParserHelper<Place,Node> {
 
-public class DotGParserHelper {
+	Place getPlace(String name) throws ParseException;
+	Node getOrCreate (String name) throws ParseException;
+	Node getOrCreate (Pair<String, Integer> ref) throws ParseException;
+	Node getOrCreate (Triple<String, Direction, Integer> ref) throws ParseException;
+	void createArc (Node first, Node second);
+	void setSignalsType (List<String> list, Type type) throws ParseException;
+	Place getImplicitPlace(Node t1, Node t2) throws ParseException;
+	void setCapacity(Place p, int capacity);
+	void setMarking(Place p, int marking);
 
-	private Map<String, Type> signals;
+/*	private Map<String, Type> signals;
 	private Map<Pair<Node, Node>, STGPlace> implicitPlaces;
 	public STG stg;
 	private final DotGParser parser;
@@ -152,4 +150,6 @@ public class DotGParserHelper {
 		return place;
 	}
 	
+}
+*/
 }

@@ -31,44 +31,6 @@ import org.workcraft.plugins.petri.Transition;
 @VisualClass(VisualSignalTransition.class)
 public class SignalTransition extends Transition implements StgTransition 
 {
-	public enum Type {
-		INPUT,
-		OUTPUT,
-		INTERNAL,
-		DUMMY
-	}
-
-	public enum Direction {
-		PLUS,
-		MINUS,
-		TOGGLE;
-		
-		public static Direction fromString(String s) {
-			if (s.equals("+"))
-				return PLUS;
-			else if (s.equals("-"))
-				return MINUS;
-			else if (s.equals("~"))
-				return TOGGLE;
-			
-			throw new ArgumentException ("Unexpected string: " + s);
-		}
-	
-	
-		@Override public String toString() {
-			switch(this)
-			{
-			case PLUS:
-				return "+";
-			case MINUS:
-				return "-";
-			case TOGGLE:
-				return "~"; 
-			default:
-				throw new NotSupportedException();
-			}
-		}
-	}
 
 	public SignalTransition(StorageManager storage) {
 		super(storage);

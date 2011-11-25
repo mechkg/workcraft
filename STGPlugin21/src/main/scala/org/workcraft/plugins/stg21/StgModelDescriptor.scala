@@ -13,8 +13,9 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 
 object StgModelDescriptor extends ModelDescriptor {
 	val getDisplayName : String = "Signal Transition Graph";
-	def newDocument : ModelServices = {
-	  val visualModel : ModifiableExpression[VisualStg] = Variable.create(VisualStg.empty)
+	def newDocument : ModelServices = newDocument(VisualStg.empty)
+	def newDocument (stg : VisualStg) = {
+	  val visualModel : ModifiableExpression[VisualStg] = Variable.create(stg)
 	  ModelServicesImpl.EMPTY.plus(GraphEditable.SERVICE_HANDLE, new StgGraphEditable(visualModel))
 	}
 	def createServiceProvider(model : Model, storage : StorageManager) : ModelServices = { throw new NotSupportedException(); };

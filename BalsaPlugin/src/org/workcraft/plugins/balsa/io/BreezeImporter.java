@@ -33,6 +33,7 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.exceptions.DeserialisationException;
 import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.interop.Importer;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.parsers.breeze.BreezeDefinition;
 import org.workcraft.parsers.breeze.BreezeLibrary;
@@ -106,7 +107,7 @@ public class BreezeImporter implements Importer
 	}
 	
 	@Override
-	public ServiceProvider importFrom(InputStream in) throws DeserialisationException, IOException 
+	public ModelServices importFrom(InputStream in) throws DeserialisationException, IOException 
 	{
 		try {
 			DefaultStorageManager storage = new DefaultStorageManager();

@@ -20,12 +20,22 @@
 */
 package org.workcraft.plugins.balsa;
 
-import org.workcraft.dom.math.MathConnection;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.parsers.breeze.Connection;
 
 public class BreezeConnection implements Connection<BreezeHandshake> {
 
-	private final MathConnection connection;
+	@Override
+	public BreezeHandshake getFirst() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public BreezeHandshake getSecond() {
+		throw new NotImplementedException();
+	}
+
+	/*private final MathConnection connection;
 
 	public BreezeConnection(MathConnection connection)
 	{
@@ -40,6 +50,6 @@ public class BreezeConnection implements Connection<BreezeHandshake> {
 	@Override
 	public BreezeHandshake getSecond() {
 		return (BreezeHandshake) connection.getSecond();
-	}
+	}*/
 
 }

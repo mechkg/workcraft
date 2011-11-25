@@ -28,10 +28,7 @@ import java.util.Map;
 import org.workcraft.annotations.CustomTools;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
-import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathNode;
-import org.workcraft.dom.visual.AbstractVisualModel;
-import org.workcraft.dom.visual.connections.Polyline;
 import org.workcraft.dom.visual.connections.VisualConnection;
 import org.workcraft.exceptions.InvalidConnectionException;
 import org.workcraft.exceptions.NotImplementedException;
@@ -40,23 +37,22 @@ import org.workcraft.plugins.balsa.components.DynamicComponent;
 import org.workcraft.util.Hierarchy;
 
 @CustomTools(VisualBalsaTools.class)
-public final class VisualBalsaCircuit extends AbstractVisualModel {
+public final class VisualBalsaCircuit {
 	public VisualBalsaCircuit(BalsaCircuit model, StorageManager storage) throws VisualModelInstantiationException {
-		super(model, storage);
-
+		
 		Map<MathNode, VisualHandshake> visuals = new HashMap<MathNode, VisualHandshake>();
 		
 		for(BreezeComponent component : model.getComponents())
 		{
 			VisualBreezeComponent visual = new VisualBreezeComponent(component, storage);
-			add(visual);
+			if(true)throw new NotImplementedException();//add(visual);
 			
 			for(VisualHandshake hc : visual.visualHandshakes.values())
 				visuals.put(hc.getReferencedComponent(), hc);
 		}
 		
-		
-		for(MathConnection connection : model.getConnections()) {
+		throw new NotImplementedException();
+		/*for(MathConnection connection : model.getConnections()) {
 			VisualConnection visualConnection = new VisualConnection(storage);
 			
 			VisualHandshake first = visuals.get(connection.getFirst());
@@ -66,9 +62,9 @@ public final class VisualBalsaCircuit extends AbstractVisualModel {
 					second, new Polyline(visualConnection, storage), connection);
 			//VisualConnection visualConnection = new VisualConnection(connection, visuals.get(connection.getFirst()), visuals.get(connection.getSecond()));
 			add(visualConnection);
-		}
+		}*/
 	}
-
+	/*
 	@Override
 	public void validateConnection(Node first, Node second)
 			throws InvalidConnectionException {
@@ -91,11 +87,11 @@ public final class VisualBalsaCircuit extends AbstractVisualModel {
 				secondHandshake.getHandshakeComponent() );
 		
 		add(Hierarchy.getNearestContainer(first, second), new VisualConnection(connect, firstHandshake, secondHandshake, storage));
-	}
+	}*/
 
 	public VisualBreezeComponent createComponent(String componentName, Point2D where) {
 		if(true)throw new NotImplementedException();
-		BreezeComponent comp = new BreezeComponent(storage); 
+		BreezeComponent comp = new BreezeComponent(null); 
 		DynamicComponent instance = null;
 		try {
 			//TODO: Instantiate a DynamicComponent

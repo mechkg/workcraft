@@ -13,10 +13,12 @@ import java.util.Set;
 import org.workcraft.dom.Model;
 import org.workcraft.dom.Node;
 import org.workcraft.exceptions.ModelValidationException;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.exceptions.NotSupportedException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.interop.ExportJob;
 import org.workcraft.interop.Exporter;
+import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.interop.ServiceProvider;
 import org.workcraft.plugins.balsa.VisualBreezeComponent;
@@ -29,7 +31,7 @@ public class DotExporter implements Exporter {
 
 
 	@Override
-	public ExportJob getExportJob(ServiceProvider modelServices) throws ServiceNotAvailableException {
+	public ExportJob getExportJob(ModelServices modelServices) throws ServiceNotAvailableException {
 		final LayoutableBalsaCircuit layoutable = modelServices.getImplementation(LayoutableBalsaCircuit.SERVICE_HANDLE);
 		final Model model = layoutable.getModel();
 		
@@ -53,7 +55,8 @@ public class DotExporter implements Exporter {
 								VisualBreezeComponent comp = (VisualBreezeComponent) n;
 								final String id = eval(model.referenceManager()).getNodeReference(comp);
 								if(id!=null) {
-									final Rectangle2D bb = eval(layoutable.getTouchableProvider().apply(comp)).getBoundingBox();
+									
+									final Rectangle2D bb; if(true)throw new NotImplementedException(); // = eval(layoutable.getTouchableProvider().apply(comp)).getBoundingBox();
 									if(bb!=null) {
 										
 										final ArrayList<String> destinations = new ArrayList<String>(); 

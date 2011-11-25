@@ -21,33 +21,29 @@
 
 package org.workcraft.plugins.balsa.stgmodelstgbuilder;
 
-import org.workcraft.dom.math.MathNode;
-import org.workcraft.exceptions.InvalidConnectionException;
-import org.workcraft.plugins.balsa.handshakebuilder.Handshake;
-import org.workcraft.plugins.balsa.stgbuilder.Event;
-import org.workcraft.plugins.balsa.stgbuilder.InputOutputEvent;
-import org.workcraft.plugins.balsa.stgbuilder.SignalId;
-import org.workcraft.plugins.balsa.stgbuilder.StgBuilder;
-import org.workcraft.plugins.balsa.stgbuilder.StgPlace;
-import org.workcraft.plugins.balsa.stgbuilder.StgSignal;
-import org.workcraft.plugins.stg.STG;
-import org.workcraft.plugins.stg.STGPlace;
-import org.workcraft.plugins.stg.SignalTransition;
-import org.workcraft.plugins.stg.SignalTransition.Direction;
-import org.workcraft.plugins.stg.SignalTransition.Type;
+import org.workcraft.dom.math.MathNode
+import org.workcraft.exceptions.InvalidConnectionException
+import org.workcraft.plugins.balsa.handshakebuilder.Handshake
+import org.workcraft.plugins.balsa.stgbuilder.Event
+import org.workcraft.plugins.balsa.stgbuilder.InputOutputEvent
+import org.workcraft.plugins.balsa.stgbuilder.SignalId
+import org.workcraft.plugins.balsa.stgbuilder.StgBuilder
+import org.workcraft.plugins.balsa.stgbuilder.StgPlace
+import org.workcraft.plugins.balsa.stgbuilder.StgSignal
+import org.workcraft.plugins.stg21.types.VisualStg
 
-public class StgModelStgBuilder implements StgBuilder {
+class StgModelStgBuilder (nameProvider : NameProvider[_ <: Handshake]) extends StgBuilder {
+  var visualStg : VisualStg = VisualStg.empty;
 
-	private final STG model;
-	NameProvider<? super Handshake> nameProvider;
-
-	public StgModelStgBuilder(STG model, NameProvider<? super Handshake> nameProvider)
-	{
-		this.model = model;
-		this.nameProvider = nameProvider;
-	}
-
-	public void addConnection(StgModelStgPlace source, StgModelStgTransition destination)
+  
+  	def buildPlace(tokenCount : Int) : StgPlace = {}
+	def buildTransition : InputOutputEvent = {}
+	def buildSignal(id : SignalId, isOutput : Boolean) : StgSignal = {}
+	def connect(place : StgPlace , Event transition) : Unit = qweqwe
+	def connect(Event transition, StgPlace place) : Unit = qweqwe
+	def addReadArc(StgPlace place, Event transition) : Unit = qweqwe
+	def connect(Event t1, Event t2) : Unit = qweqw
+  /*public void addConnection(StgModelStgPlace source, StgModelStgTransition destination)
 	{
 		addConnection(source.getPetriPlace(), destination.getModelTransition().getTransition());
 	}
@@ -134,5 +130,5 @@ public class StgModelStgBuilder implements StgBuilder {
 	@Override
 	public StgPlace buildPlace(int tokenCount) {
 		return buildStgPlace(tokenCount);
-	}
+	}*/
 }

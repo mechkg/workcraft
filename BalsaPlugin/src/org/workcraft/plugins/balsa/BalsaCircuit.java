@@ -33,11 +33,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.dom.AbstractModel;
 import org.workcraft.dom.Connection;
-import org.workcraft.dom.math.MathConnection;
 import org.workcraft.dom.math.MathModel;
 import org.workcraft.exceptions.InvalidConnectionException;
+import org.workcraft.exceptions.NotImplementedException;
+import org.workcraft.interop.ModelService;
 import org.workcraft.interop.ServiceHandle;
 import org.workcraft.parsers.breeze.Netlist;
 import org.workcraft.plugins.balsa.components.DynamicComponent;
@@ -51,14 +51,13 @@ import org.workcraft.plugins.balsa.handshakebuilder.PushHandshake;
 import org.workcraft.plugins.balsa.handshakes.MainHandshakeMaker;
 import org.workcraft.util.Hierarchy;
 
-public final class BalsaCircuit extends AbstractModel implements MathModel {
+public final class BalsaCircuit {
 
-	public static ServiceHandle<BalsaCircuit> SERVICE_HANDLE = ServiceHandle.createNewService(BalsaCircuit.class, "A balsa circuit");
+	public static ModelService<BalsaCircuit> SERVICE_HANDLE = ModelService.createNewService(BalsaCircuit.class, "A balsa circuit");
 	
 	public final StorageManager storage;
 
 	public BalsaCircuit(StorageManager storage) {
-		super(null);
 		this.storage = storage;
 		
 		//TODO: do this somehow
@@ -83,11 +82,11 @@ public final class BalsaCircuit extends AbstractModel implements MathModel {
 		if(existing == component)
 			return;
 		
-		remove(existing);
+		throw new NotImplementedException(); /*remove(existing);
 		
 		handshakeComponents.put(handshake, component);
 		
-		component.getOwner().setHandshakeComponents(handshakeComponents);
+		component.getOwner().setHandshakeComponents(handshakeComponents);*/
 	}
 
 	private void createHandshakeComponents(BreezeComponent component) {
@@ -98,7 +97,7 @@ public final class BalsaCircuit extends AbstractModel implements MathModel {
 			Handshake handshake = handshakes.get(handshakeName);
 			BreezeHandshake hcomp = new BreezeHandshake(component, handshakeName, storage);
 			handshakeComponents.put(handshake, hcomp);
-			add(hcomp);
+			if(true) throw new NotImplementedException(); //add(hcomp);
 		}
 		component.setHandshakeComponents(handshakeComponents);
 		component.setHandshakes(handshakes);
@@ -107,10 +106,11 @@ public final class BalsaCircuit extends AbstractModel implements MathModel {
 	public void validateConnection(BreezeHandshake first, BreezeHandshake second)
 			throws InvalidConnectionException {
 		
-		if(eval(nodeContext()).getPostset(first).size() > 0 || eval(nodeContext()).getPreset(first).size() > 0 ||
+		if(true) throw new NotImplementedException(); //
+		/*if(eval(nodeContext()).getPostset(first).size() > 0 || eval(nodeContext()).getPreset(first).size() > 0 ||
 				eval(nodeContext()).getPostset(second).size() > 0 || eval(nodeContext()).getPreset(second).size() > 0)
 			throw new InvalidConnectionException("Cannot connect already connected handshakes");
-			
+			*/
 		Handshake h1 = first.getHandshake();
 		Handshake h2 = second.getHandshake();
 		
@@ -146,7 +146,7 @@ public final class BalsaCircuit extends AbstractModel implements MathModel {
 		}
 	}
 	
-	public MathConnection connect (BreezeHandshake first, BreezeHandshake second) throws InvalidConnectionException {
+	/*public MathConnection connect (BreezeHandshake first, BreezeHandshake second) throws InvalidConnectionException {
 		validateConnection(first, second);
 		
 		MathConnection con = new MathConnection(first, second, storage);
@@ -154,7 +154,7 @@ public final class BalsaCircuit extends AbstractModel implements MathModel {
 		add(Hierarchy.getNearestContainer(first, second), con);
 		
 		return con;
-	}
+	}*/
 	
 	private String getHandshakesDescription(BreezeHandshake first, BreezeHandshake second) {
 		return String.format("first: %s, %s; second: %s, %s", 
@@ -176,7 +176,7 @@ public final class BalsaCircuit extends AbstractModel implements MathModel {
 	}
 
 	public Connection getConnection(BreezeHandshake handshake) {
-		Set<Connection> connections = eval(nodeContext()).getConnections(handshake);
+		Set<Connection> connections; if(true) throw new NotImplementedException(); // = eval(nodeContext()).getConnections(handshake);
 		if(connections.size() > 1)
 			throw new RuntimeException("Handshake can't have more than 1 connection!");
 		if(connections.size() == 0)
@@ -197,23 +197,18 @@ public final class BalsaCircuit extends AbstractModel implements MathModel {
 	
 	public final Collection<BreezeComponent> getComponents()
 	{
-		return Hierarchy.getChildrenOfType(this.getRoot(), BreezeComponent.class);
+		 throw new NotImplementedException(); //return Hierarchy.getChildrenOfType(this.getRoot(), BreezeComponent.class);
 	}
 	
-	public final Collection<MathConnection> getConnections()
-	{
-		return Hierarchy.getChildrenOfType(this.getRoot(), MathConnection.class);
-	}
-
 	public BreezeComponent addNew(DynamicComponent component) 
 	{
 		BreezeComponent node = new BreezeComponent(storage);
 		node.setUnderlyingComponent(component);
-		add(node);
+		if(true) throw new NotImplementedException(); //add(node);
 		return node;
 	}
 	
-	public Netlist<BreezeHandshake, BreezeComponent, BreezeConnection> asNetlist()
+/*	public Netlist<BreezeHandshake, BreezeComponent, BreezeConnection> asNetlist()
 	{
 		return new Netlist<BreezeHandshake, BreezeComponent, BreezeConnection>()
 		{
@@ -248,5 +243,5 @@ public final class BalsaCircuit extends AbstractModel implements MathModel {
 				return new ArrayList<BreezeHandshake>(handshakes);
 			}
 		};
-	}
+	}*/
 }

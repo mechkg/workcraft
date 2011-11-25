@@ -69,7 +69,6 @@ public class BreezePart implements BreezeDefinition
 		for(int i=0;i<getChannels().size();i++)
 			connections[i] = new ArrayList<Port>();
 		
-		ArrayList<BreezeInstance<Port>> contained = new ArrayList<BreezeInstance<Port>>();
 		for(BreezePartReference part : resolve(library,getParts()))
 		{
 			BreezeInstance<Port> instance = part.definition().instantiate(library, factory, part.parameters());
@@ -79,7 +78,6 @@ public class BreezePart implements BreezeDefinition
 				for(Integer index : indices)
 					connections[index-1].add(instance.ports().get(referencedIndex++));
 			}
-			contained.add(instance);
 		}
 		
 		final List<Port> externalChannels = new ArrayList<Port>();
@@ -141,4 +139,3 @@ public class BreezePart implements BreezeDefinition
 		return name;
 	}
 }
-

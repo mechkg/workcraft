@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.workcraft.exceptions.InvalidConnectionException;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.plugins.balsa.BalsaCircuit;
 import org.workcraft.plugins.balsa.BreezeComponent;
 import org.workcraft.plugins.balsa.BreezeHandshake;
@@ -40,11 +41,12 @@ public class DefaultBreezeFactory implements BreezeFactory<BreezeHandshake> {
 
 	@Override
 	public void connect(BreezeHandshake port1, BreezeHandshake port2) {
-		try {
-			circuit.connect(port1, port2);
+		if(true)throw new NotImplementedException();
+		/*try {
+			//circuit.connect(port1, port2);
 		} catch (InvalidConnectionException e) {
 			throw new RuntimeException(e);
-		}
+		}*/
 	}
 
 	@Override
@@ -52,7 +54,8 @@ public class DefaultBreezeFactory implements BreezeFactory<BreezeHandshake> {
 	{
 		BreezeComponent comp = new BreezeComponent(circuit.storage);
 		comp.setUnderlyingComponent(new DynamicComponent(declaration, parameters));
-		circuit.add(comp);
+		if(true)throw new NotImplementedException();
+		//circuit.add(comp);
 		final ArrayList<BreezeHandshake> result = new ArrayList<BreezeHandshake>(); 
 		for(BreezeHandshake hs : comp.getHandshakeComponents().values())
 			result.add(hs);
@@ -63,5 +66,4 @@ public class DefaultBreezeFactory implements BreezeFactory<BreezeHandshake> {
 			}
 		};
 	}
-
 }

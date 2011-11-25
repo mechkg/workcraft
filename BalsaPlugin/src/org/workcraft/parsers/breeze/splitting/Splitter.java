@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.workcraft.dom.math.MathConnection;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.parsers.breeze.Netlist;
 import org.workcraft.plugins.balsa.BreezeComponent;
@@ -152,8 +151,8 @@ public class Splitter {
 	}
 
 	private BreezeConnection connect(BreezeHandshake p1, BreezeHandshake p2) {
-		if(true)throw new NotImplementedException();
-		return new BreezeConnection(new MathConnection(p1, p2, null));
+		throw new NotImplementedException();
+		//return new BreezeConnection(new MathConnection(p1, p2, null));
 	}
 	
 	private BreezeConnection tryConn(BreezeHandshake p1, BreezeHandshake p2) {

@@ -11,18 +11,17 @@ import org.workcraft.interop.Importer;
 import org.workcraft.plugins.balsa.io.BreezeImporter;
 import org.workcraft.plugins.balsa.io.DotExporter;
 
-import tools.ExtractControlSTG;
+import tools.ExtractSTG;
 
 public class BalsaPlugin implements Module {
 	@Override
 	public void init(final Framework framework) {
 		final PluginManager pluginManager = framework.getPluginManager();
 
-		pluginManager.registerClass(ModelDescriptor.class, BalsaModelDescriptor.class);
-		pluginManager.registerClass(Exporter.class, DotExporter.class);
-		pluginManager.registerClass(Importer.class, BreezeImporter.class);
-		pluginManager.registerClass(Tool.class, ExtractControlSTG.class, framework);
-		
+		pluginManager.registerClass(ModelDescriptor.GLOBAL_SERVICE_HANDLE, new BalsaModelDescriptor());
+		pluginManager.registerClass(Exporter.SERVICE_HANDLE, new DotExporter());
+		pluginManager.registerClass(Importer.SERVICE_HANDLE, new BreezeImporter());
+		pluginManager.registerClass(Tool.SERVICE_HANDLE, new ExtractSTG(framework));
 	}
 
 	@Override

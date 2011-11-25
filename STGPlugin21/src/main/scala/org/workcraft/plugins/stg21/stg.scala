@@ -43,7 +43,7 @@ object types {
   sealed trait Arc
   case class ConsumingArc(from : Id[Place], to : Id[Transition]) extends Arc
   case class ProducingArc(from : Id[Transition], to : Id[Place]) extends Arc
-  case class ImplicitPlaceArc[M[_]](from : Id[Transition], to : Id[Transition], initialMarking : Int) extends Arc
+  case class ImplicitPlaceArc(from : Id[Transition], to : Id[Transition], initialMarking : Int) extends Arc
 
   sealed trait StgConnectable
   case class NodeConnectable(n : StgNode) extends StgConnectable 
@@ -82,6 +82,16 @@ object types {
   
   class VisualArc
 
+  implicit def decorateVisualArc(arc : Arc) = new {
+    def firstAndSecond : (StgNode, StgNode) = arc match {
+      case ProducingArc(t, p) => (TransitionNode(t), PlaceNode(p))
+      case ConsumingArc(p, t) => (PlaceNode(p), TransitionNode(t))
+      case ImplicitPlaceArc(t1, t2, _) => (TransitionNode(t1), TransitionNode(t2))
+    }
+    def first = firstAndSecond._1
+    def second = firstAndSecond._2
+  }
+  
   case class Bezier(cp1: RelativePoint, cp2: RelativePoint) extends VisualArc
   case class Polyline(cp: List[Point2D]) extends VisualArc
   

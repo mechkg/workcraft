@@ -33,6 +33,7 @@ import org.workcraft.gui.graph.tools.SafeConnectionManager
 import org.workcraft.exceptions.InvalidConnectionException
 import org.workcraft.util.Action
 import org.workcraft.dom.visual.Touchable
+import org.workcraft.dom.visual.connections.VisualConnectionProperties
 
 class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends GraphEditable {
   def createTools (editor : GraphEditor) : java.lang.Iterable[_ <: GraphEditorTool] = {
@@ -87,24 +88,28 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
         override def visitJust(t : T) = Some(t)
       })
     }
-    
-    def visual(e : VisualEntity) = for (vstg <- visualStg : Expression[VisualStg];
-    		position <- entityMovableController(e).toOption.map(m => m.expr).getOrElse(constant(new Point2D.Double(0,0)))
-    ) yield {
-      (e match {
+
+
+    def visual(e : VisualEntity) : Expression[RichGraphicalContent] = for (vstg <- visualStg : Expression[VisualStg];
+    		position <- entityMovableController(e).toOption.map(m => m.expr).getOrElse(constant(new Point2D.Double(0,0)));
+    		result <- (e match {
         case NodeVisualEntity(n) => {
-          n match {
+          constant(n match {
             case StgVisualNode(PlaceNode(p)) => Visual.place(vstg.math.places.lookup(p).get)
             case StgVisualNode(TransitionNode(t)) => Visual.transition(t)(vstg).getOrElse(RichGraphicalContent.empty)
             case GroupVisualNode(g) => Graphics.rectangle(1, 1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE)) : RichGraphicalContent // todo: recursively draw all? 
-          }
+          })
         }
-        case ArcVisualEntity(a) => {
-          RichGraphicalContent.empty
+        case ArcVisualEntity(arcId) => {
+          (for(arc <- vstg.math.arcs.lookup(arcId)) yield{
+            val visual = vstg.visual.arcs.get(arcId).getOrElse(Polyline(Nil))          
+        	for (first  <- touchable(NodeVisualEntity(StgVisualNode(arc.first)));
+        	second <- touchable(NodeVisualEntity(StgVisualNode(arc.second)))
+           ) yield (VisualConnectionG.getConnectionGui(first, second, visual) : RichGraphicalContent) 
+          }).getOrElse(constant(RichGraphicalContent.empty))
         }
-      }
-          ).translate(position : Point2D)
-    }
+      })) yield result.translate(position : Point2D)
+    
     
     def touchable(n : VisualEntity) = for(v <- visual(n)) yield v.touchable
     
@@ -123,6 +128,7 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
     
     def connectableTouchable(c : StgConnectable) : Expression[Touchable] = c match { // TODO: deep!
       case NodeConnectable(n) => touchable(NodeVisualEntity(StgVisualNode(n)))
+      case ArcConnectable(a) => touchable(ArcVisualEntity(a))
     }
     
     val connectionTool = ConnectionTool.create[StgConnectable](stgConnectables, connectableTouchable, deepCenters, connectionController)

@@ -31,18 +31,21 @@ object types {
   }
 
   sealed trait Transition
-  case object DummyTransition extends Transition
+  case class DummyTransition(name : String) extends Transition
   case class SignalTransition(signal : Id[Signal], direction : TransitionDirection) extends Transition
   
   
   case class Signal(name : String, direction : SignalType)
-  case class Id[T] (id : Int)
+  case class Id[T] (id : Int) {
+    def upCast[B >: T] : Id[B] = Id(id)
+    def downCast[B <: T] : Id[B] = Id(id)
+  }
 
-  case class Place(initialMarking : Int)
+  case class ExplicitPlace(initialMarking : Int, name : String)
   
   sealed trait Arc
-  case class ConsumingArc(from : Id[Place], to : Id[Transition]) extends Arc
-  case class ProducingArc(from : Id[Transition], to : Id[Place]) extends Arc
+  case class ConsumingArc(from : Id[ExplicitPlace], to : Id[Transition]) extends Arc
+  case class ProducingArc(from : Id[Transition], to : Id[ExplicitPlace]) extends Arc
   case class ImplicitPlaceArc(from : Id[Transition], to : Id[Transition], initialMarking : Int) extends Arc
 
   sealed trait StgConnectable
@@ -66,26 +69,32 @@ object types {
     def remove[T](t : Id[T]) : State[Col[T], Boolean] = state (col => {
       (Col[T](col.map - t, col.nextFreeId), col.map.contains(t))
     })
+    def update[T](t : Id[T])(f : T => T) : State[Col[T], Boolean] = state (col => {
+      col.map.get(t) match {
+        case None => (col, false)
+        case Some(x) => (Col[T](col.map + (t -> f(x)), col.nextFreeId), true)
+      }
+    })
   }
 
   case class MathStg (
     signals : Col[Signal],
     transitions : Col[Transition],
-    places : Col[Place],
+    places : Col[ExplicitPlace],
     arcs : Col[Arc]
   )
   
   sealed trait StgNode
   
-  case class PlaceNode (p : Id[Place]) extends StgNode
+  case class ExplicitPlaceNode (p : Id[ExplicitPlace]) extends StgNode
   case class TransitionNode (t : Id[Transition]) extends StgNode
   
   class VisualArc
 
   implicit def decorateVisualArc(arc : Arc) = new {
     def firstAndSecond : (StgNode, StgNode) = arc match {
-      case ProducingArc(t, p) => (TransitionNode(t), PlaceNode(p))
-      case ConsumingArc(p, t) => (PlaceNode(p), TransitionNode(t))
+      case ProducingArc(t, p) => (TransitionNode(t), ExplicitPlaceNode(p))
+      case ConsumingArc(p, t) => (ExplicitPlaceNode(p), TransitionNode(t))
       case ImplicitPlaceArc(t1, t2, _) => (TransitionNode(t1), TransitionNode(t2))
     }
     def first = firstAndSecond._1

@@ -19,9 +19,9 @@ case class StgToolsProvider(visualStg : ModifiableExpression[VisualStg]) {
 	private final StgEditorState editorState;*/
 
   val generators = List(
-		  (StgOperations.createPlace(_ : Point2D), "images/icons/svg/place.svg", "Place", KeyEvent.VK_P),
+		  (StgOperations.createPlace(_ : Point2D, "p"), "images/icons/svg/place.svg", "Place", KeyEvent.VK_P),
 		  (StgOperations.createSignalTransition(_ : Point2D), "images/icons/svg/signal-transition.svg", "Signal Transition", KeyEvent.VK_T),
-		  (StgOperations.createDummyTransition(_ : Point2D), "images/icons/svg/transition.svg", "Dummy Transition", KeyEvent.VK_D)
+		  (StgOperations.createDummyTransition(_ : Point2D, "d"), "images/icons/svg/transition.svg", "Dummy Transition", KeyEvent.VK_D)
   )
   
   def mkNodeGeneratorTool(generator : (Point2D => State[VisualStg, Any], java.lang.String, java.lang.String, Int)) = {

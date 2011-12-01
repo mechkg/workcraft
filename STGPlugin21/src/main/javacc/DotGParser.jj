@@ -18,8 +18,8 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.plugins.stg.SignalTransition.Direction;
-import org.workcraft.plugins.stg.SignalTransition.Type;
+import org.workcraft.plugins.stg.Direction;
+import org.workcraft.plugins.stg.Type;
 import org.workcraft.plugins.stg.*;
 import org.workcraft.util.Pair;
 import org.workcraft.util.Triple;
@@ -155,7 +155,7 @@ Place explicitPlaceReference() :
 {
 	( t = <NAME> { name = t.image; } )
 	{
-		return helper.getPlace(name);
+		return helper.getExplicitPlace(name);
 	}
 }
 

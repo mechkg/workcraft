@@ -25,7 +25,7 @@ trait Field[W,P] {
   trait MathStgFields {
     val signals : Field[MathStg, Col[Signal]] = field (_.signals, x => _.copy(signals=x))
     val transitions : Field[MathStg, Col[Transition]] = field (_.transitions, x => _.copy(transitions=x))
-    val places : Field[MathStg, Col[Place]] = field (_.places, x => _.copy(places=x))
+    val places : Field[MathStg, Col[ExplicitPlace]] = field (_.places, x => _.copy(places=x))
     val arcs : Field[MathStg, Col[Arc]] = field (_.arcs, x => _.copy(arcs=x))
   }
   

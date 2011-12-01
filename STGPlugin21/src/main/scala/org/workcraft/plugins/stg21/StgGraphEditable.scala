@@ -68,11 +68,11 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
     }
     
     val stgNodes = for(v <- (visualStg : Expression[VisualStg])) yield {
-      v.math.places.keys.map(k => PlaceNode(k)) ::: v.math.transitions.keys.map(t => TransitionNode(t))
+      v.math.places.keys.map(k => ExplicitPlaceNode(k)) ::: v.math.transitions.keys.map(t => TransitionNode(t))
     }
     
     val visualNodes = for(v <- (visualStg : Expression[VisualStg])) yield {
-      ((v.math.places.keys.map(k => PlaceNode(k)) ::: v.math.transitions.keys.map(t => TransitionNode(t))).map(n => StgVisualNode(n)) ::: v.visual.groups.keys.map(g => GroupVisualNode(g))
+      ((v.math.places.keys.map(k => ExplicitPlaceNode(k)) ::: v.math.transitions.keys.map(t => TransitionNode(t))).map(n => StgVisualNode(n)) ::: v.visual.groups.keys.map(g => GroupVisualNode(g))
       )
     }
     val visualEntities = for(v <- (visualStg : Expression[VisualStg]); n <- visualNodes)
@@ -95,7 +95,7 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
     		result <- (e match {
         case NodeVisualEntity(n) => {
           constant(n match {
-            case StgVisualNode(PlaceNode(p)) => Visual.place(vstg.math.places.lookup(p).get)
+            case StgVisualNode(ExplicitPlaceNode(p)) => Visual.place(vstg.math.places.lookup(p).get)
             case StgVisualNode(TransitionNode(t)) => Visual.transition(t)(vstg).getOrElse(RichGraphicalContent.empty)
             case GroupVisualNode(g) => Graphics.rectangle(1, 1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE)) : RichGraphicalContent // todo: recursively draw all? 
           })

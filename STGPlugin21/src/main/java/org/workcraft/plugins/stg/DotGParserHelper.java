@@ -8,7 +8,7 @@ import org.workcraft.util.Triple;
 
 public interface DotGParserHelper<Place,Node> {
 
-	Place getPlace(String name) throws ParseException;
+	Place getExplicitPlace(String name) throws ParseException;
 	Node getOrCreate (String name) throws ParseException;
 	Node getOrCreate (Pair<String, Integer> ref) throws ParseException;
 	Node getOrCreate (Triple<String, Direction, Integer> ref) throws ParseException;

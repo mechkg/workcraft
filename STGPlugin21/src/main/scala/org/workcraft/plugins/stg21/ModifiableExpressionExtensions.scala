@@ -28,7 +28,7 @@ object modifiable {
   implicit def decorateModifiableMathStg (stg : ModifiableExpression[MathStg]) = new {
     val signals : ModifiableExpression[Col[Signal]] = stg.modifiableField ((_ : MathStg).signals) (x => _.copy(signals=x))
     val transitions : ModifiableExpression[Col[Transition]] = stg.modifiableField ((_ : MathStg).transitions) (x => _.copy(transitions=x))
-    val places : ModifiableExpression[Col[Place]] = stg.modifiableField ((_ : MathStg).places) (x => _.copy(places=x))
+    val places : ModifiableExpression[Col[ExplicitPlace]] = stg.modifiableField ((_ : MathStg).places) (x => _.copy(places=x))
     val arcs : ModifiableExpression[Col[Arc]] = stg.modifiableField ((_ : MathStg).arcs) (x => _.copy(arcs=x))
   }
   implicit def decorateModifiableVisualModel[N,A] (visual : ModifiableExpression[VisualModel[N,A]]) = new {

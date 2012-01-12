@@ -40,10 +40,10 @@ object Visual {
   
   def transition(t : Id[Transition])(stg : VisualStg) : Option[RichGraphicalContent] = {
     for(
-        t <- stg.math.transitions.lookup(t);
+        (t,inst) <- stg.math.transitions.lookup(t);
         res <- t match {
-          case DummyTransition(name) => Some(VisualDummyTransition.graphicalContent(name, None))
-          case SignalTransition(signalId, direction) => 
+          case DummyLabel(name) => Some(VisualDummyTransition.graphicalContent(name, None))
+          case SignalLabel(signalId, direction) => 
             for(sig <- stg.math.signals.lookup(signalId)) yield
             VisualSignalTransition.graphicalContent(sig.name + direction, sig.direction, None)// TODO: Background for simulation
         }

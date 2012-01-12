@@ -7,11 +7,12 @@ import org.workcraft.util.Maybe
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionBase
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
-
 import java.awt.geom.Point2D
 import org.workcraft.dom.visual.connections.RelativePoint
 import scala.collection.mutable.WeakHashMap
 import scalaz.State
+import org.workcraft.interop.ModelService
+import org.workcraft.dependencymanager.advanced.core.Expression
 
 object types {
   
@@ -30,9 +31,12 @@ object types {
     case object Toggle extends TransitionDirection
   }
 
-  sealed trait Transition
-  case class DummyTransition(name : String) extends Transition
-  case class SignalTransition(signal : Id[Signal], direction : TransitionDirection) extends Transition
+  type InstanceNumber = Int
+  type Transition = (TransitionLabel, InstanceNumber)
+  
+  sealed trait TransitionLabel
+  case class DummyLabel(name : String) extends TransitionLabel
+  case class SignalLabel(signal : Id[Signal], direction : TransitionDirection) extends TransitionLabel
   
   
   case class Signal(name : String, direction : SignalType)
@@ -76,7 +80,7 @@ object types {
       }
     })
   }
-
+  
   case class MathStg (
     signals : Col[Signal],
     transitions : Col[Transition],
@@ -137,6 +141,7 @@ object types {
     def removeNode[N,A](node : N) : State[VisualModel[N,A], Boolean] = state ((m : Map[N, VisualInfo]) => (m - node, m.contains(node))) .on(nodesInfo)
   }
   
+  val MATH_STG_SERVICE_HANDLE : ModelService[Expression[MathStg]] = ModelService.createNewService(classOf[Expression[MathStg]], "STG representation of the underlying model");
   object MathStg extends org.workcraft.plugins.stg21.fields.MathStgFields {
     val empty = MathStg(Col.empty, Col.empty, Col.empty, Col.empty)
   }

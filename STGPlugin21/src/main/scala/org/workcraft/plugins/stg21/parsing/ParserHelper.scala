@@ -17,13 +17,14 @@ import org.workcraft.plugins.stg21.StateExtensions._
 import org.workcraft.plugins.stg21.types.Transition
 import org.workcraft.plugins.stg21.types.ExplicitPlaceNode
 import org.workcraft.plugins.stg21.types.TransitionNode
-import org.workcraft.plugins.stg21.types.DummyTransition
-import org.workcraft.plugins.stg21.types.SignalTransition
+import org.workcraft.plugins.stg21.types.DummyLabel
+import org.workcraft.plugins.stg21.types.SignalLabel
 import org.workcraft.plugins.stg21.types.TransitionDirection
 import org.workcraft.plugins.stg21.types.Arc
 import org.workcraft.plugins.stg21.types.Signal
 import org.workcraft.plugins.stg21.types.SignalType
 import scala.collection.JavaConversions._
+import org.workcraft.plugins.stg21.types.TransitionLabel
 
 sealed trait Place
 case class ExplicitPlacePlace (p : Id[ExplicitPlace]) extends Place
@@ -34,7 +35,7 @@ class ParserHelper extends DotGParserHelper[Place, StgNode] {
   private var nameToPlace : Map[String, Id[ExplicitPlace]] = Map.empty
   private var dummies : Set[String] = Set.empty
   private var signals : Map[String, Id[Signal]] = Map.empty
-  private var instances : Map[(Transition,Int),Id[Transition]] = Map.empty
+  private var transitions : Map[Transition,Id[Transition]] = Map.empty
   private var implicits : Map[(Id[Transition], Id[Transition]), Id[Arc]] = Map.empty
   
   def getStg : MathStg = stg
@@ -69,30 +70,30 @@ class ParserHelper extends DotGParserHelper[Place, StgNode] {
   }
   
   @throws(classOf[ParseException])
-  private def getOrCreateTransition(trans : Transition, instance : Int) : Id[Transition] = {
-    instances.get((trans, instance)) match {
+  private def getOrCreateTransition(trans : Transition) : Id[Transition] = {
+    transitions.get(trans) match {
       case None => {
         val id = exec(StgOperations.createMathTransition(trans))
-        instances = instances + (((trans, instance), id))
+        transitions = transitions + ((trans, id))
         id
       }
       case Some(id) => id
     }
   }
   
-  private def getOrCreateTransition(trans : Transition) : Id[Transition] = getOrCreateTransition(trans,0)
+  private def getOrCreateTransition(lbl : TransitionLabel) : Id[Transition] = getOrCreateTransition(lbl,0)
   
   @throws(classOf[ParseException])
   override def getOrCreate (name : String) : StgNode = {
     dummies.contains(name) match {
       case false => ExplicitPlaceNode(getOrCreateExplicitPlace(name))
-      case true => TransitionNode(getOrCreateTransition(DummyTransition(name)))
+      case true => TransitionNode(getOrCreateTransition(DummyLabel(name)))
     }
   }
   
   @throws(classOf[ParseException])
   override def getOrCreate (ref : org.workcraft.util.Pair[String, Integer]) : StgNode = {
-    TransitionNode(getOrCreateTransition(DummyTransition(ref.getFirst), ref.getSecond))
+    TransitionNode(getOrCreateTransition(DummyLabel(ref.getFirst), ref.getSecond))
   }
   
   private def convertDirection(dir : Direction) : TransitionDirection = {
@@ -105,10 +106,15 @@ class ParserHelper extends DotGParserHelper[Place, StgNode] {
   
   private def getSignal(name : String) = signals.get(name).getOrElse(throwException("Unknown signal: " + name))
   
+  def defaultZero(x : Integer) : Int = {
+    if(x==null) 0
+    else x
+  }
+  
   @throws(classOf[ParseException])
   override def getOrCreate (ref : org.workcraft.util.Triple[String, Direction, Integer]) : StgNode = {
     var signalId = getSignal(ref.getFirst)
-    TransitionNode(getOrCreateTransition(SignalTransition(signalId, convertDirection(ref.getSecond)), ref.getThird))
+    TransitionNode(getOrCreateTransition(SignalLabel(signalId, convertDirection(ref.getSecond)), defaultZero(ref.getThird)))
   }
   @throws(classOf[ParseException])
   override def createArc (first : StgNode, second : StgNode) : Unit = {
@@ -130,7 +136,10 @@ class ParserHelper extends DotGParserHelper[Place, StgNode] {
   private def setSigType(name : String, typ : SignalType) {
     signals.get(name) match {
       case Some(_) => throwException("duplicate signal spec: " + name)
-      case None => exec(Col.add(Signal(name, typ)) on MathStg.signals) 
+      case None => {
+        val sigId = exec(Col.add(Signal(name, typ)) on MathStg.signals)
+        signals = signals + ((name, sigId))
+      }
     }
   }
 

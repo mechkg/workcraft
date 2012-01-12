@@ -14,8 +14,20 @@ import StateExtensions._
   def createMathPlace(name : String) : State[MathStg, Id[ExplicitPlace]] =
     Col.add(ExplicitPlace(0, name)).on(MathStg.places)
   
+  def findFree(cur : Int, l : List[Int]) : Int = l match {
+  case Nil => cur
+  case (h :: t) => if (h > cur) cur else if (h<cur) findFree(cur, t) else findFree(cur+1, t)
+  }
+    
+  def allocInstanceNumber(transitions : List[Transition], label : TransitionLabel) = {
+    findFree(0, transitions.filter(t => t._1 == label).map(_._2).sorted)
+  }
+    
   def createMathTransition(t : Transition) =
     Col.add(t).on(MathStg.transitions)
+    
+  def createMathTransition(t : TransitionLabel) =
+    state ((col : Col[Transition]) => Col.add((t, allocInstanceNumber(col.map.values.toList, t)))(col)).on(MathStg.transitions)
   
   val createNewSignal : State[MathStg, Id[Signal]] = Col.add(Signal("x", SignalType.Internal)).on(MathStg.signals)
   
@@ -23,13 +35,13 @@ import StateExtensions._
     for(
      t <- (for(
         sig <- createNewSignal;
-        t <- createMathTransition(SignalTransition(sig, TransitionDirection.Toggle))) yield t).on(VisualStgFields.math);
+        t <- createMathTransition(SignalLabel(sig, TransitionDirection.Toggle))) yield t).on(VisualStgFields.math);
     _ <- VisualModel.addNode[StgNode,Id[Arc]](TransitionNode(t), where).on(VisualStgFields.visual)
     ) yield t
   }
     
   def createDummyTransition(where : Point2D, name : String) : State[VisualStg, Id[Transition]] = {
-    for(t <- createMathTransition(DummyTransition(name)).on(VisualStgFields.math);
+    for(t <- createMathTransition(DummyLabel(name)).on(VisualStgFields.math);
     _ <- VisualModel.addNode[StgNode,Id[Arc]](TransitionNode(t), where).on(VisualStgFields.visual)
     ) yield t
   }

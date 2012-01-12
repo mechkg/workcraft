@@ -6,7 +6,6 @@ import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.mpsat.MpsatChainResultHandler;
 import org.workcraft.plugins.mpsat.MpsatSettings;
 import org.workcraft.plugins.mpsat.tasks.MpsatChainTask;
-import org.workcraft.plugins.stg.STGModel;
 import org.workcraft.workspace.WorkspaceEntry;
 
 public abstract class AbstractMpsatChecker {
@@ -25,14 +24,13 @@ public abstract class AbstractMpsatChecker {
 
 	public ToolJob applyTo(final WorkspaceEntry we) throws ServiceNotAvailableException {
 
-		final STGModel model = we.getModelEntry().getImplementation(STGModel.SERVICE_HANDLE);
 		final MpsatChainTask mpsatTask = MpsatChainTask.create(we, getSettings(), framework);
 
 		return new ToolJob() {
 
 			@Override
 			public void run() {
-				final String title = model.getTitle();
+				final String title = we.getTitle();
 				String description = "MPSat tool chain";
 				if (!title.isEmpty())
 					description += "(" + title + ")";

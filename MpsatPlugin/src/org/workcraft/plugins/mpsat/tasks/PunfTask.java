@@ -10,6 +10,7 @@ import org.workcraft.tasks.ProgressMonitor;
 import org.workcraft.tasks.Result;
 import org.workcraft.tasks.Task;
 import org.workcraft.tasks.Result.Outcome;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 
 public class PunfTask implements Task<ExternalProcessResult> {
 	private String inputPath, outputPath;
@@ -24,9 +25,9 @@ public class PunfTask implements Task<ExternalProcessResult> {
 	public Result<? extends ExternalProcessResult> run(ProgressMonitor<? super ExternalProcessResult> monitor) 
 	{
 		ArrayList<String> command = new ArrayList<String>();
-		command.add(PunfUtilitySettings.getPunfCommand());
+		command.add(eval(PunfUtilitySettings.punfCommand));
 		
-		for (String arg : PunfUtilitySettings.getPunfArgs().split(" "))
+		for (String arg : eval(PunfUtilitySettings.punfArgs).split(" "))
 			if (!arg.isEmpty())
 				command.add(arg);
 		

@@ -5,7 +5,9 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import org.workcraft.Trace;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.MainWindow;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.mpsat.gui.SolutionsDialog;
 import org.workcraft.plugins.mpsat.tasks.MpsatChainResult;
 import org.workcraft.tasks.Result;
@@ -38,7 +40,12 @@ final class MpsatStgReachabilityResultHandler implements Runnable {
 		if (!solutions.isEmpty()) {
 			String message = "The system has a non-persistent output.\n";
 			
-			final SolutionsDialog solutionsDialog = new SolutionsDialog(mainWindow, we, message, solutions);
+			SolutionsDialog solutionsDialog;
+			try {
+				solutionsDialog = new SolutionsDialog(mainWindow, we, message, solutions);
+			} catch (ServiceNotAvailableException e) {
+				throw new NotImplementedException("Should never happen. TODO: make the type system take care of this");
+			}
 			
 			GUI.centerAndSizeToParent(solutionsDialog, mainWindow);
 			

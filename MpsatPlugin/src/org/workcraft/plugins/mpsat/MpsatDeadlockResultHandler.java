@@ -8,7 +8,9 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import org.workcraft.Trace;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.MainWindow;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.mpsat.gui.SolutionsDialog;
 import org.workcraft.plugins.mpsat.tasks.MpsatChainResult;
 import org.workcraft.tasks.Result;
@@ -37,7 +39,13 @@ final class MpsatDeadlockResultHandler implements Runnable {
 		if (!solutions.isEmpty()) {
 			String message = "The system has a deadlock.\n";
 			
-			final SolutionsDialog solutionsDialog = new SolutionsDialog(mainWindow, we, message, solutions);
+			SolutionsDialog solutionsDialog;
+			try {
+				solutionsDialog = new SolutionsDialog(mainWindow, we, message, solutions);
+			} catch (ServiceNotAvailableException e) {
+				e.printStackTrace();
+				throw new NotImplementedException("TODO: ensure with types this is impossible!!");
+			}
 			
 			GUI.centerAndSizeToParent(solutionsDialog, mainWindow);
 			

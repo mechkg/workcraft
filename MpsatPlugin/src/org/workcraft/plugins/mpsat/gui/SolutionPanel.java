@@ -13,10 +13,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import org.workcraft.Trace;
+import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.ToolboxPanel;
 import org.workcraft.gui.graph.GraphEditorPanel;
-import org.workcraft.plugins.petri.tools.SimulationTool;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.workspace.WorkspaceEntry;
 
 
@@ -25,7 +26,7 @@ public class SolutionPanel extends JPanel {
 	private JPanel buttonsPanel;
 	private JTextArea traceText;
 	
-	public SolutionPanel(final MainWindow mainWindow, final WorkspaceEntry we, final Trace t, final ActionListener closeAction) {
+	public SolutionPanel(final MainWindow mainWindow, final WorkspaceEntry we, final Trace t, final ActionListener closeAction) throws ServiceNotAvailableException {
 		super (new TableLayout(new double[][]
 		        { { TableLayout.FILL, TableLayout.PREFERRED },
 				{TableLayout.FILL} }
@@ -56,13 +57,18 @@ public class SolutionPanel extends JPanel {
 						mainWindow.requestFocus(currentEditor);
 					}
 					else {
-						currentEditor = mainWindow.createEditorWindow(we);
+						try {
+							currentEditor = mainWindow.createEditorWindow(we);
+						} catch (ServiceNotAvailableException e1) {
+							throw new NotImplementedException("TODO: ensure this does not happen with type system");
+						}
 					}
 				}
-				final ToolboxPanel toolbox = currentEditor.getToolBox();
+				if(true)throw new NotImplementedException("Todo: set trace");
+				/*final ToolboxPanel toolbox = currentEditor.getToolBox();
 				final SimulationTool tool = toolbox.getToolInstance(SimulationTool.class);
 				tool.setTrace(t);
-				toolbox.selectTool(tool);
+				toolbox.selectTool(tool);*/
 				closeAction.actionPerformed(null);
 			}
 		});

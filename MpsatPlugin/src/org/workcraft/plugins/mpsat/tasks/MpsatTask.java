@@ -15,6 +15,8 @@ import org.workcraft.tasks.Task;
 import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.util.FileUtils;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class MpsatTask implements Task<ExternalProcessResult> {
 	private String[] args;
 	private String inputFileName;
@@ -28,9 +30,9 @@ public class MpsatTask implements Task<ExternalProcessResult> {
 	public Result<? extends ExternalProcessResult> run(ProgressMonitor<? super ExternalProcessResult> monitor) {
 		
 		ArrayList<String> command = new ArrayList<String>();
-		command.add(MpsatUtilitySettings.getMpsatCommand());
+		command.add(eval(MpsatUtilitySettings.mpsatCommand));
 		
-		for (String arg : MpsatUtilitySettings.getMpsatArgs().split(" "))
+		for (String arg : eval(MpsatUtilitySettings.mpsatArgs).split(" "))
 			if (!arg.isEmpty())
 				command.add(arg);
 		

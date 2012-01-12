@@ -8,7 +8,6 @@ import org.workcraft.plugins.mpsat.tasks.MpsatChainResult;
 import org.workcraft.plugins.stg.HistoryPreservingStorageManager;
 import org.workcraft.tasks.Result;
 import org.workcraft.util.FileUtils;
-import org.workcraft.workspace.ModelEntry;
 import org.workcraft.workspace.Workspace;
 
 public class MpsatSynthesisResultHandler implements Runnable {
@@ -27,6 +26,7 @@ public class MpsatSynthesisResultHandler implements Runnable {
 	public void run() {
 		final String desiredName = FileUtils.getFileNameWithoutExtension(new File(path.getNode()));
 		final String mpsatOutput = new String(mpsatChainResult.getReturnValue().getMpsatResult().getReturnValue().getOutput());
-		workspace.add(path.getParent(), desiredName, new ModelEntry(new GateLevelModelDescriptor(), new MpsatEqnParser().parse(mpsatOutput), new HistoryPreservingStorageManager()), true);
+		new MpsatEqnParser().parse(mpsatOutput);
+		//workspace.add(path.getParent(), desiredName, new ModelEntry(new GateLevelModelDescriptor(), , new HistoryPreservingStorageManager()), true);
 	}
 }

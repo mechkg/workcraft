@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 
 import org.workcraft.Trace;
 import org.workcraft.gui.MainWindow;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.workspace.WorkspaceEntry;
 
 
@@ -24,7 +25,7 @@ public class SolutionsDialog extends JDialog {
 	private JPanel solutionsPanel;
 	private JPanel buttonsPanel;
 
-	public SolutionsDialog(MainWindow mainWindow, WorkspaceEntry we, String text, List<Trace> solutions) {
+	public SolutionsDialog(MainWindow mainWindow, WorkspaceEntry we, String text, List<Trace> solutions) throws ServiceNotAvailableException {
 
 		double sizes[][] = {
 				{ TableLayout.FILL },

@@ -9,6 +9,8 @@ import javax.swing.SwingUtilities;
 
 import org.workcraft.Framework;
 import org.workcraft.exceptions.DeserialisationException;
+import org.workcraft.exceptions.NotImplementedException;
+import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.shared.tasks.ExternalProcessResult;
 import org.workcraft.tasks.DummyProgressMonitor;
 import org.workcraft.tasks.Result;
@@ -51,7 +53,11 @@ public class PcompResultHandler extends DummyProgressMonitor<ExternalProcessResu
 					
 					if (showInEditor) {
 						WorkspaceEntry we = framework.getWorkspace().open(pcompResult, true);
-						framework.getMainWindow().createEditorWindow(we);
+						try {
+							framework.getMainWindow().createEditorWindow(we);
+						} catch (ServiceNotAvailableException e) {
+							throw new NotImplementedException("Should not happen. TODO: make the type system take care of it.");
+						}
 					} else {
 						framework.getWorkspace().add(pcompResult.getName(), pcompResult, true);
 					}

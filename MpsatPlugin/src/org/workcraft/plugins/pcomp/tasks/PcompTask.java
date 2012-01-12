@@ -14,6 +14,8 @@ import org.workcraft.tasks.Task;
 import org.workcraft.tasks.Result.Outcome;
 import org.workcraft.util.FileUtils;
 
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+
 public class PcompTask implements Task<ExternalProcessResult> {
 	private File[] inputs;
 	private final PCompOutputMode mode;
@@ -30,9 +32,9 @@ public class PcompTask implements Task<ExternalProcessResult> {
 	public Result<? extends ExternalProcessResult> run(ProgressMonitor<? super ExternalProcessResult> monitor) 
 	{
 		ArrayList<String> command = new ArrayList<String>();
-		command.add(PcompUtilitySettings.getPcompCommand());
+		command.add(eval(PcompUtilitySettings.pcompCommand));
 		
-		for (String arg : PcompUtilitySettings.getPcompArgs().split(" "))
+		for (String arg : eval(PcompUtilitySettings.pcompArgs).split(" "))
 			if (!arg.isEmpty())
 				command.add(arg);
 		

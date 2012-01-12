@@ -20,76 +20,49 @@
 */
 
 package org.workcraft.plugins.mpsat;
-import java.util.LinkedList;
-import java.util.List;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import org.workcraft.Config;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.SettingsPage;
+import org.workcraft.gui.propertyeditor.string.StringProperty;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class PunfUtilitySettings implements SettingsPage {
-	private static LinkedList<PropertyDescriptor> properties;
+	public static final ModifiableExpression<String> punfCommand = Variable.create("punf");
+	public static final ModifiableExpression<String> punfArgs = Variable.create("");
 	
-	private static String punfCommand = "punf";
-	private static String punfArgs = "";
-	
-	private static boolean punfRAComplexityReduction = false;
+	public static final ModifiableExpression<Boolean> punfRAComplexityReduction = Variable.create(false);
 	
 	private static final String punfCommandKey = "Tools.punf.command";
 	private static final String punfArgsKey = "Tools.punf.args";
 	
 	private static final String punfRAComplexityReductionKey = "Tools.punf.RAComplexityReduction";
 
-	public PunfUtilitySettings() {
-		properties = new LinkedList<PropertyDescriptor>();
-		properties.add(new PropertyDeclaration(this, "Punf command", "getPunfCommand", "setPunfCommand", String.class));
-		properties.add(new PropertyDeclaration(this, "Additional command line arguments", "getPunfArgs", "setPunfArgs", String.class));
-//		properties.add(new PropertyDeclaration(this, "Do read-arc complexity reduction", "getDoRAComplexityReduction", "setDoRAComplexityReduction", boolean.class));
-	}
-	
-	public static boolean getDoRAComplexityReduction() {
-		return punfRAComplexityReduction;
-	}
-
-	public static void setDoRAComplexityReduction(boolean doReduction) {
-		PunfUtilitySettings.punfRAComplexityReduction = doReduction;
-	}
-
-	public List<PropertyDescriptor> getDescriptors() {
-		return properties;
+	public PVector<EditableProperty> getProperties() {
+		return TreePVector.<EditableProperty>empty()
+				.plus(StringProperty.create("Punf command", punfCommand))
+				.plus(StringProperty.create("Additional command line arguments", punfArgs));
 	}
 
 	public void load(Config config) {
-		punfCommand = config.getString(punfCommandKey, "punf");
-		punfArgs = config.getString(punfArgsKey, "");
-		punfRAComplexityReduction = config.getBoolean(punfRAComplexityReductionKey, false);
+		punfCommand.setValue(config.getString(punfCommandKey, "punf"));
+		punfArgs.setValue(config.getString(punfArgsKey, ""));
+		punfRAComplexityReduction.setValue(config.getBoolean(punfRAComplexityReductionKey, false));
 	}
 
 	public void save(Config config) {
-		config.set(punfCommandKey, punfCommand);
-		config.set(punfArgsKey, punfArgs);
-		config.setBoolean(punfRAComplexityReductionKey, punfRAComplexityReduction );
+		config.set(punfCommandKey, eval(punfCommand));
+		config.set(punfArgsKey, eval(punfArgs));
+		config.setBoolean(punfRAComplexityReductionKey, eval(punfRAComplexityReduction));
 	}
 	
 	public String getSection() {
 		return "External tools";
-	}
-
-	public static String getPunfCommand() {
-		return punfCommand;
-	}
-
-	public static void setPunfCommand(String punfCommand) {
-		PunfUtilitySettings.punfCommand = punfCommand;
-	}
-
-	public static String getPunfArgs() {
-		return punfArgs;
-	}
-
-	public static void setPunfArgs(String punfArgs) {
-		PunfUtilitySettings.punfArgs = punfArgs;
 	}
 
 	@Override

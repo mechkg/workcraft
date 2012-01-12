@@ -20,65 +20,48 @@
 */
 
 package org.workcraft.plugins.pcomp;
-import java.util.LinkedList;
-import java.util.List;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import org.workcraft.Config;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.SettingsPage;
+import org.workcraft.gui.propertyeditor.string.StringProperty;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class PcompUtilitySettings implements SettingsPage {
-	private static LinkedList<PropertyDescriptor> properties;
-	
-	private static String pcompCommand = "pcomp";
-	private static String pcompArgs = "";
+	public static final ModifiableExpression<String> pcompCommand = Variable.create("pcomp");
+	public static final ModifiableExpression<String> pcompArgs = Variable.create("");
 	
 	private static final String pcompCommandKey = "Tools.pcomp.command";
 	private static final String pcompArgsKey = "Tools.pcomp.args";
 
-	public PcompUtilitySettings() {
-		properties = new LinkedList<PropertyDescriptor>();
-		properties.add(new PropertyDeclaration(this, "PComp command", "getPcompCommand", "setPcompCommand", String.class));
-		properties.add(new PropertyDeclaration(this, "Additional command line arguments", "getPcompArgs", "setPcompArgs", String.class));
-	}
-	
-	public List<PropertyDescriptor> getDescriptors() {
-		return properties;
-	}
-
 	public void load(Config config) {
-		pcompCommand = config.getString(pcompCommandKey, "pcomp");
-		pcompArgs = config.getString(pcompArgsKey, "");
+		pcompCommand.setValue(config.getString(pcompCommandKey, "pcomp"));
+		pcompArgs.setValue(config.getString(pcompArgsKey, ""));
 	}
 
 	public void save(Config config) {
-		config.set(pcompCommandKey, pcompCommand);
-		config.set(pcompArgsKey, pcompArgs);
+		config.set(pcompCommandKey, eval(pcompCommand));
+		config.set(pcompArgsKey, eval(pcompArgs));
 	}
 	
 	public String getSection() {
 		return "External tools";
 	}
 
-	public static String getPcompCommand() {
-		return pcompCommand;
-	}
-
-	public static void setPcompCommand(String pcompCommand) {
-		PcompUtilitySettings.pcompCommand = pcompCommand;
-	}
-
-	public static String getPcompArgs() {
-		return pcompArgs;
-	}
-
-	public static void setPcompArgs(String pcompArgs) {
-		PcompUtilitySettings.pcompArgs = pcompArgs;
-	}
-
 	@Override
 	public String getName() {
 		return "PComp";
+	}
+
+	@Override
+	public PVector<EditableProperty> getProperties() {
+		return TreePVector.<EditableProperty>empty()
+				.plus(StringProperty.create("PComp command", pcompCommand))
+				.plus(StringProperty.create("PPAdditional command line arguments", pcompArgs));
 	}
 }

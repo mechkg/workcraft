@@ -20,61 +20,43 @@
 */
 
 package org.workcraft.plugins.mpsat;
-import java.util.LinkedList;
-import java.util.List;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
 
 import org.workcraft.Config;
-import org.workcraft.gui.propertyeditor.PropertyDeclaration;
-import org.workcraft.gui.propertyeditor.PropertyDescriptor;
+import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
+import org.workcraft.dependencymanager.advanced.user.Variable;
+import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.gui.propertyeditor.SettingsPage;
+import org.workcraft.gui.propertyeditor.string.StringProperty;
+
+import pcollections.PVector;
+import pcollections.TreePVector;
 
 public class MpsatUtilitySettings implements SettingsPage {
-	private static LinkedList<PropertyDescriptor> properties;
-	
-	private static String mpsatCommand = "mpsat";
-	private static String mpsatArgs = "";
+	public static final ModifiableExpression<String> mpsatCommand = Variable.create("mpsat");
+	public static final ModifiableExpression<String> mpsatArgs = Variable.create("");
 	
 	private static final String mpsatCommandKey = "Tools.mpsat.command";
 	private static final String mpsatArgsKey = "Tools.mpsat.args";
 
-	public MpsatUtilitySettings() {
-		properties = new LinkedList<PropertyDescriptor>();
-		properties.add(new PropertyDeclaration(this, "MPSat command", "getMpsatCommand", "setMpsatCommand", String.class));
-		properties.add(new PropertyDeclaration(this, "MPSat additional arguments", "getMpsatArgs", "setMpsatArgs", String.class));
-	}
-	
-	public List<PropertyDescriptor> getDescriptors() {
-		return properties;
+	public PVector<EditableProperty> getProperties() {
+		return TreePVector.<EditableProperty>empty()
+				.plus(StringProperty.create("MPSat command", mpsatCommand))
+	            .plus(StringProperty.create("MPSat additional arguments", mpsatArgs));
 	}
 
 	public void load(Config config) {
-		mpsatCommand = config.getString(mpsatCommandKey, "mpsat");
-		mpsatArgs = config.getString(mpsatArgsKey, "");
+		mpsatCommand.setValue(config.getString(mpsatCommandKey, "mpsat"));
+		mpsatArgs.setValue(config.getString(mpsatArgsKey, ""));
 	}
 
 	public void save(Config config) {
-		config.set(mpsatCommandKey, mpsatCommand);
-		config.set(mpsatArgsKey, mpsatArgs);
+		config.set(mpsatCommandKey, eval(mpsatCommand));
+		config.set(mpsatArgsKey, eval(mpsatArgs));
 	}
 	
 	public String getSection() {
 		return "External tools";
-	}
-
-	public static String getMpsatCommand() {
-		return mpsatCommand;
-	}
-
-	public static void setMpsatCommand(String mpsatCommand) {
-		MpsatUtilitySettings.mpsatCommand = mpsatCommand;
-	}
-
-	public static String getMpsatArgs() {
-		return mpsatArgs;
-	}
-
-	public static void setMpsatArgs(String mpsatArgs) {
-		MpsatUtilitySettings.mpsatArgs = mpsatArgs;
 	}
 
 	@Override

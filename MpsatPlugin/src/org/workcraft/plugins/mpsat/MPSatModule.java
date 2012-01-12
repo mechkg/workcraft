@@ -15,16 +15,16 @@ public class MPSatModule implements Module {
 
 	@Override
 	public void init(Framework framework) {
-		framework.getPluginManager().registerClass(Tool.class, CscResolutionTool.class, framework);
-		framework.getPluginManager().registerClass(Tool.class, MpsatSynthesis.class, framework);
-		framework.getPluginManager().registerClass(Tool.class, MpsatDeadlockChecker.class, framework);
-		framework.getPluginManager().registerClass(Tool.class, CustomPropertyMpsatChecker.class, framework);
+		framework.getPluginManager().registerClass(Tool.SERVICE_HANDLE, new CscResolutionTool(framework));
+		framework.getPluginManager().registerClass(Tool.SERVICE_HANDLE, new MpsatSynthesis(framework));
+		framework.getPluginManager().registerClass(Tool.SERVICE_HANDLE, new MpsatDeadlockChecker(framework));
+		framework.getPluginManager().registerClass(Tool.SERVICE_HANDLE, new CustomPropertyMpsatChecker(framework));
 		
-		framework.getPluginManager().registerClass(SettingsPage.class, MpsatUtilitySettings.class);
-		framework.getPluginManager().registerClass(SettingsPage.class, PunfUtilitySettings.class);
+		framework.getPluginManager().registerClass(SettingsPage.SERVICE_HANDLE, new MpsatUtilitySettings());
+		framework.getPluginManager().registerClass(SettingsPage.SERVICE_HANDLE, new PunfUtilitySettings());
 		
-		framework.getPluginManager().registerClass(Tool.class, PcompTool.class, framework);
-		framework.getPluginManager().registerClass(SettingsPage.class, PcompUtilitySettings.class);
+		framework.getPluginManager().registerClass(Tool.SERVICE_HANDLE, new PcompTool(framework));
+		framework.getPluginManager().registerClass(SettingsPage.SERVICE_HANDLE, new PcompUtilitySettings());
 	}
 
 	@Override

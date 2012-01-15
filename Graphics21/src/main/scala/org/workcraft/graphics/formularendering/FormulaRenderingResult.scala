@@ -12,12 +12,13 @@ import java.awt.geom.Rectangle2D
 import java.awt.font.GlyphVector
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
-import org.workcraft.graphics.formularendering.RichRectangle2D._
 import org.workcraft.graphics.TouchableUtil
 import org.workcraft.graphics.Graphics._
 import org.workcraft.graphics.RichGraphicalContent
 
-case class FormulaRenderingResult(logicalBounds: Rectangle2D, visualBounds: Rectangle2D,
+import org.workcraft.graphics.Java2DDecoration._
+
+case class FormulaRenderingResult(logicalBounds: Rectangle2D.Double, visualBounds: Rectangle2D.Double,
   glyphs: List[(GlyphVector, Point2D)], inversionLines: List[Line2D]) {
 
   def plus(summand: FormulaRenderingResult): FormulaRenderingResult = {
@@ -36,7 +37,7 @@ case class FormulaRenderingResult(logicalBounds: Rectangle2D, visualBounds: Rect
     val theirLogicalBounds = summand.logicalBounds.offset (logicalBounds.getMaxX, 0)
     val theirVisualBounds  = summand.visualBounds.offset (logicalBounds.getMaxX, 0)
 
-    FormulaRenderingResult(logicalBounds.createUnion(theirLogicalBounds), visualBounds.createUnion(theirVisualBounds), glyphs2, inversionLines2)
+    FormulaRenderingResult(logicalBounds.createUnionD(theirLogicalBounds), visualBounds.createUnionD(theirVisualBounds), glyphs2, inversionLines2)
   }
 
   final def draw(g: Graphics2D, color: Color) {

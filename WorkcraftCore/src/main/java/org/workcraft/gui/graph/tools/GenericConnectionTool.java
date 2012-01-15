@@ -58,14 +58,14 @@ public class GenericConnectionTool<N>  {
 
 	private boolean mouseExitRequiredForSelfLoop = true;
 	private boolean leftFirst = false;
-	private ModifiableExpression<Point2D> lastMouseCoords = Variable.<Point2D>create(new Point2D.Double());
+	private ModifiableExpression<Point2D.Double> lastMouseCoords = Variable.<Point2D.Double>create(new Point2D.Double.Double());
 	private String warningMessage = null;
 	private final ConnectionController<? super N> connectionManager;
 	
-	private final Function<? super Point2D, ? extends Maybe<? extends N>> hitTester;
-	private final Function<? super N, ? extends Expression<? extends Point2D>> centerProvider;
+	private final Function<? super Point2D.Double, ? extends Maybe<? extends N>> hitTester;
+	private final Function<? super N, ? extends Expression<? extends Point2D.Double>> centerProvider;
 
-	public GenericConnectionTool (Function<N, Expression<? extends Point2D>> centerProvider, ConnectionController<? super N> connectionManager, Function<? super Point2D, ? extends Maybe<? extends N>> hitTester) {
+	public GenericConnectionTool (Function<N, Expression<? extends Point2D.Double>> centerProvider, ConnectionController<? super N> connectionManager, Function<? super Point2D.Double, ? extends Maybe<? extends N>> hitTester) {
 		this.centerProvider = centerProvider;
 		this.connectionManager = connectionManager;
 		this.hitTester = hitTester;
@@ -142,7 +142,7 @@ public class GenericConnectionTool<N>  {
 		try {
 			g.setColor(color);
 		
-			Point2D center = context.resolve(centerProvider.apply(extract(context.resolve(first))));
+			Point2D.Double center = context.resolve(centerProvider.apply(extract(context.resolve(first))));
 			
 			Line2D line = new Line2D.Double(center.getX(), center.getY(), context.resolve(lastMouseCoords).getX(), context.resolve(lastMouseCoords).getY());
 			g.draw(line);

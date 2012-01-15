@@ -28,11 +28,11 @@ import org.workcraft.gui.graph.tools.GraphEditor;
 
 public class GraphEditorMouseEvent {
 	final MouseEvent event;
-	final Point2D position;
-	final Point2D prevPosition;
-	final Point2D startPosition;
+	final Point2D.Double position;
+	final Point2D.Double prevPosition;
+	final Point2D.Double startPosition;
 
-	public GraphEditorMouseEvent(GraphEditor editor, MouseEvent e, Point2D startPosition, Point2D prevPosition) {
+	public GraphEditorMouseEvent(GraphEditor editor, MouseEvent e, Point2D.Double startPosition, Point2D.Double prevPosition) {
 		event = e;
 		position = editor.getViewport().screenToUser(e.getPoint());
 		this.startPosition = startPosition == null ? position : startPosition;
@@ -47,15 +47,15 @@ public class GraphEditorMouseEvent {
 		return event.getID();
 	}
 
-	public Point2D getPosition() {
+	public Point2D.Double getPosition() {
 		return position;
 	}
 
-	public Point2D getStartPosition() {
+	public Point2D.Double getStartPosition() {
 		return startPosition;
 	}
 
-	public Point2D getPrevPosition() {
+	public Point2D.Double getPrevPosition() {
 		return prevPosition;
 	}
 

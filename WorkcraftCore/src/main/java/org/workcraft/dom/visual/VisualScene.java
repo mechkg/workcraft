@@ -52,7 +52,7 @@ public interface VisualScene<N> {
 				public MovableController<Node> mv() {
 					return new MovableController<Node>() {
 						@Override
-						public Maybe<ModifiableExpression<Point2D>> apply(Node node) {
+						public Maybe<ModifiableExpression<Point2D.Double>> apply(Node node) {
 							return Maybe.Util.first(scene1.mv().apply(node), scene2.mv().apply(node));
 						}
 					};

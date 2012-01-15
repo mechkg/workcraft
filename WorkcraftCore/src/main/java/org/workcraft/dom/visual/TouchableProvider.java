@@ -1,7 +1,8 @@
 package org.workcraft.dom.visual;
 
-import static org.workcraft.dependencymanager.advanced.core.Expressions.*;
-import static org.workcraft.util.Function.Util.*;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.fmap;
+import static org.workcraft.dependencymanager.advanced.core.Expressions.joinFunction;
+import static org.workcraft.util.Function.Util.curry;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -11,7 +12,6 @@ import org.workcraft.dependencymanager.advanced.core.Expression;
 import org.workcraft.dependencymanager.advanced.core.Expressions;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.connections.VisualConnection;
-import org.workcraft.dom.visual.connections.VisualConnectionGui;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.graph.tools.MovableController;
 import org.workcraft.util.Function;
@@ -53,19 +53,19 @@ public interface TouchableProvider<N> extends Function<N, Expression<? extends M
 						public Touchable apply(Maybe<? extends Touchable> argument) {
 							return Maybe.Util.orElse(argument, new Touchable(){
 								@Override
-								public boolean hitTest(Point2D point) {
+								public boolean hitTest(Point2D.Double point) {
 									System.out.println("podgon in TouchableProvider");
 									return false;
 								}
 
 								@Override
-								public Rectangle2D getBoundingBox() {
+								public Rectangle2D.Double getBoundingBox() {
 									System.out.println("podgon in TouchableProvider");
 									return null;
 								}
 
 								@Override
-								public Point2D getCenter() {
+								public Point2D.Double getCenter() {
 									System.out.println("podgon in TouchableProvider");
 									return new Point2D.Double(0,0);
 								}
@@ -91,18 +91,18 @@ public interface TouchableProvider<N> extends Function<N, Expression<? extends M
 							//return nothing();//just(VisualConnectionGui.getConnectionGui(podgonHideMaybe(this), (VisualConnection)node).shape());
 						localTouchable = localTP.apply(node);
 					
-					final Expression<Point2D> position = MovableController.TRANSFORM_PROVIDER.apply(node);
+					final Expression<Point2D.Double> position = MovableController.TRANSFORM_PROVIDER.apply(node);
 					
-					final Function<Point2D, Function<Touchable, Touchable>> translateFunc = curry(new Function2<Point2D, Touchable, Touchable>() {
+					final Function<Point2D.Double, Function<Touchable, Touchable>> translateFunc = curry(new Function2<Point2D.Double, Touchable, Touchable>() {
 						@Override
-						public Touchable apply(Point2D translation, Touchable touchable) {
+						public Touchable apply(Point2D.Double translation, Touchable touchable) {
 							return new TouchableTransformer(touchable, AffineTransform.getTranslateInstance(translation.getX(), translation.getY()));
 						}
 					});
 					
-					return Expressions.fmap(new Function2<Maybe<? extends Touchable>, Point2D, Maybe<? extends Touchable>>(){
+					return Expressions.fmap(new Function2<Maybe<? extends Touchable>, Point2D.Double, Maybe<? extends Touchable>>(){
 						@Override
-						public Maybe<? extends Touchable> apply(Maybe<? extends Touchable> argument1, Point2D argument2) {
+						public Maybe<? extends Touchable> apply(Maybe<? extends Touchable> argument1, Point2D.Double argument2) {
 							return Maybe.Util.applyFunc(argument1, translateFunc.apply(argument2));
 						}
 					}, localTouchable, position);

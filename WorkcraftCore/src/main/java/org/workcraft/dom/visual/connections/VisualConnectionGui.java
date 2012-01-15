@@ -34,18 +34,18 @@ public class VisualConnectionGui {
 	public static Touchable makeConnectionTouchable(final ParametricCurve curve) {
 		return new Touchable() {
 			@Override
-			public boolean hitTest(Point2D point) {
+			public boolean hitTest(Point2D.Double point) {
 				return curve.getPointOnCurve(curve.getNearestPointT(point)).distance(point) < VisualConnection.HIT_THRESHOLD;
 			}
 			
 			@Override
-			public Point2D getCenter()
+			public Point2D.Double getCenter()
 			{
 				return curve.getPointOnCurve(0.5);
 			}
 			
 			@Override
-			public Rectangle2D getBoundingBox() {
+			public Rectangle2D.Double getBoundingBox() {
 				return curve.getBoundingBox();
 			}
 		};

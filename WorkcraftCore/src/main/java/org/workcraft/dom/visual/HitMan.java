@@ -73,7 +73,7 @@ public class HitMan
 			});
 		}
 		
-		public Maybe<N> hit(Point2D point, Function<? super N, Boolean> filter) {
+		public Maybe<N> hit(Point2D.Double point, Function<? super N, Boolean> filter) {
 			return instance.hitFirstChild(point, null, filter);
 		}
 		
@@ -85,7 +85,7 @@ public class HitMan
 			return new HitTester<N>() {
 
 				@Override
-				public Maybe<N> hitTest(Point2D point) {
+				public Maybe<N> hitTest(Point2D.Double point) {
 					for(Function<? super N, Boolean> tester : testers) {
 						
 						Maybe<N> n = hit(point, tester);
@@ -96,7 +96,7 @@ public class HitMan
 				}
 
 				@Override
-				public PCollection<N> boxHitTest(Point2D boxStart, Point2D boxEnd) {
+				public PCollection<N> boxHitTest(Point2D.Double boxStart, Point2D.Double boxEnd) {
 					return HitMan.<N>boxHitTest(instance.tp, contents.apply(), boxStart, boxEnd);
 				}
 				
@@ -114,7 +114,7 @@ public class HitMan
 		public final Function<? super N, ? extends Iterable<? extends N>> hierarchy;
 		public final Function<? super N, ? extends Maybe<? extends Touchable>> tp;
 		
-		Iterable<N> filterByBB(Iterable<? extends N> nodes, final Point2D point) {
+		Iterable<N> filterByBB(Iterable<? extends N> nodes, final Point2D.Double point) {
 			return filter(nodes, new Function<N, Boolean>() {
 				@Override
 				public Boolean apply(N arg) {
@@ -133,11 +133,11 @@ public class HitMan
 			});
 		}
 
-		private Iterable<? extends N> getFilteredChildren(Point2D point, N node) {
+		private Iterable<? extends N> getFilteredChildren(Point2D.Double point, N node) {
 			return reverse(filterByBB(hierarchy.apply(node), point));
 		}
 
-		public Maybe<N> hitDeepest(Point2D point, N node, Function<? super N, Boolean> filter) {
+		public Maybe<N> hitDeepest(Point2D.Double point, N node, Function<? super N, Boolean> filter) {
 			
 			for (N n : getFilteredChildren(point, node)) {
 				Maybe<N> result = hitDeepest(point, n, filter);
@@ -149,14 +149,14 @@ public class HitMan
 			return Maybe.Util.nothing();
 		}
 		
-		private Maybe<N> hitBranch(Point2D point, N node) {
+		private Maybe<N> hitBranch(Point2D.Double point, N node) {
 			if (isBranchHit(point, node))
 				return Maybe.Util.just(node);
 			else
 				return Maybe.Util.nothing();
 		}
 		
-		public boolean isBranchHit (Point2D point, N node) {
+		public boolean isBranchHit (Point2D.Double point, N node) {
 			Touchable touchable = toNullable(tp.apply(node));
 			if (touchable != null && touchable.hitTest(point))	{
 				return true;
@@ -170,7 +170,7 @@ public class HitMan
 			return false;
 		}
 		
-		public Maybe<N> hitFirst(Point2D point, N node, Function<? super N, Boolean> filter) {
+		public Maybe<N> hitFirst(Point2D.Double point, N node, Function<? super N, Boolean> filter) {
 			if (filter.apply(node)) {
 				return hitBranch(point, node);
 			} else {
@@ -178,7 +178,7 @@ public class HitMan
 			}
 		}
 
-		public Maybe<N> hitFirstChild(Point2D point, N node, Function<? super N, Boolean> filter) {
+		public Maybe<N> hitFirstChild(Point2D.Double point, N node, Function<? super N, Boolean> filter) {
 			for (N n : getFilteredChildren(point, node)) {
 				Maybe<N> hit = hitFirst(point, n, filter);
 				
@@ -188,7 +188,7 @@ public class HitMan
 			return Maybe.Util.nothing();
 		}
 
-		public Maybe<N> hitFirst(Point2D point, N node) {
+		public Maybe<N> hitFirst(Point2D.Double point, N node) {
 			return hitFirst(point, node, new Function<N, Boolean>(){
 				public Boolean apply(N arg0) {
 					return true;
@@ -200,7 +200,7 @@ public class HitMan
 		 * Deprecated to discourage the use of reflection
 		 */
 		@Deprecated
-		public <T> T hitFirstNodeOfType(Point2D point, N node, Class<T> type) {
+		public <T> T hitFirstNodeOfType(Point2D.Double point, N node, Class<T> type) {
 			return type.cast(hitFirst(point, node, Hierarchy.getTypeFilter(type)));
 		}
 
@@ -208,7 +208,7 @@ public class HitMan
 		 * Deprecated to discourage the use of reflection
 		 */
 		@Deprecated
-		public <T> T hitFirstChildOfType(Point2D point, N node, Class<T> type) {
+		public <T> T hitFirstChildOfType(Point2D.Double point, N node, Class<T> type) {
 			return type.cast(hitFirstChild(point, node, Hierarchy.getTypeFilter(type)));
 		}
 		
@@ -216,7 +216,7 @@ public class HitMan
 		 * Deprecated to discourage the use of reflection
 		 */
 		@Deprecated
-		public <T> T hitDeepestNodeOfType(Point2D point, N group, final Class<T> type) {
+		public <T> T hitDeepestNodeOfType(Point2D.Double point, N group, final Class<T> type) {
 			return type.cast(hitDeepest(point, group, Hierarchy.getTypeFilter(type)));
 		}
 	}
@@ -254,7 +254,7 @@ public class HitMan
 		};
 	}
 
-	public static <N extends Node> Maybe<N> hitTestForSelection(Function<? super N, ? extends Maybe<? extends Touchable>> tp, Point2D point, N node, final Class<N> type) {
+	public static <N extends Node> Maybe<N> hitTestForSelection(Function<? super N, ? extends Maybe<? extends Touchable>> tp, Point2D.Double point, N node, final Class<N> type) {
 		Function<N, Iterable<? extends N>> children = new Function<N, Iterable<? extends N>>() {
 			@Override
 			public Iterable<? extends N> apply(N argument) {
@@ -284,7 +284,7 @@ public class HitMan
 		return nd;
 	}
 
-	public static Maybe<Node> hitTestForConnection(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D point, Node node) {
+	public static Maybe<Node> hitTestForConnection(Function<? super Node, ? extends Maybe<? extends Touchable>> tp, Point2D.Double point, Node node) {
 		Instance<Node> hitMan = new Instance<Node>(Hierarchy.children, tp);
 		
 		Maybe<Node> nd = hitMan.hitDeepest(point, node, new Function<Node, Boolean>() {
@@ -310,10 +310,10 @@ public class HitMan
 	 * @param p2 		The bottom-right corner of the rectangle
 	 * @return 			The collection of nodes fitting completely inside the rectangle
 	 */
-	public static <N> PCollection<N> boxHitTest (Function<? super N, ? extends Maybe<? extends Touchable>> t, Iterable<? extends N> nodes, Point2D p1, Point2D p2) {
+	public static <N> PCollection<N> boxHitTest (Function<? super N, ? extends Maybe<? extends Touchable>> t, Iterable<? extends N> nodes, Point2D.Double p1, Point2D.Double p2) {
 		PCollection<N> hit = TreePVector.<N>empty();
 
-		Rectangle2D rect = Geometry.createRectangle(p1, p2);
+		Rectangle2D.Double rect = Geometry.createRectangle(p1, p2);
 
 		for (N n : nodes) {
 			Touchable touchable = Maybe.Util.toNullable(t.apply(n));

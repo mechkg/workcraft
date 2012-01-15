@@ -22,7 +22,7 @@ package snapshot {
 	
 	sealed trait Node
 	
-	sealed case class VisualProperties(label : String, labelPositioning: LabelPositioning, position: Point2D)
+	sealed case class VisualProperties(label : String, labelPositioning: LabelPositioning, position: Point2D.Double)
 	
 	sealed abstract case class Component(val visualProperties:VisualProperties) extends Node
 	
@@ -34,7 +34,7 @@ package snapshot {
       		visitor.visitBezier(this)
 		  }
 		}
-		sealed case class Polyline(cps : List[Point2D]) extends VisualArc with StaticPolylineData {
+		sealed case class Polyline(cps : List[Point2D.Double]) extends VisualArc with StaticPolylineData {
 		  override def controlPoints = asJavaList(cps)
 		  override def accept[T](visitor : StaticConnectionDataVisitor[T]) = {
       		visitor.visitPolyline(this)

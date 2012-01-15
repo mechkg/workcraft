@@ -42,11 +42,11 @@ object SelectionTool {
   def create[N](
     nodes: Expression[Iterable[N]],
     selection: ModifiableExpression[PSet[N]],
-    movableController: N => Maybe[ModifiableExpression[Point2D]],
-    snap: Point2D => Point2D,
+    movableController: N => Maybe[ModifiableExpression[Point2D.Double]],
+    snap: Point2D.Double => Point2D.Double,
     touchableProvider: N => Expression[Touchable]
     ) = {
-    val dragHandler = new MoveDragHandler[N](selection.jexpr, ((m : Maybe[ModifiableExpression[Point2D]]) => asMaybe(for (m <- m) yield m.jexpr)) compose movableController, snap)
+    val dragHandler = new MoveDragHandler[N](selection.jexpr, ((m : Maybe[ModifiableExpression[Point2D.Double]]) => asMaybe(for (m <- m) yield m.jexpr)) compose movableController, snap)
     val genericSelectionTool = new GenericSelectionTool[N](selection.jexpr, HitTester.create(nodes, touchableProvider), dragHandler)
 
     new SelectionTool[N](genericSelectionTool.getMouseListener, (viewport, focus) => genericSelectionTool.userSpaceContent(viewport), genericSelectionTool.effectiveSelection)

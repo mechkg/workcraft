@@ -38,9 +38,9 @@ import org.workcraft.util.GUI;
 public class NodeGeneratorTool extends AbstractTool {
 	private NodeGenerator generator;
 	protected int hotKeyCode;
-	private final Function<Point2D, Point2D> snap;
+	private final Function<Point2D.Double, Point2D.Double> snap;
 
-	public NodeGeneratorTool (NodeGenerator generator, Function<Point2D, Point2D> snap) {
+	public NodeGeneratorTool (NodeGenerator generator, Function<Point2D.Double, Point2D.Double> snap) {
 		this.generator = generator;
 		this.snap = snap;
 	}

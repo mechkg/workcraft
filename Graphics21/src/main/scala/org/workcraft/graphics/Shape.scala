@@ -9,6 +9,9 @@ import java.awt.BasicStroke
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.util.Maybe
 import java.awt.Stroke
+import java.awt.geom.Rectangle2D
+
+import org.workcraft.graphics.Java2DDecoration._
 
 object Shape {
   def colorisableGraphicalContent(s: java.awt.Shape, stroke: Option[(Stroke, Color)], fillColor: Option[Color]) = new ColorisableGraphicalContent {
@@ -38,9 +41,9 @@ object Shape {
       case None => s
     }
     
-    new RichGraphicalContent(gc, outline.getBounds2D, new Touchable {
-      def hitTest(p:Point2D) = outline.contains(p.getX, p.getY) || s.contains(p.getX, p.getY)
-      def getBoundingBox = outline.getBounds2D
+    new RichGraphicalContent(gc, outline.bounds, new Touchable {
+      def hitTest(p:Point2D.Double) = outline.contains(p.getX, p.getY) || s.contains(p.getX, p.getY)
+      def getBoundingBox = outline.bounds
       def getCenter = new Point2D.Double(0,0)
     })
   }

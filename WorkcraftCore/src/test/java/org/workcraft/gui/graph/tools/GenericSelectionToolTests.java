@@ -29,7 +29,7 @@ public class GenericSelectionToolTests {
 				return new DragHandle() {
 					
 					@Override
-					public void setOffset(Point2D offset) {
+					public void setOffset(Point2D.Double offset) {
 						// TODO Auto-generated method stub
 						
 					}
@@ -54,12 +54,12 @@ public class GenericSelectionToolTests {
 		HitTester<? extends Dummy> hitTester = new HitTester<Dummy>() {
 
 			@Override
-			public Maybe<Dummy> hitTest(Point2D point) {
+			public Maybe<Dummy> hitTest(Point2D.Double point) {
 				return Maybe.Util.just(obj);
 			}
 
 			@Override
-			public PCollection<Dummy> boxHitTest(Point2D boxStart, Point2D boxEnd) {
+			public PCollection<Dummy> boxHitTest(Point2D.Double boxStart, Point2D.Double boxEnd) {
 				return null;
 			}
 		};

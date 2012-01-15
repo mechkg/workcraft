@@ -19,11 +19,11 @@ public class Label {
 	
 	public static Expression<BoundedColorisableGraphicalContent> mkLabel(final Font font, final Expression<? extends String> text) {
 		
-		final Expression<? extends Rectangle2D> textBB = fmap(new Function<String, Rectangle2D>(){
+		final Expression<? extends Rectangle2D.Double> textBB = fmap(new Function<String, Rectangle2D.Double>(){
 					@Override
-					public Rectangle2D apply(String textValue) {
+					public Rectangle2D.Double apply(String textValue) {
 						GlyphVector gv = font.createGlyphVector(podgonFontRenderContext(), textValue);
-						return gv.getVisualBounds();
+						return (Rectangle2D.Double)gv.getVisualBounds();
 					}
 				}, text);
 

@@ -11,11 +11,11 @@ import org.workcraft.util.Geometry.CurveSplitResult;
 public class BezierGui {
 	
 	public static ParametricCurve makeCurve(VisualConnectionProperties connectionInfo, VisualConnectionContext context, RelativePoint cp1, RelativePoint cp2) {
-		CubicCurve2D curve2D = new CubicCurve2D.Double();
-		Point2D c1 = context.component1().getCenter();
-		Point2D c2 = context.component2().getCenter();
-		Point2D absoluteCp1 = cp1.toSpace(c1, c2);
-		Point2D absoluteCp2 = cp2.toSpace(c1, c2);
+		CubicCurve2D.Double curve2D = new CubicCurve2D.Double();
+		Point2D.Double c1 = context.component1().getCenter();
+		Point2D.Double c2 = context.component2().getCenter();
+		Point2D.Double absoluteCp1 = cp1.toSpace(c1, c2);
+		Point2D.Double absoluteCp2 = cp2.toSpace(c1, c2);
 		curve2D.setCurve(c1, absoluteCp1, absoluteCp2, c2);
 		return new Curve(curve2D);
 	}
@@ -29,14 +29,14 @@ public class BezierGui {
 			return secondSplit.curve1;
 		}
 		
-		public Curve(CubicCurve2D fullCurve2D) {
+		public Curve(CubicCurve2D.Double fullCurve2D) {
 			this.fullCurve2D = fullCurve2D;
 		}
 		
-		private final CubicCurve2D fullCurve2D;
+		private final CubicCurve2D.Double fullCurve2D;
 		
 		@Override
-		public double getNearestPointT(Point2D pt) {
+		public double getNearestPointT(Point2D.Double pt) {
 			// FIXME: should be done using some proper algorithm
 			Double nearest = 0.0;
 			double nearestDist = Double.MAX_VALUE;
@@ -54,22 +54,22 @@ public class BezierGui {
 		}
 
 		@Override
-		public Point2D getPointOnCurve(double t) {
+		public Point2D.Double getPointOnCurve(double t) {
 			return Geometry.getPointOnCubicCurve(fullCurve2D, t);
 		}
 		@Override
-		public Point2D getDerivativeAt(double t) {
+		public Point2D.Double getDerivativeAt(double t) {
 			return Geometry.getDerivativeOfCubicCurve(fullCurve2D, t);
 		}
 
 		@Override
-		public Point2D getSecondDerivativeAt(double t) {
+		public Point2D.Double getSecondDerivativeAt(double t) {
 			return Geometry.getSecondDerivativeOfCubicCurve(fullCurve2D, t);
 		}
 		
 		@Override
-		public Rectangle2D getBoundingBox() {
-			Rectangle2D boundingBox = fullCurve2D.getBounds2D();
+		public Rectangle2D.Double getBoundingBox() {
+			Rectangle2D.Double boundingBox = (Rectangle2D.Double)fullCurve2D.getBounds2D();
 			boundingBox.add(boundingBox.getMinX()-VisualConnection.HIT_THRESHOLD, boundingBox.getMinY()-VisualConnection.HIT_THRESHOLD);
 			boundingBox.add(boundingBox.getMinX()-VisualConnection.HIT_THRESHOLD, boundingBox.getMaxY()+VisualConnection.HIT_THRESHOLD);
 			boundingBox.add(boundingBox.getMaxX()+VisualConnection.HIT_THRESHOLD, boundingBox.getMinY()-VisualConnection.HIT_THRESHOLD);

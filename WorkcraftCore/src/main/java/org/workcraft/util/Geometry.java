@@ -35,31 +35,30 @@ import org.workcraft.dom.visual.connections.VisualConnectionProperties;
 
 public class Geometry {
 
-	public static Point2D lerp(Point2D p1, Point2D p2, double t)
-	{
+	public static Point2D.Double lerp(Point2D.Double p1, Point2D.Double p2, double t) {
 		return new Point2D.Double(p1.getX()*(1-t)+p2.getX()*t, p1.getY()*(1-t)+p2.getY()*t);
 	}
 	
-	public static Point2D add (Point2D p1, Point2D p2) {
-		Point2D result = (Point2D)p1.clone();
+	public static Point2D.Double add (Point2D.Double p1, Point2D.Double p2) {
+		Point2D.Double result = (Point2D.Double)p1.clone();
 		result.setLocation(result.getX() + p2.getX(), result.getY() + p2.getY());
 		return result;
 	}
 
-	public static Point2D subtract (Point2D p1, Point2D p2) {
-		Point2D result = (Point2D)p1.clone();
+	public static Point2D.Double subtract (Point2D.Double p1, Point2D.Double p2) {
+		Point2D.Double result = (Point2D.Double)p1.clone();
 		result.setLocation(result.getX() - p2.getX(), result.getY() - p2.getY());
 		return result;
 	}
 	
-	public static Point2D rotate90CCW (Point2D p) {
-		Point2D result = (Point2D)p.clone();
+	public static Point2D.Double rotate90CCW (Point2D.Double p) {
+		Point2D.Double result = (Point2D.Double)p.clone();
 		result.setLocation(-p.getY(), p.getX());
 		return result;
 	}
 	
-	public static Point2D normalize (Point2D p) {
-		Point2D result = (Point2D)p.clone();
+	public static Point2D.Double normalize (Point2D.Double p) {
+		Point2D.Double result = (Point2D.Double)p.clone();
 		double length = p.distance(0, 0);
 		if (length < 0.0000001)
 			result.setLocation(0, 0);
@@ -78,74 +77,74 @@ public class Geometry {
 		return v1.getX() * v2.getX() + v1.getY() * v2.getY();
 	}
 	
-	public static Point2D multiply (Point2D p, double a) {
-		Point2D result = (Point2D)p.clone();
+	public static Point2D.Double multiply (Point2D.Double p, double a) {
+		Point2D.Double result = (Point2D.Double)p.clone();
 		result.setLocation(p.getX() * a, p.getY() * a);
 		return result;
 	}
 	
 	public static class CurveSplitResult
 	{
-		public final CubicCurve2D curve1;
-		public final CubicCurve2D curve2;
+		public final CubicCurve2D.Double curve1;
+		public final CubicCurve2D.Double curve2;
 
-		public CurveSplitResult(CubicCurve2D curve1, CubicCurve2D curve2)
+		public CurveSplitResult(CubicCurve2D.Double curve1, CubicCurve2D.Double curve2)
 		{
 			this.curve1 = curve1;
 			this.curve2 = curve2;
 		}
 	}
 	
-	public static CubicCurve2D buildCurve(Point2D p1, Point2D cp1, Point2D cp2, Point2D p2) {
+	public static CubicCurve2D.Double buildCurve(Point2D.Double p1, Point2D.Double cp1, Point2D.Double cp2, Point2D.Double p2) {
 		return new CubicCurve2D.Double(p1.getX(), p1.getY(), cp1.getX(), cp1.getY(), cp2.getX(), cp2.getY(),
 				p2.getX(), p2.getY()
 		);
 	}
 
-	public static CurveSplitResult splitCubicCurve(CubicCurve2D curve, double t) {
-		Point2D a1 = lerp(curve.getP1(), curve.getCtrlP1(), t);
-		Point2D a2 = lerp(curve.getCtrlP1(), curve.getCtrlP2(), t);
-		Point2D a3 = lerp(curve.getCtrlP2(), curve.getP2(), t);
+	public static CurveSplitResult splitCubicCurve(CubicCurve2D.Double curve, double t) {
+		Point2D.Double a1 = lerp((Point2D.Double)curve.getP1(), (Point2D.Double)curve.getCtrlP1(), t);
+		Point2D.Double a2 = lerp((Point2D.Double)curve.getCtrlP1(), (Point2D.Double)curve.getCtrlP2(), t);
+		Point2D.Double a3 = lerp((Point2D.Double)curve.getCtrlP2(), (Point2D.Double)curve.getP2(), t);
 
-		Point2D b1 = lerp(a1, a2, t);
-		Point2D b2 = lerp(a2, a3, t);
+		Point2D.Double b1 = lerp(a1, a2, t);
+		Point2D.Double b2 = lerp(a2, a3, t);
 
-		Point2D c = lerp(b1, b2, t);
+		Point2D.Double c = lerp(b1, b2, t);
 
-		return new CurveSplitResult(buildCurve(curve.getP1(), a1, b1, c), buildCurve(c, b2, a3, curve.getP2()));
+		return new CurveSplitResult(buildCurve((Point2D.Double)curve.getP1(), a1, b1, c), buildCurve(c, b2, a3, (Point2D.Double)curve.getP2()));
 	}
 	
-	public static Point2D getPointOnCubicCurve (CubicCurve2D curve, double t) {
-		Point2D a1 = lerp(curve.getP1(), curve.getCtrlP1(), t);
-		Point2D a2 = lerp(curve.getCtrlP1(), curve.getCtrlP2(), t);
-		Point2D a3 = lerp(curve.getCtrlP2(), curve.getP2(), t);
+	public static Point2D.Double getPointOnCubicCurve (CubicCurve2D.Double curve, double t) {
+		Point2D.Double a1 = lerp((Point2D.Double)curve.getP1(), (Point2D.Double)curve.getCtrlP1(), t);
+		Point2D.Double a2 = lerp((Point2D.Double)curve.getCtrlP1(), (Point2D.Double)curve.getCtrlP2(), t);
+		Point2D.Double a3 = lerp((Point2D.Double)curve.getCtrlP2(), (Point2D.Double)curve.getP2(), t);
 
-		Point2D b1 = lerp(a1, a2, t);
-		Point2D b2 = lerp(a2, a3, t);
+		Point2D.Double b1 = lerp(a1, a2, t);
+		Point2D.Double b2 = lerp(a2, a3, t);
 
 		return lerp(b1, b2, t);
 	}
 		
-	public static Point2D getDerivativeOfCubicCurve (CubicCurve2D curve, double t) {
+	public static Point2D.Double getDerivativeOfCubicCurve (CubicCurve2D.Double curve, double t) {
 		
-		Point2D a1 = subtract(curve.getCtrlP1(), curve.getP1());
-		Point2D a2 = subtract(curve.getCtrlP2(), curve.getCtrlP1());
-		Point2D a3 = subtract(curve.getP2(), curve.getCtrlP2());
+		Point2D.Double a1 = subtract((Point2D.Double)curve.getCtrlP1(), (Point2D.Double)curve.getP1());
+		Point2D.Double a2 = subtract((Point2D.Double)curve.getCtrlP2(), (Point2D.Double)curve.getCtrlP1());
+		Point2D.Double a3 = subtract((Point2D.Double)curve.getP2(), (Point2D.Double)curve.getCtrlP2());
 
-		Point2D b1 = lerp(a1, a2, t);
-		Point2D b2 = lerp(a2, a3, t);
+		Point2D.Double b1 = lerp(a1, a2, t);
+		Point2D.Double b2 = lerp(a2, a3, t);
 
 		return multiply(lerp(b1, b2, t), 3.0);
 	}
 	
-	public static Point2D getSecondDerivativeOfCubicCurve (CubicCurve2D curve, double t)
+	public static Point2D.Double getSecondDerivativeOfCubicCurve (CubicCurve2D.Double curve, double t)
 	{		
-		Point2D a1 = subtract(curve.getCtrlP1(), curve.getP1());
-		Point2D a2 = subtract(curve.getCtrlP2(), curve.getCtrlP1());
-		Point2D a3 = subtract(curve.getP2(), curve.getCtrlP2());
+		Point2D.Double a1 = subtract((Point2D.Double)curve.getCtrlP1(), (Point2D.Double)curve.getP1());
+		Point2D.Double a2 = subtract((Point2D.Double)curve.getCtrlP2(), (Point2D.Double)curve.getCtrlP1());
+		Point2D.Double a3 = subtract((Point2D.Double)curve.getP2(), (Point2D.Double)curve.getCtrlP2());
 
-		Point2D b1 = subtract(a2, a1);
-		Point2D b2 = subtract(a3, a2);
+		Point2D.Double b1 = subtract(a2, a1);
+		Point2D.Double b2 = subtract(a3, a2);
 
 		return multiply(lerp(b1, b2, t), 9.0);
 	}
@@ -165,7 +164,7 @@ public class Geometry {
 
 	public static double getBorderPointParameter (Touchable collisionNode, ParametricCurve curve, double tStart, double tEnd) 
 	{
-		Point2D point = new Point2D.Double();
+		Point2D.Double point = new Point2D.Double();
 
 		while(Math.abs(tEnd-tStart) > 1e-6)
 		{
@@ -215,16 +214,16 @@ public class Geometry {
 	 * Interpretes points as complex numbers and multiplies them.
 	 * Can be used for the scale-with-rotate (translates 'a' from the basis of (b, rotate90CCW(b)) to the basis of ((1, 0), (0, 1))) 
 	 */
-	public static Point2D complexMultiply(Point2D a, Point2D b) {
+	public static Point2D.Double complexMultiply(Point2D.Double a, Point2D.Double b) {
 		return new Point2D.Double(a.getX() * b.getX() - a.getY() * b.getY(), a.getX() * b.getY() + a.getY() * b.getX());
 	}
 	
-	public static Maybe<Point2D> complexInverse(Point2D a) {
+	public static Maybe<Point2D.Double> complexInverse(Point2D.Double a) {
 		double sq = a.distanceSq(0, 0);
 		if(sq < 0.0000001)
 			return Maybe.Util.nothing();
 		else
-			return Maybe.Util.<Point2D>just(new Point2D.Double(a.getX() / sq, -a.getY() / sq));
+			return Maybe.Util.<Point2D.Double>just(new Point2D.Double(a.getX() / sq, -a.getY() / sq));
 	}
 	
 	public static Point2D changeBasis (Point2D p, Point2D vx, Point2D vy) {
@@ -255,16 +254,16 @@ public class Geometry {
 		return x1 * y2 - y1 * x2;
 	}
 
-	public static TwoWayFunction<Point2D, Point2D> addFunc(final Point2D shift) {
-		return new TwoWayFunction<Point2D, Point2D>() {
+	public static TwoWayFunction<Point2D.Double, Point2D.Double> addFunc(final Point2D.Double shift) {
+		return new TwoWayFunction<Point2D.Double, Point2D.Double>() {
 			
 			@Override
-			public Point2D reverse(Point2D b) {
+			public Point2D.Double reverse(Point2D.Double b) {
 				return subtract(b, shift);
 			}
 			
 			@Override
-			public Point2D apply(Point2D a) {
+			public Point2D.Double apply(Point2D.Double a) {
 				return add(a, shift);
 			}
 		};

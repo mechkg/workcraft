@@ -11,17 +11,17 @@ public class BoundedColorisableGraphicalContent {
 	public static BoundedColorisableGraphicalContent EMPTY = new BoundedColorisableGraphicalContent(ColorisableGraphicalContent.EMPTY, new Rectangle2D.Double());
 	
 	
-	public BoundedColorisableGraphicalContent(ColorisableGraphicalContent graphics, Rectangle2D boundingBox) {
+	public BoundedColorisableGraphicalContent(ColorisableGraphicalContent graphics, Rectangle2D.Double boundingBox) {
 		this.graphics = graphics;
 		this.boundingBox = boundingBox;
 	}
 
 	public final ColorisableGraphicalContent graphics;
-	public final Rectangle2D boundingBox;
+	public final Rectangle2D.Double boundingBox;
 
-	public static Function2<ColorisableGraphicalContent, Rectangle2D, BoundedColorisableGraphicalContent> constructor = new Function2<ColorisableGraphicalContent, Rectangle2D, BoundedColorisableGraphicalContent>() {
+	public static Function2<ColorisableGraphicalContent, Rectangle2D.Double, BoundedColorisableGraphicalContent> constructor = new Function2<ColorisableGraphicalContent, Rectangle2D.Double, BoundedColorisableGraphicalContent>() {
 		@Override
-		public BoundedColorisableGraphicalContent apply(ColorisableGraphicalContent argument1, Rectangle2D argument2) {
+		public BoundedColorisableGraphicalContent apply(ColorisableGraphicalContent argument1, Rectangle2D.Double argument2) {
 			return new BoundedColorisableGraphicalContent(argument1, argument2);
 		}
 	};

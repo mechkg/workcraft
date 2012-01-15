@@ -29,18 +29,18 @@ import org.workcraft.util.Function;
 public interface Touchable {
 	Function<Touchable, Rectangle2D> boundingBoxGetter = new Function<Touchable, Rectangle2D>(){
 		@Override
-		public Rectangle2D apply(Touchable argument) {
+		public Rectangle2D.Double apply(Touchable argument) {
 			return argument.getBoundingBox();
 		}
 	};
-	Function<Touchable, Point2D> centerGetter = new Function<Touchable, Point2D>() {
+	Function<Touchable, Point2D.Double> centerGetter = new Function<Touchable, Point2D.Double>() {
 
 		@Override
-		public Point2D apply(Touchable argument) {
+		public Point2D.Double apply(Touchable argument) {
 			return argument.getCenter();
 		}
 	};
-	public boolean hitTest(Point2D point);
-	public Rectangle2D getBoundingBox();
-	public Point2D getCenter();
+	public boolean hitTest(Point2D.Double point);
+	public Rectangle2D.Double getBoundingBox();
+	public Point2D.Double getCenter();
 }

@@ -15,14 +15,14 @@ import org.workcraft.util.Maybe;
 import pcollections.PCollection;
 
 public interface HitTester<N> {
-	Maybe<N> hitTest(Point2D point);
-	PCollection<N> boxHitTest(Point2D boxStart, Point2D boxEnd);
+	Maybe<N> hitTest(Point2D.Double point);
+	PCollection<N> boxHitTest(Point2D.Double boxStart, Point2D.Double boxEnd);
 	
 	public class Util {
-		public static <N> Function <Point2D, Maybe<N>> asPointHitTester (final HitTester<N> hitTester) {
-			return new Function<Point2D, Maybe<N>>() {
+		public static <N> Function <Point2D.Double, Maybe<N>> asPointHitTester (final HitTester<N> hitTester) {
+			return new Function<Point2D.Double, Maybe<N>>() {
 				@Override
-				public Maybe<N> apply(Point2D argument) {
+				public Maybe<N> apply(Point2D.Double argument) {
 					return hitTester.hitTest(argument);
 				}
 			};
@@ -32,12 +32,12 @@ public interface HitTester<N> {
 		public static HitTester<VisualNode> reflectiveHitTestForSelection(final VisualModel model, final Function<? super Node, ? extends Maybe<? extends Touchable>> tp) {
 			return new HitTester<VisualNode>() {
 				@Override
-				public Maybe<VisualNode> hitTest(Point2D point) {
+				public Maybe<VisualNode> hitTest(Point2D.Double point) {
 					return HitMan.hitTestForSelection(tp, point, (VisualNode)model.getRoot(), VisualNode.class);
 				}
 
 				@Override
-				public PCollection<VisualNode> boxHitTest(Point2D boxStart, Point2D boxEnd) {
+				public PCollection<VisualNode> boxHitTest(Point2D.Double boxStart, Point2D.Double boxEnd) {
 					return (PCollection<VisualNode>)(PCollection<?>)HitMan.boxHitTest(tp, eval(model.getRoot().children()), boxStart, boxEnd);
 				}
 			};

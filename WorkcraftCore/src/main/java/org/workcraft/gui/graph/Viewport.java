@@ -212,8 +212,8 @@ public class Viewport {
 	 * @return
 	 * The corresponding point in user space (in double precision)
 	 */
-	public Point2D screenToUser (Point pointInScreenSpace) {
-		Point2D result = new Point2D.Double();
+	public Point2D.Double screenToUser (Point pointInScreenSpace) {
+		Point2D.Double result = new Point2D.Double();
 		GlobalCache.eval(finalInverseTransform).transform(pointInScreenSpace, result);
 		return result;
 	}

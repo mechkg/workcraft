@@ -19,16 +19,16 @@ case class StgToolsProvider(visualStg : ModifiableExpression[VisualStg]) {
 	private final StgEditorState editorState;*/
 
   val generators = List(
-		  (StgOperations.createPlace(_ : Point2D, "p"), "images/icons/svg/place.svg", "Place", KeyEvent.VK_P),
-		  (StgOperations.createSignalTransition(_ : Point2D), "images/icons/svg/signal-transition.svg", "Signal Transition", KeyEvent.VK_T),
-		  (StgOperations.createDummyTransition(_ : Point2D, "d"), "images/icons/svg/transition.svg", "Dummy Transition", KeyEvent.VK_D)
+		  (StgOperations.createPlace(_ : Point2D.Double, "p"), "images/icons/svg/place.svg", "Place", KeyEvent.VK_P),
+		  (StgOperations.createSignalTransition(_ : Point2D.Double), "images/icons/svg/signal-transition.svg", "Signal Transition", KeyEvent.VK_T),
+		  (StgOperations.createDummyTransition(_ : Point2D.Double, "d"), "images/icons/svg/transition.svg", "Dummy Transition", KeyEvent.VK_D)
   )
   
-  def mkNodeGeneratorTool(generator : (Point2D => State[VisualStg, Any], java.lang.String, java.lang.String, Int)) = {
+  def mkNodeGeneratorTool(generator : (Point2D.Double => State[VisualStg, Any], java.lang.String, java.lang.String, Int)) = {
     val (g, iconPath, name, hotkey) = generator
     new NodeGeneratorTool(new NodeGenerator{
       val getIdentification = GraphEditorToolUtil.createButton(name, iconPath, hotkey)
-	  def generate(where : Point2D ) = visualStg.modify(g(where)~>_)
+	  def generate(where : Point2D.Double) = visualStg.modify(g(where)~>_)
     }, asFunctionObject (x => x))
   }
   

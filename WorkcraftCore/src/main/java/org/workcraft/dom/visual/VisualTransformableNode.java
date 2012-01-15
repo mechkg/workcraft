@@ -126,7 +126,7 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 	}
 	
 	@NoAutoSerialisation
-	public ModifiableExpression<Point2D> position() {
+	public ModifiableExpression<Point2D.Double> position() {
 		return new AffineTransform_Position(transform());
 	}
 

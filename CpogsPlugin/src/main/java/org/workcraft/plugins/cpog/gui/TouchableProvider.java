@@ -8,23 +8,23 @@ import org.workcraft.util.Function;
 
 public class TouchableProvider {
 
-	public static Function<Rectangle2D, Touchable> bbToTouchable = new Function<Rectangle2D, Touchable>() {
+	public static Function<Rectangle2D.Double, Touchable> bbToTouchable = new Function<Rectangle2D.Double, Touchable>() {
 		@Override
-		public Touchable apply(final Rectangle2D bb) {
+		public Touchable apply(final Rectangle2D.Double bb) {
 			return new Touchable(){
 
 				@Override
-				public boolean hitTest(Point2D point) {
+				public boolean hitTest(Point2D.Double point) {
 					return getBoundingBox().contains(point);
 				}
 
 				@Override
-				public Rectangle2D getBoundingBox() {
+				public Rectangle2D.Double getBoundingBox() {
 					return bb;
 				}
 
 				@Override
-				public Point2D getCenter() {
+				public Point2D.Double getCenter() {
 					return new Point2D.Double(0, 0);
 				}
 			};

@@ -64,12 +64,12 @@ object ControlPointsTool {
     override def getHotKeyCode = java.awt.event.KeyEvent.VK_Q
   }  
 
-  def controlPointGraphics(position: Point2D) =
+  def controlPointGraphics(position: Point2D.Double) =
     circle(controlPointSize, None, Some(Color.BLUE)) translate position
 
-  def bezierControlPointGraphics(position: Point2D, vertexPosition: Point2D) =
+  def bezierControlPointGraphics(position: Point2D.Double, vertexPosition: Point2D.Double) =
     {
-      val p = new Path2D.Double()
+      val p = new Path2D.Double
       p.moveTo(vertexPosition.getX, vertexPosition.getY)
       p.lineTo(position.getX, position.getY)
 
@@ -78,11 +78,11 @@ object ControlPointsTool {
       cpg over (path(p, new BasicStroke(0.02f), Color.GRAY.brighter, 0), cpg.touchable)
     }
 
-  def create(selectedArcs: Expression[List[(Point2D, Point2D, VisualArc)]], snap: Point2D => Point2D) = {
+  def create(selectedArcs: Expression[List[(Point2D.Double, Point2D.Double, VisualArc)]], snap: Point2D.Double => Point2D.Double) = {
 
     val selectedControlPoints = org.workcraft.dependencymanager.advanced.user.Variable.create[PSet[ControlPoint]](HashTreePSet.empty())
 
-    def getControlPoints(arc: (Point2D, Point2D, VisualArc)): List[ControlPoint] =
+    def getControlPoints(arc: (Point2D.Double, Point2D.Double, VisualArc)): List[ControlPoint] =
       {
         val (firstPos, secondPos, visual) = arc
         visual match {
@@ -91,7 +91,7 @@ object ControlPointsTool {
 
             def convertCp(cp: ModifiableExpression[RelativePoint]) = ModifiableExpression(
               for (cp <- cp) yield cp.toSpace(firstPos, secondPos),
-              (v: Point2D) => Maybe.Util.doIfJust(RelativePoint.fromSpace(firstPos, secondPos, v), cp.setValue)
+              (v: Point2D.Double) => Maybe.Util.doIfJust(RelativePoint.fromSpace(firstPos, secondPos, v), cp.setValue)
               )
             val cp1_ = convertCp(cp1)
             val cp2_ = convertCp(cp2)
@@ -115,7 +115,7 @@ object ControlPointsTool {
     
 
     def controlPointMovableController(cp: ControlPoint) = just(cp.position)
-    val cpDragHandler = new MoveDragHandler[ControlPoint](selectedControlPoints, asFunctionObject(((x : Maybe[ModifiableExpression[Point2D]]) => asMaybe(for(x <- x) yield x.jexpr)) compose controlPointMovableController), asFunctionObject(snap))
+    val cpDragHandler = new MoveDragHandler[ControlPoint](selectedControlPoints, asFunctionObject(((x : Maybe[ModifiableExpression[Point2D.Double]]) => asMaybe(for(x <- x) yield x.jexpr)) compose controlPointMovableController), asFunctionObject(snap))
 
     val cpHitTester = CustomToolsProvider.createHitTester[ControlPoint](visibleControlPointsJ.jexpr, asFunctionObject((cp: ControlPoint) => for (g <- cp.graphics) yield g.touchable))
     def cpPainter(cp: ControlPoint) = for (g <- cp.graphics) yield g.graphics

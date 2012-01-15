@@ -61,7 +61,7 @@ package org.workcraft.graphics {
         }
     }
     
-    def transform (bb : Rectangle2D, transformation : AffineTransform) : Rectangle2D = 
+    def transform (bb : Rectangle2D.Double, transformation : AffineTransform) : Rectangle2D.Double = 
     {
       val a = new Point2D.Double(bb.getMinX, bb.getMinY)
       val b = new Point2D.Double(bb.getMaxX, bb.getMaxY)

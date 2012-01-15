@@ -268,7 +268,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		return view;
 	}
 
-	public Point2D snap(Point2D point) {
+	public Point2D.Double snap(Point2D.Double point) {
 		return new Point2D.Double(grid.snapCoordinate(point.getX()), grid.snapCoordinate(point.getY()));
 	}
 	
@@ -296,10 +296,10 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 	}
 
 	@Override
-	public Function<Point2D, Point2D> snapFunction() {
-		return new Function<Point2D, Point2D>() {
+	public Function<Point2D.Double, Point2D.Double> snapFunction() {
+		return new Function<Point2D.Double, Point2D.Double>() {
 			@Override
-			public Point2D apply(Point2D argument) {
+			public Point2D.Double apply(Point2D.Double argument) {
 				return snap(argument);
 			}
 		};	

@@ -123,8 +123,8 @@ object SnapshotMaker {
   def makeVisualArcSnapshot(visualArc : MVisualArc) : Expression[VisualArc] = {
     visualArc match {
       case MVisualArc.Bezier(cp1, cp2) => for(cp1 <- cp1; cp2 <- cp2) yield VisualArc.Bezier(cp1, cp2)
-      case MVisualArc.Polyline(cps) => for(cps <- (for( me <- cps) yield me.expr).sequence[Expression, Point2D](
-    		  implicitly[<:<[Expression[Point2D],Expression[Point2D]]], 
+      case MVisualArc.Polyline(cps) => for(cps <- (for( me <- cps) yield me.expr).sequence[Expression, Point2D.Double](
+    		  implicitly[<:<[Expression[Point2D.Double],Expression[Point2D.Double]]], 
     		  implicitly[scalaz.Traverse[List]], 
     		  implicitly[scalaz.Applicative[Expression]])
           ) yield VisualArc.Polyline(cps)

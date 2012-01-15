@@ -38,15 +38,15 @@ object VisualArc {
     override def cp1 = p1.jexpr
     override def cp2 = p2.jexpr
   }
-  case class Polyline(cp: List[ModifiableExpression[Point2D]]) extends VisualArc with org.workcraft.dom.visual.connections.PolylineData {
+  case class Polyline(cp: List[ModifiableExpression[Point2D.Double]]) extends VisualArc with org.workcraft.dom.visual.connections.PolylineData {
     override def controlPoints = asJavaCollection(for(m <- cp) yield m.jexpr)
   }
 
   
-  def makePolylineVisitable(p: Iterable[Point2D]) : StaticVisualConnectionData = new StaticVisualConnectionData {
+  def makePolylineVisitable(p: Iterable[Point2D.Double]) : StaticVisualConnectionData = new StaticVisualConnectionData {
     override def accept[T](visitor: StaticConnectionDataVisitor[T]): T = {
       val data = new StaticPolylineData {
-        override def controlPoints = new java.util.ArrayList[Point2D](p)
+        override def controlPoints = new java.util.ArrayList[Point2D.Double](p)
       }
 
       return visitor.visitPolyline(data)

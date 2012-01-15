@@ -21,14 +21,14 @@ public class DragHandlerTests {
 		Expression<? extends PCollection<? extends Dummy>> selection = Expressions.constant(selectionV);
 		MovableController<Dummy> movableController = new MovableController<Dummy>(){
 			@Override
-			public Maybe<? extends ModifiableExpression<Point2D>> apply(Dummy node) {
+			public Maybe<? extends ModifiableExpression<Point2D.Double>> apply(Dummy node) {
 				return just(node.coordinate);
 			}
 		};
-		Function<Point2D, Point2D> snap = new Function<Point2D, Point2D>() {
+		Function<Point2D.Double, Point2D.Double> snap = new Function<Point2D.Double, Point2D.Double>() {
 
 			@Override
-			public Point2D apply(Point2D argument) {
+			public Point2D.Double apply(Point2D.Double argument) {
 				return argument;
 			}
 		};

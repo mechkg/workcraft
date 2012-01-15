@@ -9,6 +9,7 @@ import java.awt.geom.Point2D
 import java.awt.geom.Line2D
 import java.awt.geom.Path2D
 import org.workcraft.dom.visual.Touchable
+import org.workcraft.graphics.Java2DDecoration._
 
 object Path {
   def colorisableGraphicalContent(p: Path2D, stroke: BasicStroke, color: Color) = new ColorisableGraphicalContent {
@@ -23,7 +24,7 @@ object Path {
     }
   }
   
-  def visualBounds (p: Path2D) = p.getBounds2D
+  def visualBounds (p: Path2D) = p.bounds
 
   def touchable(p: Path2D, threshold: Double) = new Touchable {
     val pathError = 0.01
@@ -79,14 +80,13 @@ object Path {
       segments
     }
 
-    override def hitTest(point: Point2D) = {
+    override def hitTest(point: Point2D.Double) = {
       testSegments(segments, point, threshold)
     }
-    override def getBoundingBox = p.getBounds2D
+    override def getBoundingBox = p.bounds
     override def getCenter = new Point2D.Double(0, 0)
   }
 
   def richGraphicalContent(p: Path2D, stroke: BasicStroke, color: Color, touchThreshold: Double) =
     new RichGraphicalContent(colorisableGraphicalContent(p, stroke, color), visualBounds(p), touchable(p, touchThreshold))
-
 }

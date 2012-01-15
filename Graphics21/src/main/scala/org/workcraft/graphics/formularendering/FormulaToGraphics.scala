@@ -14,10 +14,10 @@ import scalaz.Monad
 import org.workcraft.scala.Scalaz._ 
 import scala.collection.JavaConversions._
 import org.workcraft.scala.Expressions._
+import org.workcraft.graphics.Java2DDecoration._
 
 package org.workcraft.graphics {
 package object formularendering {
-	import RichRectangle2D._
 
 	class UseUnicode(v : Boolean) {
 	  val value = v
@@ -79,8 +79,8 @@ package object formularendering {
 		def print(font : Font, c : Char) : FormulaRenderingResult = {
 			val glyphs = font.createGlyphVector(c)
 			
-			FormulaRenderingResult(glyphs.getLogicalBounds(), 
-			    glyphs.getVisualBounds(),
+			FormulaRenderingResult(glyphs.logicalBounds,
+			    glyphs.visualBounds,
 			    List((glyphs, new Point2D.Double(0, 0))),
 			    List());
 		}

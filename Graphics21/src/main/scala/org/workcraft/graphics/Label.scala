@@ -7,6 +7,8 @@ import java.awt.Color
 import org.workcraft.dom.visual.TouchableHelper
 import org.workcraft.dom.visual.VisualComponent
 
+import org.workcraft.graphics.Java2DDecoration._
+
 object Label {
   def colorisableGraphicalContent (text : String, font : Font, color : Color) = new ColorisableGraphicalContent {
     override def draw(r: DrawRequest) = {
@@ -17,9 +19,9 @@ object Label {
     }
   }
   
-  def visualBounds (text : String, font : Font) = font.createGlyphVector(VisualComponent.podgonFontRenderContext, text).getVisualBounds
+  def visualBounds (text : String, font : Font) = font.createGlyphVector(VisualComponent.podgonFontRenderContext, text).visualBounds
   
-  def touchable (text : String, font : Font) = TouchableUtil.fromRectangle(font.createGlyphVector (VisualComponent.podgonFontRenderContext, text).getVisualBounds)
+  def touchable (text : String, font : Font) = TouchableUtil.fromRectangle(font.createGlyphVector (VisualComponent.podgonFontRenderContext, text).visualBounds)
   
   def richGraphicalContent (text : String, font : Font, color : Color) = {
     val bb = visualBounds(text, font)

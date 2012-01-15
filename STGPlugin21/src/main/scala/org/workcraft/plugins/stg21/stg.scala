@@ -13,6 +13,8 @@ import scala.collection.mutable.WeakHashMap
 import scalaz.State
 import org.workcraft.interop.ModelService
 import org.workcraft.dependencymanager.advanced.core.Expression
+import scalaz.Lens
+import org.workcraft.plugins.stg21.fields.GroupLenses
 
 object types {
   
@@ -67,6 +69,7 @@ object types {
   
   object Col {
     def empty[T] = Col[T](Map.empty, Id[T](0))
+    def uncheckedLook[T] = (id : Id[T]) => Lens[Col[T], T](_.lookup(id).get, (col,v) => update(id)(x => v) ~> col)
     def add[T](t : T) : State[Col[T], Id[T]] = state (col => {
       (Col[T](col.map + ((col.nextFreeId, t)), Id[T](col.nextFreeId.id + 1)), col.nextFreeId)
     })
@@ -106,11 +109,14 @@ object types {
   }
   
   case class Bezier(cp1: RelativePoint, cp2: RelativePoint) extends VisualArc
-  case class Polyline(cp: List[Point2D]) extends VisualArc
+  case class Polyline(cp: List[Point2D.Double]) extends VisualArc
   
   case class Group(info : VisualInfo)
 
-  case class VisualInfo(position : Point2D, parent : Option[Id[Group]])
+  object Group extends GroupLenses
+  
+  case class VisualInfo(position : Point2D.Double, parent : Option[Id[Group]])
+  object VisualInfo extends fields.VisualInfoLenses 
   
   sealed trait VisualNode
   case class StgVisualNode(n : StgNode) extends VisualNode
@@ -123,7 +129,7 @@ object types {
   case class VisualModel[N,A] (
     groups : Col[Group],
     arcs : Map[A, VisualArc],
-    nodesInfo : Map[N, VisualInfo] 
+    nodesInfo : Map[N, VisualInfo]
   )
   
   case class VisualStg (
@@ -131,18 +137,18 @@ object types {
     visual : VisualModel[StgNode, Id[Arc]]
   )
 
-  object VisualStg extends fields.VisualStgFields {
+  object VisualStg extends fields.VisualStgLenses {
 	val empty = VisualStg(MathStg.empty, VisualModel.empty)
   }
   
-  object VisualModel extends fields.VisualModelFields {
+  object VisualModel extends fields.VisualModelLenses {
     def empty[N,A] = VisualModel[N,A](Col.empty, Map.empty, Map.empty)
-    def addNode[N,A](node : N, where : Point2D) : State[VisualModel[N,A], Unit] = state ((m : Map[N, VisualInfo]) => (m + ((node, VisualInfo(where, None))), ())) .on(nodesInfo)
+    def addNode[N,A](node : N, where : Point2D.Double) : State[VisualModel[N,A], Unit] = state ((m : Map[N, VisualInfo]) => (m + ((node, VisualInfo(where, None))), ())) .on(nodesInfo)
     def removeNode[N,A](node : N) : State[VisualModel[N,A], Boolean] = state ((m : Map[N, VisualInfo]) => (m - node, m.contains(node))) .on(nodesInfo)
   }
   
   val MATH_STG_SERVICE_HANDLE : ModelService[Expression[MathStg]] = ModelService.createNewService(classOf[Expression[MathStg]], "STG representation of the underlying model");
-  object MathStg extends org.workcraft.plugins.stg21.fields.MathStgFields {
+  object MathStg extends org.workcraft.plugins.stg21.fields.MathStgLenses {
     val empty = MathStg(Col.empty, Col.empty, Col.empty, Col.empty)
   }
 }

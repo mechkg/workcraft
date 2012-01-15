@@ -46,10 +46,10 @@ object ConnectionTool {
   def create[N](
     components: Expression[_ <: Iterable[N]],
     touchableProvider: N => Expression[Touchable],
-    centerProvider: N => Expression[Point2D],
+    centerProvider: N => Expression[Point2D.Double],
     connectionController: ConnectionController[N]) = {
     val connectionHitTester = HitTester.create(components, touchableProvider)
-    val genericConnectionTool = new GenericConnectionTool[N](((_:Expression[Point2D]).jexpr) compose centerProvider, connectionController, connectionHitTester.hitTest(_: Point2D))
+    val genericConnectionTool = new GenericConnectionTool[N](((_:Expression[Point2D.Double]).jexpr) compose centerProvider, connectionController, connectionHitTester.hitTest(_: Point2D.Double))
     
     new ConnectionTool[N] ( genericConnectionTool.mouseListener, (viewport, focus) => genericConnectionTool.userSpaceContent(viewport, focus.jexpr),
         (viewport, focus) => genericConnectionTool.screenSpaceContent(viewport, focus.jexpr), genericConnectionTool.mouseOverNode)

@@ -10,8 +10,9 @@ import org.workcraft.dom.visual.Touchable
 import org.workcraft.graphics.Graphics._
 import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import java.awt.Color
+import org.workcraft.graphics.Java2DDecoration._
 
-class RichGraphicalContent(val colorisableGraphicalContent: ColorisableGraphicalContent, val visualBounds: Rectangle2D, val touchable: Touchable) {
+class RichGraphicalContent(val colorisableGraphicalContent: ColorisableGraphicalContent, val visualBounds: Rectangle2D.Double, val touchable: Touchable) {
   def transform(x: AffineTransform): RichGraphicalContent =
     new RichGraphicalContent(Graphics.transform(colorisableGraphicalContent, x),
       Graphics.transform(visualBounds, x),
@@ -23,12 +24,12 @@ class RichGraphicalContent(val colorisableGraphicalContent: ColorisableGraphical
 
   def compose(a: RichGraphicalContent, b: RichGraphicalContent): RichGraphicalContent =
     new RichGraphicalContent(Graphics.compose(a.colorisableGraphicalContent, b.colorisableGraphicalContent),
-      a.visualBounds.createUnion(b.visualBounds),
+      a.visualBounds.createUnionD(b.visualBounds),
       TouchableUtil.compose(a.touchable, b.touchable))
   
   def compose(a: RichGraphicalContent, b: RichGraphicalContent, touchableOverride: Touchable): RichGraphicalContent =
     new RichGraphicalContent(Graphics.compose(a.colorisableGraphicalContent, b.colorisableGraphicalContent),
-      a.visualBounds.createUnion(b.visualBounds),
+      a.visualBounds.createUnionD(b.visualBounds),
       touchableOverride)
 
   def align (to: RichGraphicalContent, horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment): RichGraphicalContent =

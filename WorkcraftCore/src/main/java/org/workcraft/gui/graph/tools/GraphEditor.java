@@ -34,8 +34,8 @@ public interface GraphEditor {
 	public EditorOverlay getOverlay();
 	public int getWidth();
 	public int getHeight();
-	public Point2D snap(Point2D pos);
-	public Function<Point2D, Point2D> snapFunction();
+	public Point2D snap(Point2D.Double pos);
+	public Function<Point2D.Double, Point2D.Double> snapFunction();
 	public void repaint();
 	public boolean hasFocus();
 }

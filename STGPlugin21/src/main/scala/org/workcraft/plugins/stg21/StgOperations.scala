@@ -2,9 +2,9 @@ package org.workcraft.plugins.stg21
 
 import types._
 import java.awt.geom.Point2D
-import org.workcraft.plugins.stg21.fields.Field
-import org.workcraft.plugins.stg21.fields.VisualStgFields
+import org.workcraft.plugins.stg21.fields.VisualStgLenses
 import org.workcraft.exceptions.NotImplementedException
+import scalaz.Lens
 
 object StgOperations {
   
@@ -31,24 +31,24 @@ import StateExtensions._
   
   val createNewSignal : State[MathStg, Id[Signal]] = Col.add(Signal("x", SignalType.Internal)).on(MathStg.signals)
   
-  def createSignalTransition(where : Point2D) : State[VisualStg, Id[Transition]] = {
+  def createSignalTransition(where : Point2D.Double) : State[VisualStg, Id[Transition]] = {
     for(
      t <- (for(
         sig <- createNewSignal;
-        t <- createMathTransition(SignalLabel(sig, TransitionDirection.Toggle))) yield t).on(VisualStgFields.math);
-    _ <- VisualModel.addNode[StgNode,Id[Arc]](TransitionNode(t), where).on(VisualStgFields.visual)
+        t <- createMathTransition(SignalLabel(sig, TransitionDirection.Toggle))) yield t).on(VisualStgLenses.math);
+    _ <- VisualModel.addNode[StgNode,Id[Arc]](TransitionNode(t), where).on(VisualStgLenses.visual)
     ) yield t
   }
     
-  def createDummyTransition(where : Point2D, name : String) : State[VisualStg, Id[Transition]] = {
-    for(t <- createMathTransition(DummyLabel(name)).on(VisualStgFields.math);
-    _ <- VisualModel.addNode[StgNode,Id[Arc]](TransitionNode(t), where).on(VisualStgFields.visual)
+  def createDummyTransition(where : Point2D.Double, name : String) : State[VisualStg, Id[Transition]] = {
+    for(t <- createMathTransition(DummyLabel(name)).on(VisualStgLenses.math);
+    _ <- VisualModel.addNode[StgNode,Id[Arc]](TransitionNode(t), where).on(VisualStgLenses.visual)
     ) yield t
   }
   
-  def createPlace(where : Point2D, name : String) : State[VisualStg, Id[ExplicitPlace]] ={
-    for(p <- createMathPlace(name).on(VisualStgFields.math);
-      _ <- VisualModel.addNode[StgNode,Id[Arc]](ExplicitPlaceNode(p), where).on(VisualStgFields.visual))
+  def createPlace(where : Point2D.Double, name : String) : State[VisualStg, Id[ExplicitPlace]] ={
+    for(p <- createMathPlace(name).on(VisualStgLenses.math);
+      _ <- VisualModel.addNode[StgNode,Id[Arc]](ExplicitPlaceNode(p), where).on(VisualStgLenses.visual))
       yield p;
   }
   

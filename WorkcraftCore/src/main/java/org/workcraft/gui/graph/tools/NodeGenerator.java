@@ -25,5 +25,5 @@ import java.awt.geom.Point2D;
 
 public interface NodeGenerator {
 	GraphEditorTool.Button getIdentification();
-	public void generate(Point2D where);
+	public void generate(Point2D.Double where);
 }

@@ -2,41 +2,44 @@ package org.workcraft.plugins.stg21
 
 import types._
 import java.awt.geom.Point2D
+import scalaz.Lens
 
 object fields {
   
-trait Field[W,P] {
-  val get : W => P
-  val set : P => W => W
-}
-
+  trait VisualStgLenses {
+	val math : Lens[VisualStg,MathStg] = Lens(_.math, (s,x) => s.copy(math=x))
+	val visual : Lens[VisualStg, VisualModel[StgNode, Id[Arc]]] = Lens(_.visual, (s,x) => s.copy(visual=x))
+  }
+  object VisualStgLenses extends VisualStgLenses
   
-  def field[W,P] (g : W => P, s : P => W => W) = new Field[W,P] {
-    val get = g
-    val set = s
+  trait MathStgLenses {
+    val signals : Lens[MathStg, Col[Signal]] = Lens (_.signals, (s,x) => s.copy(signals=x))
+    val transitions : Lens[MathStg, Col[Transition]] = Lens (_.transitions, (s,x) => s.copy(transitions=x))
+    val places : Lens[MathStg, Col[ExplicitPlace]] = Lens (_.places, (s,x) => s.copy(places=x))
+    val arcs : Lens[MathStg, Col[Arc]] = Lens (_.arcs, (s,x) => s.copy(arcs=x))
   }
   
-  trait VisualStgFields {
-	val math : Field[VisualStg,MathStg] = field(_.math, x => _.copy(math=x))
-	val visual : Field[VisualStg, VisualModel[StgNode, Id[Arc]]] = field(_.visual, x => _.copy(visual=x))
+  trait VisualInfoLenses {
+    val position : Lens[VisualInfo, Point2D.Double] = Lens ((_ : VisualInfo).position, (s,x) => s.copy(position=x))
+    val parent : Lens[VisualInfo, Option[Id[Group]]] = Lens ((_ : VisualInfo).parent, (s,x) => s.copy(parent=x))
   }
-  object VisualStgFields extends VisualStgFields
+  object VisualInfoLenses extends VisualInfoLenses 
   
-  trait MathStgFields {
-    val signals : Field[MathStg, Col[Signal]] = field (_.signals, x => _.copy(signals=x))
-    val transitions : Field[MathStg, Col[Transition]] = field (_.transitions, x => _.copy(transitions=x))
-    val places : Field[MathStg, Col[ExplicitPlace]] = field (_.places, x => _.copy(places=x))
-    val arcs : Field[MathStg, Col[Arc]] = field (_.arcs, x => _.copy(arcs=x))
+  trait GroupLenses {
+    val info : Lens[Group, VisualInfo] = Lens(g => g.info, (g,v) => g.copy(info=v))
   }
+  object GroupLenses extends GroupLenses
   
-  trait VisualInfoFields {
-    val position : Field[VisualInfo, Point2D] = field ((_ : VisualInfo).position, x => _.copy(position=x))
+  trait VisualModelLenses {
+    def groups[N,A] : Lens[VisualModel[N,A], Col[Group]] = Lens (_.groups, (s,x) => s.copy(groups=x))
+    def arcs[N,A] : Lens[VisualModel[N,A], Map[A, VisualArc]] = Lens (_.arcs, (s,x) => s.copy(arcs=x))
+    def nodesInfo[N,A] : Lens[VisualModel[N,A], Map[N, VisualInfo]] = Lens (_.nodesInfo, (s,x) => s.copy(nodesInfo=x))
   }
-  object VisualInfoFields extends VisualInfoFields 
+  object VisualModelLenses extends VisualModelLenses
   
-  trait VisualModelFields {
-    def groups[N,A] : Field[VisualModel[N,A], Col[Group]] = field (_.groups, x => _.copy(groups=x))
-    def arcs[N,A] : Field[VisualModel[N,A], Map[A, VisualArc]] = field (_.arcs, x => _.copy(arcs=x))
-    def nodesInfo[N,A] : Field[VisualModel[N,A], Map[N, VisualInfo]] = field (_.nodesInfo, x => _.copy(nodesInfo=x))
+  trait Point2DLenses {
+    def x : Lens[Point2D.Double, Double] = Lens(_.x, (p, x) => new Point2D.Double(x, p.y))
+    def y : Lens[Point2D.Double, Double] = Lens(_.y, (p, y) => new Point2D.Double(p.x, y))
   }
+  object Point2DLenses extends Point2DLenses 
 }

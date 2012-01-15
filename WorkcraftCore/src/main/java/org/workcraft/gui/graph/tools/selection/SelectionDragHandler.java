@@ -38,12 +38,12 @@ public final class SelectionDragHandler<Node> {
 	 * Differs from a simple rectangle in that the order of corners does matter.
 	 */
 	class SelectionRectangle {
-		public SelectionRectangle(Point2D p1, Point2D p2) {
+		public SelectionRectangle(Point2D.Double p1, Point2D.Double p2) {
 			this.p1 = p1;
 			this.p2 = p2;
 		}
-		public final Point2D p1;
-		public final Point2D p2;
+		public final Point2D.Double p1;
+		public final Point2D.Double p2;
 		Rectangle2D asRectangle(){
 			return new Rectangle2D.Double(
 					Math.min(p1.getX(), p2.getX()),
@@ -91,11 +91,11 @@ public final class SelectionDragHandler<Node> {
 		}		
 	};
 	
-	public DragHandle startDrag(final Point2D dragStart, final SelectionMode mode) {
+	public DragHandle startDrag(final Point2D.Double dragStart, final SelectionMode mode) {
 		selectionMode.setValue(mode);
 		return new DragHandle() {
 			@Override
-			public void setOffset(Point2D offset) {
+			public void setOffset(Point2D.Double offset) {
 				selectionBox.setValue(new SelectionRectangle(dragStart, Geometry.add(dragStart, offset)));
 			}
 			

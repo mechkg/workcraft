@@ -6,7 +6,7 @@ import org.workcraft.plugins.stg21.types.MathStg
 import org.workcraft.plugins.stg.javacc.generated.ParseException
 import org.workcraft.plugins.stg.Direction
 import org.workcraft.plugins.stg.Type
-import org.workcraft.plugins.stg21.fields.MathStgFields
+import org.workcraft.plugins.stg21.fields.MathStgLenses
 import scalaz.State
 import org.workcraft.plugins.stg21.StgOperations
 import org.workcraft.plugins.stg21.types.ExplicitPlace

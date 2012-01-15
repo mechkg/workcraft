@@ -62,7 +62,7 @@ public class VisualGroup extends VisualTransformableNode implements Container{
 
 			@Override
 			public ColorisableGraphicalContent evaluate(EvaluationContext resolver) {
-				final Rectangle2D bb = BoundingBoxHelper.expand(resolver.resolve(screenSpaceBounds(tp, group)).getBoundingBox(), 0.2, 0.2);
+				final Rectangle2D.Double bb = BoundingBoxHelper.expand(resolver.resolve(screenSpaceBounds(tp, group)).getBoundingBox(), 0.2, 0.2);
 				final Node parent = resolver.resolve(group.parent());
 				
 				return new ColorisableGraphicalContent() {
@@ -87,20 +87,20 @@ public class VisualGroup extends VisualTransformableNode implements Container{
 		return fmap(new Function<Collection<? extends Touchable>, Touchable>(){
 			@Override
 			public Touchable apply(Collection<? extends Touchable> children) {
-				final Rectangle2D boundingBox = BoundingBoxHelper.mergeBoundingBoxes(children);
+				final Rectangle2D.Double boundingBox = BoundingBoxHelper.mergeBoundingBoxes(children);
 				return new Touchable() {
 					@Override
-					public boolean hitTest(Point2D point) {
+					public boolean hitTest(Point2D.Double point) {
 						return false;
 					}
 
 					@Override
-					public Point2D getCenter() {
-						return new Point2D.Double(0, 0);
+					public Point2D.Double getCenter() {
+						return new Point2D.Double.Double(0, 0);
 					}
 
 					@Override
-					public Rectangle2D getBoundingBox() {
+					public Rectangle2D.Double getBoundingBox() {
 						return boundingBox;
 					}
 				};

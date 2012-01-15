@@ -47,7 +47,7 @@ import org.workcraft.exceptions.NotImplementedException;
 
 public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, ModifiableExpression<AffineTransform>>> {
 	private static double THRESHOLD = 0.00001;
-	private Point2D oldC1, oldC2;
+	private Point2D.Double oldC1, oldC2;
 	private final Expression<? extends VisualConnectionProperties> connectionInfo;
 	private final Expression<? extends Collection<? extends ControlPoint>> controlPoints;
 
@@ -56,23 +56,26 @@ public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, Modifia
 		this.controlPoints = controlPoints;
 	}
 
-	private static List<? extends Point2D> scale (Point2D oldC1, Point2D oldC2, Point2D newC1, Point2D newC2, List<? extends Point2D> points, VisualConnection.ScaleMode mode) {
+	private static List<? extends Point2D.Double> scale (
+			Point2D.Double oldC1, Point2D.Double oldC2, 
+			Point2D.Double newC1, Point2D.Double newC2, 
+			List<? extends Point2D.Double> points, VisualConnection.ScaleMode mode) {
 		
 		if (mode == VisualConnection.ScaleMode.NONE)
 			return points;
 		
-		List<Point2D> result = new ArrayList<Point2D>();
+		List<Point2D.Double> result = new ArrayList<Point2D.Double>();
 		
 		if (mode == VisualConnection.ScaleMode.LOCK_RELATIVELY)
 		{
-			Point2D dC1 = subtract(newC1, oldC1);
-			Point2D dC2 = subtract(newC2, oldC2);
+			Point2D.Double dC1 = subtract(newC1, oldC1);
+			Point2D.Double dC2 = subtract(newC2, oldC2);
 			
 			int n = points.size();
 			int i=0;
-			for (Point2D cp : points)
+			for (Point2D.Double cp : points)
 			{
-				Point2D delta;
+				Point2D.Double delta;
 				if(i<n/2)
 					delta = dC1;
 				else
@@ -88,22 +91,22 @@ public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, Modifia
 			return result;
 		}
 
-		Point2D v0 = subtract(oldC2, oldC1);
+		Point2D.Double v0 = subtract(oldC2, oldC1);
 
 		if (v0.distanceSq(0, 0) < THRESHOLD)
 			v0.setLocation(0.001, 0);
 
-		Point2D up0 = getUpVector(mode, v0);
+		Point2D.Double up0 = getUpVector(mode, v0);
 
-		Point2D v = subtract(newC2, newC1);
+		Point2D.Double v = subtract(newC2, newC1);
 
 		if (v.distanceSq(0, 0) < THRESHOLD)
 			v.setLocation(0.001, 0);
 
-		Point2D up = getUpVector(mode, v);
+		Point2D.Double up = getUpVector(mode, v);
 
-		for (Point2D cp : points) {
-			Point2D p = subtract(cp, oldC1);
+		for (Point2D.Double cp : points) {
+			Point2D.Double p = subtract(cp, oldC1);
 
 			Point2D dp = changeBasis (p, v0, up0);
 
@@ -118,12 +121,11 @@ public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, Modifia
 		return result;
 	}
 
-	public static Point2D reduce (Point2D p) {
-		Point2D result = multiply (normalize(p), Math.pow(p.distanceSq(0, 0), 0.2));
-		return result;
+	public static Point2D.Double reduce (Point2D.Double p) {
+		return multiply (normalize(p), Math.pow(p.distanceSq(0, 0), 0.2));
 	}
 	
-	private static Point2D getUpVector(VisualConnection.ScaleMode mode, Point2D v0) {
+	private static Point2D.Double getUpVector(VisualConnection.ScaleMode mode, Point2D.Double v0) {
 		switch (mode) {
 		case SCALE:
 			return rotate90CCW(v0);
@@ -151,14 +153,14 @@ public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, Modifia
 		VisualConnectionProperties connInfo = context.resolve(connectionInfo);
 		
 		final List<? extends ControlPoint> cpoints = new ArrayList<ControlPoint>(context.resolve(controlPoints));
-		ArrayList<Point2D> points = new ArrayList<Point2D>();
+		ArrayList<Point2D.Double> points = new ArrayList<Point2D.Double>();
 		for(ControlPoint p : cpoints) {
 			AffineTransform tr = context.resolve(p.simpleTransform());
 			points.add(new Point2D.Double(tr.getTranslateX(), tr.getTranslateY()));
 		}
 		
-		final Point2D newC1 = null; // TODO:
-		final Point2D newC2 = null;
+		final Point2D.Double newC1 = null; // TODO:
+		final Point2D.Double newC2 = null;
 		ScaleMode scaleMode = null;
 		if(true)throw new NotImplementedException(); 
 
@@ -167,7 +169,7 @@ public class ControlPointScaler extends ExpressionBase<Map<ControlPoint, Modifia
 			oldC2 = newC2;
 		}
 		
-		final List<? extends Point2D> scaled = scale(oldC1, oldC2, newC1, newC2, points, scaleMode);
+		final List<? extends Point2D.Double> scaled = scale(oldC1, oldC2, newC1, newC2, points, scaleMode);
 		
 		applyScale(cpoints, scaled);
 		

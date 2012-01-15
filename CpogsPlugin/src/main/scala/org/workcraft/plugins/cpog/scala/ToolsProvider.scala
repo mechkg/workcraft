@@ -126,7 +126,7 @@ import org.workcraft.scala.Scalaz._
         case _ => TreePVector.empty[EditableProperty]
       }
     
-    def selectedArcs (selection: Expression[Set[Node]]): Expression[List[(Point2D, Point2D, VisualArc)]] =
+    def selectedArcs (selection: Expression[Set[Node]]): Expression[List[(Point2D.Double, Point2D.Double, VisualArc)]] =
       for (selection <- selection;
            result <-
            {
@@ -138,7 +138,7 @@ import org.workcraft.scala.Scalaz._
           ) yield result
         
     
-    def tools(snap: Function[Point2D, Point2D]) = {
+    def tools(snap: Function[Point2D.Double, Point2D.Double]) = {
       def paintUncolorised = GraphicsHelper.paint(painter, nodes)
       def paintWithHighlights = GraphicsHelper.paintWithHighlights(painter, nodes)
       

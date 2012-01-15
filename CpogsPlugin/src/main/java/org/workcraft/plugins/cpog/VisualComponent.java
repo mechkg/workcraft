@@ -19,25 +19,25 @@ import pcollections.TreePVector;
 public class VisualComponent {
 	
 	public static PVector<EditableProperty> getProperties(org.workcraft.plugins.cpog.scala.nodes.VisualProperties component) {
-		FieldAccessor<Point2D, Double> xView = new FieldAccessor<Point2D, Double>(){
+		FieldAccessor<Point2D.Double, Double> xView = new FieldAccessor<Point2D.Double, Double>(){
 			@Override
-			public Double apply(Point2D argument) {
+			public Double apply(Point2D.Double argument) {
 				return argument.getX();
 			}
 
 			@Override
-			public Point2D assign(Point2D old, Double x) {
+			public Point2D.Double assign(Point2D.Double old, Double x) {
 				return new Point2D.Double(x, old.getY());
 			}
 		};
-		FieldAccessor<Point2D, Double> yView = new FieldAccessor<Point2D, Double>(){
+		FieldAccessor<Point2D.Double, Double> yView = new FieldAccessor<Point2D.Double, Double>(){
 			@Override
-			public Double apply(Point2D argument) {
+			public Double apply(Point2D.Double argument) {
 				return argument.getY();
 			}
 			
 			@Override
-			public Point2D assign(Point2D old, Double y) {
+			public Point2D.Double assign(Point2D.Double old, Double y) {
 				return new Point2D.Double(old.getX(), y);
 			}
 		};

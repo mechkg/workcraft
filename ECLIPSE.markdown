@@ -1,6 +1,6 @@
 # How to develop Workcraft in Eclipse.
 
-* Download [Eclipse Indigo](http://www.eclipse.org/downloads/download.php?file=/technology/epp/downloads/release/indigo/SR1/eclipse-java-indigo-SR1-linux-gtk-x86_64.tar.gz&url=http://www.mirrorservice.org/sites/download.eclipse.org/eclipseMirror/technology/epp/downloads/release/indigo/SR1/eclipse-java-indigo-SR1-linux-gtk-x86_64.tar.gz&mirror_id=96)
+* Download [Eclipse Indigo](http://www.eclipse.org/downloads/packages/eclipse-ide-java-developers/indigor)
 
 * Install Scala IDE: [update site](http://download.scala-ide.org/releases-29/2.0.0-beta)
 
@@ -8,7 +8,7 @@
 
 * Install m2e scala: [update site](http://alchim31.free.fr/m2e-scala/update-site/)
 
-* Branch workcraft: `bzr branch lp:workcraft newworkcraft`
+* Branch workcraft: `bzr branch lp:workcraft workcraft`
 
 * Import workcraft projects into eclipse. You may be prompted to install additional eclipse plugins.
 

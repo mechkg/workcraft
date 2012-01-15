@@ -30,22 +30,23 @@ import org.workcraft.util.Function;
 
 public class BoundingBoxHelper {
 
-	public static final Function<Collection<? extends Rectangle2D>, Rectangle2D> mergeBoundingBoxes = new Function<Collection<? extends Rectangle2D>, Rectangle2D>() {
+	public static final Function<Collection<? extends Rectangle2D.Double.Double>, Rectangle2D.Double.Double> mergeBoundingBoxes = 
+			new Function<Collection<? extends Rectangle2D.Double.Double>, Rectangle2D.Double.Double>() {
 		@Override
-		public Rectangle2D apply(Collection<? extends Rectangle2D> argument) {
-			Rectangle2D bb = null;
-			for(Rectangle2D rect : argument)
+		public Rectangle2D.Double.Double apply(Collection<? extends Rectangle2D.Double.Double> argument) {
+			Rectangle2D.Double.Double bb = null;
+			for(Rectangle2D.Double.Double rect : argument)
 				bb = union(bb, rect);
 			return bb;
 		}
 	};
 
-	public static Rectangle2D union(Rectangle2D rect1, Rectangle2D rect2)
+	public static Rectangle2D.Double.Double union(Rectangle2D.Double.Double rect1, Rectangle2D.Double.Double rect2)
 	{
 		if (rect1 == null) return rect2;
 		if (rect2 == null) return rect1;
 		
-		Rectangle2D result = new Rectangle2D.Double();
+		Rectangle2D.Double.Double result = new Rectangle2D.Double.Double();
 
 		result.setRect(rect1);
 		result.add(rect2);
@@ -53,19 +54,19 @@ public class BoundingBoxHelper {
 		return result;
 	}
 
-	public static Rectangle2D mergeBoundingBoxes(Collection<? extends Touchable> nodes) {
-		Rectangle2D bb = null;
+	public static Rectangle2D.Double mergeBoundingBoxes(Collection<? extends Touchable> nodes) {
+		Rectangle2D.Double.Double bb = null;
 		for(Touchable node : nodes)
 			bb = union(bb, node.getBoundingBox());
 		return bb;
 	}
 	
-	public static Rectangle2D expand(Rectangle2D rect, double x, double y)
+	public static Rectangle2D.Double expand(Rectangle2D.Double rect, double x, double y)
 	{
 		if(rect == null)
 			return null;
 		
-		Rectangle2D res = new Rectangle2D.Double();
+		Rectangle2D.Double res = new Rectangle2D.Double.Double();
 		res.setRect(rect);
 		
 		x /= 2.0f;
@@ -77,18 +78,18 @@ public class BoundingBoxHelper {
 		return res;
 	}
 
-	public static Rectangle2D transform(Rectangle2D rect, AffineTransform transform)
+	public static Rectangle2D.Double transform(Rectangle2D.Double rect, AffineTransform transform)
 	{
 		if(rect == null)
     		return null;
 		
-		Point2D p0 = new Point2D.Double(rect.getMinX(), rect.getMinY()); 
-		Point2D p1 = new Point2D.Double(rect.getMaxX(), rect.getMaxY());
+		Point2D.Double p0 = new Point2D.Double.Double(rect.getMinX(), rect.getMinY()); 
+		Point2D.Double p1 = new Point2D.Double.Double(rect.getMaxX(), rect.getMaxY());
 		
 		transform.transform(p0, p0);
 		transform.transform(p1, p1);
 
-		Rectangle2D.Double result = new Rectangle2D.Double(p0.getX(), p0.getY(), 0, 0);
+		Rectangle2D.Double.Double result = new Rectangle2D.Double.Double(p0.getX(), p0.getY(), 0, 0);
 		result.add(p1);
 		
 		return result;

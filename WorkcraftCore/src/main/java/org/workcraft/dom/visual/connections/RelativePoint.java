@@ -13,22 +13,22 @@ import static org.workcraft.util.Geometry.*;
  */
 public class RelativePoint implements Serializable {
 	private static final long serialVersionUID = 1L;
-	public RelativePoint(Point2D point) {
+	public RelativePoint(Point2D.Double point) {
 		this.point = point;
 	}
 	
 	public static RelativePoint ONE_THIRD = new RelativePoint(new Point2D.Double(1.0/3.0, 0.0));
 	public static RelativePoint TWO_THIRDS = new RelativePoint(new Point2D.Double(2.0/3.0, 0.0));
 	
-	public final Point2D point;
-	public Point2D toSpace(Point2D p1, Point2D p2) {
+	public final Point2D.Double point;
+	public Point2D.Double toSpace(Point2D.Double p1, Point2D.Double p2) {
 		return add(p1, complexMultiply(point, subtract(p2, p1)));
 	}
 	
-	public static Maybe<RelativePoint> fromSpace(final Point2D p1, final Point2D p2, final Point2D p) {
-		return Maybe.Util.applyFunc(complexInverse(subtract(p2, p1)), new Function<Point2D, RelativePoint>(){
+	public static Maybe<RelativePoint> fromSpace(final Point2D.Double p1, final Point2D.Double p2, final Point2D.Double p) {
+		return Maybe.Util.applyFunc(complexInverse(subtract(p2, p1)), new Function<Point2D.Double, RelativePoint>(){
 			@Override
-			public RelativePoint apply(Point2D inverted) {
+			public RelativePoint apply(Point2D.Double inverted) {
 				return new RelativePoint(complexMultiply(subtract(p, p1), inverted));
 			}
 		});

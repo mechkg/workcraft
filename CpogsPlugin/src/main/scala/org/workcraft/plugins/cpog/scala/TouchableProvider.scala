@@ -23,7 +23,7 @@ object TouchableProvider {
     val bb = new Rectangle2D.Double(-size/2, -size/2, size, size)
     val center = new Point2D.Double(0,0)
     
-    def hitTest (point: Point2D) = point.distance(0,0) < size/2
+    def hitTest (point: Point2D.Double) = point.distance(0,0) < size/2
     def getBoundingBox = bb
     def getCenter = center
   }

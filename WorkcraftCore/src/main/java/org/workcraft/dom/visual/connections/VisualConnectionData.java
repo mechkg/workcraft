@@ -51,14 +51,14 @@ public interface VisualConnectionData {
 		}
 
 		public static Expression<? extends StaticPolylineData> getStatic(PolylineData data) {
-			return fmap(new Function<PVector<Point2D>, StaticPolylineData>(){
+			return fmap(new Function<PVector<Point2D.Double>, StaticPolylineData>(){
 
 				@Override
-				public StaticPolylineData apply(final PVector<Point2D> argument) {
+				public StaticPolylineData apply(final PVector<Point2D.Double> argument) {
 					return new StaticPolylineData() {
 								
 								@Override
-								public List<Point2D> controlPoints() {
+								public List<Point2D.Double> controlPoints() {
 									return argument;
 								}
 					};

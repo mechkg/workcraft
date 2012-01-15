@@ -16,16 +16,16 @@ public interface SelectionToolConfig<N> {
 	ModifiableExpression<PSet<Node>> selection();
 	HitTester<? extends N> hitTester();
 	MovableController<N> movableController();
-	Function<Point2D, Point2D> snap();
+	Function<Point2D.Double, Point2D.Double> snap();
 	Expression<? extends Node> currentEditingLevel();
 	
 	public class Default implements SelectionToolConfig<org.workcraft.dom.Node> {
-		private final Function<Point2D, Point2D> snap;
+		private final Function<Point2D.Double, Point2D.Double> snap;
 		private final HitTester<? extends Node> hitTester;
 		private final ModifiableExpression<PSet<Node>> selection;
 		private final ModifiableExpression<VisualGroup> currentLevel;
 
-		public Default(HitTester<? extends Node> hitTester, Function<Point2D, Point2D> snap, ModifiableExpression<PSet<Node>> selection, ModifiableExpression<VisualGroup> currentLevel) {
+		public Default(HitTester<? extends Node> hitTester, Function<Point2D.Double, Point2D.Double> snap, ModifiableExpression<PSet<Node>> selection, ModifiableExpression<VisualGroup> currentLevel) {
 			this.hitTester = hitTester;
 			this.snap = snap;
 			this.currentLevel = currentLevel;
@@ -53,7 +53,7 @@ public interface SelectionToolConfig<N> {
 		}
 
 		@Override
-		public Function<Point2D, Point2D> snap() {
+		public Function<Point2D.Double, Point2D.Double> snap() {
 			return snap;
 		}
 	}

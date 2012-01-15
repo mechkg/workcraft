@@ -62,7 +62,7 @@ public class GenericSelectionTool<Node> {
 	
 	private static DragHandle noDrag = new DragHandle() {
 		@Override
-		public void setOffset(Point2D offset) {
+		public void setOffset(Point2D.Double offset) {
 		}
 		
 		@Override

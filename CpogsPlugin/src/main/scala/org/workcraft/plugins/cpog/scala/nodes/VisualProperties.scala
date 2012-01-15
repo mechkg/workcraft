@@ -12,20 +12,20 @@ import org.workcraft.graphics.LabelPositioning
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty
 
 package org.workcraft.plugins.cpog.scala.nodes {
-  case class VisualProperties(label: ModifiableExpression[String], labelPositioning: ModifiableExpression[LabelPositioning], position: ModifiableExpression[Point2D])
+  case class VisualProperties(label: ModifiableExpression[String], labelPositioning: ModifiableExpression[LabelPositioning], position: ModifiableExpression[Point2D.Double])
 
   object VisualProperties {
     def create(storage: StorageManager) = VisualProperties(storage.create(""), storage.create(LabelPositioning.BOTTOM), storage.create(new Point2D.Double(0, 0)))
 
     def getProperties(p: VisualProperties): PVector[EditableProperty] = {
-      val xView = new FieldAccessor[Point2D, java.lang.Double] {
-        override def apply(arg: Point2D) = arg.getX
-        override def assign(old: Point2D, x: java.lang.Double) = new Point2D.Double(x.doubleValue, old.getY)
+      val xView = new FieldAccessor[Point2D.Double, java.lang.Double] {
+        override def apply(arg: Point2D.Double) = arg.getX
+        override def assign(old: Point2D.Double, x: java.lang.Double) = new Point2D.Double(x.doubleValue, old.getY)
       }
 
-      val yView = new FieldAccessor[Point2D, java.lang.Double] {
-        override def apply(arg: Point2D) = arg.getY
-        override def assign(old: Point2D, y: java.lang.Double) = new Point2D.Double(old.getX, y.doubleValue)
+      val yView = new FieldAccessor[Point2D.Double, java.lang.Double] {
+        override def apply(arg: Point2D.Double) = arg.getY
+        override def assign(old: Point2D.Double, y: java.lang.Double) = new Point2D.Double(old.getX, y.doubleValue)
       }
 
       TreePVector.empty[EditableProperty] plus 

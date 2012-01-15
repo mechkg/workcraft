@@ -43,8 +43,6 @@ import javax.swing.tree.TreeSelectionModel;
 import org.workcraft.Framework;
 import org.workcraft.gui.MainWindow;
 
-import pcollections.TreePVector;
-
 public class SettingsEditorDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
@@ -160,12 +158,12 @@ public class SettingsEditorDialog extends JDialog {
 		sectionTree.setModel(new DefaultTreeModel(sectionRoot));
 	}
 	
+	private void clearObject() {
+		propertiesTable.clearObject();
+	}
+	
 	private void setObject(SettingsPage p) {
-		if (p == null)
-			propertiesTable.setObject(TreePVector.<EditableProperty>empty());
-		else {
-			propertiesTable.setObject(p.getProperties());
-		}
+		propertiesTable.setObject(p.getProperties());
 	}
 
 	private void initComponents() {
@@ -187,7 +185,7 @@ public class SettingsEditorDialog extends JDialog {
 				if (userObject instanceof SettingsPageNode) {
 					setObject( ((SettingsPageNode) userObject).getPage() );					
 				} else {
-					setObject(null);
+					clearObject();
 				}
 			}
 		});
@@ -224,7 +222,7 @@ public class SettingsEditorDialog extends JDialog {
 
 
 	private void ok() {
-		setObject(null);	
+		clearObject();	
 		setVisible(false);
 	}
 }

@@ -34,12 +34,13 @@ import org.workcraft.exceptions.InvalidConnectionException
 import org.workcraft.util.Action
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dom.visual.connections.VisualConnectionProperties
+import scalaz.Lens
 
 class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends GraphEditable {
+  val selectionJ = Variable.create[PSet[VisualEntity]](HashTreePSet.empty())
   def createTools (editor : GraphEditor) : java.lang.Iterable[_ <: GraphEditorTool] = {
-    val selection = Variable.create[PSet[VisualNode]](HashTreePSet.empty[VisualNode])
 
-    def movableController(n : VisualNode) : ModifiableExpression[Point2D] = {
+    def movableController(n : VisualNode) : ModifiableExpression[Point2D.Double] = {
       import org.workcraft.plugins.stg21.modifiable._
       n match {
         case StgVisualNode(node) =>
@@ -48,21 +49,21 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
             n.orElse(VisualInfo(position = new Point2D.Double(1, 0), parent = None)).position
           }
         case GroupVisualNode(g) => {
-          visualStg.visual.groups.lookup(g).modifiableField((x : Option[Group]) => x match {
+          visualStg.visual.groups.lookup(g).refract(Lens((x : Option[Group]) => x match {
             case None => new Point2D.Double(0,0)
             case Some(g) => g.info.position
-          }
-          ) ((x : Point2D) => (o : Option[Group]) => o match {
+          },
+          (o : Option[Group], x : Point2D.Double) => o match {
             case None => None
             case Some(g) => Some(g.copy(info=g.info.copy(position=x)))
-          })
+          }))
         }
       }
     }
     
-    def entityMovableController(e : VisualEntity) : Maybe[ModifiableExpression[Point2D]] = {
+    def entityMovableController(e : VisualEntity) : Maybe[ModifiableExpression[Point2D.Double]] = {
       e match {
-        case ArcVisualEntity(_) => Maybe.Util.nothing[ModifiableExpression[Point2D]]
+        case ArcVisualEntity(_) => Maybe.Util.nothing[ModifiableExpression[Point2D.Double]]
         case NodeVisualEntity(n) => Maybe.Util.just(movableController(n))
       }
     }
@@ -79,8 +80,6 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
       yield {
       n.map(NodeVisualEntity(_ : VisualNode)) ::: v.math.arcs.keys.map(ArcVisualEntity(_ : Id[Arc]))
     }
-    
-    val selectionJ = Variable.create[PSet[VisualEntity]](HashTreePSet.empty())
     
     implicit def decorateMaybe[T](m : Maybe[T]) = new {
       def toOption = m.accept[Option[T]](new org.workcraft.util.MaybeVisitor[T, Option[T]] {
@@ -113,7 +112,7 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
     
     def touchable(n : VisualEntity) = for(v <- visual(n)) yield v.touchable
     
-    def deepCenters(n : StgConnectable) : Expression[Point2D] = n match {
+    def deepCenters(n : StgConnectable) : Expression[Point2D.Double] = n match {
       case NodeConnectable(n) => movableController(StgVisualNode(n))
       case ArcConnectable(a) => constant(new Point2D.Double(0,0)) // TODO
     }
@@ -150,5 +149,8 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
       nodeGeneratorTools
     )
   }
-  def properties : org.workcraft.dependencymanager.advanced.core.Expression[_ <: PVector[EditableProperty]] = constant(TreePVector.empty[EditableProperty]).jexpr
+  import scala.collection.JavaConversions._
+  def properties : org.workcraft.dependencymanager.advanced.core.Expression[_ <: PVector[EditableProperty]] = {
+    for(s <- (selectionJ : Expression[PSet[VisualEntity]])) yield (TreePVector.from(s.toList.flatMap(EditableProperties.objProperties).map(eps => eps(visualStg))))
+  }
 }

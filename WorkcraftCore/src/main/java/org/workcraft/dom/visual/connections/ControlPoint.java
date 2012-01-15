@@ -79,17 +79,17 @@ public class ControlPoint extends VisualTransformableNode implements DrawableNew
 				return new Touchable() {
 
 					@Override
-					public boolean hitTest(Point2D point) {
+					public boolean hitTest(Point2D.Double point) {
 						return getBoundingBox().contains(point);
 					}
 
 					@Override
-					public Rectangle2D getBoundingBox() {
+					public Rectangle2D.Double getBoundingBox() {
 						return new Rectangle2D.Double(-size, -size, size*2, size*2);
 					}
 
 					@Override
-					public Point2D getCenter() {
+					public Point2D.Double getCenter() {
 						return new Point2D.Double(0, 0);
 					}
 				};

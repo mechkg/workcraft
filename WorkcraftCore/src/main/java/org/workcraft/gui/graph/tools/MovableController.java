@@ -14,24 +14,24 @@ import org.workcraft.util.Geometry;
 import org.workcraft.util.Maybe;
 import org.workcraft.util.TwoWayFunction;
 
-public interface MovableController<Node> extends Function<Node, Maybe<? extends ModifiableExpression<Point2D>>> {
+public interface MovableController<Node> extends Function<Node, Maybe<? extends ModifiableExpression<Point2D.Double>>> {
 	
 	MovableController<org.workcraft.dom.Node> REFLECTIVE = new MovableController<org.workcraft.dom.Node>() {
 		@Override
-		public Maybe<ModifiableExpression<Point2D>> apply(org.workcraft.dom.Node node) {
+		public Maybe<ModifiableExpression<Point2D.Double>> apply(org.workcraft.dom.Node node) {
 			if(node instanceof MovableNew) {
-				ModifiableExpression<Point2D> result = new AffineTransform_Position(((MovableNew)node).transform());
+				ModifiableExpression<Point2D.Double> result = new AffineTransform_Position(((MovableNew)node).transform());
 				return just(result);
 			} else
 				return nothing();
 		}
 	};
 	
-	Function<org.workcraft.dom.Node, Expression<Point2D>> TRANSFORM_PROVIDER = new Function<org.workcraft.dom.Node, Expression<Point2D>>(){
+	Function<org.workcraft.dom.Node, Expression<Point2D.Double>> TRANSFORM_PROVIDER = new Function<org.workcraft.dom.Node, Expression<Point2D.Double>>(){
 		@Override
-		public Expression<Point2D> apply(final org.workcraft.dom.Node node) {
+		public Expression<Point2D.Double> apply(final org.workcraft.dom.Node node) {
 			if(node == null) {
-				Point2D result = new Point2D.Double(0,0);
+				Point2D.Double result = new Point2D.Double(0,0);
 				return constant(result);
 			}
 			return orElse(REFLECTIVE_HIERARCHICAL.apply(node), bind(node.parent(), TRANSFORM_PROVIDER));
@@ -40,19 +40,19 @@ public interface MovableController<Node> extends Function<Node, Maybe<? extends 
 	
 	MovableController<org.workcraft.dom.Node> REFLECTIVE_HIERARCHICAL = new MovableController<org.workcraft.dom.Node>() {
 		@Override
-		public Maybe<ModifiableExpression<Point2D>> apply(final org.workcraft.dom.Node node) {
+		public Maybe<ModifiableExpression<Point2D.Double>> apply(final org.workcraft.dom.Node node) {
 
 			if(node == null)
 				return nothing();
-			final Maybe<? extends ModifiableExpression<Point2D>> position = REFLECTIVE.apply(node);
+			final Maybe<? extends ModifiableExpression<Point2D.Double>> position = REFLECTIVE.apply(node);
 			
-			return applyFunc(position, new Function<ModifiableExpression<Point2D>, ModifiableExpression<Point2D>>(){
+			return applyFunc(position, new Function<ModifiableExpression<Point2D.Double>, ModifiableExpression<Point2D.Double>>(){
 				@Override
-				public ModifiableExpression<Point2D> apply(ModifiableExpression<Point2D> position) {
-					final Expression<Point2D> transform = bind(node.parent(), TRANSFORM_PROVIDER);
-					return applyM(position, fmap(new Function<Point2D, TwoWayFunction<Point2D, Point2D>>(){
+				public ModifiableExpression<Point2D.Double> apply(ModifiableExpression<Point2D.Double> position) {
+					final Expression<Point2D.Double> transform = bind(node.parent(), TRANSFORM_PROVIDER);
+					return applyM(position, fmap(new Function<Point2D.Double, TwoWayFunction<Point2D.Double, Point2D.Double>>(){
 						@Override
-						public TwoWayFunction<Point2D, Point2D> apply(final Point2D shift) {
+						public TwoWayFunction<Point2D.Double, Point2D.Double> apply(final Point2D.Double shift) {
 							return Geometry.addFunc(shift);
 						}
 					}, transform));
@@ -66,7 +66,7 @@ public interface MovableController<Node> extends Function<Node, Maybe<? extends 
 		public static <Node>MovableController<Node> empty() {
 			return new MovableController<Node>(){
 				@Override
-				public Maybe<ModifiableExpression<Point2D>> apply(Node node) {
+				public Maybe<ModifiableExpression<Point2D.Double>> apply(Node node) {
 					return nothing();
 				}
 			};

@@ -54,13 +54,13 @@ public class TouchableTransformer implements Touchable {
 	}
 	
 	@Override
-	public Rectangle2D getBoundingBox() {
-		Rectangle2D bb = toTransform.getBoundingBox();
+	public Rectangle2D.Double getBoundingBox() {
+		Rectangle2D.Double bb = toTransform.getBoundingBox();
 		
 		if(bb == null)
 			return null;
 
-		Point2D [] corners = new Point2D [4];
+		Point2D.Double [] corners = new Point2D.Double [4];
 		corners[0] = new Point2D.Double(bb.getMinX(), bb.getMinY());
 		corners[1] = new Point2D.Double(bb.getMaxX(), bb.getMinY());
 		corners[2] = new Point2D.Double(bb.getMinX(), bb.getMaxY());
@@ -77,19 +77,19 @@ public class TouchableTransformer implements Touchable {
 		minMax(x, minMaxX);
 		minMax(y, minMaxY);
 		
-		return new Rectangle2D.Double(minMaxX[0], minMaxY[0], minMaxX[1]-minMaxX[0], minMaxY[1]-minMaxY[0]);
+		return new Rectangle2D.Double.Double(minMaxX[0], minMaxY[0], minMaxX[1]-minMaxX[0], minMaxY[1]-minMaxY[0]);
 	}
 
 	@Override
-	public boolean hitTest(Point2D point) {
-		Point2D transformed = new Point2D.Double();
+	public boolean hitTest(Point2D.Double point) {
+		Point2D.Double transformed = new Point2D.Double();
 		inverseTransformation.transform(point, transformed);
 		return toTransform.hitTest(transformed);
 	}
 
 	@Override
-	public Point2D getCenter()
+	public Point2D.Double getCenter()
 	{
-		return transformation.transform(toTransform.getCenter(), null);
+		return (Point2D.Double)transformation.transform(toTransform.getCenter(), null);
 	}
 }

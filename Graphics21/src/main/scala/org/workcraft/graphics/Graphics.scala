@@ -115,7 +115,7 @@ package org.workcraft.graphics {
     def compose (a: Expression[GraphicalContent], b : Expression[GraphicalContent]) : Expression[GraphicalContent] = 
       for (a <- a; b <- b) yield compose (a, b)
     
-    def compose (list : Seq[RichGraphicalContent]) : RichGraphicalContent = list match {
+    def compose (list : Seq[RichGraphicalContent]) : RichGraphicalContent = list.toList match {
       case Nil => RichGraphicalContent.empty
       case head :: Nil  => head
       case head :: tail => tail.foldRight(head)((a,b)=> a over b) 

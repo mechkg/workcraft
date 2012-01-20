@@ -41,5 +41,15 @@ object fields {
     def x : Lens[Point2D.Double, Double] = Lens(_.x, (p, x) => new Point2D.Double(x, p.y))
     def y : Lens[Point2D.Double, Double] = Lens(_.y, (p, y) => new Point2D.Double(p.x, y))
   }
-  object Point2DLenses extends Point2DLenses 
+  object Point2DLenses extends Point2DLenses
+  
+  trait ExplicitPlaceLenses {
+    def initialMarking : Lens[ExplicitPlace, Int] = Lens(_.initialMarking, (p, x) => p.copy(initialMarking=x))
+    def name : Lens[ExplicitPlace, String] = Lens(_.name, (p, x) => p.copy(name=x))
+  }
+  
+  trait SignalLenses {
+    def name : Lens[Signal, String] = Lens(_.name, (s,n) => s.copy(name=n))
+    def direction : Lens[Signal, SignalType] = Lens(_.direction, (s,n) => s.copy(direction=n))
+  }
 }

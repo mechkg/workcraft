@@ -92,5 +92,10 @@
       <artifactId>Graphics21</artifactId>
       <version>2.1-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>org.workcraft</groupId>
+      <artifactId>PetriNetPlugin21</artifactId>
+      <version>2.1-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 </project>

@@ -25,7 +25,14 @@ object types {
     case object Internal extends SignalType
   }
   
-  sealed trait TransitionDirection
+  sealed trait TransitionDirection {
+    import TransitionDirection._
+    def symbol = this match {
+      case Rise => "+"
+      case Fall => "-"
+      case Toggle => "~"
+    }
+  }
   
   object TransitionDirection {
     case object Rise extends TransitionDirection
@@ -42,12 +49,14 @@ object types {
   
   
   case class Signal(name : String, direction : SignalType)
+  object Signal extends fields.SignalLenses
   case class Id[T] (id : Int) {
     def upCast[B >: T] : Id[B] = Id(id)
     def downCast[B <: T] : Id[B] = Id(id)
   }
 
   case class ExplicitPlace(initialMarking : Int, name : String)
+  object ExplicitPlace extends fields.ExplicitPlaceLenses
   
   sealed trait Arc
   case class ConsumingArc(from : Id[ExplicitPlace], to : Id[Transition]) extends Arc
@@ -61,6 +70,8 @@ object types {
   case class Col[T] (map : Map[Id[T], T], nextFreeId : Id[T]) {
 	  def remove(id : Id[T]) : Col[T] = Col[T](map - id, nextFreeId)
 	  def lookup(key : Id[T]) : Option[T] = map.get(key)
+	  def apply(key : Id[T]) = map(key)
+	  def unsafeLookup(key : Id[T]) : T = lookup(key).get
 	  def insert(key : Id[T])(value : T) = copy(map = map + ((key, value)))
 	  def keys : List[Id[T]] = map.keys.toList
   }

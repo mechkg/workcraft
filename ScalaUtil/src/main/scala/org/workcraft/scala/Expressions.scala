@@ -52,6 +52,11 @@ object Expressions {
     def flatMap[B](f: A => Expression[B]) = implicitly[Monad[Expression]].bind(m, f)
   }
   
+  implicit def monadicSyntaxJ[A](m: JModifiableExpression[A]) = new {
+    def map[B](f: A => B) = implicitly[Monad[Expression]].fmap(m, f)
+    def flatMap[B](f: A => Expression[B]) = implicitly[Monad[Expression]].bind(m, f)
+  }
+  
   trait ExpressionOps[+A] {
     def mapE[B](f : A => Expression[_ <: B]) : Expression[List[B]]
   }

@@ -7,6 +7,7 @@ import org.workcraft.plugins.shared.CommonVisualSettings
 import org.workcraft.graphics.Graphics._
 import java.awt.Color
 import java.awt.Font
+import java.awt.geom.Point2D
 
 object TokenPainter {
   def image(tokens: Expression[Int]): Expression[RichGraphicalContent] =
@@ -23,7 +24,7 @@ object TokenPainter {
     else if (tokens == 1)
       circle(singleTokenSize, None, Some(foreColor))
     else if (tokens > 1 && tokens < 8) {
-      val radialTokens = Math.max(tokens, 6)
+      val radialTokens = Math.min(tokens, 6)
       val angularDistance = Math.Pi / radialTokens
       val R = (size / 2 - strokeWidth - multipleTokenSeparation) / (1 + Math.sin(angularDistance))
       val radiusTight = R * Math.sin(angularDistance)
@@ -40,6 +41,7 @@ object TokenPainter {
         tokenImage over radialTokensImage
       else
         radialTokensImage
-    } else
-      label(tokens.toString, font.deriveFont((size / 2).toFloat), foreColor)
+    }.overrideCenter(new Point2D.Double(0,0))
+    else
+      label(tokens.toString, font.deriveFont((size / 2).toFloat), foreColor).zeroCentered
 }

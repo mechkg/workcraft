@@ -1,5 +1,5 @@
 package org.workcraft.plugins.petri21
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
+import org.workcraft.scala.Expressions.ModifiableExpression
 import org.workcraft.dependencymanager.advanced.user.StorageManager
 
 sealed trait Node

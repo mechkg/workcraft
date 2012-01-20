@@ -12,7 +12,7 @@ import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import java.awt.Color
 import org.workcraft.graphics.Java2DDecoration._
 
-class RichGraphicalContent(val colorisableGraphicalContent: ColorisableGraphicalContent, val visualBounds: Rectangle2D.Double, val touchable: Touchable) {
+case class RichGraphicalContent(val colorisableGraphicalContent: ColorisableGraphicalContent, val visualBounds: Rectangle2D.Double, val touchable: Touchable) {
   def transform(x: AffineTransform): RichGraphicalContent =
     new RichGraphicalContent(Graphics.transform(colorisableGraphicalContent, x),
       Graphics.transform(visualBounds, x),
@@ -22,15 +22,26 @@ class RichGraphicalContent(val colorisableGraphicalContent: ColorisableGraphical
 
   def translate(position: Point2D): RichGraphicalContent = transform(AffineTransform.getTranslateInstance(position.getX, position.getY))
 
-  def compose(a: RichGraphicalContent, b: RichGraphicalContent): RichGraphicalContent =
-    new RichGraphicalContent(Graphics.compose(a.colorisableGraphicalContent, b.colorisableGraphicalContent),
-      a.visualBounds.createUnionD(b.visualBounds),
-      TouchableUtil.compose(a.touchable, b.touchable))
+  def compose(b: RichGraphicalContent): RichGraphicalContent =
+    new RichGraphicalContent(Graphics.compose(colorisableGraphicalContent, b.colorisableGraphicalContent),
+      visualBounds.createUnionD(b.visualBounds),
+      TouchableUtil.compose(touchable, b.touchable))
   
-  def compose(a: RichGraphicalContent, b: RichGraphicalContent, touchableOverride: Touchable): RichGraphicalContent =
-    new RichGraphicalContent(Graphics.compose(a.colorisableGraphicalContent, b.colorisableGraphicalContent),
-      a.visualBounds.createUnionD(b.visualBounds),
+  def compose(b: RichGraphicalContent, touchableOverride: Touchable): RichGraphicalContent =
+    new RichGraphicalContent(Graphics.compose(colorisableGraphicalContent, b.colorisableGraphicalContent),
+      visualBounds.createUnionD(b.visualBounds),
       touchableOverride)
+
+  def overrideCenter(center : Point2D.Double) : RichGraphicalContent = {
+    copy(touchable = new Touchable {
+	  def hitTest(point : Point2D.Double) = touchable.hitTest(point)
+	  def getBoundingBox = touchable.getBoundingBox
+	  def getCenter = center
+    })
+  }
+  
+  def zeroCentered = align(rectangle(0,0,None,None), HorizontalAlignment.Center,VerticalAlignment.Center).
+             overrideCenter(new Point2D.Double(0,0))
 
   def align (to: RichGraphicalContent, horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment): RichGraphicalContent =
     transform(alignTransform(touchable.getBoundingBox, to.touchable.getBoundingBox, horizontalAlignment, verticalAlignment))
@@ -40,28 +51,26 @@ class RichGraphicalContent(val colorisableGraphicalContent: ColorisableGraphical
 
   private def releaseOver(x: RichGraphicalContent) = compose(x, this)
   
-  private def releaseOver(x: RichGraphicalContent, touchableOverride: Touchable) = compose(x, this, touchableOverride)
+  private def releaseOver(x: RichGraphicalContent, touchableOverride: Touchable) = x.compose(this, touchableOverride)
 
   private def debugOver (x: RichGraphicalContent) = {
     val redstroke = new BasicStroke(0.01f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, Array(0.18f, 0.18f), 0.0f)
     val stroke = new BasicStroke (0.01f)
-    compose (
-    (shape (x.touchable.getBoundingBox, Some((redstroke,Color.RED)), None)) releaseOver
+    ((shape (x.touchable.getBoundingBox, Some((redstroke,Color.RED)), None)) releaseOver
     (shape (x.visualBounds, Some((stroke,Color.BLUE)), None)) releaseOver
     (shape (touchable.getBoundingBox, Some((redstroke,Color.RED)), None)) releaseOver
     (shape (visualBounds, Some((stroke,Color.BLUE)), None)) releaseOver
-    x, this, TouchableUtil.compose(touchable, x.touchable))
+    x).compose(this, TouchableUtil.compose(touchable, x.touchable))
   }
   
   private def debugOver (x: RichGraphicalContent, touchableOverride: Touchable) = {
     val redstroke = new BasicStroke(0.01f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, Array(0.18f, 0.18f), 0.0f)
     val stroke = new BasicStroke (0.01f)
-    compose (
-    (shape (x.touchable.getBoundingBox, Some((redstroke,Color.RED)), None)) releaseOver
+    ((shape (x.touchable.getBoundingBox, Some((redstroke,Color.RED)), None)) releaseOver
     (shape (x.visualBounds, Some((stroke,Color.BLUE)), None)) releaseOver
     (shape (touchable.getBoundingBox, Some((redstroke,Color.RED)), None)) releaseOver
     (shape (visualBounds, Some((stroke,Color.BLUE)), None)) releaseOver
-    x, this, touchableOverride)
+    x).compose(this, touchableOverride)
   }
     
   def over (x: RichGraphicalContent) = debugOver (x)

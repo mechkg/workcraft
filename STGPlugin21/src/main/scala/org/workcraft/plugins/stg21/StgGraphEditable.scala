@@ -93,17 +93,17 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
     		position <- entityMovableController(e).toOption.map(m => m.expr).getOrElse(constant(new Point2D.Double(0,0)));
     		result <- (e match {
         case NodeVisualEntity(n) => {
-          constant(n match {
+          n match {
             case StgVisualNode(ExplicitPlaceNode(p)) => Visual.place(vstg.math.places.lookup(p).get)
-            case StgVisualNode(TransitionNode(t)) => Visual.transition(t)(vstg).getOrElse(RichGraphicalContent.empty)
-            case GroupVisualNode(g) => Graphics.rectangle(1, 1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE)) : RichGraphicalContent // todo: recursively draw all? 
-          })
+            case StgVisualNode(TransitionNode(t)) => constant(Visual.transition(t)(vstg).getOrElse(RichGraphicalContent.empty))
+            case GroupVisualNode(g) => constant(Graphics.rectangle(1, 1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE)) : RichGraphicalContent) // todo: recursively draw all? 
+          }
         }
         case ArcVisualEntity(arcId) => {
           (for(arc <- vstg.math.arcs.lookup(arcId)) yield{
             val visual = vstg.visual.arcs.get(arcId).getOrElse(Polyline(Nil))          
-        	for (first  <- touchable(NodeVisualEntity(StgVisualNode(arc.first)));
-        	second <- touchable(NodeVisualEntity(StgVisualNode(arc.second)))
+            for (first  <- touchable(NodeVisualEntity(StgVisualNode(arc.first)));
+            second <- touchable(NodeVisualEntity(StgVisualNode(arc.second)))
            ) yield (VisualConnectionG.getConnectionGui(first, second, visual) : RichGraphicalContent) 
           }).getOrElse(constant(RichGraphicalContent.empty))
         }
@@ -151,6 +151,8 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
   }
   import scala.collection.JavaConversions._
   def properties : org.workcraft.dependencymanager.advanced.core.Expression[_ <: PVector[EditableProperty]] = {
-    for(s <- (selectionJ : Expression[PSet[VisualEntity]])) yield (TreePVector.from(s.toList.flatMap(EditableProperties.objProperties).map(eps => eps(visualStg))))
+    for(s <- (selectionJ : Expression[PSet[VisualEntity]]);
+      props <- sequenceExpressions(s.toList.map(e => EditableProperties.objProperties(e)(visualStg)))
+    ) yield (TreePVector.from(scala.collection.JavaConversions.asJavaCollection(props.flatten)))
   }
 }

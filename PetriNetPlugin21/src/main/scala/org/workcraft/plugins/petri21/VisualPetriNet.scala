@@ -7,6 +7,7 @@ import org.workcraft.graphics.Graphics._
 import java.awt.BasicStroke
 import org.workcraft.graphics.Graphics
 import org.workcraft.graphics.LabelPositioning
+import java.awt.Font
 
 object VisualPlace {
   def image (p: Place) : Expression[RichGraphicalContent] = 

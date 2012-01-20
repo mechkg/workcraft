@@ -1,0 +1,20 @@
+
+* ExternalProcessTask waits indefinitely if the process waits for more input. It should close the process' stdin.
+
+* A lot of old features of STG plugin need to reappear:
+
+** The transition text should be appropriate.
+** The selected nodes properties should appear in the property editor.
+** The arcs should point towards the centers of the transition labels.
+** The hit test should prioritise the transitions/places over the arcs.
+** Double click on the transition should allow editing its label.
+** Simulation tool should reappear.
+** Node creation tools should not show blank screen.
+** The selected nodes should be highlighted.
+** The node grouping should become possible.
+** The components being hovered over while connecting should be highlighted.
+** The names of new places and transitions should be generated ensuring no name clashes happen.
+** The name clashing introduced by user should be handled in some way: either forbid it entirely or fix it when exporting to .g (alerting the user).
+** Connecting implicit place and a transition should be allowed.
+** Save/load should be supported
+** Layout plugins should be supported

@@ -1,8 +1,11 @@
 package org.workcraft.logging
 import java.text.SimpleDateFormat
 import java.util.Date
+import scalaz.effects.IO
+import scalaz.effects.IO._
+import scalaz.Scalaz._
 
-class StandardStreamLogger extends Logger {
+class StandardStreamLogger extends Logger[IO] {
   val DEBUG   = "   DEBUG| "
   val INFO    = "    INFO| "
   val WARNING = " WARNING| "
@@ -13,8 +16,8 @@ class StandardStreamLogger extends Logger {
   def format (message: String, prefix: String) = 
     dateFormat.format(new Date()) + prefix + message
         
-  def debug   (message: String) = System.out.println (format (message, DEBUG))
-  def info    (message: String) = System.out.println (format (message, INFO))
-  def warning (message: String) = System.err.println (format (message, WARNING))
-  def error   (message: String) = System.err.println (format (message, ERROR))
+  def debug   (message: String) = {System.out.println (format (message, DEBUG))}.pure
+  def info    (message: String) = {System.out.println (format (message, INFO))}.pure
+  def warning (message: String) = {System.err.println (format (message, WARNING))}.pure
+  def error   (message: String) = {System.err.println (format (message, ERROR))}.pure
 }

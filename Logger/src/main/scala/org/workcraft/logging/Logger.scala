@@ -1,8 +1,15 @@
 package org.workcraft.logging
 
-trait Logger {
-  def debug (message: String)
-  def info (message: String)
-  def warning (message: String)
-  def error (message: String)
+trait Logger[M[_]] {
+  def debug (message: String) : M[Unit]
+  def info (message: String) : M[Unit]
+  def warning (message: String) : M[Unit]
+  def error (message: String) : M[Unit]
+}
+
+object Logger {
+  def debug[M[_]] (message: String)(implicit logger:Logger[M]) : M[Unit] = logger.debug(message)
+  def info[M[_]] (message: String)(implicit logger:Logger[M]) : M[Unit] = logger.info(message)
+  def warning[M[_]] (message: String)(implicit logger:Logger[M]) : M[Unit] = logger.warning(message)
+  def error[M[_]] (message: String)(implicit logger:Logger[M]) : M[Unit] = logger.error(message)
 }

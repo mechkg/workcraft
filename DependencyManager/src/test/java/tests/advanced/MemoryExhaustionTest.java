@@ -47,6 +47,7 @@ public class MemoryExhaustionTest {
 					totalSum+=sum.evaluate(new DummyEvaluationContext());
 					totalSum+=eval(sum);
 				}
+				System.out.println ("Total sum: " + totalSum);
 			}
 		});
 	}

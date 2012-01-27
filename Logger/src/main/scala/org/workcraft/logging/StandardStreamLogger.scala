@@ -9,15 +9,23 @@ class StandardStreamLogger extends Logger[IO] {
   val DEBUG   = "   DEBUG| "
   val INFO    = "    INFO| "
   val WARNING = " WARNING| "
-  val ERROR   = "   ERROR| "
+  val ERROR   = "   ERROR| "                
+  val DUMMY   = "                           | " 
   
-  val dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
+  val dateFormatString = "dd.MM.yyyy HH:mm:ss"
+  val dateFormat = new SimpleDateFormat(dateFormatString)
   
-  def format (message: String, prefix: String) = 
+  private def format (message: String, prefix: String) = 
     dateFormat.format(new Date()) + prefix + message
+    
+  private def print (stream: java.io.PrintStream, message:String, prefix: String) = {
+    val lines = message.split("\n").toList
+    stream.println (format(lines.head, prefix))
+    lines.tail.foreach( s => stream.println (DUMMY + s))
+  }
         
-  def debug   (message: String) = {System.out.println (format (message, DEBUG))}.pure
-  def info    (message: String) = {System.out.println (format (message, INFO))}.pure
-  def warning (message: String) = {System.err.println (format (message, WARNING))}.pure
-  def error   (message: String) = {System.err.println (format (message, ERROR))}.pure
+  def debug   (message: String) = print (System.out, message, DEBUG).pure
+  def info    (message: String) = print (System.out, message, INFO).pure
+  def warning (message: String) = print (System.err, message, WARNING).pure
+  def error   (message: String) = print (System.err, message, ERROR).pure
 }

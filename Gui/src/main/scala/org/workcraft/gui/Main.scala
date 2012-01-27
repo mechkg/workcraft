@@ -1,17 +1,15 @@
 package org.workcraft.gui
-
 import org.workcraft.logging.StandardStreamLogger
-//import org.workcraft.pluginmanager.PluginManager
+import org.workcraft.pluginmanager.PluginManager
 import java.util.UUID
-//import org.workcraft.services.GlobalServiceManager
-//import org.workcraft.services.Module
+import org.workcraft.services.GlobalServiceManager
+import org.workcraft.services.Module
 import java.io.File
-import scalaz.Scalaz._
-import scalaz.effects.IO._
 
 object Main {
   def main (args: Array[String]) = {
     val version = UUID.fromString("dd10f600-4769-11e1-b86c-0800200c9a66")
+    
     
     val configDir = new File("config")
     
@@ -23,15 +21,17 @@ object Main {
     
     val manifestPath = "config/manifest"
     
-    val logger = new StandardStreamLogger()
+    implicit val logger = new StandardStreamLogger()
     
-    /*   val pluginManager = new PluginManager(version, List("org.workcraft.plugins"), manifestPath, logger)
+    val pluginManager = new PluginManager(version, List("org.workcraft.plugins"), manifestPath)
     
-    val serviceManager = new GlobalServiceManager(pluginManager)
+    val serviceManager = new GlobalServiceManager(pluginManager) 
     
     
     val mainWindow = new MainWindow(serviceManager)
     
-    mainWindow.setVisible(true)    */ 
+    MainWindowIconManager(mainWindow).unsafePerformIO
+    
+    mainWindow.setVisible(true)    
   }
 }

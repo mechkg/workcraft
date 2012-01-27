@@ -15,7 +15,7 @@ class PluginManagerTest extends Spec {
     val logger = new StandardStreamLogger
     
    it ("should work :)") {
-      val manager = new PluginManager(version, packages, manifestPath, logger)
+      val manager = new PluginManager(version, packages, manifestPath)(logger)
     }
   }
 }

@@ -76,7 +76,7 @@ class PluginManager(val version: UUID, val packages: Traversable[String], val ma
 
           reconfigure
         } else {
-          unsafeInfo("Successfuly loaded plugin classes listed in the manifest")
+          unsafeInfo("Successfully loaded plugin classes listed in the manifest")
           results.plugins
         }
       }

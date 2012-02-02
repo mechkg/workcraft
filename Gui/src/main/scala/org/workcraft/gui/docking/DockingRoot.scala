@@ -1,0 +1,40 @@
+package org.workcraft.gui
+import javax.swing.JPanel
+import org.flexdock.perspective.PerspectiveManager
+import org.flexdock.docking.DockingManager
+import org.flexdock.perspective.Perspective
+import org.flexdock.docking.defaults.DefaultDockingPort
+import java.awt.BorderLayout
+import javax.swing.JComponent
+import org.workcraft.gui.docking.DockableWindow
+import org.workcraft.gui.docking.DockableWindowConfiguration
+import org.flexdock.docking.DockingConstants
+
+class DockingRoot(val id: String) extends JPanel {
+  val pm = DockingManager.getLayoutManager().asInstanceOf[PerspectiveManager]
+  pm.add(new Perspective(id, id))
+  pm.setCurrentPerspective(id, true)
+
+  val rootDockingPort = new DefaultDockingPort("root")
+
+  setLayout(new BorderLayout)
+  add(rootDockingPort, BorderLayout.CENTER)
+  
+  def createWindow(title: String, persistentId: String, content: JComponent, configuration: DockableWindowConfiguration,
+      neighbour: DockableWindow, relativeRegion: String = DockingConstants.CENTER_REGION, split: Double = 0.5) = {
+    val window = new DockableWindow(title, persistentId, content, configuration)
+    DockingManager.registerDockable(window)
+    DockingManager.dock(window, neighbour, relativeRegion)
+    DockingManager.setSplitProportion(window, split.toFloat)
+    
+    window
+  }
+  
+  def createRootWindow(title: String, persistentId: String, content: JComponent, configuration: DockableWindowConfiguration) = {
+    val window = new DockableWindow(title, persistentId, content, configuration)
+    DockingManager.registerDockable(window)
+    DockingManager.dock(window, rootDockingPort, DockingConstants.CENTER_REGION)
+    
+    window
+  }
+}

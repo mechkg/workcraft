@@ -15,7 +15,7 @@ import org.workcraft.logging.Logger._
 import scalaz.effects.IO
 import scalaz.Scalaz._
 
-object DockingLayoutManager {
+class DockingLayoutSerialiser {
   val uiLayoutPath = "config/uilayout.xml"
   
   def saveDockingLayout(rootDockingPort:DefaultDockingPort) (implicit logger: Logger[IO]) {

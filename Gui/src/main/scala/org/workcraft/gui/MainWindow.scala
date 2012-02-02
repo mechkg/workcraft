@@ -21,8 +21,19 @@ import java.awt.Frame
 import javax.swing.WindowConstants
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import javax.swing.JButton
+import org.workcraft.gui.docking.DockableWindowConfiguration
 
 class MainWindow private (val globalServices: GlobalServiceManager) extends JFrame {
+  val dockingRoot = new DockingRoot("workcraft")
+  setContentPane(dockingRoot)
+  
+  dockingRoot.createRootWindow("Kojo", "Kojo", new JButton("Hi"), DockableWindowConfiguration())
+  dockingRoot.createRootWindow("Kojo", "Kojo", new JButton("Hi"), DockableWindowConfiguration())
+  dockingRoot.createRootWindow("Kojo", "Kojo", new JButton("Hi"), DockableWindowConfiguration())
+  dockingRoot.createRootWindow("Kojo", "Kojo", new JButton("Hi"), DockableWindowConfiguration())
+  
+  
   private def applyGuiConfiguration (configOption: Option[GuiConfiguration])(implicit logger: Logger[IO]) = configOption match {
     case Some(config) => {
       LafManager.setLaf(config.lookandfeel)
@@ -49,9 +60,6 @@ class MainWindow private (val globalServices: GlobalServiceManager) extends JFra
   }
   
   private def applyIconManager (implicit logger: Logger[IO]) = MainWindowIconManager.apply(this, logger)
-
-  val content = new JPanel(new BorderLayout(0, 0))
-  setContentPane(content)
 }
 
 object MainWindow {

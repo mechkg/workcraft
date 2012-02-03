@@ -5,14 +5,15 @@ import org.flexdock.docking.event.DockingEvent
 import org.flexdock.docking.DockingPort
 import javax.swing.JTabbedPane
 import org.workcraft.gui.docking.tab.DockableTab
+import org.flexdock.docking.DockingManager
 
 case class DockableWindowConfiguration(
   val closeButton: Boolean = true,
-  val minimiseButton: Boolean = true,
+  val minimiseButton: Boolean = false,
   val maximiseButton: Boolean = true, 
-  val onMinimiseClicked: () => Unit = () => {},
-  val onMaximiseClicked: () => Unit = () => {},
-  val onCloseClicked: () => Unit = () => {}    
+  val onMinimiseClicked: DockableWindow => Unit = _ => {},
+  val onMaximiseClicked: DockableWindow => Unit = {_.toggleMaximised},
+  val onCloseClicked: DockableWindow => Unit = {_.close}    
 )
 
 class DockableWindow(
@@ -60,4 +61,9 @@ class DockableWindow(
   def showHeader = contentPanel.showHeader
 
   var isMaximised = false
+  var isClosed = DockingManager.isDocked(this)
+  
+  def toggleMaximised = { DockingManager.toggleMaximized(this); isMaximised = !isMaximised }
+  def close = { DockingManager.close(this); isClosed = true}
+  def display { DockingManager.display(this); isClosed = false}
 }

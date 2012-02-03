@@ -27,7 +27,7 @@ class DockableTab(window: DockableWindow) extends JPanel {
   label.setFocusable(false)
 
   if (window.configuration.maximiseButton) {
-    val max = new TabButton("\u2191", "Maximize window", window.configuration.onMaximiseClicked)
+    val max = new TabButton("\u2191", "Maximize window", () => window.configuration.onMaximiseClicked(window))
     buttonsPanel.add(max)
     buttonsPanel.add(Box.createRigidArea(new Dimension(2, 0)))
   }
@@ -35,7 +35,7 @@ class DockableTab(window: DockableWindow) extends JPanel {
   val xs = label.getPreferredSize()
 
   val ys = if (window.configuration.closeButton) {
-    val close = new TabButton("\u00d7", "Close window", window.configuration.onCloseClicked)
+    val close = new TabButton("\u00d7", "Close window", () => window.configuration.onCloseClicked(window))
     buttonsPanel.add(close)
     close.getPreferredSize()
   } else xs

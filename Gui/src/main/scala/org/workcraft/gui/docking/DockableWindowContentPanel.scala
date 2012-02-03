@@ -49,7 +49,7 @@ class DockableWindowContentPanel(val window: DockableWindow) extends JPanel {
       if (window.configuration.minimiseButton) {
         val btnMin = createHeaderButton(UIManager.getIcon("InternalFrame.minimizeIcon"))
         btnMin.addActionListener(new ActionListener() {
-          override def actionPerformed(evt: ActionEvent) = window.configuration.onMinimiseClicked
+          override def actionPerformed(evt: ActionEvent) = window.configuration.onMinimiseClicked(window)
         })
 
         btnMin.setToolTipText("Toggle minimized")
@@ -62,7 +62,7 @@ class DockableWindowContentPanel(val window: DockableWindow) extends JPanel {
 
         btnMax.addActionListener(new ActionListener() {
           override def actionPerformed(evt: ActionEvent) = {
-            window.configuration.onMaximiseClicked
+            window.configuration.onMaximiseClicked(window)
             if (window.isMaximised) {
               btnMax.setIcon(UIManager.getIcon("InternalFrame.minimizeIcon"))
               btnMax.setToolTipText("Restore window")
@@ -80,7 +80,7 @@ class DockableWindowContentPanel(val window: DockableWindow) extends JPanel {
       if (window.configuration.closeButton) {
         val btnClose = createHeaderButton(UIManager.getIcon("InternalFrame.closeIcon"))
         btnClose.addActionListener(new ActionListener() {
-          override def actionPerformed(evt: ActionEvent) = window.configuration.onCloseClicked
+          override def actionPerformed(evt: ActionEvent) = window.configuration.onCloseClicked(window)
         })
         btnClose.setToolTipText("Close window")
         buttonPanel.add(btnClose)

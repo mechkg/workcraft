@@ -1,40 +1,35 @@
 package org.workcraft.gui.logger
 import javax.swing.table.AbstractTableModel
 import java.util.Date
+import org.workcraft.logging.MessageClass
+import java.text.SimpleDateFormat
 
-sealed trait MessageClass 
-
-object MessageClass {
-  case object Info extends MessageClass
-  case object Debug extends MessageClass
-  case object Warning extends MessageClass
-  case object Error extends MessageClass
-}
-
-case class LogMessage (val date: Date, val cls: MessageClass, val message: String)
+case class LogMessage (val date: Date, val message: String, val cls: MessageClass)
 
 class LoggerTableModel extends AbstractTableModel {
   val columnNames = Array("Time", "Class", "Message")
+  val dateFormatString = "HH:mm:ss"
+  val dateFormat = new SimpleDateFormat(dateFormatString)
   
-  val log = new scala.collection.mutable.ArrayBuffer[LogMessage]
+  val log = new scala.collection.mutable.ListBuffer[LogMessage]
   
-  log.append(LogMessage(new Date(), MessageClass.Info, "Hi"))
+  log.append(LogMessage(new Date(), "Hi", MessageClass.Info))
   
   override def getColumnName(col:Int) = columnNames(col)
   
-  def getColumnCount = 3
+  val getColumnCount = 3
   
   def getRowCount = log.length
   
   override def isCellEditable(row:Int, col:Int) = false
 
   override def getValueAt(row: Int, col: Int) =  col match {
-    case 1 => log(row).date
-    case 2 => log(row).cls
-    case 3 => log(row).message
+    case 0 => dateFormat.format(log(row).date)
+    case 1 => log(row).cls
+    case 2 => log(row).message
   }
 }
-
+ 
 /*
 SuppressWarnings("serial")
 public class PropertyEditorTableModel extends AbstractTableModel {

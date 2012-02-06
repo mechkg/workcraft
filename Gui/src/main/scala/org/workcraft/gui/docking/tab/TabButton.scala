@@ -1,4 +1,5 @@
 package org.workcraft.gui.docking.tab
+
 import java.awt.event.MouseListener
 import javax.swing.JLabel
 import javax.swing.BorderFactory

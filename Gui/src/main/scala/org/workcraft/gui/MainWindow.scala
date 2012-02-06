@@ -22,9 +22,11 @@ import javax.swing.WindowConstants
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JButton
-import org.workcraft.gui.docking.DockableWindowConfiguration
 import javax.swing.JComponent
+import org.workcraft.gui.docking.DockingRoot
+import org.workcraft.gui.docking.DockableWindowConfiguration
 import org.workcraft.gui.docking.DockableWindow
+import org.workcraft.gui.logger.LoggerWindow
 
 class MainWindow private (val globalServices: GlobalServiceManager /*, configuration: Option[GuiConfiguration]*/ ) extends JFrame {
   val dockingRoot = new DockingRoot("workcraft")
@@ -33,6 +35,8 @@ class MainWindow private (val globalServices: GlobalServiceManager /*, configura
   val menu = new MainMenu(utilityWindows)
   this.setJMenuBar(menu)
 
+  val logger = new LoggerWindow
+  
   dockingRoot.createRootWindow("1", "Kojo", new JButton("Hi"), DockableWindowConfiguration())
   dockingRoot.createRootWindow("2", "Kojo", new JButton("Hi"), DockableWindowConfiguration())
   dockingRoot.createRootWindow("3", "Kojo", new JButton("Hi"), DockableWindowConfiguration())
@@ -42,7 +46,7 @@ class MainWindow private (val globalServices: GlobalServiceManager /*, configura
 
   def utilityWindows: List[DockableWindow] =
     List(
-      createUtilityWindow("Kojo", "Kojo", new JButton("Kojo")),
+      createUtilityWindow("Log", "Log", new LoggerWindow),
       createUtilityWindow("Bojo", "Bojo", new JButton("Bojo")),
       createUtilityWindow("Kaja", "Kaja", new JButton("Kaja")))
 

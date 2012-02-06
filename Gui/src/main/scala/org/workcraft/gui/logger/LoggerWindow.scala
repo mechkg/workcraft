@@ -8,24 +8,25 @@ import javax.swing.JTable
 import javax.swing.JScrollPane
 import javax.swing.table.TableColumnModel
 import javax.swing.table.DefaultTableColumnModel
+import org.workcraft.logging.MessageClass
+import java.awt.BorderLayout
 
 class LoggerWindow extends JPanel with Logger[IO] {
-  def info(message: String) = {}.pure
-  def debug(message: String) = {}.pure
-  def warning(message: String) = {}.pure
-  def error(message: String) = {}.pure
-  
-  
-  
+  def log(message: String, klass: MessageClass) = {}.pure
+
   val table = new JTable()
   
-  val tcm = new DefaultTableColumnModel()
   
-  tcm.addColumn()
-  
-  
-  table.setColumnModel(tcm)
-  
+  table.setModel(new LoggerTableModel())
+  table.getColumnModel().setColumnSelectionAllowed(false)
+  table.getColumnModel().getColumn(0).setMaxWidth(100)
+  table.getColumnModel().getColumn(1).setMaxWidth(100)
+  table.setShowVerticalLines(false)
+  table.setShowHorizontalLines(false)
+    
   val scrollPane = new JScrollPane(table)
   table.setFillsViewportHeight(true)
+  
+  setLayout(new BorderLayout())
+  add(scrollPane, BorderLayout.CENTER)
 }

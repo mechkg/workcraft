@@ -1,4 +1,4 @@
-package org.workcraft.gui
+package org.workcraft.gui.docking
 import javax.swing.JPanel
 import org.flexdock.perspective.PerspectiveManager
 import org.flexdock.docking.DockingManager
@@ -6,8 +6,6 @@ import org.flexdock.perspective.Perspective
 import org.flexdock.docking.defaults.DefaultDockingPort
 import java.awt.BorderLayout
 import javax.swing.JComponent
-import org.workcraft.gui.docking.DockableWindow
-import org.workcraft.gui.docking.DockableWindowConfiguration
 import org.flexdock.docking.DockingConstants
 
 class DockingRoot(val id: String) extends JPanel {

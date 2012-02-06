@@ -23,9 +23,11 @@ class StandardStreamLogger extends Logger[IO] {
     stream.println (format(lines.head, prefix))
     lines.tail.foreach( s => stream.println (DUMMY + s))
   }
-        
-  def debug   (message: String) = print (System.out, message, DEBUG).pure
-  def info    (message: String) = print (System.out, message, INFO).pure
-  def warning (message: String) = print (System.err, message, WARNING).pure
-  def error   (message: String) = print (System.err, message, ERROR).pure
+  
+  def log (message: String, klass: MessageClass) = klass match {
+    case MessageClass.Debug => print (System.out, message, DEBUG).pure
+    case MessageClass.Info => print (System.out, message, INFO).pure
+    case MessageClass.Warning => print (System.err, message, WARNING).pure
+    case MessageClass.Error => print (System.err, message, ERROR).pure
+  } 
 }

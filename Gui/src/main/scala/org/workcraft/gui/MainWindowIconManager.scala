@@ -35,9 +35,9 @@ object MainWindowIconManager {
               case (_, Left(e)) => warning(e)
             }).join.unsafePerformIO
         } catch {
-          case e: InterruptedException => logger.warning(e.getMessage())
-          case e: InvocationTargetException => logger.warning(e.getCause().getMessage())
-          case e: RuntimeException => logger.warning(e.getMessage())
+          case e: InterruptedException => warning(e.getMessage())
+          case e: InvocationTargetException => warning(e.getCause().getMessage())
+          case e: RuntimeException => warning(e.getMessage())
         }
       }
     }).start().pure

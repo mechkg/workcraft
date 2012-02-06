@@ -1,25 +1,31 @@
 package org.workcraft.logging
 import scalaz.effects.IO
 
+sealed trait MessageClass 
+
+object MessageClass {
+  case object Info extends MessageClass
+  case object Debug extends MessageClass
+  case object Warning extends MessageClass
+  case object Error extends MessageClass
+}
+
 trait Logger[M[_]] {
-  def debug (message: String) : M[Unit]
-  def info (message: String) : M[Unit]
-  def warning (message: String) : M[Unit]
-  def error (message: String) : M[Unit]
+  def log (message: String, klass: MessageClass) : M[Unit]
 }
 
 object Logger {
   private def formatExceptionMessage (e: Throwable) = e.getClass().getName() + ": " + e.getMessage() + "\n" + e.getStackTraceString
   
-  def debug[M[_]] (message: String)(implicit logger:Logger[M]) = logger.debug(message)
-  def info[M[_]] (message: String)(implicit logger:Logger[M]) = logger.info(message)
-  def warning[M[_]] (message: String)(implicit logger:Logger[M]) = logger.warning(message)
-  def warning[M[_]] (exception: Throwable)(implicit logger:Logger[M]) = logger.warning(formatExceptionMessage(exception))
-  def error[M[_]] (message: String)(implicit logger:Logger[M]) = logger.error(message)
-  def error[M[_]] (exception: Throwable)(implicit logger:Logger[M]) = logger.error(formatExceptionMessage(exception))
+  def debug[M[_]] (message: String)(implicit logger:Logger[M]) = logger.log(message, MessageClass.Debug)
+  def info[M[_]] (message: String)(implicit logger:Logger[M]) = logger.log(message, MessageClass.Info)
+  def warning[M[_]] (message: String)(implicit logger:Logger[M]) = logger.log(message, MessageClass.Warning)
+  def warning[M[_]] (exception: Throwable)(implicit logger:Logger[M]) = logger.log(formatExceptionMessage(exception), MessageClass.Warning)
+  def error[M[_]] (message: String)(implicit logger:Logger[M]) = logger.log(message, MessageClass.Error)
+  def error[M[_]] (exception: Throwable)(implicit logger:Logger[M]) = logger.log(formatExceptionMessage(exception), MessageClass.Error)
   
-  def unsafeDebug (message:String)(implicit logger:Logger[IO]) = logger.debug(message).unsafePerformIO
-  def unsafeInfo (message:String)(implicit logger:Logger[IO]) = logger.info(message).unsafePerformIO
-  def unsafeWarning (message:String)(implicit logger:Logger[IO]) = logger.warning(message).unsafePerformIO
-  def unsafeError (message:String)(implicit logger:Logger[IO]) = logger.error(message).unsafePerformIO
+  def unsafeDebug (message:String)(implicit logger:Logger[IO]) = debug(message).unsafePerformIO
+  def unsafeInfo (message:String)(implicit logger:Logger[IO]) = info(message).unsafePerformIO
+  def unsafeWarning (message:String)(implicit logger:Logger[IO]) = warning(message).unsafePerformIO
+  def unsafeError (message:String)(implicit logger:Logger[IO]) = error(message).unsafePerformIO
 }

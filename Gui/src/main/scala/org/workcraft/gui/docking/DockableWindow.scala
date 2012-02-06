@@ -1,4 +1,5 @@
 package org.workcraft.gui.docking
+
 import org.flexdock.docking.defaults.AbstractDockable
 import javax.swing.JComponent
 import org.flexdock.docking.event.DockingEvent

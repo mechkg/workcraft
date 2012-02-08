@@ -1,6 +1,6 @@
 package org.workcraft.scala
 
-import org.workcraft.dependencymanager.advanced.user.{ModifiableExpression => JModifiableExpression}
+import org.workcraft.dependencymanager.advanced.user.{ModifiableExpression => JModifiableExpression, Variable}
 import scalaz.Monad
 import scala.collection.generic.CanBuildFrom
 import scala.collection.TraversableLike
@@ -12,6 +12,7 @@ import Expressions._
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Util._
 import org.workcraft.dependencymanager.advanced.user.Setter
+import javax.swing.SwingUtilities
 
 object Expressions {
   
@@ -23,6 +24,14 @@ object Expressions {
         sv(t)
       }
     })
+    }
+  }
+  
+  class ThreadSafeVariable[T](initialValue: T) extends Variable[T](initialValue) {
+    override def setValue(value: T) = {
+      SwingUtilities.invokeAndWait(new Runnable(){
+        def run = ThreadSafeVariable.super.setValue(value)
+      })
     }
   }
   

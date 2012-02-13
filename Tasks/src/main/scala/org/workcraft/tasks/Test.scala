@@ -2,29 +2,48 @@ package org.workcraft.tasks
 
 import scalaz.Scalaz
 import scalaz.Scalaz._
-import Task.TaskMA
+import org.workcraft.scala.effects.IO._
+import org.workcraft.scala.effects.IO
+import Task.taskMA
 
 object Test {
+  
+  def flood : Task[Unit, Nothing] = Task({
+    System.out.println("piska")
+    Thread.sleep(100)
+    Right(())
+  }.pure[IO]) flatMap (x => flood)
+  
+  def flood2 : Task[Unit, Nothing] = Task({
+    System.out.println("siska")
+    Thread.sleep(100)
+    Right(())
+  }.pure[IO]) flatMap (x => flood2)
+  
+  
   def main(args: Array[String]) = {
-    class Task1(input: Int) extends Task [Double, String] {
-      def runTask = Right(input * 10)
-    }
     
-    class Task2(input: Double) extends Task[String, String] {
-      def runTask = Right(input.toString())
-    }
     
-    val z = for {
-      x <- new Task1(8); 
-      y <- new Task2(x)
-    } yield x+8
+/*    val z = for {
+      x <- Task( { Right(8) }.pure[IO]); 
+      y <- Task( { Right(x.toString())}.pure[IO])
+    } yield y */
     
-    //val q = TaskMA(z)
+    var cancelled = false
     
-    val o = z >>= (x => Task.pure("хуй"))
+    println("launching!")
     
-    //q.replicateM_(8)
+    flood.runAsynchronously(cancelled.pure).unsafePerformIO
+    flood2.runAsynchronously(cancelled.pure).unsafePerformIO
     
-    println (z.runTask)
+
+    println("launched!")
+
+    readLine
+    
+    cancelled = true
+    
+    //val q = Task( { Left(8) }.pure[IO]) flatMap ( x => Task( { Left(x.toString())}.pure[IO]))
+    //println (z.runTask())
   }
-} 
+}

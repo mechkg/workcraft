@@ -4,46 +4,66 @@ import scalaz.Scalaz
 import scalaz.Scalaz._
 import org.workcraft.scala.effects.IO._
 import org.workcraft.scala.effects.IO
-import Task.taskMA
+import Task._
 
 object Test {
-  
-  def flood : Task[Unit, Nothing] = Task({
-    System.out.println("piska")
-    Thread.sleep(100)
+  def step1 : Task[Unit, Nothing] = Task( tc => {
+    System.out.print("Step 1")
+    Range(0,30).foreach( x => {
+      Thread.sleep(100) 
+      System.out.print (".")
+      tc.progressUpdate(0.4).unsafePerformIO
+    })
+    System.out.println
     Right(())
-  }.pure[IO]) flatMap (x => flood)
+  }.pure[IO])
   
-  def flood2 : Task[Unit, Nothing] = Task({
-    System.out.println("siska")
-    Thread.sleep(100)
+  def step2 : Task[Unit, Nothing] = Task({
+    System.out.print("Step 2")
+    Range(0,30).foreach( x => {
+      Thread.sleep(100) 
+      System.out.print (".")
+    })
+    System.out.println
     Right(())
-  }.pure[IO]) flatMap (x => flood2)
+  }.pure[IO])
+  
+  def step3 : Task[Unit, Nothing] = Task({
+    System.out.print("Step 3")
+    Range(0,30).foreach( x => {
+      Thread.sleep(100) 
+      System.out.print (".")
+    })
+    System.out.println
+    Right(())
+  }.pure[IO])
   
   
-  def main(args: Array[String]) = {
-    
-    
-/*    val z = for {
-      x <- Task( { Right(8) }.pure[IO]); 
-      y <- Task( { Right(x.toString())}.pure[IO])
-    } yield y */
-    
+  def progressUpdate (progress: Double) = {
+    System.out.println (progress)    
+  }.pure[IO]
+  
+  def statusUpdate (status: String) = {
+    System.out.println ("Now doing: " + status)
+  }.pure[IO]
+  
+  def main(args: Array[String]) : Unit = {
     var cancelled = false
     
-    println("launching!")
+    val tc = new TaskControl() {
+      val cancelRequest = cancelled.pure
+      val progressUpdate = Test.progressUpdate(_)
+    }
     
-    flood.runAsynchronously(cancelled.pure).unsafePerformIO
-    flood2.runAsynchronously(cancelled.pure).unsafePerformIO
+    val myComplexTask = for {
+      _ <- ioTask (statusUpdate ("step 1"));
+      x <- step1;
+      _ <- ioTask (statusUpdate ("step 2"));
+      y <- step2;
+      _ <- ioTask (statusUpdate ("step 3"));
+      z <- step3
+    } yield z
     
-
-    println("launched!")
-
-    readLine
-    
-    cancelled = true
-    
-    //val q = Task( { Left(8) }.pure[IO]) flatMap ( x => Task( { Left(x.toString())}.pure[IO]))
-    //println (z.runTask())
+    myComplexTask.runTask(tc).unsafePerformIO
   }
 }

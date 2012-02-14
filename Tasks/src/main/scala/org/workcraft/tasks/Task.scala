@@ -7,33 +7,25 @@ import Scalaz._
 import org.workcraft.scala.effects.IO
 import org.workcraft.scala.effects.IO._
 
-sealed abstract class Progress[+O, +E]
-
-case object Suspended extends Progress[Nothing, Nothing]
-case class KnownProgress(val progress: Double) extends Progress[Nothing, Nothing]
-case object UnknownProgress extends Progress[Nothing, Nothing]
-case class Completed[O, E](val result: Either[E, O]) extends Progress[O, E]
-
-sealed trait Outcome[+O, +E]
-
-case class Failed[E](val error: E) extends Outcome[Nothing, E]
-case class Cancelled extends Outcome[Nothing, Nothing]
-case class Finished[O](val output: O) extends Outcome[O, Nothing]
+trait TaskControl {
+  val cancelRequest : IO[Boolean]
+  val progressUpdate: Double => IO[Unit]
+}
 
 trait Task[+O, +E] {
   import Task._
   
-  def runTask (cancelRequest : IO[Boolean]) : IO[Either[Option[E], O]]
+  def runTask (tc : TaskControl) : IO[Either[Option[E], O]]
 
   def flatMap[O2, E2 >: E](f: O => Task[O2, E2]) = {
     val outer = this
     
     new Task[O2, E2] {
-      def runTask (cancelRequest: IO[Boolean]) = outer.runTask(cancelRequest) >>= {
+      def runTask (tc: TaskControl) = outer.runTask(tc) >>= {
         case Left(error) => Left(error).pure[IO]
-        case Right(output) => cancelRequest.>>=[Either[Option[E2], O2]] {
+        case Right(output) => tc.cancelRequest.>>=[Either[Option[E2], O2]] {
           case true => Left(None).pure[IO]
-          case false => f(output).runTask(cancelRequest)
+          case false => f(output).runTask(tc)
         }
       }
     }
@@ -42,7 +34,7 @@ trait Task[+O, +E] {
   def mapError[E2 >: E](f: E => E2) = {
     val outer = this
     new Task[O, E2] {
-      def runTask (cancelRequest: IO[Boolean]) = outer.runTask(cancelRequest) map {
+      def runTask (tc: TaskControl) = outer.runTask(tc) map {
         case Left(None) => Left(None)
         case Left(Some(error)) => Left(Some(f(error)))
         case Right(output) => Right(output)
@@ -50,10 +42,10 @@ trait Task[+O, +E] {
     }
   }
 
-  def runAsynchronously (cancelRequest : IO[Boolean]) : IO[Unit] = {
+  def runAsynchronously (tc: TaskControl) : IO[Unit] = {
     // run task in a separate thread
     val thread = new Thread() {
-      override def run() = runTask(cancelRequest).unsafePerformIO 
+      override def run() = runTask(tc).unsafePerformIO 
     }
 
     thread.start()
@@ -76,7 +68,7 @@ trait Task[+O, +E] {
 
 object Task {
   def pure[O, E](outcome: O) = new Task[O, E] {
-    def runTask(cancelRequest: IO[Boolean]) = Right(outcome).pure[IO]
+    def runTask(tc: TaskControl) = Right(outcome).pure[IO]
   }
 
   implicit def taskMonad[E] = new Monad[({ type λ[α] = Task[α, E] })#λ] {
@@ -87,13 +79,21 @@ object Task {
   implicit def taskMA[O, E](t: Task[O, E]): MA[({ type λ[α] = Task[α, E] })#λ, O] = ma[({ type λ[α] = Task[α, E] })#λ, O](t)
   
   def apply[E,O] (task: IO[Either[E, O]]) = new Task[O,E] {
-    def runTask(cancelRequested: IO[Boolean]) = task map {
+    def runTask(tc: TaskControl) = task map {
       case Left(error) => Left(Some(error))
       case Right(value) => Right(value)
     }
   }
   
-  def apply[E,O] (task: IO[Boolean] => IO[Either[Option[E],O]]) = new Task[O,E] {
-    def runTask(cancelRequested: IO[Boolean]) = task(cancelRequested)
+  def apply[E,O] (task: TaskControl => IO[Either[Option[E],O]]) = new Task[O,E] {
+    def runTask(tc: TaskControl) = task(tc)
+  }
+  
+  implicit def ioTask[E] (action: IO[Unit]) = new Task[Unit, E] {
+    def runTask(tc: TaskControl) = action >>= (x => Right(()).pure[IO])
+  }
+  
+  def forward[E, O] (result: Either[Option[E],O], action: IO[Unit]) = new Task[O,E] {
+    def runTask(tc: TaskControl) = action >>= (x => result.pure[IO])
   }
 }

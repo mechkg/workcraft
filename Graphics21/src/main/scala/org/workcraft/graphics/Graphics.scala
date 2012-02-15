@@ -1,8 +1,3 @@
-import org.workcraft.dom.visual.DrawRequest
-import org.workcraft.gui.Coloriser
-import org.workcraft.dom.visual.GraphicalContent
-import org.workcraft.dom.visual.ColorisableGraphicalContent
-import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import java.awt.geom.Ellipse2D
 import java.awt.geom.Rectangle2D
 import java.awt.Stroke
@@ -10,7 +5,7 @@ import java.awt.Color
 import java.awt.BasicStroke
 import java.awt.Shape
 import java.awt.Font
-import org.workcraft.gui.Coloriser
+
 import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
 import org.workcraft.dependencymanager.advanced.core.Expression
@@ -29,12 +24,11 @@ import java.awt.geom.PathIterator
 import org.workcraft.graphics.TouchableUtil
 import org.workcraft.graphics.RichGraphicalContent
 import org.workcraft.util.Maybe
-import org.workcraft.gui.graph.tools.Colorisation
 
 package org.workcraft.graphics {
   object Graphics {
   
-  implicit def asBCGC (x : RichGraphicalContent) = new BoundedColorisableGraphicalContent (x.colorisableGraphicalContent, x.visualBounds) 
+ // implicit def asBCGC (x : RichGraphicalContent) = new BoundedColorisableGraphicalContent (x.colorisableGraphicalContent, x.visualBounds) 
   implicit def asTouchable (x : RichGraphicalContent) = x.touchable
     
   sealed trait HorizontalAlignment
@@ -56,7 +50,7 @@ package org.workcraft.graphics {
     def transform (graphics : ColorisableGraphicalContent, transformation : AffineTransform) : ColorisableGraphicalContent =
       new ColorisableGraphicalContent {
         def draw (r : DrawRequest) {
-           r.getGraphics().transform(transformation)
+           r.graphics.transform(transformation)
            graphics.draw(r)
         }
     }
@@ -110,7 +104,7 @@ package org.workcraft.graphics {
     
     def compose (a : ColorisableGraphicalContent, b : ColorisableGraphicalContent) = org.workcraft.util.Graphics.compose (a,b)
     
-    def compose (a : GraphicalContent, b : GraphicalContent) = org.workcraft.util.Graphics.compose (a,b)
+    def compose (a : GraphicalContent, b : GraphicalContent) = a.compose(b)
     
     def compose (a: Expression[GraphicalContent], b : Expression[GraphicalContent]) : Expression[GraphicalContent] = 
       for (a <- a; b <- b) yield compose (a, b)

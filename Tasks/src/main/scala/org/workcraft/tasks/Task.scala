@@ -66,6 +66,12 @@ trait Task[+O, +E] {
   }.pure[IO]
 }
 
+/* trait NodeDescription {
+  def inputPorts
+  def outputPorts  
+} */
+
+
 object Task {
   def pure[O, E](outcome: O) = new Task[O, E] {
     def runTask(tc: TaskControl) = Right(outcome).pure[IO]

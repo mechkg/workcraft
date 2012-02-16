@@ -50,7 +50,7 @@ import org.workcraft.util.Tools;
 import org.workcraft.workspace.WorkspaceEntry;
 
 @SuppressWarnings("serial")
-public class MainMenus extends JMenuBar {
+public class MainMenu extends JMenuBar {
 	class ToolAction extends Action {
 		ToolJob tool;
 		String text;

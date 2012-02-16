@@ -11,128 +11,113 @@ import java.awt.event.ComponentEvent
 import org.workcraft.dependencymanager.advanced.user.Variable
 import java.awt.event.FocusListener
 import java.awt.event.FocusEvent
-import org.workcraft.scala.Expressions.Expression
+import org.workcraft.scala.Expressions._
 import java.awt.BasicStroke
+import org.workcraft.graphics.GraphicalContent
+import scalaz._
+import Scalaz._
 
 class ModelEditorPanel extends JPanel {
-	class ImageModel 
-	
-	class Repainter extends ExpressionBase[ImageModel] {
-override def evaluate(context : EvaluationContext) : ImageModel = {
-			context.resolve(graphicalContent)
-			repaint
+  object Repainter {
+    class Image
+    def start = {
+      val repainter = graphicalContent.map(_ => { repaint; new Image })
+      new Timer(20, new ActionListener {
+        override def actionPerformed(e: ActionEvent) = GlobalCache.eval(repainter)
+      }).start
+    }
+  }
 
-			new ImageModel()
-		}
-	  
-	}
-	
-	object Repainter {
-	  def start = {
-	    val repainter = new Repainter	    
-	    
-			new Timer(20, new ActionListener {
-				override def actionPerformed(e: ActionEvent) = GlobalCache.eval(repainter)
-			}).start
-	  } 
-	}
+  object Resizer extends ComponentAdapter {
+    override def componentResized(e: ComponentEvent) = reshape
+  }
 
-	object Resizer extends ComponentAdapter {
-		override def componentResized(e: ComponentEvent) = reshape
-	}
+  object FocusListener extends FocusListener {
+    val value = Variable.create(false)
 
-	object FocusListener extends FocusListener {
-		val value = Variable.create(false)
-		
-		override def focusGained(e: FocusEvent) = value.setValue(true)
-		override def focusLost(e: FocusEvent) =	value.setValue(false)
-	}
+    override def focusGained(e: FocusEvent) = value.setValue(true)
+    override def focusLost(e: FocusEvent) = value.setValue(false)
+  }
 
-	def hasFocus : Expression[Boolean] = FocusListener.value
-	
-	val view  = new Viewport(0, 0, getWidth(), getHeight())
-	val grid  = new Grid(view)
-	val ruler = new Ruler(grid)
+  def hasFocus: Expression[Boolean] = FocusListener.value
 
-	val borderStroke = new BasicStroke(2)
+  val view = new Viewport(0, 0, getWidth(), getHeight())
+  val grid = new Grid(view)
+  val ruler = new Ruler(grid)
 
-	//private Overlay overlay = new Overlay();
-	
-	var firstPaint = true
-	
-	def mouseListener: Option[GraphEditorTool] => GraphEditorMouseListener = {
-	  case Some(tool) => tool.mouseListener
-	  case None => DummyMouseListener
-	}
-	
-	def reshape = {
-		view.setShape(15, 15, getWidth()-15, getHeight()-15)
-		ruler.setShape(0, 0, getWidth(), getHeight())
-	}
+  val borderStroke = new BasicStroke(2)
 
-	val graphicalContent = new ExpressionBase[GraphicalContent] {
+  //private Overlay overlay = new Overlay();
 
-		@Override
-		protected GraphicalContent evaluate(final EvaluationContext context) {
-			
-			final GraphEditorTool tool = context.resolve(
-					toolboxPanel.selectedTool());
-			
-			return new GraphicalContent() {
-				
-				@Override
-				public void draw(Graphics2D g2d) {
-					AffineTransform screenTransform = new AffineTransform(g2d.getTransform());
+  var firstPaint = true
 
-					if (firstPaint) {
-						reshape();
-						firstPaint = false;
-					}
+  def mouseListener: Option[GraphEditorTool] => GraphEditorMouseListener = {
+    case Some(tool) => tool.mouseListener
+    case None => DummyMouseListener
+  }
 
-					g2d.setBackground(context.resolve(CommonVisualSettings.backgroundColor));
-					g2d.clearRect(0, 0, getWidth(), getHeight());
-					context.resolve(grid.graphicalContent()).draw(g2d);
-					g2d.setTransform(screenTransform);
+  def reshape = {
+    view.setShape(15, 15, getWidth() - 15, getHeight() - 15)
+    ruler.setShape(0, 0, getWidth(), getHeight())
+  }
 
-					
-					g2d.transform(context.resolve(view.transform()));
-					
-					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-					g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-					g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-					g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-//					g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-				
-					g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+  val graphicalContent = for {
+    background <- CommonVisualSettings.backgroundColor;
+    foreground <- CommonVisualSettings.foregroundColor;
+    grid <- grid.graphicalContent;
+    ruler <- ruler.graphicalContent;
+    viewTransform <- view.transform;
+    tool <- toolboxPanel.selectedTool;
+    hasFocus <- hasFocus;
+    userSpaceContent <- tool.userSpaceContent(view, hasFocus)
+    screenSpaceContent <- tool.screenSpaceContent(view, hasFocus)
+  } yield GraphicalContent(g => {
+    AffineTransform screenTransform = new AffineTransform(g.getTransform)
 
-					context.resolve(tool.userSpaceContent(view, hasFocus)).draw(org.workcraft.util.Graphics.cloneGraphics(g2d));
+    if (firstPaint) {
+      reshape
+      firstPaint = false
+    }
 
-					g2d.setTransform(screenTransform);
+    g.setBackground(background)
+    g.clearRect(0, 0, getWidth(), getHeight())
+    grid.draw(g)
+    g.setTransform(screenTransform)
 
-					context.resolve(ruler.graphicalContent()).draw(g2d);
+    g.transform(viewTransform)
 
-					if (context.resolve(hasFocus)) {
-						context.resolve(tool.screenSpaceContent(view, hasFocus)).draw(g2d);
-						g2d.setTransform(screenTransform);
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+    g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+    g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+    g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+    //					g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
-						g2d.setStroke(borderStroke);
-						g2d.setColor(context.resolve(CommonVisualSettings.foregroundColor));
-						g2d.drawRect(0, 0, getWidth()-1, getHeight()-1);
-					}
-					
-				}
-			};
-		}
-		
-	};
-	
+    g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
+    userSpaceContent.draw(GraphicalContent.cloneGraphics(g))
+
+    g.setTransform(screenTransform)
+
+    ruler.draw(g)
+
+    if (hasFocus) {
+      screenSpaceContent.draw(g)
+      g.setTransform(screenTransform)
+
+      g.setStroke(borderStroke)
+      g.setColor(foreground)
+      g.drawRect(0, 0, getWidth() - 1, getHeight() - 1)
+    }
+
+  })
+
 }
 
 object ModelEditorPanel {
-	  
+
 }
 	
-	public GraphEditorPanel(MainWindow mainWindow, WorkspaceEntry workspaceEntry) throws ServiceNotAvailableException {
+/*	public GraphEditorPanel(MainWindow mainWindow, WorkspaceEntry workspaceEntry) throws ServiceNotAvailableException {
 		super (new BorderLayout());
 		this.mainWindow = mainWindow;
 		this.workspaceEntry = workspaceEntry;
@@ -213,5 +198,5 @@ object ModelEditorPanel {
 				return snap(argument);
 			}
 		};	
-	}
-}
+	} 
+}*/

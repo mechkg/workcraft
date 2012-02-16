@@ -27,7 +27,7 @@ package object formularendering {
 	implicit val defaultUseUnicode : UseUnicode = true
 	
 	object FormulaToGraphics {
-	  val withPodgonFontRenderContext = FormulaToGraphics(org.workcraft.dom.visual.Label.podgonFontRenderContext()) 
+	  val withPodgonFontRenderContext = FormulaToGraphics(PodgonFontRenderContext) 
 	  lazy val defaultFont = JavaFont.createFont(JavaFont.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/default.pfb")).deriveFont(0.5f);
 	  lazy val fancyFont = JavaFont.createFont(JavaFont.TYPE1_FONT, ClassLoader.getSystemResourceAsStream("fonts/eurm10.pfb")).deriveFont(0.5f);
 	}

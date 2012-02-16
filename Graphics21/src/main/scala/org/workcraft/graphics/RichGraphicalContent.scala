@@ -1,43 +1,40 @@
 package org.workcraft.graphics
 
-import org.workcraft.dom.visual.ColorisableGraphicalContent
+
 import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.geom.Path2D
 import java.awt.BasicStroke
-import org.workcraft.dom.visual.Touchable
+
 import org.workcraft.graphics.Graphics._
-import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import java.awt.Color
 
-class RichGraphicalContent(val colorisableGraphicalContent: ColorisableGraphicalContent, val visualBounds: Rectangle2D, val touchable: Touchable) {
-  def transform(x: AffineTransform): RichGraphicalContent =
-    new RichGraphicalContent(Graphics.transform(colorisableGraphicalContent, x),
-      Graphics.transform(visualBounds, x),
-      TouchableUtil.transform(touchable, x))
-
-  def translate(tx: Double, ty: Double): RichGraphicalContent = transform(AffineTransform.getTranslateInstance(tx, ty))
-
-  def translate(position: Point2D): RichGraphicalContent = transform(AffineTransform.getTranslateInstance(position.getX, position.getY))
-
-  def compose(a: RichGraphicalContent, b: RichGraphicalContent): RichGraphicalContent =
-    new RichGraphicalContent(Graphics.compose(a.colorisableGraphicalContent, b.colorisableGraphicalContent),
-      a.visualBounds.createUnion(b.visualBounds),
-      TouchableUtil.compose(a.touchable, b.touchable))
+case class RichGraphicalContent(bcgc: BoundedColorisableGraphicalContent, touchable: Touchable) {
   
-  def compose(a: RichGraphicalContent, b: RichGraphicalContent, touchableOverride: Touchable): RichGraphicalContent =
-    new RichGraphicalContent(Graphics.compose(a.colorisableGraphicalContent, b.colorisableGraphicalContent),
-      a.visualBounds.createUnion(b.visualBounds),
-      touchableOverride)
+  def transform(x: AffineTransform) =
+    RichGraphicalContent(
+        bcgc.transform(x),
+        touchable.transform(x)
+        )
+
+  def translate(tx: Double, ty: Double) = transform(AffineTransform.getTranslateInstance(tx, ty))
+
+  def translate(offset: Point2D) = transform(AffineTransform.getTranslateInstance(offset.getX, offset.getY))
+
+  def compose(top: RichGraphicalContent, newPivot: (Point2D, Point2D) => Point2D, newTouchable: (Touchable, Touchable) => Touchable) =
+    RichGraphicalContent(
+        bcgc.compose(top.bcgc, newPivot),
+        newTouchable(touchable, top.touchable))
 
   def align (to: RichGraphicalContent, horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment): RichGraphicalContent =
-    transform(alignTransform(touchable.getBoundingBox, to.touchable.getBoundingBox, horizontalAlignment, verticalAlignment))
+    transform(alignTransform(bcgc.bounds.boundingBox.rect, to.bcgc.bounds.boundingBox.rect, horizontalAlignment, verticalAlignment))
 
   def alignSideways (relativeTo: RichGraphicalContent, position: LabelPositioning): RichGraphicalContent =
-    transform(LabelPositioning.positionRelative(touchable.getBoundingBox, relativeTo.touchable.getBoundingBox, position))
+    transform(LabelPositioning.positionRelative(bcgc.bounds.boundingBox.rect, relativeTo.bcgc.bounds.boundingBox.rect, position))
 
-  private def releaseOver(x: RichGraphicalContent) = compose(x, this)
+    /*
+  private def releaseOver(x: RichGraphicalContent) = compose(x)
   
   private def releaseOver(x: RichGraphicalContent, touchableOverride: Touchable) = compose(x, this, touchableOverride)
 
@@ -65,8 +62,11 @@ class RichGraphicalContent(val colorisableGraphicalContent: ColorisableGraphical
     
   def over (x: RichGraphicalContent) = debugOver (x)
   def over (x: RichGraphicalContent, touchableOverride: Touchable) = debugOver (x, touchableOverride)
+  */
 }
 
+/*
 object RichGraphicalContent {
-  val empty = new RichGraphicalContent(BoundedColorisableGraphicalContent.EMPTY.graphics, new Rectangle2D.Double(), TouchableUtil.empty)
-}
+  val Empty = RichGraphicalContent(ColorisableGraphicalContent.Empty, new Rectangle2D.Double(), TouchableUtil.empty)
+}*/
+

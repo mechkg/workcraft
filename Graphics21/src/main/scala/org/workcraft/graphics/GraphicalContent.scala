@@ -10,7 +10,7 @@ trait GraphicalContent {
            graphics.transform(transformation)
            GraphicalContent.this.draw(graphics)
         }
-  }  
+  }
 
   def compose(top: GraphicalContent) = new GraphicalContent {
     def draw(graphics: Graphics2D) = {
@@ -18,9 +18,9 @@ trait GraphicalContent {
       try {
         draw(clonedGraphics)
       } finally {
-        clonedGraphics.dispose()
+        clonedGraphics.dispose
       }
-      clonedGraphics.dispose
+      top.draw(graphics)
     }
 
   }

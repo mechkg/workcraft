@@ -1,17 +1,15 @@
 package org.workcraft.graphics
-import org.workcraft.dom.visual.ColorisableGraphicalContent
-import org.workcraft.dom.visual.GraphicalContent
+
 import org.workcraft.scala.Util._
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Expressions._
-import org.workcraft.gui.graph.tools.Colorisation
 
 object GraphicsHelper {
   def paintNodes[N](painter: N => Expression[GraphicalContent], nodes: Expression[_ <: Iterable[N]]) =
     for (
       nodes <- nodes;
       graphics <- nodes.map(painter).toList.sequence
-    ) yield graphics.foldLeft(GraphicalContent.EMPTY)(Graphics.compose)
+    ) yield graphics.foldLeft(GraphicalContent.Empty)(_.compose(_))
 
   def paint[N](painter: N => Expression[ColorisableGraphicalContent], nodes: Expression[_ <: Iterable[N]]) = paintNodes(dontColourise(painter), nodes)
 
@@ -30,12 +28,12 @@ object GraphicsHelper {
     highlightedColorisation: Colorisation,
     highlighted: Expression[_ <: java.util.Set[_ <: N]],
     painter: N => Expression[ColorisableGraphicalContent]): N => Expression[GraphicalContent] = { (node: N) =>
-    for (highlighted <- highlighted; painter <- painter(node))
-      yield ColorisableGraphicalContent.Util.applyColourisation(painter, if (highlighted.contains(node)) highlightedColorisation else Colorisation.EMPTY)
+    for (highlighted <- highlighted; cgc <- painter(node))
+      yield cgc.applyColorisation(if (highlighted.contains(node)) highlightedColorisation else Colorisation.Empty)
   }
 
   def colourise[N](colorisation: N => Expression[Colorisation], painter: N => Expression[ColorisableGraphicalContent]): N => Expression[GraphicalContent] =
-    (node: N) => for (p <- painter(node); c <- colorisation(node)) yield ColorisableGraphicalContent.Util.applyColourisation(p, c)
+    (node: N) => for (cgc <- painter(node); c <- colorisation(node)) yield cgc.applyColorisation(c)
 
-  def dontColourise[N](painter: N => Expression[ColorisableGraphicalContent]): N => Expression[GraphicalContent] = colouriseWithHighlights[N](Colorisation.EMPTY, constant(java.util.Collections.emptySet()), painter)
+  def dontColourise[N](painter: N => Expression[ColorisableGraphicalContent]): N => Expression[GraphicalContent] = colouriseWithHighlights[N](Colorisation.Empty, constant(java.util.Collections.emptySet()), painter)
 }

@@ -1,10 +1,6 @@
 package org.workcraft.graphics.formularendering
 
-import org.workcraft.gui.Coloriser
-import org.workcraft.dom.visual.GraphicalContent
-import org.workcraft.dom.visual.DrawRequest
-import org.workcraft.dom.visual.ColorisableGraphicalContent
-import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
+
 import java.awt.BasicStroke
 import java.awt.Color
 import java.awt.Graphics2D
@@ -13,9 +9,16 @@ import java.awt.font.GlyphVector
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
 import org.workcraft.graphics.formularendering.RichRectangle2D._
-import org.workcraft.graphics.TouchableUtil
 import org.workcraft.graphics.Graphics._
 import org.workcraft.graphics.RichGraphicalContent
+import org.workcraft.graphics.ColorisableGraphicalContent
+import org.workcraft.graphics.BoundedColorisableGraphicalContent
+import org.workcraft.graphics.DrawRequest
+import org.workcraft.graphics.GraphicalContent
+import org.workcraft.graphics.Coloriser
+import org.workcraft.graphics.PivotedBoundingBox
+import org.workcraft.graphics.BoundingBox
+import org.workcraft.graphics.Touchable
 
 case class FormulaRenderingResult(logicalBounds: Rectangle2D, visualBounds: Rectangle2D,
   glyphs: List[(GlyphVector, Point2D)], inversionLines: List[Line2D]) {
@@ -52,14 +55,15 @@ case class FormulaRenderingResult(logicalBounds: Rectangle2D, visualBounds: Rect
 
   def asRichGraphicalContent(color: Color) =
     {
-      val gc = new ColorisableGraphicalContent() {
-        override def draw(request: DrawRequest) {
-          FormulaRenderingResult.this.draw(request.getGraphics(), Coloriser.colorise(color, request.getColorisation().getColorisation()));
-        }
-      }
-      new RichGraphicalContent(gc, visualBounds, TouchableUtil.fromRectangle(visualBounds))
+      val gc = ColorisableGraphicalContent(colorisation => GraphicalContent(g =>
+          FormulaRenderingResult.this.draw(g, Coloriser.colorise(color, colorisation.foreground))))
+      
+      RichGraphicalContent(
+          BoundedColorisableGraphicalContent(gc, PivotedBoundingBox(BoundingBox(visualBounds), new Point2D.Double(0,0))),
+          Touchable.fromRect(visualBounds))
     }
 }
+
 object FormulaRenderingResult {
   val empty = FormulaRenderingResult(new Rectangle2D.Double(0, 0, 0, 0), new Rectangle2D.Double(0, 0, 0, 0), Nil, Nil)
 }

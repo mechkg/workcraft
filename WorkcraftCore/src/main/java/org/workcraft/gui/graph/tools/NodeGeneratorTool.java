@@ -61,17 +61,7 @@ public class NodeGeneratorTool extends AbstractTool {
 
 	@Override
 	public Expression<? extends GraphicalContent> screenSpaceContent(final Viewport viewport, Expression<Boolean> hasFocus) {
-		return new ExpressionBase<GraphicalContent>(){
-			@Override
-			protected GraphicalContent evaluate(final EvaluationContext context) {
-				return new GraphicalContent(){
-					@Override
-					public void draw(Graphics2D g) {
-						GUI.drawEditorMessage(viewport, g, Color.BLACK, "Click to create a " + generator.getIdentification().getLabel(), context);	
-					}
-				};
-			}
-		};
+		return GUI.editorMessage(viewport, Color.BLACK, "Click to create a " + generator.getIdentification().getLabel());
 	}
 	
 	@Override

@@ -251,7 +251,7 @@ public class GenericConnectionTool<N>  {
 							else
 								message = "Click on the second component (control+click to connect continuously)";
 
-							GUI.drawEditorMessage(viewport, g, warningMessage != null ? Color.RED : Color.BLACK, message, context);
+							context.resolve(GUI.editorMessage(viewport, warningMessage != null ? Color.RED : Color.BLACK, message)).draw(g);
 						}
 					}
 				};

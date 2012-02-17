@@ -37,6 +37,10 @@ import org.workcraft.gui.graph.Viewport;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
 import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import org.workcraft.dependencymanager.advanced.core.Expression;
+import org.workcraft.dependencymanager.advanced.core.Expressions;
+
+import org.workcraft.dom.visual.GraphicalContent;
 
 public class GUI {
 
@@ -89,11 +93,25 @@ public class GUI {
 		return new ImageIcon(res);
 	}
 
-	public static void drawEditorMessage(Viewport viewport, Graphics2D g, Color color, String message, EvaluationContext context) {
+	public static Expression<GraphicalContent> editorMessage(final Viewport viewport, final Color color, final String message) {
+		return Expressions.<Rectangle, GraphicalContent>fmap(new Function<Rectangle, GraphicalContent> () {
+			@Override
+			public GraphicalContent apply(final Rectangle shape) {
+				return new GraphicalContent() {
+					@Override
+			    		public void draw(final Graphics2D g) {
+			    			drawEditorMessage(shape, g, color, message);
+					}
+				};
+			}
+		    }, viewport.shape());
+	}
+
+	public static void drawEditorMessage(Rectangle viewportShape, Graphics2D g, Color color, String message) {
 		g.setFont(UIManager.getFont("Button.font"));
 		Rectangle r = g.getFont().getStringBounds(message, g.getFontRenderContext()).getBounds();
-		r.x = context.resolve(viewport.shape()).width/2 - r.width/2;
-		r.y = context.resolve(viewport.shape()).height - 20 - r.height;
+		r.x = viewportShape.width/2 - r.width/2;
+		r.y = viewportShape.height - 20 - r.height;
 		g.setColor(new Color(240, 240, 240, 192));
 		g.fillRoundRect(r.x-10, r.y-10, r.width+20, r.height+20, 5, 5);
 		g.setColor(new Color(224, 224, 224));

@@ -16,14 +16,19 @@ import java.awt.BasicStroke
 import org.workcraft.graphics.GraphicalContent
 import scalaz._
 import Scalaz._
+import java.awt.geom.AffineTransform
+import java.awt.RenderingHints
 
 class ModelEditorPanel extends JPanel {
+  val panelDimensions = Variable.create((0, 0, getWidth, getHeight))
+  val viewDimensions = panelDimensions.map { case (x,y,w,h) => (x + 15,y + 15, w - 15, h - 15) }
+  
   object Repainter {
     class Image
     def start = {
-      val repainter = graphicalContent.map(_ => { repaint; new Image })
+      val repainter = graphicalContent.map(_ => { ModelEditorPanel.this.repaint(); new Image })
       new Timer(20, new ActionListener {
-        override def actionPerformed(e: ActionEvent) = GlobalCache.eval(repainter)
+        override def actionPerformed(e: ActionEvent) = GlobalCache.eval(repainter.jexpr)
       }).start
     }
   }
@@ -39,11 +44,11 @@ class ModelEditorPanel extends JPanel {
     override def focusLost(e: FocusEvent) = value.setValue(false)
   }
 
-  def hasFocus: Expression[Boolean] = FocusListener.value
+  def hasfocus: Expression[Boolean] = FocusListener.value
 
-  val view = new Viewport(0, 0, getWidth(), getHeight())
+  val view = new Viewport(viewDimensions)
   val grid = new Grid(view)
-  val ruler = new Ruler(grid)
+  val ruler = new Ruler(grid, view, panelDimensions)
 
   val borderStroke = new BasicStroke(2)
 
@@ -51,28 +56,25 @@ class ModelEditorPanel extends JPanel {
 
   var firstPaint = true
 
-  def mouseListener: Option[GraphEditorTool] => GraphEditorMouseListener = {
+  /*def mouseListener: Option[GraphEditorTool] => GraphEditorMouseListener = {
     case Some(tool) => tool.mouseListener
     case None => DummyMouseListener
-  }
+  }*/
 
-  def reshape = {
-    view.setShape(15, 15, getWidth() - 15, getHeight() - 15)
-    ruler.setShape(0, 0, getWidth(), getHeight())
-  }
+  def reshape = panelDimensions.setValue(0, 0, getWidth, getHeight)
 
   val graphicalContent = for {
     background <- CommonVisualSettings.backgroundColor;
     foreground <- CommonVisualSettings.foregroundColor;
     grid <- grid.graphicalContent;
     ruler <- ruler.graphicalContent;
-    viewTransform <- view.transform;
-    tool <- toolboxPanel.selectedTool;
-    hasFocus <- hasFocus;
-    userSpaceContent <- tool.userSpaceContent(view, hasFocus)
-    screenSpaceContent <- tool.screenSpaceContent(view, hasFocus)
+    viewTransform <- view.transform
+   //tool <- toolboxPanel.selectedTool;
+    //hasFocus <- hasFocus;
+    //userSpaceContent <- tool.userSpaceContent(view, hasFocus)
+    //screenSpaceContent <- tool.screenSpaceContent(view, hasFocus)
   } yield GraphicalContent(g => {
-    AffineTransform screenTransform = new AffineTransform(g.getTransform)
+    val screenTransform = new AffineTransform(g.getTransform)
 
     if (firstPaint) {
       reshape
@@ -90,16 +92,17 @@ class ModelEditorPanel extends JPanel {
     g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
     g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
     g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-    //					g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+    // g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
     g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-    userSpaceContent.draw(GraphicalContent.cloneGraphics(g))
+    //userSpaceContent.draw(GraphicalContent.cloneGraphics(g))
 
     g.setTransform(screenTransform)
 
     ruler.draw(g)
 
+    /*
     if (hasFocus) {
       screenSpaceContent.draw(g)
       g.setTransform(screenTransform)
@@ -107,7 +110,7 @@ class ModelEditorPanel extends JPanel {
       g.setStroke(borderStroke)
       g.setColor(foreground)
       g.drawRect(0, 0, getWidth() - 1, getHeight() - 1)
-    }
+    }*/
 
   })
 

@@ -1,5 +1,5 @@
 package org.workcraft.gui.modeleditor
 
-class GraphEditorTool {
+trait GraphEditorTool {
   def mouseListener : GraphEditorMouseListener
 }

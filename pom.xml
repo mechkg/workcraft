@@ -28,16 +28,15 @@
     <module>PluginManager</module>
     <module>Graphics21</module>
     <module>ScalaUtil</module>
-    <module>CpogsPlugin</module>
     <module>DependencyManager</module>
     <module>BooleanFormulae</module>
+<!--
+    <module>CpogsPlugin</module>
     <module>ScalaGraphEditorUtil</module>
     <module>STGPlugin21</module>
     <module>PetriNetPlugin21</module>
-    
-    
     <module>STGPlugin</module>
-    <!-- <module>PetriNetPlugin</module>
+    <module>PetriNetPlugin</module>
     <module>Relational</module>
     <module>BalsaPlugin</module>
     <module>BalsaWrapperGenerator</module>

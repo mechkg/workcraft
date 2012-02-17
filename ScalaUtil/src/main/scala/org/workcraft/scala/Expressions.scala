@@ -56,10 +56,15 @@ object Expressions {
   /**
    *  Needed because Scala is stupid!
    */
-  implicit def monadicSyntax[A](m: ModifiableExpression[A]) = new {
+  implicit def monadicSyntaxME[A](m: ModifiableExpression[A]) = new {
     def map[B](f: A => B) = implicitly[Monad[Expression]].fmap(m, f)
     def flatMap[B](f: A => Expression[B]) = implicitly[Monad[Expression]].bind(m, f)
   }
+  
+ implicit def monadicSyntaxV[A](m: Variable[A]) = new {
+    def map[B](f: A => B) = implicitly[Monad[Expression]].fmap(m, f)
+    def flatMap[B](f: A => Expression[B]) = implicitly[Monad[Expression]].bind(m, f)
+  }  
   
   trait ExpressionOps[+A] {
     def mapE[B](f : A => Expression[_ <: B]) : Expression[List[B]]

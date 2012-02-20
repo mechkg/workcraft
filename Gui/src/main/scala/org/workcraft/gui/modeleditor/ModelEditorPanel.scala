@@ -12,12 +12,16 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 import java.awt.event.FocusListener
 import java.awt.event.FocusEvent
 import org.workcraft.scala.Expressions._
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 import java.awt.BasicStroke
 import org.workcraft.graphics.GraphicalContent
 import scalaz._
 import Scalaz._
 import java.awt.geom.AffineTransform
 import java.awt.RenderingHints
+import java.awt.Graphics
+import java.awt.Graphics2D
 
 class ModelEditorPanel extends JPanel {
   val panelDimensions = Variable.create((0, 0, getWidth, getHeight))
@@ -28,7 +32,7 @@ class ModelEditorPanel extends JPanel {
     def start = {
       val repainter = graphicalContent.map(_ => { ModelEditorPanel.this.repaint(); new Image })
       new Timer(20, new ActionListener {
-        override def actionPerformed(e: ActionEvent) = GlobalCache.eval(repainter.jexpr)
+        override def actionPerformed(e: ActionEvent) = unsafeEval(repainter)
       }).start
     }
   }
@@ -60,6 +64,12 @@ class ModelEditorPanel extends JPanel {
     case Some(tool) => tool.mouseListener
     case None => DummyMouseListener
   }*/
+  
+  val mListener = new ModelEditorMouseListener (view, hasfocus, () => System.out.println("Gimme focus pls").pure[IO])
+  
+  addMouseListener(mListener)
+  addMouseMotionListener(mListener)
+  addComponentListener(Resizer)
 
   def reshape = panelDimensions.setValue(0, 0, getWidth, getHeight)
 
@@ -74,6 +84,8 @@ class ModelEditorPanel extends JPanel {
     //userSpaceContent <- tool.userSpaceContent(view, hasFocus)
     //screenSpaceContent <- tool.screenSpaceContent(view, hasFocus)
   } yield GraphicalContent(g => {
+    System.out.println ("painting!")
+    
     val screenTransform = new AffineTransform(g.getTransform)
 
     if (firstPaint) {
@@ -113,7 +125,13 @@ class ModelEditorPanel extends JPanel {
     }*/
 
   })
-
+  
+  Repainter.start
+  
+  override def paint(g: Graphics) = {
+    val g2d = g.asInstanceOf[Graphics2D]
+    unsafeEval(graphicalContent).draw(g2d)
+  }
 }
 
 object ModelEditorPanel {

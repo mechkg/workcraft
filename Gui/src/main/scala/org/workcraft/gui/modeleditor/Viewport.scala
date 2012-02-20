@@ -3,6 +3,9 @@ package org.workcraft.gui.modeleditor
 import org.workcraft.scala.Expressions._
 import scalaz._
 import Scalaz._
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
+
 import org.workcraft.graphics.GraphicalContent
 import java.awt.geom.AffineTransform
 import java.awt.geom.Rectangle2D
@@ -96,41 +99,36 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
     new Rectangle2D.Double(visibleUL.getX, visibleLR.getY, visibleLR.getX - visibleUL.getX, visibleUL.getY - visibleLR.getY)
   }
   
-  def pan (dx: Int, dy: Int) = {
-    // Scary IO magic
-    val userToScreenf = GlobalCache.eval(userToScreen.jexpr)
-    val screenToUserf = GlobalCache.eval(screenToUser.jexpr)
-    val tx = GlobalCache.eval(translationX.jexpr)
-    val ty = GlobalCache.eval(translationY.jexpr)
+  def pan (dx: Int, dy: Int) : IO[Unit] = (for {
+    userToScreen <- eval(userToScreen);
+    screenToUser <- eval(screenToUser)
+  } yield {
+    val originInScreenSpace = userToScreen(origin)
     
-    val originInScreenSpace = userToScreenf(origin)
+    System.out.println (dx)
+    System.out.println (dy)
+    System.out.println (originInScreenSpace)
+    
     val panInScreenSpace = new Point2D.Double (originInScreenSpace.getX + dx, originInScreenSpace.getY + dy)
-    val panInUserSpace = screenToUserf(panInScreenSpace)
+    val panInUserSpace = screenToUser(panInScreenSpace)
     
-    translationX.setValue(tx + panInUserSpace.getX)
-    translationY.setValue(ty + panInUserSpace.getY)
-  }
+    update (translationX)(_ + panInUserSpace.getX) >>=| update(translationY)(_ + panInUserSpace.getY)
+  }).join
   
-  def zoom (levels: Int) = {
-    // More IO
-    val curScale = GlobalCache.eval(scale.jexpr)
-    val newScale = curScale * Math.pow (Viewport.scaleFactor, levels)
-    
-    scale.setValue(Math.min(Math.max (newScale, 0.01), 1.0))
-  }
+  def zoom (levels: Int) : IO[Unit] =
+    update (scale)(s => Math.min(Math.max (s * Math.pow (Viewport.scaleFactor, levels), 0.01), 1.0))
   
-  def zoomTo (levels: Int, anchor: Point2D) = {
-    val screenToUserf = GlobalCache.eval(screenToUser.jexpr)
-    val tx = GlobalCache.eval(translationX.jexpr)
-    val ty = GlobalCache.eval(translationY.jexpr)
-    
-    val anchorInUserSpace = screenToUserf (anchor)
-    zoom (levels)
-    val anchorInNewSpace = screenToUserf (anchor)
-    
-    translationX.setValue (tx + anchorInNewSpace.getX - anchorInUserSpace.getX)
-    translationY.setValue (ty + anchorInNewSpace.getY - anchorInUserSpace.getY)
-  }
+  def zoomTo (levels: Int, anchor: Point2D): IO[Unit] = (for {
+    screenToUser1 <- eval(screenToUser);
+    val anchorInOldSpace = screenToUser1(anchor);
+    _ <- zoom(levels);
+    screenToUser2 <- eval(screenToUser);
+    val anchorInNewSpace = screenToUser2(anchor);
+    tx <- eval(translationX);
+    ty <- eval(translationY)
+  } yield 
+    set (translationX, tx + anchorInNewSpace.getX - anchorInOldSpace.getX) >>=| set (translationY, ty + anchorInNewSpace.getY - anchorInOldSpace.getY)
+  ).join
 }
 
 object Viewport {

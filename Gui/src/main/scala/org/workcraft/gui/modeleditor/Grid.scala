@@ -36,8 +36,16 @@ class Grid(val viewport: Viewport) {
     majorInterval <- autoInterval;
     minorIntervalFactor <- Grid.minorIntervalFactor
   } yield {
-    def visibleLines(min: Double, max: Double, interval: Double) = Math.ceil(min / interval).until(Math.floor(max / interval)).by(interval).toList
+    def visibleLines(min: Double, max: Double, interval: Double) = Range(Math.ceil(min / interval).toInt, Math.floor(max / interval).toInt+1).map(_*interval).toList
+    
+    
     val minorInterval = majorInterval * minorIntervalFactor
+    
+    System.out.println (majorInterval)
+    System.out.println (visibleArea.getY)
+    System.out.println (visibleArea.getY + visibleArea.getHeight)
+    
+    System.out.println (visibleLines(visibleArea.getY, visibleArea.getY + visibleArea.getHeight, majorInterval))
 
     (visibleLines(visibleArea.getY, visibleArea.getY + visibleArea.getHeight, majorInterval),
       visibleLines(visibleArea.getX, visibleArea.getX + visibleArea.getWidth, majorInterval),
@@ -65,17 +73,17 @@ class Grid(val viewport: Viewport) {
     minorLinesColor <- Grid.minorLinesColor
   } yield GraphicalContent(g => {
     val (majorH, majorV, minorH, minorV) = lines
-    val (_, _, width, height) = dimensions
+    val (x, y, width, height) = dimensions
 
     val minorLines = new Path2D.Double
 
-    minorH.foreach(y => { minorLines.moveTo(0, y); minorLines.lineTo(width, y) })
-    minorV.foreach(x => { minorLines.moveTo(x, 0); minorLines.lineTo(x, height) })
+    minorH.foreach(y => { minorLines.moveTo(x, y); minorLines.lineTo(x + width, y) })
+    minorV.foreach(x => { minorLines.moveTo(x, y); minorLines.lineTo(x, y + height) })
 
     val majorLines = new Path2D.Double
 
-    majorH.foreach(y => { majorLines.moveTo(0, y); majorLines.lineTo(width, y) })
-    majorV.foreach(x => { majorLines.moveTo(x, 0); majorLines.lineTo(x, height) })
+    majorH.foreach(y => { majorLines.moveTo(x, y); majorLines.lineTo(x + width, y) })
+    majorV.foreach(x => { majorLines.moveTo(x, y); majorLines.lineTo(x, y + height) })
 
     g.setStroke(minorLinesStroke)
     g.setColor(minorLinesColor)

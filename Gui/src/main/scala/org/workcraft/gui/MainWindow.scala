@@ -27,6 +27,7 @@ import org.workcraft.gui.docking.DockingRoot
 import org.workcraft.gui.docking.DockableWindowConfiguration
 import org.workcraft.gui.docking.DockableWindow
 import org.workcraft.gui.logger.LoggerWindow
+import org.workcraft.gui.modeleditor.ModelEditorPanel
 
 class MainWindow private (val globalServices: GlobalServiceManager /*, configuration: Option[GuiConfiguration]*/ ) extends JFrame {
   val dockingRoot = new DockingRoot("workcraft")
@@ -37,10 +38,7 @@ class MainWindow private (val globalServices: GlobalServiceManager /*, configura
 
   val logger = new LoggerWindow
   
-  dockingRoot.createRootWindow("1", "Kojo", new JButton("Hi"), DockableWindowConfiguration())
-  dockingRoot.createRootWindow("2", "Kojo", new JButton("Hi"), DockableWindowConfiguration())
-  dockingRoot.createRootWindow("3", "Kojo", new JButton("Hi"), DockableWindowConfiguration())
-  dockingRoot.createRootWindow("4", "Kojo", new JButton("Hi"), DockableWindowConfiguration())
+  dockingRoot.createRootWindow("1", "Kojo", new ModelEditorPanel, DockableWindowConfiguration())
 
   //applyGuiConfiguration(configuration)
 

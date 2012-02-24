@@ -39,7 +39,6 @@ object Main {
   def serviceManager = new GlobalServiceManager (pluginManager)
 
   def main(args: Array[String]) = {
-
     unsafeInfo("Welcome to Workcraft 2.2: Return of The Deadlock")
     unsafeInfo("This build's version ID is " + version.toString())
     

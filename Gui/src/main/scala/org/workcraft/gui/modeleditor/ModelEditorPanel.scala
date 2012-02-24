@@ -31,7 +31,7 @@ class ModelEditorPanel extends JPanel {
     class Image
     def start = {
       val repainter = graphicalContent.map(_ => { ModelEditorPanel.this.repaint(); new Image })
-      new Timer(20, new ActionListener {
+      new Timer(1, new ActionListener {
         override def actionPerformed(e: ActionEvent) = unsafeEval(repainter)
       }).start
     }

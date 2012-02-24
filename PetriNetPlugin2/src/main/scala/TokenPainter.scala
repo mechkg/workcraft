@@ -1,9 +1,9 @@
-package org.workcraft.plugins.petri21
+package org.workcraft.plugins.petri2
 
 import org.workcraft.graphics.RichGraphicalContent
 import org.workcraft.scala.Expressions._
 import org.workcraft.scala.Scalaz._
-import org.workcraft.plugins.shared.CommonVisualSettings
+import org.workcraft.gui.CommonVisualSettings
 import org.workcraft.graphics.Graphics._
 import java.awt.Color
 import java.awt.Font

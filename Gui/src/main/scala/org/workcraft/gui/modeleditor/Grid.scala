@@ -37,16 +37,9 @@ class Grid(val viewport: Viewport) {
     minorIntervalFactor <- Grid.minorIntervalFactor
   } yield {
     def visibleLines(min: Double, max: Double, interval: Double) = Range(Math.ceil(min / interval).toInt, Math.floor(max / interval).toInt+1).map(_*interval).toList
-    
-    
+     
     val minorInterval = majorInterval * minorIntervalFactor
     
-    System.out.println (majorInterval)
-    System.out.println (visibleArea.getY)
-    System.out.println (visibleArea.getY + visibleArea.getHeight)
-    
-    System.out.println (visibleLines(visibleArea.getY, visibleArea.getY + visibleArea.getHeight, majorInterval))
-
     (visibleLines(visibleArea.getY, visibleArea.getY + visibleArea.getHeight, majorInterval),
       visibleLines(visibleArea.getX, visibleArea.getX + visibleArea.getWidth, majorInterval),
       visibleLines(visibleArea.getY, visibleArea.getY + visibleArea.getHeight, minorInterval),
@@ -63,7 +56,7 @@ class Grid(val viewport: Viewport) {
      gridLines._3.map(userToScreenY(_)),
      gridLines._4.map(userToScreenX(_)))
   }
-
+  
   def graphicalContent: Expression[GraphicalContent] = for {
     lines <- gridLinesInScreenSpace;
     dimensions <- viewport.dimensions;

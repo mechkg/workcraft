@@ -33,7 +33,7 @@ class MainWindow private (val globalServices: GlobalServiceManager /*, configura
   val dockingRoot = new DockingRoot("workcraft")
   setContentPane(dockingRoot)
 
-  val menu = new MainMenu(utilityWindows)
+  val menu = new MainMenu(this, utilityWindows, globalServices)
   this.setJMenuBar(menu)
 
   val logger = new LoggerWindow

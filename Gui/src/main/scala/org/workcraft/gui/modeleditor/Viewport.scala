@@ -105,10 +105,6 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
   } yield {
     val originInScreenSpace = userToScreen(origin)
     
-    System.out.println (dx)
-    System.out.println (dy)
-    System.out.println (originInScreenSpace)
-    
     val panInScreenSpace = new Point2D.Double (originInScreenSpace.getX + dx, originInScreenSpace.getY + dy)
     val panInUserSpace = screenToUser(panInScreenSpace)
     

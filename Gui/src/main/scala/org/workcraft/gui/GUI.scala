@@ -12,6 +12,7 @@ import org.apache.batik.bridge.GVTBuilder
 import java.awt.image.BufferedImage
 import java.awt.Graphics2D
 import java.awt.RenderingHints
+import java.awt.Window
 
 object GUI {
 	def createIconFromImage(resourcePath: String) : IO[Option[ImageIcon]] = {
@@ -68,4 +69,17 @@ object GUI {
 		  case e => Left(e)
 		}
 	}.pure
+	
+	def centerToParent(frame: Window, parent: Window) = {
+		val parentSize = parent.getSize
+		val mySize = frame.getSize
+		val q = parent.getLocationOnScreen
+		frame.setLocation (((parentSize.width - mySize.width)/2) + q.x, ((parentSize.height - mySize.height)/2) + q.y)
+	}
+	
+	def centerAndSizeToParent(frame: Window, parent: Window) = {
+		val parentSize = parent.getSize
+		frame.setSize(parentSize.width / 2, parentSize.height / 2)
+		centerToParent(frame, parent)
+	}
 }

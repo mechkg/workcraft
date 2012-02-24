@@ -26,7 +26,8 @@
     <module>Core</module>
     <module>Logger</module>
     <module>PluginManager</module>
-    <module>Graphics21</module>
+    <module>Graphics</module>
+    <module>PetriNetPlugin2</module>
     <module>ScalaUtil</module>
     <module>DependencyManager</module>
     <module>BooleanFormulae</module>

@@ -22,6 +22,7 @@ import java.awt.geom.AffineTransform
 import java.awt.RenderingHints
 import java.awt.Graphics
 import java.awt.Graphics2D
+import org.workcraft.gui.CommonVisualSettings
 
 class ModelEditorPanel extends JPanel {
   val panelDimensions = Variable.create((0, 0, getWidth, getHeight))

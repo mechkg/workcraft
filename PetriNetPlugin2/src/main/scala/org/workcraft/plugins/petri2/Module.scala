@@ -1,14 +1,24 @@
-package org.workcraft.plugins.petri21
+package org.workcraft.plugins.petri2
+import org.workcraft.services.Module
+import org.workcraft.services.Service
+import org.workcraft.services.GlobalServiceProvider
+import org.workcraft.services.NewModelImpl
+import org.workcraft.services.GlobalScope
+import org.workcraft.services.NewModelService
 
-import org.workcraft.Module
-import org.workcraft.Framework
-import org.workcraft.dom.ModelDescriptor
+object NewPetriNet extends NewModelImpl {
+  def name = "Petri Net"
+  def create = null
+}
+
+object PetriNetServiceProvider extends GlobalServiceProvider {
+  def implementation[T](service: Service[GlobalScope, T]) = service match {
+    case NewModelService => Some(NewPetriNet)
+    case _ => None
+  }
+}
 
 class PetriNetModule extends Module {
-  def getDescription = "Petri Net 2.1"
-  def init(framework: Framework) = {
-    val pluginManager = framework.getPluginManager
-    
-    pluginManager.registerClass(ModelDescriptor.GLOBAL_SERVICE_HANDLE, new PetriNetModelDescriptor())
-  }
+  def name = "Petri Net 2"
+  def serviceProvider = PetriNetServiceProvider
 }

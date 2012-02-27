@@ -20,7 +20,7 @@ case class GuiConfiguration(val xPos: Int,
 object GuiConfiguration {
   val path = "config/gui.conf"
   
-  def load(implicit logger: Logger[IO]): Option[GuiConfiguration] = {
+  def load(implicit logger:() => Logger[IO]): Option[GuiConfiguration] = {
     unsafeInfo("Loading GUI configuration")
 
     try {
@@ -38,7 +38,7 @@ object GuiConfiguration {
     }
   }
   
-  def save(conf: GuiConfiguration)(implicit logger: Logger[IO]) = {
+  def save(conf: GuiConfiguration)(implicit logger:() => Logger[IO]) = {
     unsafeInfo("Saving GUI configuration")
     
     val guiConfig = Configuration().set(ConfigKeys.xSize, conf.xSize)

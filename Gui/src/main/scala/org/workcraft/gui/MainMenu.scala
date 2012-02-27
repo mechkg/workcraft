@@ -5,10 +5,21 @@ import javax.swing.JMenu
 import javax.swing.JMenuItem
 import org.workcraft.gui.docking.DockableWindow
 import org.workcraft.services.GlobalServiceManager
+import org.workcraft.services.NewModelImpl
 
-class MainMenu(mainWindow: MainWindow, utilityWindows: List[DockableWindow], services: GlobalServiceManager) extends JMenuBar {
+class MainMenu(
+    mainWindow: MainWindow, utilityWindows: List[DockableWindow], 
+    services: () => GlobalServiceManager,
+    newModel: NewModelImpl => Unit,
+    reconfigure: () => Unit) extends JMenuBar {
+  val fileMenu = new FileMenu(services, mainWindow, newModel)
   val windowsMenu = new UtilityWindowsMenu(utilityWindows)
-  val fileMenu = new FileMenu(services, mainWindow)
+  
+  val utilityMenu = new JMenu("Utility")
+  utilityMenu.setMnemonic('U')
+  utilityMenu.add(GUI.menuItem("Reconfigure", Some('R'), None, reconfigure))
+  
   add(fileMenu)
   add(windowsMenu)
+  add(utilityMenu)
 }

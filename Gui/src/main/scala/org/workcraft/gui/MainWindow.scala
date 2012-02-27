@@ -28,12 +28,14 @@ import org.workcraft.gui.docking.DockableWindowConfiguration
 import org.workcraft.gui.docking.DockableWindow
 import org.workcraft.gui.logger.LoggerWindow
 import org.workcraft.gui.modeleditor.ModelEditorPanel
+import org.workcraft.services.NewModelImpl
 
-class MainWindow private (val globalServices: GlobalServiceManager /*, configuration: Option[GuiConfiguration]*/ ) extends JFrame {
+class MainWindow private (val globalServices: () => GlobalServiceManager, reconfigure: () => Unit /*, configuration: Option[GuiConfiguration]*/ ) extends JFrame {
   val dockingRoot = new DockingRoot("workcraft")
   setContentPane(dockingRoot)
 
-  val menu = new MainMenu(this, utilityWindows, globalServices)
+  val menu = new MainMenu(this, utilityWindows, globalServices, m => newModel(m), reconfigure)
+  
   this.setJMenuBar(menu)
 
   val logger = new LoggerWindow
@@ -59,7 +61,7 @@ class MainWindow private (val globalServices: GlobalServiceManager /*, configura
   def createUtilityWindow(title: String, persistentId: String, content: JComponent, relativeTo: DockableWindow, relativeRegion: String, split: Double) =
     dockingRoot.createWindow(title, persistentId, content, DockableWindowConfiguration(onCloseClicked = closeUtilityWindow), relativeTo, relativeRegion, split)
 
-  private def applyGuiConfiguration(configOption: Option[GuiConfiguration])(implicit logger: Logger[IO]) = configOption match {
+  private def applyGuiConfiguration(configOption: Option[GuiConfiguration])(implicit logger:() => Logger[IO]) = configOption match {
     case Some(config) => {
       LafManager.setLaf(config.lookandfeel)
       setSize(config.xSize, config.ySize)
@@ -85,33 +87,42 @@ class MainWindow private (val globalServices: GlobalServiceManager /*, configura
       lookandfeel = LafManager.getCurrentLaf)
   }
 
-  private def applyIconManager(implicit logger: Logger[IO]) = MainWindowIconManager.apply(this, logger)
+  private def applyIconManager(implicit logger:() => Logger[IO]) = MainWindowIconManager.apply(this, logger)
+  
+  
+  def newModel(newModelImpl: NewModelImpl) = {
+    val model = newModelImpl.create
+  }
+  
+  def exit = System.exit(0)
 }
 
 object MainWindow {
-  private def shutdown(implicit logger: Logger[IO], mainWindow: MainWindow) = {
+  private def shutdown(implicit mainWindow: MainWindow, logger: () => Logger[IO]) = {
     unsafeInfo("Shutting down")
 
     GuiConfiguration.save(mainWindow.guiConfiguration)
 
     mainWindow.setVisible(false)
-
+    
     unsafeInfo("Have a nice day!")
     System.exit(0)
   }
 
-  def startGui(implicit globalServices: GlobalServiceManager, logger: Logger[IO]): IO[MainWindow] = {
+  def startGui(globalServices: () => GlobalServiceManager, reconfigure: () => Unit, switchLogger: Logger[IO] => Unit)(implicit logger: () => Logger[IO]): IO[MainWindow] = {
     // LaF tweaks
     JDialog.setDefaultLookAndFeelDecorated(true)
     UIManager.put(SubstanceLookAndFeel.TABBED_PANE_CONTENT_BORDER_KIND, TabContentPaneBorderKind.SINGLE_FULL)
 
-    implicit val mainWindow = new MainWindow(globalServices)
+    implicit val mainWindow = new MainWindow(globalServices, reconfigure)
 
     mainWindow.applyGuiConfiguration(GuiConfiguration.load)
     mainWindow.applyIconManager
 
     mainWindow.setTitle("Workcraft")
     mainWindow.setVisible(true)
+    
+    switchLogger (mainWindow.logger)
 
     mainWindow.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE)
     mainWindow.addWindowListener(new WindowAdapter() {

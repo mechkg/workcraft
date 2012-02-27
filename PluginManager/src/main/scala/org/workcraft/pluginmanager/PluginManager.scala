@@ -7,7 +7,7 @@ import scalaz.effects.IO._
 import scalaz.Scalaz._
 import Logger._
 
-class PluginManager(val version: UUID, val packages: Traversable[String], val manifestPath: String)(implicit logger: Logger[IO]) {
+class PluginManager(val version: UUID, val packages: Traversable[String], val manifestPath: String, val forceReconfigure: Boolean)(implicit logger: () => Logger[IO]) {
 
   private def logPluginErrors(issues: Traversable[PluginError]) = {
     issues.map({
@@ -63,28 +63,33 @@ class PluginManager(val version: UUID, val packages: Traversable[String], val ma
   }
 
   private val classes: Traversable[Class[_]] = {
-    unsafeInfo("Reading plugin manifest")
+    if (forceReconfigure) {
+      unsafeInfo("Reconfiguration requested by user")
+      reconfigure
+    } else {
+      unsafeInfo("Reading plugin manifest")
 
-    PluginManifest.read(version, manifestPath) match {
-      case Right(manifest) => {
-        unsafeInfo("Processing manifest")
-        val results = PluginProcessor.processClasses(manifest)
-        if (!results.errors.isEmpty) {
-          unsafeWarning("Problems encountered while processing plugin classes listed in the manifest")
-          logPluginErrors(results.errors).unsafePerformIO
+      PluginManifest.read(version, manifestPath) match {
+        case Right(manifest) => {
+          unsafeInfo("Processing manifest")
+          val results = PluginProcessor.processClasses(manifest)
+          if (!results.errors.isEmpty) {
+            unsafeWarning("Problems encountered while processing plugin classes listed in the manifest")
+            logPluginErrors(results.errors).unsafePerformIO
+            unsafeInfo("Will reconfigure")
+
+            reconfigure
+          } else {
+            unsafeInfo("Successfully loaded plugin classes listed in the manifest")
+            results.plugins
+          }
+        }
+        case Left(error) => {
+          logManifestReadError(error).unsafePerformIO
           unsafeInfo("Will reconfigure")
 
           reconfigure
-        } else {
-          unsafeInfo("Successfully loaded plugin classes listed in the manifest")
-          results.plugins
         }
-      }
-      case Left(error) => {
-        logManifestReadError(error).unsafePerformIO
-        unsafeInfo("Will reconfigure")
-
-        reconfigure
       }
     }
   }

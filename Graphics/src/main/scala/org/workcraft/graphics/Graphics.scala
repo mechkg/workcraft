@@ -24,10 +24,6 @@ import scalaz.NonEmptyList
 
 package org.workcraft.graphics {
   object Graphics {
-
-    // implicit def asBCGC (x : RichGraphicalContent) = new BoundedColorisableGraphicalContent (x.colorisableGraphicalContent, x.visualBounds) 
-    implicit def asTouchable(x: RichGraphicalContent) = x.touchable
-
     sealed trait HorizontalAlignment
     object HorizontalAlignment {
       case object Left extends HorizontalAlignment
@@ -45,10 +41,10 @@ package org.workcraft.graphics {
     }
 
     def path(p: Path2D, stroke: BasicStroke, color: Color, touchThreshold: Double) =
-      Path.richGraphicalContent(p, stroke, color, touchThreshold)
+      Path(p, stroke, color, touchThreshold)
 
     def shape(s: java.awt.Shape, stroke: Option[(Stroke, Color)], fill: Option[Color]) =
-      Shape.richGraphicalContent(s, stroke, fill)
+      Shape(s, stroke, fill)
 
     def rectangle(width: Double, height: Double, stroke: Option[(Stroke, Color)], fill: Option[Color]) =
       shape(
@@ -63,10 +59,10 @@ package org.workcraft.graphics {
         fill)
 
     def label(text: String, font: Font, color: Color) =
-      Label.richGraphicalContent(text, font, color)
+      Label(text, font, color)
 
     def formulaLabel(formula: String, font: Font, color: Color) =
-      formularendering.FormulaToGraphics(PodgonFontRenderContext).WithFont(font).print(formula).asRichGraphicalContent(color)
+      formularendering.FormulaToGraphics(PodgonFontRenderContext).WithFont(font).print(formula).withColor(color)
 
     def compose(a: Expression[GraphicalContent], b: Expression[GraphicalContent]): Expression[GraphicalContent] =
       for (a <- a; b <- b) yield a.compose(b)

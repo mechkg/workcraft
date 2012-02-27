@@ -15,7 +15,12 @@ import org.workcraft.logging.Logger
 import scalaz.effects.IO
 
 object Main {
-  implicit val logger = new StandardStreamLogger()
+  var currentLogger: Logger[IO] = new StandardStreamLogger()
+  
+  def switchLogger (logger: Logger[IO]) = currentLogger = logger
+  
+  implicit val logger = () => currentLogger
+    
   val version = UUID.fromString("dd10f600-4769-11e1-b86c-0800200c9a66")
   val manifestPath = "config/manifest"
   val pluginPackages = List("org.workcraft.plugins")
@@ -34,9 +39,13 @@ object Main {
     unsafeInfo("Configuration directory OK")
   }
 
-  def pluginManager = new PluginManager(version, pluginPackages, manifestPath)
+  def loadPlugins(reconfigure: Boolean) = new PluginManager(version, pluginPackages, manifestPath, reconfigure) 
   
-  def serviceManager = new GlobalServiceManager (pluginManager)
+  var pluginManager = loadPlugins(false) 
+  
+  def serviceManager() = new GlobalServiceManager (pluginManager)
+  
+  def reconfigure() = pluginManager = loadPlugins(true)
 
   def main(args: Array[String]) = {
     unsafeInfo("Welcome to Workcraft 2.2: Return of The Deadlock")
@@ -44,10 +53,8 @@ object Main {
     
     checkConfig
     
-    implicit val svcManager = serviceManager
-    
     unsafeInfo("Starting GUI")
 
-    val mainWindow = MainWindow.startGui.unsafePerformIO
+    val mainWindow = MainWindow.startGui(serviceManager, reconfigure, switchLogger).unsafePerformIO
   }
 }

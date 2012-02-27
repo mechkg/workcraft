@@ -24,16 +24,16 @@ import javax.swing.JTextField
 import javax.swing.ListSelectionModel
 import javax.swing.WindowConstants
 import java.awt.event.MouseAdapter
-import org.workcraft.services.ModelDescriptor
 import java.awt.Window
 import javax.swing.JOptionPane
+import org.workcraft.services.NewModelImpl
 
-class CreateWorkDialog private (models: List[ModelDescriptor]) extends JDialog {
-  class ListElement(val descriptor: ModelDescriptor) {
-    override def toString = descriptor.modelName
+class CreateWorkDialog private (models: List[NewModelImpl]) extends JDialog {
+  class ListElement(val newModel: NewModelImpl) {
+    override def toString = newModel.name
   }
 
-  var choice: Option[ModelDescriptor] = None
+  var choice: Option[NewModelImpl] = None
 
   setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE)
   setModal(true)
@@ -64,7 +64,7 @@ class CreateWorkDialog private (models: List[ModelDescriptor]) extends JDialog {
     }
   })
 
-  models.sortBy(_.modelName).foreach(d => listModel.addElement(new ListElement(d)))
+  models.sortBy(_.name).foreach(d => listModel.addElement(new ListElement(d)))
 
   modelScroll.setViewportView(modelList)
   modelScroll.setBorder(BorderFactory.createTitledBorder("Type"))
@@ -117,7 +117,7 @@ class CreateWorkDialog private (models: List[ModelDescriptor]) extends JDialog {
   buttonsPane.add(cancelButton)
 
   contentPane.add(modelScroll, BorderLayout.CENTER)
-  contentPane.add(optionsPane, BorderLayout.WEST)
+  // contentPane.add(optionsPane, BorderLayout.WEST)
   contentPane.add(buttonsPane, BorderLayout.SOUTH)
 
   txtTitle.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -135,7 +135,7 @@ class CreateWorkDialog private (models: List[ModelDescriptor]) extends JDialog {
 
   def create() = {
     choice = modelList.getSelectedValue match {
-      case e: ListElement => Some(e.descriptor)
+      case e: ListElement => Some(e.newModel)
       case _ => None
     }
     setVisible(false)
@@ -147,11 +147,12 @@ class CreateWorkDialog private (models: List[ModelDescriptor]) extends JDialog {
 }
 
 object CreateWorkDialog {
-  def show(descriptors: List[ModelDescriptor], parentWindow: Window) = {
-    if (descriptors.isEmpty) {
+  def show(models: List[NewModelImpl], parentWindow: Window): Option[NewModelImpl] = {
+    if (models.isEmpty) {
       JOptionPane.showMessageDialog(parentWindow, "Workcraft was unable to find any plug-ins that could create a new model.\n\nReconfiguring Workcraft (Utility->Reconfigure) might fix this.\n\nIf you are running Workcraft from a development environment such as Eclipse,\nplease make sure to add the plug-in classes to the classpath in run configuration. ", "Warning", JOptionPane.WARNING_MESSAGE)
+      None
     } else {
-      val dialog = new CreateWorkDialog(descriptors)
+      val dialog = new CreateWorkDialog(models)
       GUI.centerAndSizeToParent(dialog, parentWindow)
       dialog.setVisible(true)
       dialog.choice

@@ -10,7 +10,7 @@ object LafManager {
 
 	def getCurrentLaf = currentLaf
 
-	def setLaf(laf: String)(implicit logger: Logger[IO]) = {
+	def setLaf(laf: String)(implicit logger:() => Logger[IO]) = {
 		try {
 		    info("Setting LaF: " + laf).unsafePerformIO
 			UIManager.setLookAndFeel(laf)
@@ -20,5 +20,5 @@ object LafManager {
 		} 
 	}
 
-	def setDefaultLaf (implicit logger: Logger[IO]) = setLaf(UIManager.getCrossPlatformLookAndFeelClassName())
+	def setDefaultLaf (implicit logger:() => Logger[IO]) = setLaf(UIManager.getCrossPlatformLookAndFeelClassName())
 }

@@ -9,8 +9,6 @@ import java.awt.font.GlyphVector
 import java.awt.geom.Line2D
 import java.awt.geom.Point2D
 import org.workcraft.graphics.formularendering.RichRectangle2D._
-import org.workcraft.graphics.Graphics._
-import org.workcraft.graphics.RichGraphicalContent
 import org.workcraft.graphics.ColorisableGraphicalContent
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.graphics.DrawRequest
@@ -52,17 +50,24 @@ case class FormulaRenderingResult(logicalBounds: Rectangle2D, visualBounds: Rect
     g.setStroke(new BasicStroke(0.025f));
     for (line <- inversionLines) g.draw(line);
   }
-
-  def asRichGraphicalContent(color: Color) =
-    {
-      val gc = ColorisableGraphicalContent(colorisation => GraphicalContent(g =>
-          FormulaRenderingResult.this.draw(g, Coloriser.colorise(color, colorisation.foreground))))
-      
-      RichGraphicalContent(
-          BoundedColorisableGraphicalContent(gc, PivotedBoundingBox(BoundingBox(visualBounds), new Point2D.Double(0,0))),
-          Touchable.fromRect(visualBounds))
-    }
+  
+  def withColor(color: Color) = FormulaImage (this, color)
 }
+
+case class FormulaImage private[formularendering] (rr: FormulaRenderingResult, color: Color)
+
+object FormulaImage {
+  implicit def graphicalContent (i: FormulaImage) = GraphicalContent (g => {i.rr.draw(g, i.color)})
+  
+  implicit def colorisableGraphicalContent (i: FormulaImage) = ColorisableGraphicalContent ( colorisation => (GraphicalContent(g => {
+    i.rr.draw(g, Coloriser.colorise(i.color, colorisation.foreground))        
+  })))
+  
+  implicit def boundedColorisableGraphicalContent (i: FormulaImage) = BoundedColorisableGraphicalContent (i, BoundingBox(i.rr.visualBounds))
+  
+  implicit def touchable (i: FormulaImage) = Touchable.fromRect(i.rr.visualBounds)
+}
+
 
 object FormulaRenderingResult {
   val empty = FormulaRenderingResult(new Rectangle2D.Double(0, 0, 0, 0), new Rectangle2D.Double(0, 0, 0, 0), Nil, Nil)

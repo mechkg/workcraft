@@ -18,7 +18,7 @@ import scalaz.Scalaz._
 class DockingLayoutSerialiser {
   val uiLayoutPath = "config/uilayout.xml"
   
-  def saveDockingLayout(rootDockingPort:DefaultDockingPort) (implicit logger: Logger[IO]) {
+  def saveDockingLayout(rootDockingPort:DefaultDockingPort) (implicit logger:() => Logger[IO]) {
     val pm = DockingManager.getLayoutManager().asInstanceOf[PerspectiveManager]
     pm.getCurrentPerspective().cacheLayoutState(rootDockingPort)
     pm.forceDockableUpdate()
@@ -34,7 +34,7 @@ class DockingLayoutSerialiser {
     }
   }
 
-  def loadDockingLayout(rootDockingPort: DefaultDockingPort)(implicit logger: Logger[IO]) {
+  def loadDockingLayout(rootDockingPort: DefaultDockingPort)(implicit logger:() => Logger[IO]) {
     val pm = DockingManager.getLayoutManager().asInstanceOf[PerspectiveManager]
     val pers = new XMLPersister()
     try {

@@ -6,19 +6,18 @@ import java.awt.event.ActionEvent
 import javax.swing.KeyStroke
 import java.awt.event.KeyEvent
 import org.workcraft.services.GlobalServiceManager
-import org.workcraft.services.ModelDescriptorService
+import org.workcraft.services.NewModelService
+import GUI.menuItem
+import org.workcraft.services.NewModelImpl
 
-class FileMenu (services: GlobalServiceManager, mainWindow: MainWindow) extends JMenu ("File") {
-  val newWork = new JMenuItem ("New work")
+class FileMenu (services: () => GlobalServiceManager, mainWindow: MainWindow, newModel: NewModelImpl => Unit) extends JMenu ("File") {
   setMnemonic('F')
   
-  newWork.addActionListener(new ActionListener {
-    def actionPerformed (e: ActionEvent) = {
-      CreateWorkDialog.show(services.implementations(ModelDescriptorService), mainWindow)
-    } 
-  })
+  add(menuItem ("New work", Some('N'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK)), 
+      () => CreateWorkDialog.show(services().implementations(NewModelService), mainWindow).foreach(newModel(_))))
+
+  addSeparator
   
-  newWork.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK))
-  
-  add(newWork)
+  add(menuItem ("Exit", Some('x'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)),
+      () => mainWindow.exit))
 }

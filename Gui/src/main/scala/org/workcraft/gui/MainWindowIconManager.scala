@@ -24,7 +24,7 @@ object MainWindowIconManager {
       }
     }).pure
 
-  def apply(implicit window: MainWindow, logger: Logger[IO]): IO[Unit] =
+  def apply(implicit window: MainWindow, logger:() => Logger[IO]): IO[Unit] =
     new Thread(new Runnable() {
       def run = {
         try {

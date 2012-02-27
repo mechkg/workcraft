@@ -13,7 +13,7 @@ class LoggerTableModel extends AbstractTableModel {
   
   val log = new scala.collection.mutable.ListBuffer[LogMessage]
   
-  log.append(LogMessage(new Date(), "Hi", MessageClass.Info))
+ // log.append(LogMessage(new Date(), "Hi", MessageClass.Info))
   
   override def getColumnName(col:Int) = columnNames(col)
   

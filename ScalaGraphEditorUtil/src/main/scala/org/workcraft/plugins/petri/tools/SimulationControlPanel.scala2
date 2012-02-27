@@ -1,0 +1,145 @@
+package org.workcraft.plugins.petri.tools;
+
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+import javax.swing.JButton
+import javax.swing.JSlider
+import javax.swing.event.ChangeEvent
+import javax.swing.event.ChangeListener
+import org.workcraft.util.GUI
+import org.workcraft.util.Nothing
+import pcollections.TreePVector
+import org.workcraft.swing.Swing
+import org.workcraft.swing.Swing._
+import org.workcraft.scala.Scalaz._
+import org.workcraft.swing._
+import scalaz.effects.IORef
+import scalaz.Scalaz._
+
+trait SimulationControl[M[_],State] extends SimulationModel[M,Unit, State] {
+}
+
+class SimulationControlPanel[State](
+    resetButton : Button,
+    autoPlayButton : Button,
+    stopButton : Button,
+    backButton : Button,
+    stepButton : Button,
+    loadTraceButton : Button,
+    saveMarkingButton : Button,
+    loadMarkingButton : Button,
+    speedSlider : Slider,
+    timer : SwingRef[Option[Timer]], // var = None
+    savedState : SwingRef[Option[State]], // var = None
+    initialState : SwingRef[Option[State]],
+    simControl : SimulationControl[Swing,State]
+  )
+   {
+    val DEFAULT_SIMULATION_DELAY = 0.3
+    val EDGE_SPEED_MULTIPLIER = 10
+
+    val getAnimationDelay : Swing[Int] = {
+      for(speed <- speedSlider.value)
+                yield (1000.0 * DEFAULT_SIMULATION_DELAY * Math.pow(EDGE_SPEED_MULTIPLIER, -speed / 1000.0)).toInt;
+        }
+
+    def components : List[Component] =
+                List( resetButton
+                     , speedSlider
+                     , autoPlayButton
+                     , stopButton
+                     , backButton
+                     , stepButton
+                     , loadTraceButton
+                     , saveMarkingButton
+                     , loadMarkingButton)
+        
+    def reset : Swing[Unit] = initialState.read >>= (s => simControl.loadState(s.get)) // TODO: remove nullability
+        
+    def rememberInitialState : Swing[Unit] = simControl.saveState >>= (state => initialState.write(Some(state)))
+
+    def update : Swing[Unit] = {
+      for (
+        atEnd <- simControl.canFire(()).map(!_)
+      ; atStart <- simControl.canFire(()).map(!_)
+      ; _ <- timer.read flatMap {
+          case None => ().pure
+          case Some(timer) => if(atEnd) {
+            timer.stop flatMap 
+            (_ => this.timer.write(None))
+          } else ().pure
+        }
+      ; _ <- timer.read >>= { 
+          case None => ().pure
+          case Some(t) => getAnimationDelay >>= (t.setDelay(_))
+        }
+      ; _ <- resetButton.setEnabled(!atStart)
+      ; _ <- autoPlayButton.setEnabled(!atEnd)
+      ; _ <- this.timer.read flatMap {
+          t => stopButton.setEnabled(t.isDefined)
+        }
+      ; _ <- backButton.setEnabled(!atStart)
+      ; _ <- stepButton.setEnabled(!atEnd)
+      ; _ <- loadTraceButton.setEnabled(true)
+      ; _ <- saveMarkingButton.setEnabled(true)
+      ; _ <- savedState.read >>=
+        (s => loadMarkingButton.setEnabled(s.isDefined))
+          ) yield ()
+    }
+
+    def asStateControl : SimStateControl[Swing] = new SimStateControl[Swing] {
+        override def reset : Swing[Unit] = SimulationControlPanel.this.reset
+        override def rememberInitialState = SimulationControlPanel.this.rememberInitialState
+      }
+}
+
+
+object SimulationControlPanel {
+        def apply[State] (simControl : SimulationControl[Swing, State]) 
+        : Swing[SimulationControlPanel[State]] = {
+          import Swing._
+          for(
+          resetButton <- Button.make("Reset")
+          ; speedSlider <- Slider.make(-1000, 1000, 0)
+          ; autoPlayButton <- unsafeToSwing(GUI.createIconButton(GUI.createIconFromSVG("images/icons/svg/start.svg"), "Automatic simulation"))>>=(Button.apply(_))
+          ; stopButton <- Button.make("Stop")
+          ; backButton <- Button.make("Step <")
+          ; stepButton <- Button.make("Step >")
+          ; loadTraceButton <- Button.make("Load trace")
+          ; saveMarkingButton <- Button.make("Save marking")
+          ; loadMarkingButton <- Button.make("Load marking")
+          ; timer <- newRef[Option[Timer]](None)
+          ; savedState <- newRef[Option[State]](None)
+          ; initialState <- simControl.saveState >>= (s => newRef[Option[State]](Some(s)))
+          ; val controlPanel = new SimulationControlPanel[State](
+             resetButton,
+             autoPlayButton,
+             stopButton,
+             backButton,
+             stepButton,
+             loadTraceButton,
+             saveMarkingButton,
+             loadMarkingButton,
+             speedSlider,
+             timer,
+             savedState,
+             initialState,
+             simControl)
+
+          ; _ <- speedSlider.setChangeListener(e =>
+             (timer.read >>= {
+               case None => ().pure
+               case Some(t) =>
+                 t.stop >|>
+                 (controlPanel.getAnimationDelay >>= ((delay : Int) => t.setInitialDelay(delay) >|> t.setDelay(delay))) >|>
+                 t.start
+               })
+             >|> controlPanel.update)
+          ; _ <- resetButton.setActionListener(e => controlPanel.reset)
+	  ; _ <- autoPlayButton.setActionListener(e => 
+	    controlPanel.getAnimationDelay >>= 
+	    (animDelay => Timer.make(animDelay, e => simControl.fire(Nothing.VALUE))) >>= 
+	    (t => timer.write(t) >|> t.start >|> controlPanel.update))
+          ) yield controlPanel
+        }
+}

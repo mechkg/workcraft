@@ -143,10 +143,14 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
         yield (visuals.foldl(RichGraphicalContent.empty)((a: RichGraphicalContent,b: RichGraphicalContent) => b over a).colorisableGraphicalContent.noColorisation)
     }
     
+
+    val simulationTool = null
+
     scala.collection.JavaConversions.asJavaIterable(
-      selectionTool.asGraphEditorTool((colorisation, selection) => paint) ::
+      (selectionTool.asGraphEditorTool((colorisation, selection) => paint) ::
       connectionTool.asGraphEditorTool((colorisation,highlighted) => paint) ::
-      nodeGeneratorTools
+      nodeGeneratorTools) :+ 
+      simulationTool
     )
   }
   import scala.collection.JavaConversions._

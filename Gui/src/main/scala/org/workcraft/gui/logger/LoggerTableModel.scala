@@ -11,22 +11,25 @@ class LoggerTableModel extends AbstractTableModel {
   val dateFormatString = "HH:mm:ss"
   val dateFormat = new SimpleDateFormat(dateFormatString)
   
-  val log = new scala.collection.mutable.ListBuffer[LogMessage]
+  val log_ = new scala.collection.mutable.ListBuffer[LogMessage]
   
- // log.append(LogMessage(new Date(), "Hi", MessageClass.Info))
+  def log (date: Date, message: String, cls: MessageClass) = {
+    log_.append(LogMessage(new Date(), message, cls))
+    fireTableDataChanged
+  }
   
   override def getColumnName(col:Int) = columnNames(col)
   
   val getColumnCount = 3
   
-  def getRowCount = log.length
+  def getRowCount = log_.length
   
   override def isCellEditable(row:Int, col:Int) = false
 
-  override def getValueAt(row: Int, col: Int) =  col match {
-    case 0 => dateFormat.format(log(row).date)
-    case 1 => log(row).cls
-    case 2 => log(row).message
+  override def getValueAt(row: Int, col: Int) = col match {
+    case 0 => dateFormat.format(log_(row).date)
+    case 1 => log_(row).cls
+    case 2 => log_(row).message
   }
 }
  

@@ -38,7 +38,7 @@ class MainWindow private (val globalServices: () => GlobalServiceManager, reconf
   
   this.setJMenuBar(menu)
 
-  val logger = new LoggerWindow
+  lazy val logger = new LoggerWindow
   
   dockingRoot.createRootWindow("1", "Kojo", new ModelEditorPanel, DockableWindowConfiguration())
 
@@ -46,7 +46,7 @@ class MainWindow private (val globalServices: () => GlobalServiceManager, reconf
 
   def utilityWindows: List[DockableWindow] =
     List(
-      createUtilityWindow("Log", "Log", new LoggerWindow),
+      createUtilityWindow("Log", "Log", logger),
       createUtilityWindow("Bojo", "Bojo", new JButton("Bojo")),
       createUtilityWindow("Kaja", "Kaja", new JButton("Kaja")))
 

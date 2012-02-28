@@ -43,7 +43,7 @@ class CreateWorkDialog private (models: List[NewModelImpl]) extends JDialog {
   setContentPane(contentPane)
 
   val modelScroll = new JScrollPane()
-  val listModel = new DefaultListModel()
+  val listModel = new DefaultListModel[ListElement]()
 
   val modelList = new JList(listModel)
   modelList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)

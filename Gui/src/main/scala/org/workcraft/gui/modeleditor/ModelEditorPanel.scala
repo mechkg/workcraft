@@ -66,11 +66,12 @@ class ModelEditorPanel extends JPanel {
     case None => DummyMouseListener
   }*/
   
-  val mListener = new ModelEditorMouseListener (view, hasfocus, () => System.out.println("Gimme focus pls").pure[IO])
+  val mListener = new ModelEditorMouseListener (view, hasfocus, () => {requestFocus()}.pure[IO])
   
   addMouseListener(mListener)
   addMouseMotionListener(mListener)
   addComponentListener(Resizer)
+  addMouseWheelListener(mListener)
 
   def reshape = panelDimensions.setValue(0, 0, getWidth, getHeight)
 
@@ -85,7 +86,6 @@ class ModelEditorPanel extends JPanel {
     //userSpaceContent <- tool.userSpaceContent(view, hasFocus)
     //screenSpaceContent <- tool.screenSpaceContent(view, hasFocus)
   } yield GraphicalContent(g => {
-    System.out.println ("painting!")
     
     val screenTransform = new AffineTransform(g.getTransform)
 

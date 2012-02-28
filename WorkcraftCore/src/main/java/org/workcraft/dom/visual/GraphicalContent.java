@@ -10,4 +10,16 @@ public interface GraphicalContent {
 	};
 	
 	public void draw(Graphics2D graphics);
+	
+	public class Util {
+		public static GraphicalContent compose(final GraphicalContent a, final GraphicalContent b) {
+			return new GraphicalContent (){
+				@Override
+				public void draw(Graphics2D graphics) {
+					a.draw(graphics);
+					b.draw(graphics);
+				}
+			};
+		}
+	}
 }

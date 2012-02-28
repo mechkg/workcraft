@@ -23,17 +23,20 @@
     <module>Util</module>
     <module>WorkcraftCore</module>
     <module>ScalaProject</module>
-    <module>Graphics21</module>
+    <module>Core</module>
+    <module>Logger</module>
+    <module>PluginManager</module>
+    <module>Graphics</module>
+    <module>PetriNetPlugin2</module>
     <module>ScalaUtil</module>
-    <module>CpogsPlugin</module>
     <module>DependencyManager</module>
     <module>BooleanFormulae</module>
+<!--
+    <module>CpogsPlugin</module>
     <module>ScalaGraphEditorUtil</module>
     <module>STGPlugin21</module>
     <module>PetriNetPlugin21</module>
-    
-    
-<!--    <module>STGPlugin</module>
+    <module>STGPlugin</module>
     <module>PetriNetPlugin</module>
     <module>Relational</module>
     <module>BalsaPlugin</module>

@@ -35,6 +35,7 @@ import org.workcraft.util.Action
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.dom.visual.connections.VisualConnectionProperties
 import scalaz.Lens
+import org.workcraft.graphics.BoundedColorisableGraphicalContent
 
 class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends GraphEditable {
   val selectionJ = Variable.create[PSet[VisualEntity]](HashTreePSet.empty())
@@ -88,7 +89,12 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
       })
     }
 
-
+    object RichGraphicalContent {
+      def empty = RichGraphicalContent()
+    }
+    case class RichGraphicalContent (graphicalContent : BoundedColorisableGraphicalContent, touchable : Touchable) {
+    }
+    
     def visual(e : VisualEntity) : Expression[RichGraphicalContent] = for (vstg <- visualStg : Expression[VisualStg];
     		position <- entityMovableController(e).toOption.map(m => m.expr).getOrElse(constant(new Point2D.Double(0,0)));
     		result <- (e match {
@@ -96,7 +102,10 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
           n match {
             case StgVisualNode(ExplicitPlaceNode(p)) => Visual.place(vstg.math.places.lookup(p).get)
             case StgVisualNode(TransitionNode(t)) => constant(Visual.transition(t)(vstg).getOrElse(RichGraphicalContent.empty))
-            case GroupVisualNode(g) => constant(Graphics.rectangle(1, 1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE)) : RichGraphicalContent) // todo: recursively draw all? 
+            case GroupVisualNode(g) => constant({
+              val rect = Graphics.rectangle(1, 1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE))
+              (rect, rect)
+            }) // todo: recursively draw all? 
           }
         }
         case ArcVisualEntity(arcId) => {

@@ -1,7 +1,6 @@
 package org.workcraft.plugins.stg21
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.plugins.stg21.types.VisualArc
-import org.workcraft.graphics.RichGraphicalContent
 import org.workcraft.dom.visual.connections.VisualConnectionGui
 import org.workcraft.dom.visual.connections.VisualConnectionProperties
 import java.awt.Color

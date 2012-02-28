@@ -1,6 +1,5 @@
 package org.workcraft.plugins.petri.tools
 
-
 object TracePair {
   import scalaz.Lens
   def createEmpty = TracePair(TraceStep(Trace(Nil),0),TraceStep(Trace(Nil),0))

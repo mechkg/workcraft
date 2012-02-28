@@ -5,7 +5,7 @@ import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
 import java.awt.geom.Point2D;
 
 import org.workcraft.dom.Node;
-import org.workcraft.dom.visual.HitMan;
+//import org.workcraft.dom.visual.HitMan;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.VisualModel;
 import org.workcraft.dom.visual.VisualNode;
@@ -29,7 +29,7 @@ public interface HitTester<N> {
 		}
 		
 		
-		public static HitTester<VisualNode> reflectiveHitTestForSelection(final VisualModel model, final Function<? super Node, ? extends Maybe<? extends Touchable>> tp) {
+	    /*		public static HitTester<VisualNode> reflectiveHitTestForSelection(final VisualModel model, final Function<? super Node, ? extends Maybe<? extends Touchable>> tp) {
 			return new HitTester<VisualNode>() {
 				@Override
 				public Maybe<VisualNode> hitTest(Point2D.Double point) {
@@ -41,6 +41,6 @@ public interface HitTester<N> {
 					return (PCollection<VisualNode>)(PCollection<?>)HitMan.boxHitTest(tp, eval(model.getRoot().children()), boxStart, boxEnd);
 				}
 			};
-		}
+			}*/
 	}
 }

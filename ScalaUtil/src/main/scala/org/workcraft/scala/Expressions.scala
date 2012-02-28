@@ -1,7 +1,7 @@
 package org.workcraft.scala
 
-import org.workcraft.dependencymanager.advanced.user.{ModifiableExpression => JModifiableExpression}
-import scalaz.Monad
+import org.workcraft.dependencymanager.advanced.user.{ModifiableExpression => JModifiableExpression, Variable}
+import scalaz._
 import scala.collection.generic.CanBuildFrom
 import scala.collection.TraversableLike
 import org.workcraft.dependencymanager.advanced.core.{Expression => JExpression}
@@ -12,6 +12,9 @@ import Expressions._
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Util._
 import org.workcraft.dependencymanager.advanced.user.Setter
+import javax.swing.SwingUtilities
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 
 object Expressions {
   
@@ -23,6 +26,14 @@ object Expressions {
         sv(t)
       }
     })
+    }
+  }
+  
+  class ThreadSafeVariable[T](initialValue: T) extends Variable[T](initialValue) {
+    override def setValue(value: T) = {
+      SwingUtilities.invokeAndWait(new Runnable(){
+        def run = ThreadSafeVariable.super.setValue(value)
+      })
     }
   }
   
@@ -47,10 +58,15 @@ object Expressions {
   /**
    *  Needed because Scala is stupid!
    */
-  implicit def monadicSyntax[A](m: ModifiableExpression[A]) = new {
+  implicit def monadicSyntaxME[A](m: ModifiableExpression[A]) = new {
     def map[B](f: A => B) = implicitly[Monad[Expression]].fmap(m, f)
     def flatMap[B](f: A => Expression[B]) = implicitly[Monad[Expression]].bind(m, f)
   }
+  
+ implicit def monadicSyntaxV[A](m: Variable[A]) = new {
+    def map[B](f: A => B) = implicitly[Monad[Expression]].fmap(m, f)
+    def flatMap[B](f: A => Expression[B]) = implicitly[Monad[Expression]].bind(m, f)
+  }  
   
   implicit def monadicSyntaxJ[A](m: JModifiableExpression[A]) = new {
     def map[B](f: A => B) = implicitly[Monad[Expression]].fmap(m, f)
@@ -76,11 +92,17 @@ object Expressions {
   
   implicit def decorateModifiableExpression[T](me : ModifiableExpression[T]) = new {
     def modify(f : T => T) {
-      me.setValue(f(eval(me.jexpr)))
+      me.setValue(f(unsafeEval(me.jexpr)))
     }
   }
   
   case class Expression[+T](jexpr : JExpression[_ <: T])
   
-  def eval[T](e : Expression[T]) : T = GlobalCache.eval(e.jexpr)
+  def unsafeEval[T](e : Expression[T]) : T = GlobalCache.eval(e.jexpr)
+  
+  def eval[T](e: Expression[T]): IO[T] =  ioPure.pure {unsafeEval(e)}
+  
+  def update[T](e: ModifiableExpression[T])(f: T => T) = eval(e) >>= ( v => set (e, f(v)))  
+  
+  def set[T](e: ModifiableExpression[T], value: T) = ioPure.pure { e.setValue(value) }
 }

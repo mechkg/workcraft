@@ -2,7 +2,6 @@ package org.workcraft.scala.grapheditor.tools
 
 import org.workcraft.gui.graph.tools.GenericConnectionTool
 import org.workcraft.scala.Util._
-import org.workcraft.graphics.Graphics._
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Expressions._
 import org.workcraft.dom.visual.Touchable
@@ -13,6 +12,7 @@ import org.workcraft.gui.graph.tools.AbstractTool
 import org.workcraft.gui.graph.Viewport
 import org.workcraft.gui.graph.tools.Colorisation
 import org.workcraft.dom.visual.GraphicalContent
+import org.workcraft.dom.visual.GraphicalContent.Util.compose
 import java.awt.Color
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener
@@ -26,7 +26,7 @@ class ConnectionTool[N](val mouseListener: GraphEditorMouseListener,
   
   def asGraphEditorTool[Q >: N](paint: (Colorisation, Expression[java.util.Set[Q]]) => Expression[GraphicalContent]) =
     {
-      def graphics(viewport: Viewport, hasFocus: Expression[java.lang.Boolean]) =
+      def graphics(viewport: Viewport, hasFocus: Expression[java.lang.Boolean]) : Expression[GraphicalContent] =
         (paint(ConnectionTool.highlightedColorisation, for (mo <- mouseOver) yield mo.accept(new MaybeVisitor[N, java.util.Set[Q]] {
                 override def visitNothing = java.util.Collections.emptySet[Q]
                 override def visitJust(n : N) =  java.util.Collections.singleton(n)

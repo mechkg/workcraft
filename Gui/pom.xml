@@ -1,0 +1,130 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>Gui</artifactId>
+	<name>Swing-based GUI for Workcraft</name>
+	<version>2.2-SNAPSHOT</version>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.scala-tools</groupId>
+				<artifactId>maven-scala-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<parent>
+		<groupId>org.workcraft</groupId>
+		<artifactId>ScalaProject</artifactId>
+		<version>2.2-SNAPSHOT</version>
+		<relativePath />
+	</parent>
+
+	<repositories>
+		<repository>
+			<id>workcraft</id>
+			<url>http://workcraft.org/maven2</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.workcraft</groupId>
+			<artifactId>Logger</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.workcraft</groupId>
+			<artifactId>Core</artifactId>
+			<version>2.2-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.streum</groupId>
+			<artifactId>configrity_2.9.1</artifactId>
+			<version>0.9.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-svg-dom</artifactId>
+			<version>1.7</version>
+			<optional>false</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-svggen</artifactId>
+			<version>1.7</version>
+			<optional>false</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-bridge</artifactId>
+			<version>1.7</version>
+			<optional>false</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>tablelayout</groupId>
+			<artifactId>TableLayout</artifactId>
+			<version>20050920</version>
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.flexdock</groupId>
+			<artifactId>flexdock</artifactId>
+			<version>0.5.1_WORKCRAFT_HACK</version>
+			<optional>false</optional>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1</version>
+			<optional>false</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.pushingpixels</groupId>
+			<artifactId>substance</artifactId>
+			<version>6.1</version>
+			<optional>false</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.workcraft</groupId>
+			<artifactId>DependencyManager</artifactId>
+			<version>2.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.pcollections</groupId>
+			<artifactId>pcollections</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.workcraft</groupId>
+			<artifactId>Tasks</artifactId>
+			<version>2.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.workcraft</groupId>
+			<artifactId>ScalaUtil</artifactId>
+			<version>2.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.workcraft</groupId>
+			<artifactId>Graphics</artifactId>
+			<version>2.2-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+</project>

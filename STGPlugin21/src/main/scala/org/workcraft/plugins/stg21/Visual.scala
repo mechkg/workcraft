@@ -1,13 +1,10 @@
 package org.workcraft.plugins.stg21
 import java.awt.Color
 import java.awt.Font
-import org.workcraft.graphics.Graphics
 import org.workcraft.plugins.stg21.types.SignalType
-import org.workcraft.graphics.RichGraphicalContent
 import org.workcraft.plugins.stg21.types._
 import org.workcraft.exceptions.NotImplementedException
 import java.awt.BasicStroke
-import org.workcraft.graphics.Graphics._
 import java.awt.geom.Point2D
 import org.workcraft.dom.visual.Touchable
 import org.workcraft.plugins.petri21.TokenPainter

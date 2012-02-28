@@ -12,12 +12,12 @@ object modifiable {
       (setter : (W,P) => W)
       : ModifiableExpression[P] = {
       ModifiableExpression (for(w <- we) yield getter(w)
-      , (v : P) => we.setValue(setter(eval(we),v)))
+      , (v : P) => we.setValue(setter(unsafeEval(we),v)))
     }
     def refract[P] (field : Lens[W,P]) : ModifiableExpression[P] = modifiableField[P](field.get)(field.set)
     def applyIso[V](to : W => V, from : V => W) : ModifiableExpression[V] = modifiableField[V](to)((w,v)=>from(v))
     def runState[R](state : State[W,R]) : R = {
-      val (nw,r) = state(eval(we))
+      val (nw,r) = state(unsafeEval(we))
       we.setValue(nw)
       r
     }

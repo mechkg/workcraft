@@ -16,6 +16,7 @@ import org.workcraft.gui.graph.tools.AbstractTool
 import org.workcraft.gui.graph.tools.Colorisation
 import java.awt.Color
 import org.workcraft.dependencymanager.advanced.core.Expressions
+import org.workcraft.dom.visual.GraphicalContent.Util.compose
 import org.workcraft.dom.visual.GraphicalContent
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.util.Maybe

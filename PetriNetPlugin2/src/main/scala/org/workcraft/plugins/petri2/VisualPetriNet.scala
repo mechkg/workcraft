@@ -22,21 +22,21 @@ object VisualPlace {
         fillColor <- CommonVisualSettings.fillColor;
         tokensImage <- TokenPainter.image(p.tokens)
     ) yield {
-      val place: BoundedColorisableGraphicalContent = circle(size, Some((new BasicStroke (strokeWidth.toFloat), foreColor)), Some(fillColor))
+      val place = circle(size, Some((new BasicStroke (strokeWidth.toFloat), foreColor)), Some(fillColor)).boundedColorisableGraphicalContent
       
       val placeWithTokens = tokensImage match {
         case Some(i) => place.compose(i)
         case _ => place
       }
 
-      val labelImage: BoundedColorisableGraphicalContent = Graphics.label (label, font, foreColor)
+      val labelImage = Graphics.label (label, font, foreColor).boundedColorisableGraphicalContent
       
       labelImage.alignSideways(placeWithTokens, LabelPositioning.Bottom).compose(placeWithTokens)
     }
 }
 
 object VisualTransition {
-  implicit def image (t: Transition) : Expression[BoundedColorisableGraphicalContent] =
+  def image (t: Transition) : Expression[BoundedColorisableGraphicalContent] =
     for (
         label <- t.label;
         font <- CommonVisualSettings.serifFont;
@@ -45,8 +45,8 @@ object VisualTransition {
         foreColor <- CommonVisualSettings.foregroundColor;
         fillColor <- CommonVisualSettings.fillColor
         ) yield {
-      val transitionImage = rectangle (size, size, Some ((new BasicStroke(strokeWidth.toFloat), foreColor)), Some(fillColor))
-      val labelImage = Graphics.label(label, font, foreColor)
+      val transitionImage = rectangle (size, size, Some ((new BasicStroke(strokeWidth.toFloat), foreColor)), Some(fillColor)).boundedColorisableGraphicalContent
+      val labelImage = Graphics.label(label, font, foreColor).boundedColorisableGraphicalContent
       
       (labelImage alignSideways (transitionImage, LabelPositioning.Bottom)).compose(transitionImage)
     }

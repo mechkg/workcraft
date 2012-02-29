@@ -5,14 +5,14 @@ import java.awt.Graphics
 import java.awt.Color
 
 class NotAvailablePanel extends JPanel {
-  val font = Font.getFont(Font.DIALOG)
+  val labelFont = Font.getFont(Font.DIALOG)
 
   override def paint(g: Graphics) = {
     super.paint(g)
     g.setColor(Color.LIGHT_GRAY)
     g.drawRect(0, 0, getWidth() - 1, getHeight() - 1)
 
-    g.setFont(font);
+    g.setFont(labelFont);
     g.drawString("N/A", getWidth() / 2, getHeight() / 2)
   }
 }

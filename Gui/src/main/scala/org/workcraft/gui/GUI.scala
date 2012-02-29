@@ -18,8 +18,16 @@ import javax.swing.JMenuItem
 import java.awt.event.ActionListener
 import java.awt.event.ActionEvent
 import javax.swing.JButton
+import java.io.IOException
+import javax.imageio.ImageIO
 
 object GUI {
+
+  def loadImageFromResource(path: String): Either[Throwable, BufferedImage] = ClassLoader.getSystemResource(path) match {
+    case null => Left(new IOException("Resource not found: " + path))
+    case url => try { Right(ImageIO.read(url)) } catch { case e => Left(e) }
+  }
+
   def menuItem(text: String, mnemonic: Option[Char], accelerator: Option[KeyStroke], action: () => Unit) = {
     val result = new JMenuItem(text)
     mnemonic.foreach(result.setMnemonic(_))
@@ -31,7 +39,7 @@ object GUI {
     })
     result
   }
-  
+
   def button(text: String, action: () => Unit) = {
     val result = new JButton(text)
     result.addActionListener(new ActionListener {

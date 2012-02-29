@@ -51,20 +51,14 @@ case class KeyBinding(description: String, keyCode: Int, eventType: KeyEventType
 
 case class HotkeyBinding(keyCode: Int, action: IO[Unit])
 
-class ModelEditorKeyListener(
-  editorKeys: Expression[List[KeyBinding]],
-  toolKeys: Expression[List[KeyBinding]],
-  hotkeys: Expression[List[HotkeyBinding]],
-  logger: () => Logger[IO]) extends KeyListener {
+class ModelEditorKeyListener(editorKeys: Option[List[KeyBinding]], toolKeys: Expression[Option[List[KeyBinding]]], hotkeys: List[HotkeyBinding], logger: () => Logger[IO]) extends KeyListener {
 
   def handlers(event: KeyEvent) = for {
-    editorKeys <- editorKeys
-    hotkeys <- hotkeys;
     toolKeys <- toolKeys
   } yield {
     def f(l: List[KeyBinding]) = l.filter(h => (h.keyCode == event.keyCode && h.modifiers == event.modifiers && h.eventType == event.eventType))
 
-    f(editorKeys) ++ f(hotkeys.map(k => KeyBinding("Tool hotkey: " + k.keyCode.toChar, k.keyCode, KeyPressed, Set(), k.action))) ++ f(toolKeys)
+    f(editorKeys.getOrElse(List())) ++ f(hotkeys.map(k => KeyBinding("Tool hotkey: " + k.keyCode.toChar, k.keyCode, KeyPressed, Set(), k.action))) ++ f(toolKeys.getOrElse(List()))
   }
 
   def handleEvent(event: KeyEvent) = {
@@ -83,26 +77,15 @@ class ModelEditorKeyListener(
   def keyTyped(e: JKeyEvent): Unit = handleEvent(KeyEvent(e, KeyTyped))
   def keyPressed(e: JKeyEvent): Unit = handleEvent(KeyEvent(e, KeyPressed))
   def keyReleased(e: JKeyEvent): Unit = handleEvent(KeyEvent(e, KeyReleased))
+}
 
-  /*{
-    val editorAction = if (e.isControlDown()) None else e.getKeyCode match {
-      case KeyEvent.VK_LEFT => Some(editor.view.pan(20, 0))
-      case KeyEvent.VK_RIGHT => Some(editor.view.pan(-20, 0))
-      case KeyEvent.VK_UP => Some(editor.view.pan(0, 20))
-      case KeyEvent.VK_DOWN => Some(editor.view.pan(0, -20))
-      case KeyEvent.VK_EQUALS => Some(editor.view.zoom(1))
-      case KeyEvent.VK_MINUS => Some(editor.view.zoom(-1))
-      case _ => None
-    }*/
-
-  // This is the topmost key listener that handles common model editor key presses
-  // if it knows how to handle a key press it will handle it and will not pass it to the
-  // next handler to avoid key clashes.
-
-  // The next handler is the tool box which listens for tool hotkeys. If it recognises a hotkey
-  // it activates the corresponding tool and stops, if it does not recognise a hotkey it forwards
-  // the event to the key handler provided by the model. 
-
-  // FIXME: this should rather be done in a more explicit way so that the key strokes do not
-  // silently disappear in the model key listener
+object ModelEditorKeyListener {
+  def defaultBindings (editor: ModelEditorPanel) = List (
+      KeyBinding ("Viewport pan left", JKeyEvent.VK_LEFT, KeyPressed, Set(Control), editor.view.pan(20, 0)),
+      KeyBinding ("Viewport pan right", JKeyEvent.VK_RIGHT, KeyPressed, Set(Control), editor.view.pan(-20, 0)),
+      KeyBinding ("Viewport pan up", JKeyEvent.VK_UP, KeyPressed, Set(Control), editor.view.pan(0, 20)),
+      KeyBinding ("Viewport pan down", JKeyEvent.VK_DOWN, KeyPressed, Set(Control), editor.view.pan(0, -20)),
+      KeyBinding ("Viewport zoom in", JKeyEvent.VK_EQUALS, KeyPressed, Set(), editor.view.pan(0, -20)),
+      KeyBinding ("Viewport zoom out", JKeyEvent.VK_MINUS, KeyPressed, Set(), editor.view.pan(0, -20))
+      )
 }

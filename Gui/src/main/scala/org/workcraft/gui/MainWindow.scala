@@ -29,54 +29,64 @@ import org.workcraft.gui.docking.DockableWindow
 import org.workcraft.gui.logger.LoggerWindow
 import org.workcraft.gui.modeleditor.ModelEditorPanel
 import org.workcraft.services.NewModelImpl
+import org.flexdock.docking.DockingManager
+import org.flexdock.docking.DockingConstants
 
 class MainWindow private (val globalServices: () => GlobalServiceManager, reconfigure: () => Unit /*, configuration: Option[GuiConfiguration]*/ ) extends JFrame {
   val dockingRoot = new DockingRoot("workcraft")
   setContentPane(dockingRoot)
 
   val menu = new MainMenu(this, utilityWindows, globalServices, m => newModel(m), reconfigure)
-  
   this.setJMenuBar(menu)
 
   lazy val logger = new LoggerWindow
   
-  dockingRoot.createRootWindow("1", "Kojo", new ModelEditorPanel, DockableWindowConfiguration())
+  //val toolboxWindow = new JPanel(new BorderLayout)
+//  toolboxWindow.add(new NotAvailablePanel(), BorderLayout.CENTER)
+  
+  val placeholderDockable = dockingRoot.createRootWindow("", "DocumentPlaceholder", DocumentPlaceholder, DockableWindowConfiguration(false, false, false))
+  lazy val loggerDockable = createUtilityWindow("Log", "Log", logger, placeholderDockable, DockingConstants.SOUTH_REGION, 0.8)
+  //dockingRoot.createRootWindow("1", "Kojo", , DockableWindowConfiguration())
 
   //applyGuiConfiguration(configuration)
 
   def utilityWindows: List[DockableWindow] =
-    List(
-      createUtilityWindow("Log", "Log", logger),
-      createUtilityWindow("Bojo", "Bojo", new JButton("Bojo")),
-      createUtilityWindow("Kaja", "Kaja", new JButton("Kaja")))
+    List(loggerDockable)
+      //createUtilityWindow("Log", "Log", logger),
+      //createUtilityWindow("Bojo", "Bojo", new JButton("Bojo")),
+      //createUtilityWindow("Kaja", "Kaja", new JButton("Kaja")))
 
   def closeUtilityWindow(window: DockableWindow) = {
     window.close
     menu.windowsMenu.update(window)
   }
 
-  def createUtilityWindow(title: String, persistentId: String, content: JComponent) =
+  def createUtilityWindow(title: String, persistentId: String, content: JComponent) = 
     dockingRoot.createRootWindow(title, persistentId, content, DockableWindowConfiguration(onCloseClicked = closeUtilityWindow))
 
   def createUtilityWindow(title: String, persistentId: String, content: JComponent, relativeTo: DockableWindow, relativeRegion: String, split: Double) =
-    dockingRoot.createWindow(title, persistentId, content, DockableWindowConfiguration(onCloseClicked = closeUtilityWindow), relativeTo, relativeRegion, split)
+    dockingRoot.createWindow(title, persistentId, content, DockableWindowConfiguration(maximiseButton = false, onCloseClicked = closeUtilityWindow), relativeTo, relativeRegion, split)
 
-  private def applyGuiConfiguration(configOption: Option[GuiConfiguration])(implicit logger:() => Logger[IO]) = configOption match {
-    case Some(config) => {
-      LafManager.setLaf(config.lookandfeel)
-      setSize(config.xSize, config.ySize)
-      setLocation(config.xPos, config.yPos)
+  private def applyGuiConfiguration(configOption: Option[GuiConfiguration])(implicit logger: () => Logger[IO]) = SwingUtilities.invokeLater(new Runnable {
+    def run = {
+      configOption match {
+        case Some(config) => {
 
-      if (config.maximised)
-        setExtendedState(Frame.MAXIMIZED_BOTH)
-    }
-    case None =>
-      {
-        setSize(800, 600)
+          LafManager.setLaf(config.lookandfeel)
+          setSize(config.xSize, config.ySize)
+          setLocation(config.xPos, config.yPos)
+
+          if (config.maximised)
+            setExtendedState(Frame.MAXIMIZED_BOTH)
+        }
+        case None =>
+          {
+            setSize(800, 600)
+          }
+          SwingUtilities.updateComponentTreeUI(MainWindow.this)
       }
-
-      SwingUtilities.updateComponentTreeUI(this)
-  }
+    }
+  })
 
   private def guiConfiguration = {
     val size = getSize()
@@ -87,15 +97,15 @@ class MainWindow private (val globalServices: () => GlobalServiceManager, reconf
       lookandfeel = LafManager.getCurrentLaf)
   }
 
-  private def applyIconManager(implicit logger:() => Logger[IO]) = MainWindowIconManager.apply(this, logger)
-  
-  
+  private def applyIconManager(implicit logger: () => Logger[IO]) = MainWindowIconManager.apply(this, logger)
+
   def newModel(newModelImpl: NewModelImpl) = {
     val model = newModelImpl.create
   }
-  
+
   def exit = System.exit(0)
 }
+
 
 object MainWindow {
   private def shutdown(implicit mainWindow: MainWindow, logger: () => Logger[IO]) = {
@@ -104,7 +114,7 @@ object MainWindow {
     GuiConfiguration.save(mainWindow.guiConfiguration)
 
     mainWindow.setVisible(false)
-    
+
     unsafeInfo("Have a nice day!")
     System.exit(0)
   }
@@ -121,8 +131,8 @@ object MainWindow {
 
     mainWindow.setTitle("Workcraft")
     mainWindow.setVisible(true)
-    
-    switchLogger (mainWindow.logger)
+
+   // switchLogger(mainWindow.logger)
 
     mainWindow.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE)
     mainWindow.addWindowListener(new WindowAdapter() {

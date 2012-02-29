@@ -3,6 +3,7 @@ import javax.swing.Icon
 import org.workcraft.scala.Expressions.Expression
 import org.workcraft.graphics.GraphicalContent
 import javax.swing.JPanel
+import org.workcraft.gui.modeleditor.KeyBinding
 
 trait Button {
   def label: String
@@ -11,10 +12,10 @@ trait Button {
 }
 
 trait ModelEditorTool {
-  def button : Button
-  def keyListener
+  def button: Button
+  def keyBindings: Option[List[KeyBinding]]
   def mouseListener
   def userSpaceContent: Expression[GraphicalContent]
-  def screenSpaceContent: Expression[GraphicalContent]
+  def screenSpaceContent: Option[Expression[GraphicalContent]]
   def interfacePanel: Option[JPanel]
 }

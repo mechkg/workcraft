@@ -7,13 +7,17 @@ import org.flexdock.docking.defaults.DefaultDockingPort
 import java.awt.BorderLayout
 import javax.swing.JComponent
 import org.flexdock.docking.DockingConstants
+import org.flexdock.docking.defaults.StandardBorderManager
+import org.flexdock.plaf.common.border.ShadowBorder
 
 class DockingRoot(val id: String) extends JPanel {
   val pm = DockingManager.getLayoutManager().asInstanceOf[PerspectiveManager]
   pm.add(new Perspective(id, id))
   pm.setCurrentPerspective(id, true)
-
+  
   val rootDockingPort = new DefaultDockingPort("root")
+  
+  rootDockingPort.setBorderManager(new StandardBorderManager(new ShadowBorder()))
 
   setLayout(new BorderLayout)
   add(rootDockingPort, BorderLayout.CENTER)

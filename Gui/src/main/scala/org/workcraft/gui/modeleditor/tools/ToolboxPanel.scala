@@ -14,11 +14,21 @@ import java.awt.event.ActionEvent
 import java.awt.FlowLayout
 import java.awt.BorderLayout
 import org.workcraft.gui.NotAvailablePanel
+import org.workcraft.gui.modeleditor.HotkeyBinding
+
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
+import scalaz._
+import Scalaz._
 
 class ToolboxPanel(tools: List[ModelEditorTool]) extends JPanel {
-  val selectedTool = Variable.create[Option[ModelEditorTool]](None) 
-  val buttons = tools.map(t => (t, createButton(t)))
-  val hotkeyBindings = tools.flatMap(t => t.button.hotkey.map((t, _))).groupBy(_._2).mapValues(l => Stream.continually(l.map(_._1)).flatten)
+  val selectedTool = Variable.create[Option[ModelEditorTool]](None)
+  val toolKeyBindings = selectedTool.map(_.flatMap(_.keyBindings))
+  val hotkeyBindings = hotkeys.keys.map(key => HotkeyBinding(key, {hotkeyPressed(key)}.pure[IO])).toList
+  
+  private val buttons = tools.map(t => (t, createButton(t)))
+  private val hotkeys = tools.flatMap(t => t.button.hotkey.map((t, _))).groupBy(_._2).mapValues(_.map(_._1))
+  private val cyclicHotkeyIterator = hotkeys.mapValues(Stream.continually(_).flatten.iterator)
   
   setFocusable(false)
   
@@ -30,6 +40,10 @@ class ToolboxPanel(tools: List[ModelEditorTool]) extends JPanel {
     selectedTool.setValue(Some(tools.head))
     buttons.foreach(tb => add(tb._2))
     buttons.head._2.setSelected(true)
+  }
+  
+  def hotkeyPressed (key: Int) = {
+    selectTool(cyclicHotkeyIterator(key).next)
   }
   
   def selectTool (tool: ModelEditorTool) = {

@@ -7,6 +7,8 @@ import java.awt.geom.Point2D
 import java.awt.geom.Line2D
 import java.awt.geom.Path2D
 
+import Java2DDecoration._
+
 class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color, val touchThreshold: Double)
 
 object Path {
@@ -24,13 +26,13 @@ object Path {
       g.draw(path.p)
   }))
   
-  implicit def boundedColorisableGraphicalContent(path: Path) = BoundedColorisableGraphicalContent (path, BoundingBox(path.p.getBounds2D()))
+  implicit def boundedColorisableGraphicalContent(path: Path) = BoundedColorisableGraphicalContent (path, BoundingBox(path.p.bounds))
     
   implicit def touchable(path: Path) = new Touchable {
     val pathError = 0.01
     val segments = getSegments(path.p.getPathIterator(null, pathError))
 
-    private def testSegments(segments: List[Line2D], point: Point2D, threshold: Double): Boolean = {
+    private def testSegments(segments: List[Line2D.Double], point: Point2D.Double, threshold: Double): Boolean = {
       val tSq = threshold * threshold
       for (s <- segments) {
         if (s.ptSegDistSq(point) < tSq)
@@ -39,7 +41,7 @@ object Path {
       false
     }
 
-    private def getSegments(i: PathIterator): List[Line2D] = {
+    private def getSegments(i: PathIterator): List[Line2D.Double] = {
       val coords = new Array[Double](6)
 
       var curX = 0.0
@@ -50,7 +52,7 @@ object Path {
 
       var broken = true
 
-      var segments: List[Line2D] = Nil
+      var segments: List[Line2D.Double] = Nil
 
       while (!i.isDone) {
         val t = i.currentSegment(coords)
@@ -80,7 +82,7 @@ object Path {
       segments
     }
 
-    def hitTest(point: Point2D) = testSegments(segments, point, path.touchThreshold)
-    def boundingBox = BoundingBox(path.p.getBounds2D)
+    def hitTest(point: Point2D.Double) = testSegments(segments, point, path.touchThreshold)
+    def boundingBox = BoundingBox(path.p.bounds)
   }
 }

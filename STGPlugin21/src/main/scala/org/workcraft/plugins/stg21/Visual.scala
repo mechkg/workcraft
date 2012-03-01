@@ -10,6 +10,8 @@ import org.workcraft.dom.visual.Touchable
 import org.workcraft.plugins.petri21.TokenPainter
 import org.workcraft.scala.Expressions._
 import org.workcraft.scala.Scalaz._
+import org.workcraft.graphics.Graphics
+import org.workcraft.graphics.RichGraphicalContent
 
 object Visual {
   val font = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.75f);
@@ -35,7 +37,7 @@ object Visual {
   }
   
   def place(p : ExplicitPlace) = {
-    var circ = circle(1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE))
+    var circ = Graphics.circle(1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE))
     for(img <- TokenPainter.image(constant(p.initialMarking))) yield (img.over(circ, circ.touchable))
   }
   

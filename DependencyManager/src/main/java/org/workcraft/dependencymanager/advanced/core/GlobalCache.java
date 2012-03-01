@@ -19,7 +19,7 @@ public class GlobalCache {
 	}
 
 	public static <T> void assign(ModifiableExpression<T> destination,
-			Expression<T> source) {
+			Expression<? extends T> source) {
 		destination.setValue(eval(source));
 	}
 

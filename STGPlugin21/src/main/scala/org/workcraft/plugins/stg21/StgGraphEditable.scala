@@ -10,9 +10,6 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 import pcollections.HashTreePSet
 import org.workcraft.gui.graph.tools.HitTester
 import java.awt.geom.Point2D
-import org.workcraft.util.Maybe
-import pcollections.PCollection
-import pcollections.PSet
 import org.workcraft.gui.graph.tools.DragHandle
 import org.workcraft.gui.graph.tools.DragHandler
 import org.workcraft.plugins.stg21.types._
@@ -20,25 +17,25 @@ import org.workcraft.scala.grapheditor.tools.SelectionTool
 import org.workcraft.exceptions.NotImplementedException
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Expressions._
-import org.workcraft.dom.visual.GraphicalContent
-import org.workcraft.graphics.Graphics
 import org.workcraft.graphics.RichGraphicalContent
 import java.awt.BasicStroke
 import java.awt.Color
-import org.workcraft.dom.visual.ColorisableGraphicalContent
-import org.workcraft.gui.graph.tools.Colorisation
 import org.workcraft.scala.grapheditor.tools.ConnectionTool
-import org.workcraft.gui.graph.tools.ConnectionController
-import org.workcraft.gui.graph.tools.SafeConnectionManager
 import org.workcraft.exceptions.InvalidConnectionException
 import org.workcraft.util.Action
-import org.workcraft.dom.visual.Touchable
 import org.workcraft.dom.visual.connections.VisualConnectionProperties
 import scalaz.Lens
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
+import org.workcraft.graphics.Graphics
+import org.workcraft.dom.visual.connections.Polyline
+import org.workcraft.graphics.TouchableC
+import org.workcraft.graphics.GraphicalContent
+import org.workcraft.gui.graph.tools.ConnectionManager
+import org.workcraft.graphics.ColorisableGraphicalContent
+import org.workcraft.graphics.Colorisation
 
 class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends GraphEditable {
-  val selectionJ = Variable.create[PSet[VisualEntity]](HashTreePSet.empty())
+  val selection = Variable.create[Set[VisualEntity]](Set.empty)
   def createTools (editor : GraphEditor) : java.lang.Iterable[_ <: GraphEditorTool] = {
 
     def movableController(n : VisualNode) : ModifiableExpression[Point2D.Double] = {
@@ -62,10 +59,10 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
       }
     }
     
-    def entityMovableController(e : VisualEntity) : Maybe[ModifiableExpression[Point2D.Double]] = {
+    def entityMovableController(e : VisualEntity) : Option[ModifiableExpression[Point2D.Double]] = {
       e match {
-        case ArcVisualEntity(_) => Maybe.Util.nothing[ModifiableExpression[Point2D.Double]]
-        case NodeVisualEntity(n) => Maybe.Util.just(movableController(n))
+        case ArcVisualEntity(_) => None
+        case NodeVisualEntity(n) => Some(movableController(n))
       }
     }
     
@@ -81,27 +78,18 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
       yield {
       n.map(NodeVisualEntity(_ : VisualNode)) ::: v.math.arcs.keys.map(ArcVisualEntity(_ : Id[Arc]))
     }
-    
-    implicit def decorateMaybe[T](m : Maybe[T]) = new {
-      def toOption = m.accept[Option[T]](new org.workcraft.util.MaybeVisitor[T, Option[T]] {
-        override val visitNothing = None
-        override def visitJust(t : T) = Some(t)
-      })
-    }
 
-    object RichGraphicalContent {
-      def empty = RichGraphicalContent()
-    }
-    case class RichGraphicalContent (graphicalContent : BoundedColorisableGraphicalContent, touchable : Touchable) {
-    }
+    def touchableC(n : VisualEntity) = visual(n).map(_.touchable)
+    
+    def touchable(n : VisualEntity) = touchableC(n).map(_.touchable)
     
     def visual(e : VisualEntity) : Expression[RichGraphicalContent] = for (vstg <- visualStg : Expression[VisualStg];
-    		position <- entityMovableController(e).toOption.map(m => m.expr).getOrElse(constant(new Point2D.Double(0,0)));
+    		position <- entityMovableController(e).map(m => m.expr).getOrElse(constant(new Point2D.Double(0,0)));
     		result <- (e match {
         case NodeVisualEntity(n) => {
           n match {
             case StgVisualNode(ExplicitPlaceNode(p)) => Visual.place(vstg.math.places.lookup(p).get)
-            case StgVisualNode(TransitionNode(t)) => constant(Visual.transition(t)(vstg).getOrElse(RichGraphicalContent.empty))
+            case StgVisualNode(TransitionNode(t)) => constant(Visual.transition(t)(vstg))
             case GroupVisualNode(g) => constant({
               val rect = Graphics.rectangle(1, 1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE))
               (rect, rect)
@@ -111,45 +99,39 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
         case ArcVisualEntity(arcId) => {
           (for(arc <- vstg.math.arcs.lookup(arcId)) yield{
             val visual = vstg.visual.arcs.get(arcId).getOrElse(Polyline(Nil))          
-            for (first  <- touchable(NodeVisualEntity(StgVisualNode(arc.first)));
-            second <- touchable(NodeVisualEntity(StgVisualNode(arc.second)))
+            for (first  <- touchableC(NodeVisualEntity(StgVisualNode(arc.first)));
+            second <- touchableC(NodeVisualEntity(StgVisualNode(arc.second)))
            ) yield (VisualConnectionG.getConnectionGui(first, second, visual) : RichGraphicalContent) 
-          }).getOrElse(constant(RichGraphicalContent.empty))
+          }).getOrElse(constant(None))
         }
       })) yield result.translate(position : Point2D)
     
-    
-    def touchable(n : VisualEntity) = for(v <- visual(n)) yield v.touchable
     
     def deepCenters(n : StgConnectable) : Expression[Point2D.Double] = n match {
       case NodeConnectable(n) => movableController(StgVisualNode(n))
       case ArcConnectable(a) => constant(new Point2D.Double(0,0)) // TODO
     }
     
-    val selectionTool = SelectionTool.create[VisualEntity](visualEntities, selectionJ, entityMovableController, (x => /*snap */x), touchable)
+    val selectionTool = SelectionTool.create[VisualEntity](visualEntities, selection, entityMovableController, (x => /*snap */x), touchable)
     
-    val connectionController = ConnectionController.Util.fromSafe(new ConnectionManager(visualStg))
+    val connectionController = new StgConnectionManager(visualStg)
     
     val stgConnectables = for(v <- visualStg; n <- stgNodes) yield {
       n.map(n => NodeConnectable(n)) ::: v.math.arcs.keys.map(aid => ArcConnectable(aid))
     }
     
-    def connectableTouchable(c : StgConnectable) : Expression[Touchable] = c match { // TODO: deep!
-      case NodeConnectable(n) => touchable(NodeVisualEntity(StgVisualNode(n)))
-      case ArcConnectable(a) => touchable(ArcVisualEntity(a))
+    def connectableTouchable(c : StgConnectable) : Expression[TouchableC] = c match { // TODO: deep!
+      case NodeConnectable(n) => touchableC(NodeVisualEntity(StgVisualNode(n)))
+      case ArcConnectable(a) => touchableC(ArcVisualEntity(a))
     }
     
-    val connectionTool = ConnectionTool.create[StgConnectable](stgConnectables, connectableTouchable, deepCenters, connectionController)
+    val connectionTool = ConnectionTool.create[StgConnectable](stgConnectables, (connectableTouchable(_)).map(_.map(_.touchable)), deepCenters, connectionController)
     
     val nodeGeneratorTools = org.workcraft.plugins.stg21.StgToolsProvider(visualStg).nodeGeneratorTools
     
-    implicit def decorateColorisable(c : ColorisableGraphicalContent) = new {
-      val noColorisation = ColorisableGraphicalContent.Util.applyColourisation(c, Colorisation.EMPTY)
-    }
-
     def paint : Expression[GraphicalContent] = {
       for(entities <- visualEntities : Expression[_ <: List[VisualEntity]]; visuals <- entities.map(visual).toList.sequence) 
-        yield (visuals.foldl(RichGraphicalContent.empty)((a: RichGraphicalContent,b: RichGraphicalContent) => b over a).colorisableGraphicalContent.noColorisation)
+        yield (visuals.map(r => r.bcgc.cgc).foldl(ColorisableGraphicalContent.Empty)(_.compose(_)).applyColorisation(Colorisation.Empty))
     }
     
 
@@ -164,7 +146,7 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
   }
   import scala.collection.JavaConversions._
   def properties : org.workcraft.dependencymanager.advanced.core.Expression[_ <: PVector[EditableProperty]] = {
-    for(s <- (selectionJ : Expression[PSet[VisualEntity]]);
+    for(s <- (selection : Expression[Set[VisualEntity]]);
       props <- sequenceExpressions(s.toList.map(e => EditableProperties.objProperties(e)(visualStg)))
     ) yield (TreePVector.from(scala.collection.JavaConversions.asJavaCollection(props.flatten)))
   }

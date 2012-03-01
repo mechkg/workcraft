@@ -1,19 +1,15 @@
 package org.workcraft.graphics
 
-import org.workcraft.dom.visual.ColorisableGraphicalContent
 import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.geom.Path2D
 import java.awt.BasicStroke
-import org.workcraft.dom.visual.Touchable
-import org.workcraft.graphics.Graphics._
-import org.workcraft.dom.visual.BoundedColorisableGraphicalContent
 import java.awt.Color
 import org.workcraft.graphics.Java2DDecoration._
 
-case class RichGraphicalContent(val colorisableGraphicalContent: ColorisableGraphicalContent, val visualBounds: Rectangle2D.Double, val touchable: Touchable) {
-  def transform(x: AffineTransform): RichGraphicalContent =
+case class RichGraphicalContent(val bcgc: BoundedColorisableGraphicalContent, val touchable: TouchableC) {
+/*  def transform(x: AffineTransform): RichGraphicalContent =
     new RichGraphicalContent(Graphics.transform(colorisableGraphicalContent, x),
       Graphics.transform(visualBounds, x),
       TouchableUtil.transform(touchable, x))
@@ -74,9 +70,5 @@ case class RichGraphicalContent(val colorisableGraphicalContent: ColorisableGrap
   }
     
   def over (x: RichGraphicalContent) = debugOver (x)
-  def over (x: RichGraphicalContent, touchableOverride: Touchable) = debugOver (x, touchableOverride)
-}
-
-object RichGraphicalContent {
-  val empty = new RichGraphicalContent(BoundedColorisableGraphicalContent.EMPTY.graphics, new Rectangle2D.Double(), TouchableUtil.empty)
+  def over (x: RichGraphicalContent, touchableOverride: Touchable) = debugOver (x, touchableOverride) */
 }

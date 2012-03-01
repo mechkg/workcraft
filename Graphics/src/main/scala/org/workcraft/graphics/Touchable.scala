@@ -4,13 +4,13 @@ import java.awt.geom.Point2D
 import java.awt.geom.AffineTransform
 
 trait Touchable {
-  def hitTest(point: Point2D): Boolean
+  def hitTest(point: Point2D.Double): Boolean
   def boundingBox: BoundingBox
 
   def compose(other: Touchable) = {
     val outer = this
     new Touchable {
-      def hitTest(point: Point2D) = outer.hitTest(point) || other.hitTest(point)
+      def hitTest(point: Point2D.Double) = outer.hitTest(point) || other.hitTest(point)
       def boundingBox = outer.boundingBox.union(other.boundingBox)
     }
   }
@@ -21,7 +21,7 @@ trait Touchable {
     new Touchable {
       val inverse = transformation.createInverse
 
-      def hitTest(point: Point2D) = {
+      def hitTest(point: Point2D.Double) = {
         val p = new Point2D.Double
         inverse.transform(point, p)
         outer.hitTest(p)
@@ -33,8 +33,8 @@ trait Touchable {
 }
 
 object Touchable {
-  def fromRect (rect: Rectangle2D) = new Touchable {
-    def hitTest(p:Point2D) = rect.contains(p.getX, p.getY)
+  def fromRect (rect: Rectangle2D.Double) = new Touchable {
+    def hitTest(p:Point2D.Double) = rect.contains(p.getX, p.getY)
     def boundingBox = BoundingBox(rect)
   }  
 }

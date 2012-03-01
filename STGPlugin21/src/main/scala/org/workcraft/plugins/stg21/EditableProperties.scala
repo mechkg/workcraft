@@ -25,8 +25,6 @@ import org.workcraft.plugins.stg21.types.VisualModel
 import org.workcraft.plugins.stg21.types.VisualInfo
 import org.workcraft.plugins.stg21.types.StgNode
 import org.workcraft.plugins.stg21.types.VisualArc
-import org.workcraft.plugins.stg21.types.Polyline
-import org.workcraft.plugins.stg21.types.Bezier
 import java.awt.geom.Point2D
 import org.workcraft.dom.visual.connections.RelativePoint
 import org.workcraft.gui.propertyeditor.choice.ChoiceProperty
@@ -45,6 +43,8 @@ import scalaz.Scalaz.state
 import org.workcraft.plugins.stg21.types.Signal
 import scalaz.State
 import org.workcraft.plugins.stg21.types.TransitionLabel
+import org.workcraft.dom.visual.connections.Polyline
+import org.workcraft.dom.visual.connections.Bezier
 
 object EditableProperties {
   

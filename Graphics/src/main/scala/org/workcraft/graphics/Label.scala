@@ -3,8 +3,10 @@ import java.awt.Font
 import java.awt.Color
 import java.awt.geom.Point2D
 
+import Java2DDecoration._
+
 class Label private (val text: String, val font: Font, val color: Color) {
-  def visualBounds = font.createGlyphVector(PodgonFontRenderContext, text).getVisualBounds
+  def visualBounds = font.createGlyphVector(PodgonFontRenderContext, text).visualBounds
 }
 
 object Label {
@@ -28,5 +30,5 @@ object Label {
 
   implicit def boundedColorisableGraphicalContent(label: Label) = BoundedColorisableGraphicalContent(label, BoundingBox(label.visualBounds))
 
-  implicit def touchable(label: Label) = Touchable.fromRect(label.font.createGlyphVector(PodgonFontRenderContext, label.text).getVisualBounds)
+  implicit def touchable(label: Label) = Touchable.fromRect(label.font.createGlyphVector(PodgonFontRenderContext, label.text).visualBounds)
 }

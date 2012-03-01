@@ -25,8 +25,9 @@ import java.awt.Graphics2D
 import org.workcraft.gui.CommonVisualSettings
 import org.workcraft.gui.modeleditor.tools.ToolboxPanel
 import org.workcraft.logging.Logger
+import org.workcraft.gui.modeleditor.tools.ModelEditorTool
 
-class ModelEditorPanel (toolbox: ToolboxPanel, logger: () => Logger[IO]) extends JPanel {
+class ModelEditorPanel (toolbox: ToolboxPanel) (implicit logger: () => Logger[IO]) extends JPanel {
   val panelDimensions = Variable.create((0, 0, getWidth, getHeight))
   val viewDimensions = panelDimensions.map { case (x,y,w,h) => (x + 15,y + 15, w - 15, h - 15) }
   

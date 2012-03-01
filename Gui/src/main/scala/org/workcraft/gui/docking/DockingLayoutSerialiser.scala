@@ -21,7 +21,7 @@ class DockingLayoutSerialiser {
   def saveDockingLayout(rootDockingPort:DefaultDockingPort) (implicit logger:() => Logger[IO]) {
     val pm = DockingManager.getLayoutManager().asInstanceOf[PerspectiveManager]
     pm.getCurrentPerspective().cacheLayoutState(rootDockingPort)
-    pm.forceDockableUpdate()
+ //   pm.forceDockableUpdate()
     val pmodel = new PerspectiveModel(pm.getDefaultPerspective().getPersistentId(), pm.getCurrentPerspectiveName(), pm.getPerspectives())
     val pers = new XMLPersister()
     try {
@@ -51,7 +51,7 @@ class DockingLayoutSerialiser {
 
       pmodel.getPerspectives().foreach(pm.add(_, false))
 
-      pm.reload(rootDockingPort)
+   //   pm.reload(rootDockingPort)
 
       is.close()
     } catch {

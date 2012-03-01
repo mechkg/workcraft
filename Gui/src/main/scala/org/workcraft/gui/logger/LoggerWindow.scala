@@ -1,7 +1,7 @@
 package org.workcraft.gui.logger
 import org.workcraft.logging.Logger
-import scalaz.effects.IO
-import scalaz.effects.IO._
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 import scalaz.Scalaz._
 import javax.swing.JPanel
 import javax.swing.JTable

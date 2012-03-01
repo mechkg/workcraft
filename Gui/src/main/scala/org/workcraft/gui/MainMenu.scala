@@ -10,7 +10,7 @@ import org.workcraft.services.NewModelImpl
 class MainMenu(
     mainWindow: MainWindow, utilityWindows: List[DockableWindow], 
     services: () => GlobalServiceManager,
-    newModel: NewModelImpl => Unit,
+    newModel: ((NewModelImpl, Boolean)) => Unit,
     reconfigure: () => Unit) extends JMenuBar {
   val fileMenu = new FileMenu(services, mainWindow, newModel)
   val windowsMenu = new UtilityWindowsMenu(utilityWindows)

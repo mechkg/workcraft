@@ -1,8 +1,8 @@
 package org.workcraft.logging
 import java.text.SimpleDateFormat
 import java.util.Date
-import scalaz.effects.IO
-import scalaz.effects.IO._
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 import scalaz.Scalaz._
 
 class StandardStreamLogger extends Logger[IO] {

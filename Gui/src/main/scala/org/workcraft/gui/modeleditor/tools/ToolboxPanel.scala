@@ -21,35 +21,31 @@ import org.workcraft.scala.effects.IO._
 import scalaz._
 import Scalaz._
 
-class ToolboxPanel(tools: List[ModelEditorTool]) extends JPanel {
-  val selectedTool = Variable.create[Option[ModelEditorTool]](None)
-  val toolKeyBindings = selectedTool.map(_.flatMap(_.keyBindings))
-  val hotkeyBindings = hotkeys.keys.map(key => HotkeyBinding(key, {hotkeyPressed(key)}.pure[IO])).toList
-  
+class ToolboxPanel(tools: NonEmptyList[ModelEditorTool]) extends JPanel {
+  val selectedTool = Variable.create(tools.head)
+    
   private val buttons = tools.map(t => (t, createButton(t)))
-  private val hotkeys = tools.flatMap(t => t.button.hotkey.map((t, _))).groupBy(_._2).mapValues(_.map(_._1))
+  private val hotkeys = tools.list.flatMap(t => t.button.hotkey.map((t, _))).groupBy(_._2).mapValues(_.map(_._1))
   private val cyclicHotkeyIterator = hotkeys.mapValues(Stream.continually(_).flatten.iterator)
+
+  val toolKeyBindings = selectedTool.map(_.keyBindings)
+  val hotkeyBindings = hotkeys.keys.map(key => HotkeyBinding(key, {hotkeyPressed(key)}.pure[IO])).toList
   
   setFocusable(false)
   
-  if (tools.isEmpty) {
-    setLayout(new BorderLayout)
-    add(new NotAvailablePanel, BorderLayout.CENTER)
-  } else {
-    setLayout(new FlowLayout)
-    selectedTool.setValue(Some(tools.head))
-    buttons.foreach(tb => add(tb._2))
-    buttons.head._2.setSelected(true)
-  }
+  setLayout(new FlowLayout)
+  selectedTool.setValue(tools.head)
+  buttons.foreach(tb => add(tb._2))
+  buttons.head._2.setSelected(true)
   
   def hotkeyPressed (key: Int) = {
     selectTool(cyclicHotkeyIterator(key).next)
   }
   
   def selectTool (tool: ModelEditorTool) = {
-    selectedTool.setValue(Some(tool))
+    selectedTool.setValue(tool)
     buttons.foreach(_._2.setSelected(false))
-    buttons.find(_._1 == tool).foreach(_._2.setSelected(true))
+    buttons.list.find(_._1 == tool).foreach(_._2.setSelected(true))
   }
 
   def createButton(tool: ModelEditorTool) : JToggleButton = {

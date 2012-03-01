@@ -14,8 +14,8 @@ import org.streum.configrity.Configuration
 import javax.swing.SwingUtilities
 import javax.swing.JPanel
 import java.awt.BorderLayout
-import scalaz.effects.IO
-import scalaz.effects.IO._
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 import scalaz.Scalaz._
 import java.awt.Frame
 import javax.swing.WindowConstants
@@ -31,48 +31,56 @@ import org.workcraft.gui.modeleditor.ModelEditorPanel
 import org.workcraft.services.NewModelImpl
 import org.flexdock.docking.DockingManager
 import org.flexdock.docking.DockingConstants
+import org.workcraft.gui.modeleditor.EditorService
+import javax.swing.JOptionPane
+import org.workcraft.services.ModelServiceProvider
+import org.workcraft.gui.modeleditor.EditorState
+import org.workcraft.gui.modeleditor.tools.ToolboxPanel
 
-class MainWindow private (val globalServices: () => GlobalServiceManager, reconfigure: () => Unit /*, configuration: Option[GuiConfiguration]*/ ) extends JFrame {
+class MainWindow(
+  val globalServices: () => GlobalServiceManager,
+  reconfigure: () => Unit,
+  shutdown: MainWindow => Unit,
+  configuration: Option[GuiConfiguration]) extends JFrame {
+  val loggerWindow = new LoggerWindow
+  implicit val implicitLogger: () => Logger[IO] = () => loggerWindow
+
+  applyIconManager
+
+  applyGuiConfiguration(configuration)
+
+  setTitle("Workcraft")
+
   val dockingRoot = new DockingRoot("workcraft")
   setContentPane(dockingRoot)
 
-  val menu = new MainMenu(this, utilityWindows, globalServices, m => newModel(m), reconfigure)
+  val toolboxWindow = new JPanel(new BorderLayout)
+  toolboxWindow.add(new NotAvailablePanel(), BorderLayout.CENTER)
+
+  val placeholderDockable = dockingRoot.createRootWindow("", "DocumentPlaceholder", new DocumentPlaceholder, DockableWindowConfiguration(false, false, false))
+  val loggerDockable = createUtilityWindow("Log", "Log", loggerWindow, placeholderDockable, DockingConstants.SOUTH_REGION, 0.8)
+  val toolboxDockable = createUtilityWindow("Toolbox", "Toolbox", toolboxWindow, placeholderDockable, DockingConstants.EAST_REGION, 0.8)
+
+  var openEditors = List[DockableWindow]()
+
+  val menu = new MainMenu(this, List(loggerDockable, toolboxDockable), globalServices, { case (m, b) => newModel(m, b) }, reconfigure)
   this.setJMenuBar(menu)
 
-  lazy val logger = new LoggerWindow
-  
-  //val toolboxWindow = new JPanel(new BorderLayout)
-//  toolboxWindow.add(new NotAvailablePanel(), BorderLayout.CENTER)
-  
-  val placeholderDockable = dockingRoot.createRootWindow("", "DocumentPlaceholder", DocumentPlaceholder, DockableWindowConfiguration(false, false, false))
-  lazy val loggerDockable = createUtilityWindow("Log", "Log", logger, placeholderDockable, DockingConstants.SOUTH_REGION, 0.8)
-  //dockingRoot.createRootWindow("1", "Kojo", , DockableWindowConfiguration())
-
-  //applyGuiConfiguration(configuration)
-
-  def utilityWindows: List[DockableWindow] =
-    List(loggerDockable)
-      //createUtilityWindow("Log", "Log", logger),
-      //createUtilityWindow("Bojo", "Bojo", new JButton("Bojo")),
-      //createUtilityWindow("Kaja", "Kaja", new JButton("Kaja")))
+  val editorStates = new scala.collection.mutable.HashMap[DockableWindow, EditorState]
+  val editorDockables = new scala.collection.mutable.HashMap[DockableWindow, ModelServiceProvider]
 
   def closeUtilityWindow(window: DockableWindow) = {
     window.close
     menu.windowsMenu.update(window)
   }
 
-  def createUtilityWindow(title: String, persistentId: String, content: JComponent) = 
-    dockingRoot.createRootWindow(title, persistentId, content, DockableWindowConfiguration(onCloseClicked = closeUtilityWindow))
+  def createUtilityWindow(title: String, persistentId: String, content: JComponent, relativeTo: DockableWindow, relativeRegion: String, split: Double): DockableWindow =
+    dockingRoot.createWindowWithSetSplit(title, persistentId, content, DockableWindowConfiguration(maximiseButton = false, onCloseClicked = closeUtilityWindow), relativeTo, relativeRegion, split)
 
-  def createUtilityWindow(title: String, persistentId: String, content: JComponent, relativeTo: DockableWindow, relativeRegion: String, split: Double) =
-    dockingRoot.createWindow(title, persistentId, content, DockableWindowConfiguration(maximiseButton = false, onCloseClicked = closeUtilityWindow), relativeTo, relativeRegion, split)
-
-  private def applyGuiConfiguration(configOption: Option[GuiConfiguration])(implicit logger: () => Logger[IO]) = SwingUtilities.invokeLater(new Runnable {
+  private def applyGuiConfiguration(configOption: Option[GuiConfiguration]) = SwingUtilities.invokeLater(new Runnable {
     def run = {
       configOption match {
         case Some(config) => {
-
-          LafManager.setLaf(config.lookandfeel)
           setSize(config.xSize, config.ySize)
           setLocation(config.xPos, config.yPos)
 
@@ -88,7 +96,7 @@ class MainWindow private (val globalServices: () => GlobalServiceManager, reconf
     }
   })
 
-  private def guiConfiguration = {
+  def guiConfiguration = {
     val size = getSize()
     val maximised = (getExtendedState() & Frame.MAXIMIZED_BOTH) != 0
 
@@ -99,46 +107,53 @@ class MainWindow private (val globalServices: () => GlobalServiceManager, reconf
 
   private def applyIconManager(implicit logger: () => Logger[IO]) = MainWindowIconManager.apply(this, logger)
 
-  def newModel(newModelImpl: NewModelImpl) = {
+  def newModel(newModelImpl: NewModelImpl, editorRequested: Boolean) = {
     val model = newModelImpl.create
+    if (editorRequested)
+      openEditor(model)
   }
 
-  def exit = System.exit(0)
-}
-
-
-object MainWindow {
-  private def shutdown(implicit mainWindow: MainWindow, logger: () => Logger[IO]) = {
-    unsafeInfo("Shutting down")
-
-    GuiConfiguration.save(mainWindow.guiConfiguration)
-
-    mainWindow.setVisible(false)
-
-    unsafeInfo("Have a nice day!")
-    System.exit(0)
+  def setFocus(editorDockable: DockableWindow) {
+    toolboxWindow.removeAll()
+    toolboxWindow.add(editorStates(editorDockable).toolbox, BorderLayout.CENTER)
   }
 
-  def startGui(globalServices: () => GlobalServiceManager, reconfigure: () => Unit, switchLogger: Logger[IO] => Unit)(implicit logger: () => Logger[IO]): IO[MainWindow] = {
-    // LaF tweaks
-    JDialog.setDefaultLookAndFeelDecorated(true)
-    UIManager.put(SubstanceLookAndFeel.TABBED_PANE_CONTENT_BORDER_KIND, TabContentPaneBorderKind.SINGLE_FULL)
+  def openEditor(model: ModelServiceProvider) {
+    model.implementation(EditorService) match {
+      case None => JOptionPane.showMessageDialog(this, "The model type that you have chosen does not support visual editing :(", "Warning", JOptionPane.WARNING_MESSAGE)
+      case Some(editor) => {
+        val toolbox = new ToolboxPanel(editor.tools)
+        val editorState = new EditorState(toolbox)
+        val editorPanel = new ModelEditorPanel(toolbox)(implicitLogger)
+        val editorDockable = dockingRoot.createWindow("Говноэдитор", "unused", editorPanel, DockableWindowConfiguration(onCloseClicked = closeEditor), if (openEditors.isEmpty) placeholderDockable else (openEditors.head), DockingConstants.CENTER_REGION)
 
-    implicit val mainWindow = new MainWindow(globalServices, reconfigure)
+        editorDockables += ((editorDockable, model))
+        editorStates += ((editorDockable, editorState))
 
-    mainWindow.applyGuiConfiguration(GuiConfiguration.load)
-    mainWindow.applyIconManager
+        if (openEditors.isEmpty) {
+          openEditors = List(editorDockable)
+          DockingManager.undock(placeholderDockable)
+        } else
+          openEditors ::= editorDockable
 
-    mainWindow.setTitle("Workcraft")
-    mainWindow.setVisible(true)
+        setFocus(editorDockable)
+      }
+    }
+  }
 
-   // switchLogger(mainWindow.logger)
+  def closeEditor(editorDockable: DockableWindow) {
+    // TODO: Ask to save etc.
 
-    mainWindow.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE)
-    mainWindow.addWindowListener(new WindowAdapter() {
-      override def windowClosing(e: WindowEvent) = shutdown
-    })
+    openEditors -= editorDockable
+    editorDockables -= editorDockable
+    editorStates -= editorDockable
 
-    mainWindow
-  }.pure
+    if (openEditors.isEmpty)
+      DockingManager.dock(placeholderDockable, editorDockable, DockingConstants.CENTER_REGION)
+
+    editorDockable.close
+    DockingManager.undock(editorDockable)
+  }
+
+  def exit = shutdown(this)
 }

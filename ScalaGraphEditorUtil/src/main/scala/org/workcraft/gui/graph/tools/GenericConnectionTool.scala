@@ -41,6 +41,7 @@ import scalaz._
 import Scalaz._
 import org.workcraft.scala.Scalaz
 import org.workcraft.scala.Expressions._
+import org.workcraft.graphics.=;
 import org.workcraft.graphics.GraphicalContent
 import java.awt.event.InputEvent
 

@@ -8,7 +8,7 @@ trait ColorisableGraphicalContent {
   def applyColorisation(color: Colorisation) = new GraphicalContent {
     def draw (graphics: Graphics2D) = ColorisableGraphicalContent.this.draw (DrawRequest(graphics, color))
   }
-  
+
   def transform (transformation: AffineTransform) = 
     ColorisableGraphicalContent (applyColorisation(_).transform(transformation))
   

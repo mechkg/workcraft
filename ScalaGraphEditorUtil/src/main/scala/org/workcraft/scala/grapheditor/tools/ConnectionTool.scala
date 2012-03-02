@@ -12,6 +12,7 @@ import org.workcraft.gui.graph.tools.Colorisation
 import java.awt.Color
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener
+import org.workcraft.graphics.(Colorisation,Expression;
 import org.workcraft.graphics.Touchable
 import org.workcraft.graphics.GraphicalContent
 import org.workcraft.gui.graph.tools.ConnectionManager

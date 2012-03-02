@@ -26,6 +26,7 @@ import org.workcraft.util.Action
 import org.workcraft.dom.visual.connections.VisualConnectionProperties
 import scalaz.Lens
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
+import org.workcraft.graphics.Expression;
 import org.workcraft.graphics.Graphics
 import org.workcraft.dom.visual.connections.Polyline
 import org.workcraft.graphics.TouchableC
@@ -144,7 +145,7 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
       simulationTool
     )
   }
-  import scala.collection.JavaConversions._
+import scala.collection.JavaConversions._
   def properties : org.workcraft.dependencymanager.advanced.core.Expression[_ <: PVector[EditableProperty]] = {
     for(s <- (selection : Expression[Set[VisualEntity]]);
       props <- sequenceExpressions(s.toList.map(e => EditableProperties.objProperties(e)(visualStg)))

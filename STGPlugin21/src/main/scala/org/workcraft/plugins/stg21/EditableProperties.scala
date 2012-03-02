@@ -1,6 +1,9 @@
 package org.workcraft.plugins.stg21
 import org.workcraft.plugins.stg21.types.VisualNode
 import org.workcraft.plugins.stg21.types.GroupVisualNode
+import org.workcraft.graphics.);
+import org.workcraft.graphics.Choice;
+import org.workcraft.graphics.Shape;
 import org.workcraft.gui.propertyeditor.EditableProperty
 import scalaz.Lens
 import org.workcraft.plugins.stg21.types.VisualStg

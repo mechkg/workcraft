@@ -7,9 +7,18 @@ import org.workcraft.services.ModelScope
 import org.workcraft.gui.modeleditor.EditorService
 import org.workcraft.gui.modeleditor.ModelEditor
 import scalaz.NonEmptyList
+import scalaz._
+import Scalaz._
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
+
 import org.workcraft.gui.modeleditor.tools.ModelEditorTool
 import org.workcraft.graphics.GraphicalContent
 import org.workcraft.gui.modeleditor.tools.Button
+import org.workcraft.gui.modeleditor.KeyBinding
+import java.awt.event.KeyEvent
+import org.workcraft.gui.modeleditor.KeyPressed
+import javax.swing.JOptionPane
 
 sealed trait Node
 
@@ -30,56 +39,12 @@ class PetriNet {
 class PetriNetEditor(net: PetriNet) extends ModelEditor {
   def tools = NonEmptyList(new ModelEditorTool {
     def interfacePanel = None
-    def screenSpaceContent = None
+    def screenSpaceContent = Variable.create(GraphicalContent.Empty)
     def userSpaceContent = Variable.create(GraphicalContent.Empty)
-    def mouseListener = {}
-    def keyBindings = None
+    def mouseListener = None
+    def keyBindings = List(KeyBinding("Sumshit", KeyEvent.VK_Q, KeyPressed, Set(),  ioPure.pure {JOptionPane.showMessageDialog (null, "KUZUKA!", "Important message!", JOptionPane.INFORMATION_MESSAGE)} ))
     def button = new Button {
-      def hotkey = None
-      def icon = None
-      def label = "Hi :-)"
-    }
-  },new ModelEditorTool {
-    def interfacePanel = None
-    def screenSpaceContent = None
-    def userSpaceContent = Variable.create(GraphicalContent.Empty)
-    def mouseListener = {}
-    def keyBindings = None
-    def button = new Button {
-      def hotkey = None
-      def icon = None
-      def label = "Hi :-)"
-    }
-  },new ModelEditorTool {
-    def interfacePanel = None
-    def screenSpaceContent = None
-    def userSpaceContent = Variable.create(GraphicalContent.Empty)
-    def mouseListener = {}
-    def keyBindings = None
-    def button = new Button {
-      def hotkey = None
-      def icon = None
-      def label = "Hi :-)"
-    }
-  },new ModelEditorTool {
-    def interfacePanel = None
-    def screenSpaceContent = None
-    def userSpaceContent = Variable.create(GraphicalContent.Empty)
-    def mouseListener = {}
-    def keyBindings = None
-    def button = new Button {
-      def hotkey = None
-      def icon = None
-      def label = "Hi :-)"
-    }
-  },new ModelEditorTool {
-    def interfacePanel = None
-    def screenSpaceContent = None
-    def userSpaceContent = Variable.create(GraphicalContent.Empty)
-    def mouseListener = {}
-    def keyBindings = None
-    def button = new Button {
-      def hotkey = None
+      def hotkey = Some(KeyEvent.VK_K)
       def icon = None
       def label = "Hi :-)"
     }

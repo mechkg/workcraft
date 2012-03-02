@@ -6,6 +6,8 @@ import java.awt.geom.Rectangle2D
 import java.awt.geom.Path2D
 import java.awt.BasicStroke
 import java.awt.Color
+
+import org.workcraft.graphics.BoundedColorisableGraphicalContent;
 import org.workcraft.graphics.Java2DDecoration._
 
 case class RichGraphicalContent(val bcgc: BoundedColorisableGraphicalContent, val touchable: TouchableC) {

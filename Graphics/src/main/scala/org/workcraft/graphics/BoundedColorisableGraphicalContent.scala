@@ -3,9 +3,8 @@ package org.workcraft.graphics
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.geom.AffineTransform
-import org.workcraft.graphics.Graphics.HorizontalAlignment
-import org.workcraft.graphics.Graphics.VerticalAlignment
-import org.workcraft.graphics.Graphics.alignTransform
+
+import Graphics._
 
 class BoundedColorisableGraphicalContent(val cgc: ColorisableGraphicalContent, val bounds: BoundingBox) {
   //def translateToZero = translate(new Point2D.Double(-bounds.pivot.getX, -bounds.pivot.getY()))

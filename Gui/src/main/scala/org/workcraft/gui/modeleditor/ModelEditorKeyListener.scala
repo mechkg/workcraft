@@ -51,15 +51,14 @@ case class KeyBinding(description: String, keyCode: Int, eventType: KeyEventType
 
 case class HotkeyBinding(keyCode: Int, action: IO[Unit])
 
-class ModelEditorKeyListener(editorKeys: Option[List[KeyBinding]], toolKeys: Expression[Option[List[KeyBinding]]], hotkeys: List[HotkeyBinding], logger: () => Logger[IO]) extends KeyListener {
+class ModelEditorKeyListener(editorKeys: List[KeyBinding], toolKeys: Expression[List[KeyBinding]], hotkeys: List[HotkeyBinding], logger: () => Logger[IO]) extends KeyListener {
 
   def handlers(event: KeyEvent) = for {
     toolKeys <- toolKeys
-  } yield {
-    def f(l: List[KeyBinding]) = l.filter(h => (h.keyCode == event.keyCode && h.modifiers == event.modifiers && h.eventType == event.eventType))
-
-    f(editorKeys.getOrElse(List())) ++ f(hotkeys.map(k => KeyBinding("Tool hotkey: " + k.keyCode.toChar, k.keyCode, KeyPressed, Set(), k.action))) ++ f(toolKeys.getOrElse(List()))
-  }
+  } yield 
+    (editorKeys ++ hotkeys.map(k => KeyBinding("Tool hotkey: " + k.keyCode.toChar, k.keyCode, KeyPressed, Set(), k.action)) ++ toolKeys)
+    .filter(h => (h.keyCode == event.keyCode && h.modifiers == event.modifiers && h.eventType == event.eventType))
+  
 
   def handleEvent(event: KeyEvent) = {
     val h = unsafeEval(handlers(event))
@@ -67,9 +66,8 @@ class ModelEditorKeyListener(editorKeys: Option[List[KeyBinding]], toolKeys: Exp
       case 0 => {}
       case 1 => h.head.action.unsafePerformIO
       case _ => {
-        val l = logger()
-        l.log("Key conflict! \"" + KeyEvent.show(event) + "\" is bound to: " + h.map(_.description).reduceLeft("\"" + _ + ", " + _ + "\""), MessageClass.Warning)
-        h.foreach(_.action.unsafePerformIO)
+        logger().log("Key conflict! \"" + KeyEvent.show(event) + "\" is bound to: " + h.map(_.description).map("\""+_+"\"").reduceLeft(_+" and "+_) , MessageClass.Warning).unsafePerformIO
+        h.foreach( k =>{println ("Executing " + k.description); k.action.unsafePerformIO})
       }
     }
   }

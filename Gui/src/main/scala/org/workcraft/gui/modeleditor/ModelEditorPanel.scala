@@ -69,7 +69,7 @@ class ModelEditorPanel (toolbox: ToolboxPanel) (implicit logger: () => Logger[IO
     case None => DummyMouseListener
   }*/
   
-  val mListener = new ModelEditorMouseListener (view, hasfocus, () => {requestFocus()}.pure[IO])
+  val mListener = new ModelEditorMouseListener (view, hasfocus, toolbox.toolMouseListener,() => {requestFocus()}.pure[IO])
   
   addMouseListener(mListener)
   addMouseMotionListener(mListener)
@@ -77,7 +77,7 @@ class ModelEditorPanel (toolbox: ToolboxPanel) (implicit logger: () => Logger[IO
   addMouseWheelListener(mListener)
   
   val kListener = new ModelEditorKeyListener(
-      Some(ModelEditorKeyListener.defaultBindings(this)), 
+      ModelEditorKeyListener.defaultBindings(this), 
       toolbox.toolKeyBindings,
       toolbox.hotkeyBindings,
       logger 

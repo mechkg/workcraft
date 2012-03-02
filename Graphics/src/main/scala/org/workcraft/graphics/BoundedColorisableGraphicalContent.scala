@@ -3,9 +3,8 @@ package org.workcraft.graphics
 import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import java.awt.geom.AffineTransform
-import org.workcraft.graphics.Graphics.HorizontalAlignment
-import org.workcraft.graphics.Graphics.VerticalAlignment
-import org.workcraft.graphics.Graphics.alignTransform
+
+import Graphics._
 
 class BoundedColorisableGraphicalContent(val cgc: ColorisableGraphicalContent, val bounds: BoundingBox) {
   //def translateToZero = translate(new Point2D.Double(-bounds.pivot.getX, -bounds.pivot.getY()))
@@ -36,6 +35,8 @@ object BoundedColorisableGraphicalContent {
 /*
  * Empty BCGC does not make sense because being "bounded" with an undefined bounding box
  * means that it is just CGC
+ *
+ * That's like saying 3 is not a rational number because it's merely an integer
  *
   val Empty = BoundedColorisableGraphicalContent(ColorisableGraphicalContent.Empty, None)
 */

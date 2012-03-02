@@ -31,6 +31,8 @@ class ToolboxPanel(tools: NonEmptyList[ModelEditorTool]) extends JPanel {
   val toolKeyBindings = selectedTool.map(_.keyBindings)
   val hotkeyBindings = hotkeys.keys.map(key => HotkeyBinding(key, {hotkeyPressed(key)}.pure[IO])).toList
   
+  val toolMouseListener = selectedTool.map(_.mouseListener)
+  
   setFocusable(false)
   
   setLayout(new FlowLayout)

@@ -15,6 +15,7 @@ import org.workcraft.interop.ModelService
 import org.workcraft.dependencymanager.advanced.core.Expression
 import scalaz.Lens
 import org.workcraft.plugins.stg21.fields.GroupLenses
+import org.workcraft.dom.visual.connections.StaticVisualConnectionData
 
 object types {
   
@@ -107,7 +108,7 @@ object types {
   case class ExplicitPlaceNode (p : Id[ExplicitPlace]) extends StgNode
   case class TransitionNode (t : Id[Transition]) extends StgNode
   
-  class VisualArc
+  type VisualArc = StaticVisualConnectionData
 
   implicit def decorateVisualArc(arc : Arc) = new {
     def firstAndSecond : (StgNode, StgNode) = arc match {
@@ -118,9 +119,6 @@ object types {
     def first = firstAndSecond._1
     def second = firstAndSecond._2
   }
-  
-  case class Bezier(cp1: RelativePoint, cp2: RelativePoint) extends VisualArc
-  case class Polyline(cp: List[Point2D.Double]) extends VisualArc
   
   case class Group(info : VisualInfo)
 

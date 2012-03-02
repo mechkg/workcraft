@@ -61,17 +61,11 @@ object Expressions {
   implicit def monadicSyntaxME[A](m: ModifiableExpression[A]) = new {
     def map[B](f: A => B) = implicitly[Monad[Expression]].fmap(m, f)
     def flatMap[B](f: A => Expression[B]) = implicitly[Monad[Expression]].bind(m, f)
+    def >>=[B](f: A => Expression[B]) = implicitly[Monad[Expression]].bind(m, f)
   }
   
- implicit def monadicSyntaxV[A](m: Variable[A]) = new {
-    def map[B](f: A => B) = implicitly[Monad[Expression]].fmap(m, f)
-    def flatMap[B](f: A => Expression[B]) = implicitly[Monad[Expression]].bind(m, f)
-  }  
-  
-  implicit def monadicSyntaxJ[A](m: JModifiableExpression[A]) = new {
-    def map[B](f: A => B) = implicitly[Monad[Expression]].fmap(m, f)
-    def flatMap[B](f: A => Expression[B]) = implicitly[Monad[Expression]].bind(m, f)
-  }
+  implicit def monadicSyntaxV[A](m: Variable[A]) = monadicSyntaxME(m)
+  implicit def monadicSyntaxJ[A](m: JModifiableExpression[A]) = monadicSyntaxME(m)
   
   trait ExpressionOps[+A] {
     def mapE[B](f : A => Expression[_ <: B]) : Expression[List[B]]
@@ -99,10 +93,14 @@ object Expressions {
   case class Expression[+T](jexpr : JExpression[_ <: T])
   
   def unsafeEval[T](e : Expression[T]) : T = GlobalCache.eval(e.jexpr)
-  
+
+  def unsafeAssign[T](to : ModifiableExpression[T], from : Expression[T]) = GlobalCache.assign(to, from.jexpr)
+
   def eval[T](e: Expression[T]): IO[T] =  ioPure.pure {unsafeEval(e)}
   
-  def update[T](e: ModifiableExpression[T])(f: T => T) = eval(e) >>= ( v => set (e, f(v)))  
+  def update[T](e: ModifiableExpression[T])(f: T => T) = eval(e) >>= ( v => set (e, f(v)))
   
   def set[T](e: ModifiableExpression[T], value: T) = ioPure.pure { e.setValue(value) }
+  
+  def assign[T](to : ModifiableExpression[T], from : Expression[T]) : IO[Unit] = ioPure.pure (unsafeAssign(to, from))
 }

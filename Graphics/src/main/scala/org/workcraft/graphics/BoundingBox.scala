@@ -3,9 +3,11 @@ import java.awt.geom.Rectangle2D
 import java.awt.geom.Point2D
 import java.awt.geom.AffineTransform
 
-case class BoundingBox(rect: Rectangle2D) {
+import Java2DDecoration._
+
+case class BoundingBox(rect: Rectangle2D.Double) {
   def union(other: BoundingBox) =
-    BoundingBox(rect.createUnion(other.rect))
+    BoundingBox(rect.createUnionD(other.rect))
 
   def expand(x: Double, y: Double) =
     BoundingBox(BoundingBox.expandRect(rect, x, y))

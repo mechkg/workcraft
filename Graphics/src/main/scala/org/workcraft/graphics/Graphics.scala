@@ -10,9 +10,6 @@ import java.awt.geom.Point2D
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
-
-import org.workcraft.graphics.formularendering.FormulaToGraphics
-import org.workcraft.graphics.LabelPositioning
 import org.workcraft.scala.Util._
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Expressions._

@@ -84,7 +84,6 @@ public class VisualConnection {
 	private static double defaultArrowLength = 0.4;
 	private static final Color defaultColor = Color.BLACK;
 	
-	public static double HIT_THRESHOLD = 0.2;
 	/*
 	private final ModifiableExpression<Color> color;
 	private final ModifiableExpression<Double> lineWidth;

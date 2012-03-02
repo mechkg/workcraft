@@ -4,6 +4,7 @@ import org.workcraft.scala.Expressions.Expression
 import org.workcraft.graphics.GraphicalContent
 import javax.swing.JPanel
 import org.workcraft.gui.modeleditor.KeyBinding
+import org.workcraft.gui.modeleditor.ToolMouseListener
 
 trait Button {
   def label: String
@@ -13,9 +14,9 @@ trait Button {
 
 trait ModelEditorTool {
   def button: Button
-  def keyBindings: Option[List[KeyBinding]]
-  def mouseListener
+  def keyBindings: List[KeyBinding]
+  def mouseListener: Option[ToolMouseListener]
   def userSpaceContent: Expression[GraphicalContent]
-  def screenSpaceContent: Option[Expression[GraphicalContent]]
+  def screenSpaceContent: Expression[GraphicalContent]
   def interfacePanel: Option[JPanel]
 }

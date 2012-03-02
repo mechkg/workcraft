@@ -51,7 +51,7 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
     result
   }
 
-  def screenToUser: Expression[Point2D => Point2D] = for {
+  def screenToUser: Expression[Point2D.Double => Point2D.Double] = for {
     inverseTransform <- inverseTransform
   } yield p => {
     val result = new Point2D.Double
@@ -67,7 +67,7 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
     screenToUser <- screenToUser
   } yield y => screenToUser(new Point2D.Double(0, y)).getY
 
-  def userToScreen: Expression[Point2D => Point2D] = for {
+  def userToScreen: Expression[Point2D.Double => Point2D.Double] = for {
     transform <- transform
   } yield p => {
     val result = new Point2D.Double
@@ -116,7 +116,7 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
   def zoom(levels: Int): IO[Unit] =
     update(scale)(s => Math.min(Math.max(s * Math.pow(Viewport.scaleFactor, levels), 0.01), 1.0))
 
-  def zoomTo(levels: Int, anchor: Point2D): IO[Unit] = (for {
+  def zoomTo(levels: Int, anchor: Point2D.Double): IO[Unit] = (for {
     screenToUser1 <- eval(screenToUser);
     val anchorInOldSpace = screenToUser1(anchor);
     _ <- zoom(levels);

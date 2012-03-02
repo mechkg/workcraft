@@ -60,5 +60,10 @@
       <type>jar</type>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+    	<groupId>org.workcraft</groupId>
+    	<artifactId>Gui</artifactId>
+    	<version>2.2-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 </project>

@@ -1,11 +1,11 @@
 package org.workcraft.scala.grapheditor.tools
 import org.workcraft.dependencymanager.advanced.core.{Expression => JExpression}
-import org.workcraft.gui.graph.tools.GraphEditorTool.Button
 import org.workcraft.gui.graph.tools.DummyKeyListener
 import org.workcraft.gui.graph.tools.DummyMouseListener
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.gui.graph.tools.GraphEditorTool
+import org.workcraft.gui.modeleditor.ToolMouseListener
 import org.workcraft.gui.graph.Viewport
 import org.workcraft.scala.Expressions._
 import javax.swing.JPanel
@@ -13,21 +13,24 @@ import org.workcraft.graphics.GraphicalContent
 import org.workcraft.scala.Scalaz._
 import org.workcraft.dom.visual.{GraphicalContent => JGraphicalContent}
 import java.awt.Graphics2D
+import org.workcraft.gui.modeleditor.KeyBinding
+import org.workcraft.gui.modeleditor.tools.ModelEditorTool
+import org.workcraft.gui.modeleditor.tools.Button
 
 object ToolHelper {
   private def toJava(gc : GraphicalContent) : JGraphicalContent = new JGraphicalContent{
     override def draw(g : Graphics2D) = gc.draw(g)
   }
-  def asGraphEditorTool (
-      mouselistener: Option[GraphEditorMouseListener],
-      keylistener: Option[GraphEditorKeyListener],
-      userSpaceGraphics: Option[(Viewport, Expression[Boolean]) => Expression[GraphicalContent]],
-      screenSpaceGraphics: Option[(Viewport, Expression[Boolean]) => Expression[GraphicalContent]],
+  def asModelEditorTool (
+      mouselistener: Option[ToolMouseListener],
+      keylistener: List[KeyBinding],
+      userSpaceGraphics: Expression[GraphicalContent],
+      screenSpaceGraphics: Expression[GraphicalContent],
       interfacePanel: Option[JPanel],
-      button: Button
+      buttoon: Button
       ) =
-        new GraphEditorTool {
-	  		override def getButton = button
+        new ModelEditorTool {
+	  		override def button = buttoon
 	  		override def keyListener = keylistener match {
 	  		  case Some(listener) => listener
 	  		  case None => DummyKeyListener.INSTANCE

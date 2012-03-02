@@ -8,7 +8,6 @@ import org.workcraft.gui.graph.tools.ConnectionController
 import java.awt.geom.Point2D
 import org.workcraft.gui.graph.tools.AbstractTool
 import org.workcraft.gui.graph.Viewport
-//import org.workcraft.gui.graph.tools.Colorisation
 import java.awt.Color
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.gui.graph.tools.GraphEditorKeyListener
@@ -36,10 +35,7 @@ class ConnectionTool[N](val mouseListener: GraphEditorMouseListener,
 }
 
 object ConnectionTool {
-  val highlightedColorisation = new Colorisation {
-    override def getColorisation = new Color(99, 130, 191).brighter()
-    override def getBackground = null
-  }
+  val highlightedColorisation = Colorisation(Some(new Color(99, 130, 191).brighter), None)
 
   def create[N](
     components: Expression[_ <: Iterable[N]],

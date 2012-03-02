@@ -14,7 +14,7 @@ import java.lang.reflect.InvocationTargetException
 import Logger._
 
 object MainWindowIconManager {
-  private def applyListener(window: MainWindow, active: Image, inactive: Image): IO[Unit] =
+  private def applyListener(window: MainWindow, active: Image, inactive: Image) =
     SwingUtilities.invokeAndWait(new Runnable() {
       def run = {
         window.setIconImage(if (window.isActive()) active else inactive)
@@ -23,22 +23,20 @@ object MainWindowIconManager {
           override def windowActivated(e: WindowEvent) = window.setIconImage(active);
         })
       }
-    }).pure
+    })
 
   def apply(implicit window: MainWindow, logger:() => Logger[IO]) =
     new Thread(new Runnable() {
       def run = {
         try {
-          (GUI.createIconFromSVG("images/icons/svg/place.svg", 32, 32, Color.WHITE) |@|
-            GUI.createIconFromSVG("images/icons/svg/place_empty.svg", 32, 32, Color.WHITE))({
-              case (Right(active), Right(inactive)) => applyListener(window, active.getImage(), inactive.getImage())
-              case (Left(e), _) => warning(e)
-              case (_, Left(e)) => warning(e)
-            }).join.unsafePerformIO
+          (GUI.createIconFromSvg("images/icons/svg/place.svg", 32, 32, None) |@|
+            GUI.createIconFromSvg("images/icons/svg/place_empty.svg", 32, 32, None))({
+              case (active, inactive) => applyListener(window, active.getImage(), inactive.getImage())
+            }).unsafePerformIO
         } catch {
           case e: InterruptedException => warning(e.getMessage())
           case e: InvocationTargetException => warning(e.getCause().getMessage())
-          case e: RuntimeException => warning(e.getMessage())
+          case e => warning(e.getMessage())
         }
       }
     }).start()

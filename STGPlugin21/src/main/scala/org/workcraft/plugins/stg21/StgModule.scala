@@ -6,8 +6,30 @@ import org.workcraft.plugins.interop.DotGImporter
 import org.workcraft.interop.Importer
 import org.workcraft.interop.Exporter
 import org.workcraft.plugins.interop.DotGExporter
+import org.workcraft.services.GlobalServiceProvider
+import org.workcraft.services.Service
+import org.workcraft.services.GlobalScope
+import org.workcraft.services.NewModelService
+import org.workcraft.services.NewModelImpl
 
 class StgModule extends Module {
+  def name = "Signal Transition Graphs"
+  def serviceProvider = StgServiceProvider
+}
+
+object StgServiceProvider extends GlobalServiceProvider {
+  def implementation[T](service: Service[GlobalScope, T]) = service match {
+    case NewModelService => Some(NewStg)
+    case _ => None
+  }
+}
+
+object NewStg extends NewModelImpl {
+  def name = "Signal Transition Graph"
+  def create = new PetriNetModel
+}
+
+/*class StgModule extends Module {
 	val getDescription : String = "Signal Transition Graphs"
 	def init(framework : Framework) {
 	  framework.getPluginManager().registerClass(ModelDescriptor.GLOBAL_SERVICE_HANDLE, StgModelDescriptor)
@@ -15,3 +37,4 @@ class StgModule extends Module {
 	  framework.getPluginManager().registerClass(Exporter.SERVICE_HANDLE, DotGExporter)
 	}
 }
+*/

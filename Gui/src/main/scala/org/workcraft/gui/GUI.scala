@@ -1,6 +1,7 @@
 package org.workcraft.gui
 import org.workcraft.scala.effects.IO
 import org.workcraft.scala.effects.IO._
+import org.workcraft.scala.Expressions._
 import scalaz.Scalaz._
 import javax.swing.ImageIcon
 import java.awt.Color
@@ -50,58 +51,58 @@ object GUI {
     result
   }
 
-  def createIconFromImage(resourcePath: String): IO[Option[ImageIcon]] = {
+  def createIconFromImage(resourcePath: String): IO[Option[ImageIcon]] = ioPure.pure {
     val res = ClassLoader.getSystemResource(resourcePath)
     if (res == null)
       None
     else
       Some(new ImageIcon(res))
-  }.pure
+  }
 
-  def createIconFromSVG(path: String, height: Int, width: Int, background: Color): IO[_ <: Either[Throwable, ImageIcon]] = {
-    try {
-      System.setProperty("org.apache.batik.warn_destination", "false")
+  def createIconFromSvgUsingSettingsSize(path: String) =
+    eval(CommonVisualSettings.iconSize) >>= (size => createIconFromSvg(path, size, size, None))
 
-      val parser = XMLResourceDescriptor.getXMLParserClassName()
-      val f = new SAXSVGDocumentFactory(parser)
+  def createIconFromSvg(path: String, height: Int, width: Int, background: Option[Color]): IO[ImageIcon] = ioPure.pure {
+    System.setProperty("org.apache.batik.warn_destination", "false")
 
-      val document = f.createDocument(ClassLoader.getSystemResource(path).toString())
+    val parser = XMLResourceDescriptor.getXMLParserClassName()
+    val f = new SAXSVGDocumentFactory(parser)
 
-      val userAgentAdapter = new UserAgentAdapter()
-      val bridgeContext = new BridgeContext(userAgentAdapter)
-      val builder = new GVTBuilder()
+    val document = f.createDocument(ClassLoader.getSystemResource(path).toString())
 
-      val graphicsNode = builder.build(bridgeContext, document)
+    val userAgentAdapter = new UserAgentAdapter()
+    val bridgeContext = new BridgeContext(userAgentAdapter)
+    val builder = new GVTBuilder()
 
-      val sizeY = bridgeContext.getDocumentSize().getHeight()
-      val sizeX = bridgeContext.getDocumentSize().getWidth()
+    val graphicsNode = builder.build(bridgeContext, document)
 
-      val bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+    val sizeY = bridgeContext.getDocumentSize().getHeight()
+    val sizeX = bridgeContext.getDocumentSize().getWidth()
 
-      val g2d = bufferedImage.getGraphics.asInstanceOf[Graphics2D]
-      if (background != null) {
-        g2d.setColor(background)
-        g2d.fillRect(0, 0, width, height)
-      }
+    val bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
 
-      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-      g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
-      g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
-      g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
+    val g2d = bufferedImage.getGraphics.asInstanceOf[Graphics2D]
 
-      val scaleX = (width - 1) / sizeX
-      val scaleY = (height - 1) / sizeY
-      val scale = Math.min(scaleX, scaleY)
-      g2d.scale(scale, scale)
-      g2d.translate(0.5, 0.5)
+    background.foreach(bg => {
+      g2d.setColor(bg)
+      g2d.fillRect(0, 0, width, height)
+    })
 
-      graphicsNode.paint(g2d)
-      g2d.dispose()
-      Right(new ImageIcon(bufferedImage))
-    } catch {
-      case e => Left(e)
-    }
-  }.pure
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+    g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
+    g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
+    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
+
+    val scaleX = (width - 1) / sizeX
+    val scaleY = (height - 1) / sizeY
+    val scale = Math.min(scaleX, scaleY)
+    g2d.scale(scale, scale)
+    g2d.translate(0.5, 0.5)
+
+    graphicsNode.paint(g2d)
+    g2d.dispose()
+    new ImageIcon(bufferedImage)
+  }
 
   def centerToParent(frame: Window, parent: Window) = {
     val parentSize = parent.getSize

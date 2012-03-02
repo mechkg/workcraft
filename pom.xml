@@ -31,7 +31,7 @@
     <module>Graphics</module>
     <module>PetriNetPlugin2</module>
     <module>ScalaUtil</module>
-    <module>DependencyManager</module>
+<!--    <module>DependencyManager</module> -->
     <module>BooleanFormulae</module>
     <module>ScalaGraphEditorUtil</module>
     <module>STGPlugin21</module>

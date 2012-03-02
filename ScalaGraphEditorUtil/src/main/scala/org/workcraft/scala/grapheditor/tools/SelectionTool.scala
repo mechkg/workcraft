@@ -13,8 +13,9 @@ import org.workcraft.dependencymanager.advanced.core.Expressions
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.graphics.Touchable
 import org.workcraft.graphics.GraphicalContent
+import org.workcraft.gui.modeleditor.tools.ModelEditorTool
 
-class SelectionTool[N](val mouseListener: GraphEditorMouseListener,
+class SelectionTool[N](val mouseListener: ToolMouseListener,
   val selectionBoxGraphics: (Viewport, Expression[Boolean]) => Expression[GraphicalContent],
   val effectiveSelection: Expression[Set[N]]) {
   def asGraphEditorTool ( paint: (Colorisation, Expression[Set[N]]) => Expression[GraphicalContent]) =
@@ -22,6 +23,10 @@ class SelectionTool[N](val mouseListener: GraphEditorMouseListener,
     def graphics (viewport : Viewport, hasFocus: Expression[Boolean]) =
       (paint (SelectionTool.highlightedColorisation, effectiveSelection) <**> selectionBoxGraphics(viewport, hasFocus)) (_.compose(_))
       
+    new ModelEditorTool {
+      def button = GenericSelectionTool.button
+      def mouseListener = 
+    }
     ToolHelper.asGraphEditorTool(Some(mouseListener), None, 
         Some(graphics), None, None, GenericSelectionTool.button)
   }

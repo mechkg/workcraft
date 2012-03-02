@@ -7,7 +7,6 @@ import java.awt.geom.Path2D
 import java.awt.BasicStroke
 import java.awt.Color
 
-import org.workcraft.graphics.BoundedColorisableGraphicalContent;
 import org.workcraft.graphics.Java2DDecoration._
 import org.workcraft.graphics.Graphics.HorizontalAlignment
 import org.workcraft.graphics.Graphics.VerticalAlignment

@@ -31,14 +31,19 @@ import org.workcraft.gui.graph.tools.DragHandle
 import org.workcraft.gui.graph.tools.DragHandler
 import org.workcraft.gui.graph.tools.DummyMouseListener
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener
-import org.workcraft.gui.graph.tools.GraphEditorTool.Button
-import org.workcraft.util.GUI
 import org.workcraft.util.Geometry
 import org.workcraft.scala.grapheditor.tools.HitTester
 import org.workcraft.scala.Expressions._
 import java.awt.event.InputEvent
 import org.workcraft.gui.graph.tools.selection.GenericSelectionTool.SelectionMode
 import org.workcraft.graphics.GraphicalContent
+import org.workcraft.gui.modeleditor.tools.Button
+import org.workcraft.gui.GUI
+import org.workcraft.gui.modeleditor.ToolMouseListener
+import org.workcraft.scala.effects.IO
+import scalaz.Scalaz._
+import org.workcraft.gui.modeleditor.MouseButton
+import org.workcraft.gui.modeleditor.Modifier
 
 object GenericSelectionTool {
   sealed trait SelectionMode
@@ -56,10 +61,10 @@ object GenericSelectionTool {
   }
     
   val button = new Button {
-    override def getLabel = "Selection tool"
-    override def getHotKeyCode = KeyEvent.VK_S
-    override def getIcon = GUI.createIconFromSVG("images/icons/svg/select.svg")
-  }  
+    override def label = "Selection tool"
+    override def hotkey = Some(KeyEvent.VK_S)
+    override def icon = Some(GUI.createIconFromSvgUsingSettingsSize("images/icons/svg/select.svg").unsafePerformIO) 
+  }
 }
 
 class GenericSelectionTool[Node](
@@ -172,10 +177,16 @@ class GenericSelectionTool[Node](
   def effectiveSelection : Expression[Set[Node]] =
     selectDragHandler.effectiveSelection
   
-  def getMouseListener : GraphEditorMouseListener = {
+  def getMouseListener : ToolMouseListener = {
     val me = this
-    new DummyMouseListener {
-      override def mouseClicked(e : GraphEditorMouseEvent) = me.mouseClicked(e)
+    new ToolMouseListener {
+      override def mousePressed(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double) : IO[Unit] = {}.pure[IO]
+      override def mouseReleased(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double) : IO[Unit] = {}.pure[IO]
+      override def mouseClicked(button: MouseButton, clickCount: Int, modifiers: Set[Modifier], position: Point2D.Double): IO[Unit]
+      override def mouseMoved(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit]
+      override def mouseEntered(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit]
+      override def mouseExited(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit]
+      override def mouseClicked(e: GraphEditorMouseEvent) = me.mouseClicked(e)
       override def finishDrag(e : GraphEditorMouseEvent) = me.finishDrag(e)
       override def isDragging : Boolean = me.isDragging
       override def mousePressed(e : GraphEditorMouseEvent) = me.mousePressed(e)

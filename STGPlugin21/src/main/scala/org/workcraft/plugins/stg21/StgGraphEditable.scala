@@ -26,7 +26,6 @@ import org.workcraft.util.Action
 import org.workcraft.dom.visual.connections.VisualConnectionProperties
 import scalaz.Lens
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
-import org.workcraft.graphics.Expression;
 import org.workcraft.graphics.Graphics
 import org.workcraft.dom.visual.connections.Polyline
 import org.workcraft.graphics.TouchableC
@@ -34,12 +33,15 @@ import org.workcraft.graphics.GraphicalContent
 import org.workcraft.gui.graph.tools.ConnectionManager
 import org.workcraft.graphics.ColorisableGraphicalContent
 import org.workcraft.graphics.Colorisation
-
 import RichGraphicalContent._
+import org.workcraft.gui.modeleditor.ModelEditor
+import scalaz.NonEmptyList
+import org.workcraft.gui.modeleditor.tools.ModelEditorTool
 
-class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends GraphEditable {
+class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends ModelEditor {
   val selection = Variable.create[Set[VisualEntity]](Set.empty)
-  def createTools (editor : GraphEditor) : java.lang.Iterable[_ <: GraphEditorTool] = {
+  
+  def tools: NonEmptyList[ModelEditorTool] = {
 
     def movableController(n : VisualNode) : ModifiableExpression[Point2D.Double] = {
       import org.workcraft.plugins.stg21.modifiable._
@@ -139,11 +141,10 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
 
     val simulationTool = null
 
-    scala.collection.JavaConversions.asJavaIterable(
-      (selectionTool.asGraphEditorTool((colorisation, selection) => paint) ::
+    NonEmptyList(
+      selectionTool.asGraphEditorTool((colorisation, selection) => paint),
       connectionTool.asGraphEditorTool((colorisation,highlighted) => paint) ::
-      nodeGeneratorTools) :+ 
-      simulationTool
+      nodeGeneratorTools)
     )
   }
 import scala.collection.JavaConversions._

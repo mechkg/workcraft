@@ -23,6 +23,9 @@ trait ToolMouseListener {
   def mouseMoved    (modifiers: Set[Modifier], position: Point2D.Double): IO[Unit]
   def mouseEntered  (modifiers: Set[Modifier], position: Point2D.Double): IO[Unit]
   def mouseExited   (modifiers: Set[Modifier], position: Point2D.Double): IO[Unit]
+  
+  def startDrag(button: MouseButton, position: Point2D.Double, modifiers: Set[Modifier]) : IO[Unit]
+  def finishDrag(button: MouseButton, position: Point2D.Double, modifiers: Set[Modifier]) : IO[Unit]
 }
 
 class ModelEditorMouseListener(val viewport: Viewport, val hasFocus: Expression[Boolean], val toolMouseListener: Expression[Option[ToolMouseListener]], 

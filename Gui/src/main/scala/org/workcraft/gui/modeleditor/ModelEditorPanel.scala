@@ -23,8 +23,11 @@ import java.awt.RenderingHints
 import java.awt.Graphics
 import java.awt.Graphics2D
 import org.workcraft.gui.CommonVisualSettings
+import org.workcraft.gui.modeleditor.tools.ToolboxPanel
+import org.workcraft.logging.Logger
+import org.workcraft.gui.modeleditor.tools.ModelEditorTool
 
-class ModelEditorPanel extends JPanel {
+class ModelEditorPanel (toolbox: ToolboxPanel) (implicit logger: () => Logger[IO]) extends JPanel {
   val panelDimensions = Variable.create((0, 0, getWidth, getHeight))
   val viewDimensions = panelDimensions.map { case (x,y,w,h) => (x + 15,y + 15, w - 15, h - 15) }
   
@@ -66,11 +69,21 @@ class ModelEditorPanel extends JPanel {
     case None => DummyMouseListener
   }*/
   
-  val mListener = new ModelEditorMouseListener (view, hasfocus, () => System.out.println("Gimme focus pls").pure[IO])
+  val mListener = new ModelEditorMouseListener (view, hasfocus, () => {requestFocus()}.pure[IO])
   
   addMouseListener(mListener)
   addMouseMotionListener(mListener)
   addComponentListener(Resizer)
+  addMouseWheelListener(mListener)
+  
+  val kListener = new ModelEditorKeyListener(
+      Some(ModelEditorKeyListener.defaultBindings(this)), 
+      toolbox.toolKeyBindings,
+      toolbox.hotkeyBindings,
+      logger 
+      )
+  
+  addKeyListener(kListener)
 
   def reshape = panelDimensions.setValue(0, 0, getWidth, getHeight)
 
@@ -85,7 +98,6 @@ class ModelEditorPanel extends JPanel {
     //userSpaceContent <- tool.userSpaceContent(view, hasFocus)
     //screenSpaceContent <- tool.screenSpaceContent(view, hasFocus)
   } yield GraphicalContent(g => {
-    System.out.println ("painting!")
     
     val screenTransform = new AffineTransform(g.getTransform)
 

@@ -22,7 +22,7 @@ object TokenPainter {
     ) yield if (tokens == 0)
       None
     else if (tokens == 1)
-      Some(circle(singleTokenSize, None, Some(foreColor)))
+      Some(circle(singleTokenSize, None, Some(foreColor)).boundedColorisableGraphicalContent)
     else if (tokens > 1 && tokens < 8) {
       val radialTokens = Math.min(tokens, 6)
       val angularDistance = Math.Pi / radialTokens
@@ -30,7 +30,7 @@ object TokenPainter {
       val radiusTight = R * Math.sin(angularDistance)
       val radiusSparse = radiusTight - multipleTokenSeparation
 
-      val tokenImage: BoundedColorisableGraphicalContent = circle(radiusSparse * 2, None, Some(foreColor))
+      val tokenImage = circle(radiusSparse * 2, None, Some(foreColor)).boundedColorisableGraphicalContent
 
       val radialTokensImage =
           Range(0, radialTokens).map (i => tokenImage translate (-R * Math.sin(i * angularDistance * 2), -R * Math.cos(i * angularDistance * 2))).reduceLeft(_.compose(_))
@@ -40,5 +40,5 @@ object TokenPainter {
       else
         Some(radialTokensImage)
     } else
-      Some(label(tokens.toString, font.deriveFont((size / 2).toFloat), foreColor))
+      Some(label(tokens.toString, font.deriveFont((size / 2).toFloat), foreColor).boundedColorisableGraphicalContent)
 }

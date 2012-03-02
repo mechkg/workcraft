@@ -1,3 +1,4 @@
-package org.workcraft.services
-
-trait Model extends ModelServiceProvider
+package org.workcraft
+package object services {
+  type Model = ModelServiceProvider
+}

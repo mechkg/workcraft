@@ -47,18 +47,18 @@ case class RichGraphicalContent(val bcgc: BoundedColorisableGraphicalContent, va
 object RichGraphicalContent {
   def rectangle(width: Double, height: Double, stroke: Option[(Stroke, Color)], fill: Option[Color]) = {
     val rect = Graphics.rectangle(width, height, stroke, fill)
-    RichGraphicalContent(rect, TouchableC(rect, new Point2D.Double(0,0)))
+    RichGraphicalContent(rect.boundedColorisableGraphicalContent, TouchableC(rect.touchable, new Point2D.Double(0,0)))
   }
   def label(text : String, font : Font, color : Color) : RichGraphicalContent = {
     val lbl = Graphics.label(text, font, color)
-    RichGraphicalContent(lbl, TouchableC(lbl, lbl.visualBounds.center))
+    RichGraphicalContent(lbl.boundedColorisableGraphicalContent, TouchableC(lbl.touchable, lbl.visualBounds.center))
   }
   def circle(diameter: Double, stroke: Option[(Stroke, Color)], fill: Option[Color]) = {
     val circ = Graphics.circle(diameter, stroke, fill)
-    RichGraphicalContent(circ, TouchableC(circ, new Point2D.Double(0,0)))
+    RichGraphicalContent(circ.boundedColorisableGraphicalContent, TouchableC(circ.touchable, new Point2D.Double(0,0)))
   }
 }
-  
+
   /*  
 
   def translate(tx: Double, ty: Double): RichGraphicalContent = transform(AffineTransform.getTranslateInstance(tx, ty))

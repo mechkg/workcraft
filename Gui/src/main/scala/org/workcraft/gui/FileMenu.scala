@@ -10,7 +10,7 @@ import org.workcraft.services.NewModelService
 import GUI.menuItem
 import org.workcraft.services.NewModelImpl
 
-class FileMenu (services: () => GlobalServiceManager, mainWindow: MainWindow, newModel: NewModelImpl => Unit) extends JMenu ("File") {
+class FileMenu (services: () => GlobalServiceManager, mainWindow: MainWindow, newModel: ((NewModelImpl, Boolean)) => Unit) extends JMenu ("File") {
   setMnemonic('F')
   
   add(menuItem ("New work", Some('N'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK)), 

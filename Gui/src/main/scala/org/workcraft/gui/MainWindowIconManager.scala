@@ -1,8 +1,9 @@
 package org.workcraft.gui
 import java.awt.Color
-import scalaz.Scalaz._
-import scalaz.effects.IO
-import scalaz.effects.IO._
+import scalaz._
+import Scalaz._
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 import javax.swing.SwingUtilities
 import javax.swing.ImageIcon
 import java.awt.event.WindowAdapter
@@ -18,13 +19,13 @@ object MainWindowIconManager {
       def run = {
         window.setIconImage(if (window.isActive()) active else inactive)
         window.addWindowListener(new WindowAdapter() {
-          override def windowDeactivated(e: WindowEvent) = window.setIconImage(inactive)
+          override def windowDeactivated(e: WindowEvent) = {window.setIconImage(inactive)}
           override def windowActivated(e: WindowEvent) = window.setIconImage(active);
         })
       }
     }).pure
 
-  def apply(implicit window: MainWindow, logger:() => Logger[IO]): IO[Unit] =
+  def apply(implicit window: MainWindow, logger:() => Logger[IO]) =
     new Thread(new Runnable() {
       def run = {
         try {
@@ -40,5 +41,5 @@ object MainWindowIconManager {
           case e: RuntimeException => warning(e.getMessage())
         }
       }
-    }).start().pure
+    }).start()
 }

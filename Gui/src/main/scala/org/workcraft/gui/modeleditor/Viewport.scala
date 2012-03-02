@@ -14,11 +14,11 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 import org.workcraft.dependencymanager.advanced.core.GlobalCache
 
 class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
-  val translationX = Variable.create (0.0)
-  val translationY = Variable.create (0.0)
-  val scale = Variable.create (0.0625)
+  val translationX = Variable.create(0.0)
+  val translationY = Variable.create(0.0)
+  val scale = Variable.create(0.0625)
   val origin = new Point2D.Double(0.0, 0.0)
-  
+
   def transform: Expression[AffineTransform] = for {
     view <- viewTransform;
     proj <- projection
@@ -27,17 +27,19 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
     result.concatenate(view)
     result
   }
-  
+
   def inverseTransform: Expression[AffineTransform] = transform.map(_.createInverse)
-  
-  def projection = dimensions.map { case (x, y, w, h) => {
-    val result = new AffineTransform()
-    result.translate(w/2 + x, h/2 + y)
-    if (h != 0)
-      result.scale(h/2, h/2)
-    result
-  }} 
-  
+
+  def projection = dimensions.map {
+    case (x, y, w, h) => {
+      val result = new AffineTransform()
+      result.translate(w / 2 + x, h / 2 + y)
+      if (h != 0)
+        result.scale(h / 2, h / 2)
+      result
+    }
+  }
+
   def viewTransform = for {
     tx <- translationX;
     ty <- translationY;
@@ -98,23 +100,23 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
 
     new Rectangle2D.Double(visibleUL.getX, visibleLR.getY, visibleLR.getX - visibleUL.getX, visibleUL.getY - visibleLR.getY)
   }
-  
-  def pan (dx: Int, dy: Int) : IO[Unit] = (for {
+
+  def pan(dx: Int, dy: Int): IO[Unit] = (for {
     userToScreen <- eval(userToScreen);
     screenToUser <- eval(screenToUser)
   } yield {
     val originInScreenSpace = userToScreen(origin)
-    
-    val panInScreenSpace = new Point2D.Double (originInScreenSpace.getX + dx, originInScreenSpace.getY + dy)
+
+    val panInScreenSpace = new Point2D.Double(originInScreenSpace.getX + dx, originInScreenSpace.getY + dy)
     val panInUserSpace = screenToUser(panInScreenSpace)
-    
-    update (translationX)(_ + panInUserSpace.getX) >>=| update(translationY)(_ + panInUserSpace.getY)
+
+    update(translationX)(_ + panInUserSpace.getX) >>=| update(translationY)(_ + panInUserSpace.getY)
   }).join
-  
-  def zoom (levels: Int) : IO[Unit] =
-    update (scale)(s => Math.min(Math.max (s * Math.pow (Viewport.scaleFactor, levels), 0.01), 1.0))
-  
-  def zoomTo (levels: Int, anchor: Point2D): IO[Unit] = (for {
+
+  def zoom(levels: Int): IO[Unit] =
+    update(scale)(s => Math.min(Math.max(s * Math.pow(Viewport.scaleFactor, levels), 0.01), 1.0))
+
+  def zoomTo(levels: Int, anchor: Point2D): IO[Unit] = (for {
     screenToUser1 <- eval(screenToUser);
     val anchorInOldSpace = screenToUser1(anchor);
     _ <- zoom(levels);
@@ -122,11 +124,11 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
     val anchorInNewSpace = screenToUser2(anchor);
     tx <- eval(translationX);
     ty <- eval(translationY)
-  } yield 
-    set (translationX, tx + anchorInNewSpace.getX - anchorInOldSpace.getX) >>=| set (translationY, ty + anchorInNewSpace.getY - anchorInOldSpace.getY)
-  ).join
+  } yield {
+    set (translationX, tx + anchorInNewSpace.getX - anchorInOldSpace.getX) >>=| set(translationY, ty + anchorInNewSpace.getY - anchorInOldSpace.getY)
+  }).join
 }
 
 object Viewport {
-  val scaleFactor = Math.pow(2, 0.125)   
+  val scaleFactor = Math.pow(2, 0.125)
 }

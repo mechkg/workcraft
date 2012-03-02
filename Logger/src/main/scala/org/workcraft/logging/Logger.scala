@@ -1,5 +1,5 @@
 package org.workcraft.logging
-import scalaz.effects.IO
+import org.workcraft.scala.effects.IO
 
 sealed trait MessageClass 
 

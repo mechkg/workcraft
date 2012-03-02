@@ -30,13 +30,13 @@ object Visual {
         case SignalType.Input => Color.RED.darker
 	  }
 	  val lbl = label(text, font, color).zeroCentered
-	  lbl.over(Graphics.rectangle(lbl.bcgc.bounds.rect.getWidth, lbl.bcgc.bounds.rect.getHeight, None, background))
+	  lbl.over(Graphics.rectangle(lbl.bcgc.bounds.rect.getWidth, lbl.bcgc.bounds.rect.getHeight, None, background).boundedColorisableGraphicalContent)
 	}
   }
   object VisualDummyTransition {
     def graphicalContent(text : String, background : Option[Color]) = {
 	  val lbl = label(text, font, Color.BLACK).zeroCentered
-	  lbl.over(Graphics.rectangle(lbl.bcgc.bounds.rect.getWidth, lbl.bcgc.bounds.rect.getHeight, None, background))
+	  lbl.over(Graphics.rectangle(lbl.bcgc.bounds.rect.getWidth, lbl.bcgc.bounds.rect.getHeight, None, background).boundedColorisableGraphicalContent)
     }
   }
   

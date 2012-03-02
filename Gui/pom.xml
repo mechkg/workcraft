@@ -83,12 +83,18 @@
 			<artifactId>TableLayout</artifactId>
 			<version>20050920</version>
 		</dependency>
-		<dependency>
+		<!--  <dependency>
 			<groupId>net.java.dev.flexdock</groupId>
 			<artifactId>flexdock</artifactId>
 			<version>0.5.1_WORKCRAFT_HACK</version>
 			<optional>false</optional>
-		</dependency>
+		</dependency> -->
+		<dependency>
+			<groupId>org.flexdock</groupId>
+			<artifactId>flexdock</artifactId>
+			<version>1.1.1</version>
+			<optional>false</optional>
+		</dependency>		
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>

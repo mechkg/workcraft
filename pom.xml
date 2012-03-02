@@ -24,6 +24,8 @@
     <module>WorkcraftCore</module>
     <module>ScalaProject</module>
     <module>Core</module>
+    <module>Gui</module>
+    <module>Tasks</module>
     <module>Logger</module>
     <module>PluginManager</module>
     <module>Graphics</module>

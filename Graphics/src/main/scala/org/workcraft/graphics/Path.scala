@@ -9,28 +9,24 @@ import java.awt.geom.Path2D
 
 import Java2DDecoration._
 
-class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color, val touchThreshold: Double)
-
-object Path {
-  def apply(p: Path2D, stroke: BasicStroke, color: Color, touchThreshold: Double) = new Path (p, stroke, color, touchThreshold)
-  
-  implicit def graphicalContent(path: Path) = GraphicalContent( g => {
-      g.setStroke(path.stroke)
-      g.setColor(path.color)
-      g.draw(path.p)
+class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color, val touchThreshold: Double) {
+  lazy val graphicalContent = GraphicalContent( g => {
+      g.setStroke(stroke)
+      g.setColor(color)
+      g.draw(p)
   })
   
-  implicit def colorisableGraphicalContent(path: Path) = ColorisableGraphicalContent(colorisation => GraphicalContent ( g => {
-      g.setStroke(path.stroke)
-      g.setColor(Coloriser.colorise(path.color, colorisation.foreground))
-      g.draw(path.p)
+  lazy val colorisableGraphicalContent = ColorisableGraphicalContent(colorisation => GraphicalContent ( g => {
+      g.setStroke(stroke)
+      g.setColor(Coloriser.colorise(color, colorisation.foreground))
+      g.draw(p)
   }))
   
-  implicit def boundedColorisableGraphicalContent(path: Path) = BoundedColorisableGraphicalContent (path, BoundingBox(path.p.bounds))
-    
-  implicit def touchable(path: Path) = new Touchable {
+  lazy val boundedColorisableGraphicalContent = BoundedColorisableGraphicalContent (colorisableGraphicalContent, BoundingBox(p.bounds))
+  
+  lazy val touchable = new Touchable {
     val pathError = 0.01
-    val segments = getSegments(path.p.getPathIterator(null, pathError))
+    val segments = getSegments(p.getPathIterator(null, pathError))
 
     private def testSegments(segments: List[Line2D.Double], point: Point2D.Double, threshold: Double): Boolean = {
       val tSq = threshold * threshold
@@ -82,7 +78,11 @@ object Path {
       segments
     }
 
-    def hitTest(point: Point2D.Double) = testSegments(segments, point, path.touchThreshold)
-    def boundingBox = BoundingBox(path.p.bounds)
+    def hitTest(point: Point2D.Double) = testSegments(segments, point, touchThreshold)
+    def boundingBox = BoundingBox(p.bounds)
   }
+}
+
+object Path {
+  def apply(p: Path2D, stroke: BasicStroke, color: Color, touchThreshold: Double) = new Path (p, stroke, color, touchThreshold) 
 }

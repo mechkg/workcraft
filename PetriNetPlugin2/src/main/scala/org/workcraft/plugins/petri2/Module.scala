@@ -5,10 +5,11 @@ import org.workcraft.services.GlobalServiceProvider
 import org.workcraft.services.NewModelImpl
 import org.workcraft.services.GlobalScope
 import org.workcraft.services.NewModelService
+import org.workcraft.services.ModelServiceProvider
 
 object NewPetriNet extends NewModelImpl {
   def name = "Petri Net"
-  def create = null
+  def create = new PetriNetModel
 }
 
 object PetriNetServiceProvider extends GlobalServiceProvider {

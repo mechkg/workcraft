@@ -42,7 +42,6 @@ object PluginManifest {
         val buffer = ListBuffer[String]()
         while (true) {
           val s = reader.readLine()
-	  println(s)
           if (s == null) return buffer.toList
           buffer += s
         }

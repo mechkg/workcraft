@@ -43,7 +43,7 @@ class DockableWindow(
             foreach(tabbedPane.setTabComponentAt(_, new DockableTab(dockable)))
         }
 
-        case _ => dockable.showHeader
+        case _ => {dockable.showHeader}
       }
     })
   }
@@ -64,7 +64,7 @@ class DockableWindow(
   var isMaximised = false
   var isClosed = DockingManager.isDocked(this)
   
-  def toggleMaximised = { DockingManager.toggleMaximized(this); isMaximised = !isMaximised }
+  def toggleMaximised = { DockingManager.toggleMaximized(this); isMaximised = !isMaximised; updateHeaders(getDockingPort) }
   def close = { DockingManager.close(this); isClosed = true}
   def display { DockingManager.display(this); isClosed = false}
 }

@@ -2,8 +2,8 @@ package org.workcraft.pluginmanager
 import java.lang.reflect.Modifier
 import java.util.UUID
 import org.workcraft.logging.Logger
-import scalaz.effects.IO
-import scalaz.effects.IO._
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 import scalaz.Scalaz._
 import Logger._
 
@@ -36,11 +36,11 @@ class PluginManager(val version: UUID, val packages: Traversable[String], val ma
 
     val classesToProcess = finder.searchClassPath()
 
-    unsafeInfo("Processing " + classesToProcess.size + " class files")
+    unsafeInfo("Processing " + classesToProcess.size + " class file(s)")
 
     val results = PluginProcessor.processClasses(classesToProcess)
 
-    unsafeInfo("Found " + results.plugins.size + " plugins")
+    unsafeInfo("Found " + results.plugins.size + " plugin(s)")
 
     val n = results.errors.size
 

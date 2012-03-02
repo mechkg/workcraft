@@ -5,6 +5,8 @@ import java.awt.geom.Point2D
 import java.awt.BasicStroke
 import java.awt.Stroke
 
+import Java2DDecoration._
+
 class Shape private (val s: java.awt.Shape, val stroke: Option[(Stroke, Color)], val fillColor: Option[Color]) {
   lazy val graphicalContent = GraphicalContent ( g => {
       for (color <- fillColor) {
@@ -37,11 +39,11 @@ class Shape private (val s: java.awt.Shape, val stroke: Option[(Stroke, Color)],
     }
   }
     
-  lazy val boundedColorisableGraphicalContent = BoundedColorisableGraphicalContent (colorisableGraphicalContent, BoundingBox(s.getBounds2D()))
+  lazy val boundedColorisableGraphicalContent = BoundedColorisableGraphicalContent (colorisableGraphicalContent, BoundingBox(s.bounds))
   
   lazy val touchable = new Touchable {
-    def boundingBox = BoundingBox(s.getBounds2D)
-    def hitTest(point: Point2D) = s.contains(point)
+    def boundingBox = BoundingBox(s.bounds)
+    def hitTest(point: Point2D.Double) = s.contains(point)
   }
 }
 

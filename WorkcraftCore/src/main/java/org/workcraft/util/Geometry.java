@@ -30,7 +30,6 @@ import java.awt.geom.Rectangle2D;
 import org.workcraft.dom.visual.Touchable;
 import org.workcraft.dom.visual.connections.ParametricCurve;
 import org.workcraft.dom.visual.connections.PartialCurveInfo;
-import org.workcraft.dom.visual.connections.VisualConnectionContext;
 import org.workcraft.dom.visual.connections.VisualConnectionProperties;
 
 public class Geometry {
@@ -180,10 +179,10 @@ public class Geometry {
 		return tStart;
 	}
 
-	public static PartialCurveInfo buildConnectionCurveInfo (VisualConnectionProperties connectionInfo, VisualConnectionContext context, ParametricCurve curve, double endCutoff) {
+	public static PartialCurveInfo buildConnectionCurveInfo (VisualConnectionProperties connectionInfo, Touchable t1, Touchable t2, ParametricCurve curve, double endCutoff) {
 		PartialCurveInfo info = new PartialCurveInfo();
-		info.tStart = getBorderPointParameter(context.component1(), curve, 0, 1);
-		info.tEnd = getBorderPointParameter(context.component2(), curve, 1, endCutoff);
+		info.tStart = getBorderPointParameter(t1, curve, 0, 1);
+		info.tEnd = getBorderPointParameter(t2, curve, 1, endCutoff);
 
 		info.arrowHeadPosition = curve.getPointOnCurve(info.tEnd); 
 

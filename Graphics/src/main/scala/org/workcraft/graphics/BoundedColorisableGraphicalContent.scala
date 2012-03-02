@@ -37,6 +37,8 @@ object BoundedColorisableGraphicalContent {
  * Empty BCGC does not make sense because being "bounded" with an undefined bounding box
  * means that it is just CGC
  *
+ * That's like saying 3 is not a rational number because it's merely an integer
+ *
   val Empty = BoundedColorisableGraphicalContent(ColorisableGraphicalContent.Empty, None)
 */
   

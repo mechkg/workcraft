@@ -6,8 +6,9 @@ import org.workcraft.exceptions.InvalidConnectionException
 import org.workcraft.util.Action
 import org.workcraft.plugins.stg21.modifiable._
 import org.workcraft.scala.Expressions._
+import org.workcraft.gui.graph.tools.ConnectionManager
 
-class ConnectionManager(val visualStg : ModifiableExpression[VisualStg]) extends SafeConnectionManager[StgConnectable] {
+class StgConnectionManager(val visualStg : ModifiableExpression[VisualStg]) extends ConnectionManager[StgConnectable] {
       @throws(classOf[InvalidConnectionException])
       def connect(node1 : StgConnectable, node2 : StgConnectable) : Action = {
         (node1, node2) match {

@@ -7,6 +7,8 @@ import java.awt.geom.Point2D
 import java.awt.geom.Line2D
 import java.awt.geom.Path2D
 
+import Java2DDecoration._
+
 class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color, val touchThreshold: Double) {
   lazy val graphicalContent = GraphicalContent( g => {
       g.setStroke(stroke)
@@ -20,13 +22,13 @@ class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color, va
       g.draw(p)
   }))
   
-  lazy val boundedColorisableGraphicalContent = BoundedColorisableGraphicalContent (colorisableGraphicalContent, BoundingBox(p.getBounds2D()))
+  lazy val boundedColorisableGraphicalContent = BoundedColorisableGraphicalContent (colorisableGraphicalContent, BoundingBox(p.bounds))
   
   lazy val touchable = new Touchable {
     val pathError = 0.01
     val segments = getSegments(p.getPathIterator(null, pathError))
 
-    private def testSegments(segments: List[Line2D], point: Point2D, threshold: Double): Boolean = {
+    private def testSegments(segments: List[Line2D.Double], point: Point2D.Double, threshold: Double): Boolean = {
       val tSq = threshold * threshold
       for (s <- segments) {
         if (s.ptSegDistSq(point) < tSq)
@@ -35,7 +37,7 @@ class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color, va
       false
     }
 
-    private def getSegments(i: PathIterator): List[Line2D] = {
+    private def getSegments(i: PathIterator): List[Line2D.Double] = {
       val coords = new Array[Double](6)
 
       var curX = 0.0
@@ -46,7 +48,7 @@ class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color, va
 
       var broken = true
 
-      var segments: List[Line2D] = Nil
+      var segments: List[Line2D.Double] = Nil
 
       while (!i.isDone) {
         val t = i.currentSegment(coords)
@@ -76,8 +78,8 @@ class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color, va
       segments
     }
 
-    def hitTest(point: Point2D) = testSegments(segments, point, touchThreshold)
-    def boundingBox = BoundingBox(p.getBounds2D)
+    def hitTest(point: Point2D.Double) = testSegments(segments, point, touchThreshold)
+    def boundingBox = BoundingBox(p.bounds)
   }
 }
 

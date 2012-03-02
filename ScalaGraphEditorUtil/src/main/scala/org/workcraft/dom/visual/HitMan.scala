@@ -35,8 +35,6 @@ import org.workcraft.dom.Container
 import org.workcraft.dom.Node
 import org.workcraft.dom.visual.connections.VisualConnection
 import org.workcraft.scala.grapheditor.tools.HitTester
-import org.workcraft.util.Function
-import org.workcraft.util.Function0
 import org.workcraft.util.Geometry
 import org.workcraft.util.Hierarchy
 import org.workcraft.util.Maybe
@@ -46,6 +44,7 @@ import pcollections.PCollection
 import pcollections.TreePVector
 
 object HitMan {
+  type Touchable = org.workcraft.graphics.Touchable
   class Flat[N](contents : => List[N], tp : N => Touchable) {
     // we use a special case of hierarchical hit tester with None representing the root and contents representing its children 
     val instance = new Instance[Option[N]]({
@@ -81,7 +80,7 @@ object HitMan {
       
     def filterByBB(nodes : List[N], point : Point2D.Double) : List[N] =
       nodes.filter(arg => tp.apply(arg) match {
-        case Some(touchable) => touchable.getBoundingBox.contains(point)
+        case Some(touchable) => touchable.boundingBox.rect.contains(point)
         case None => false
       })
 
@@ -197,8 +196,8 @@ object HitMan {
     val rect : Rectangle2D.Double = Geometry.createRectangle(p1, p2)
     nodes.filter(n => t(n) match{
         case Some(touchable) =>if (p1.getX <= p2.getX) 
-            TouchableHelper.insideRectangle(touchable, rect)
-            else TouchableHelper.touchesRectangle(touchable, rect) 
+            rect.contains(touchable.boundingBox.rect)
+            else rect.intersects(touchable.boundingBox.rect) 
         case None => false
       })
   }

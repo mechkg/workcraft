@@ -6,6 +6,7 @@ import java.awt.geom.Path2D
 import java.awt.{Shape => ShapeJ}
 import java.awt.geom.Point2D
 import java.awt.geom.Line2D
+import java.awt.geom.AffineTransform
 
 object Java2DDecoration {
   implicit def decorateRectangle2D(rect : Rectangle2D.Double) = new RichRectangle2D(rect)
@@ -28,5 +29,12 @@ object Java2DDecoration {
     import line2D._
     def p1 = doubulizePt(getP1)
     def p2 = doubulizePt(getP2)
+  }
+  implicit def decoratePoint2D(pt : Point2D) = new {
+    def transform(t : AffineTransform) = {
+      val p = new Point2D.Double
+      t.transform(pt, p)
+      p
+    }
   }
 }

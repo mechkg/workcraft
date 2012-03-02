@@ -9,12 +9,59 @@ import java.awt.Color
 
 import org.workcraft.graphics.BoundedColorisableGraphicalContent;
 import org.workcraft.graphics.Java2DDecoration._
+import org.workcraft.graphics.Graphics.HorizontalAlignment
+import org.workcraft.graphics.Graphics.VerticalAlignment
+import org.workcraft.graphics.Graphics._
+import java.awt.Stroke
+import java.awt.Font
 
 case class RichGraphicalContent(val bcgc: BoundedColorisableGraphicalContent, val touchable: TouchableC) {
-/*  def transform(x: AffineTransform): RichGraphicalContent =
-    new RichGraphicalContent(Graphics.transform(colorisableGraphicalContent, x),
-      Graphics.transform(visualBounds, x),
-      TouchableUtil.transform(touchable, x))
+
+  def zeroCentered = align(new Rectangle2D.Double(0,0,0,0), HorizontalAlignment.Center,VerticalAlignment.Center).
+             overrideCenter(new Point2D.Double(0,0))
+
+  def translate(p : Point2D.Double) = transform(AffineTransform.getTranslateInstance(p.getX(), p.getY()))
+             
+  def align (to: Rectangle2D.Double, horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment): RichGraphicalContent =
+    transform(alignTransform(touchable.touchable.boundingBox.rect, to, horizontalAlignment, verticalAlignment))
+
+  def align (to: RichGraphicalContent, horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment): RichGraphicalContent =
+    align(to.touchable.touchable.boundingBox.rect, horizontalAlignment, verticalAlignment)
+
+  def transform(x: AffineTransform): RichGraphicalContent =
+    new RichGraphicalContent(bcgc.transform(x),
+      touchable.transform(x))
+
+  def overrideCenter(center : Point2D.Double) : RichGraphicalContent = {
+    copy(touchable = touchable.copy(center = center))
+    }
+
+  def over(bot : BoundedColorisableGraphicalContent) : RichGraphicalContent = copy (bcgc = bot.compose(bcgc)) 
+  def under(top : BoundedColorisableGraphicalContent) : RichGraphicalContent = copy (bcgc = bcgc.compose(top)) 
+  def under(top : Option[BoundedColorisableGraphicalContent]) : RichGraphicalContent = top match {
+    case None => this
+    case Some(top) => under(top) 
+  } 
+  
+  //def over (x: RichGraphicalContent, touchableOverride: Touchable) = debugOver (x, touchableOverride) */
+}
+  
+object RichGraphicalContent {
+  def rectangle(width: Double, height: Double, stroke: Option[(Stroke, Color)], fill: Option[Color]) = {
+    val rect = Graphics.rectangle(width, height, stroke, fill)
+    RichGraphicalContent(rect.boundedColorisableGraphicalContent, TouchableC(rect.touchable, new Point2D.Double(0,0)))
+  }
+  def label(text : String, font : Font, color : Color) : RichGraphicalContent = {
+    val lbl = Graphics.label(text, font, color)
+    RichGraphicalContent(lbl.boundedColorisableGraphicalContent, TouchableC(lbl.touchable, lbl.visualBounds.center))
+  }
+  def circle(diameter: Double, stroke: Option[(Stroke, Color)], fill: Option[Color]) = {
+    val circ = Graphics.circle(diameter, stroke, fill)
+    RichGraphicalContent(circ.boundedColorisableGraphicalContent, TouchableC(circ.touchable, new Point2D.Double(0,0)))
+  }
+}
+
+  /*  
 
   def translate(tx: Double, ty: Double): RichGraphicalContent = transform(AffineTransform.getTranslateInstance(tx, ty))
 
@@ -29,20 +76,6 @@ case class RichGraphicalContent(val bcgc: BoundedColorisableGraphicalContent, va
     new RichGraphicalContent(Graphics.compose(colorisableGraphicalContent, b.colorisableGraphicalContent),
       visualBounds.createUnionD(b.visualBounds),
       touchableOverride)
-
-  def overrideCenter(center : Point2D.Double) : RichGraphicalContent = {
-    copy(touchable = new Touchable {
-	  def hitTest(point : Point2D.Double) = touchable.hitTest(point)
-	  def getBoundingBox = touchable.getBoundingBox
-	  def getCenter = center
-    })
-  }
-  
-  def zeroCentered = align(rectangle(0,0,None,None), HorizontalAlignment.Center,VerticalAlignment.Center).
-             overrideCenter(new Point2D.Double(0,0))
-
-  def align (to: RichGraphicalContent, horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment): RichGraphicalContent =
-    transform(alignTransform(touchable.getBoundingBox, to.touchable.getBoundingBox, horizontalAlignment, verticalAlignment))
 
   def alignSideways (relativeTo: RichGraphicalContent, position: LabelPositioning): RichGraphicalContent =
     transform(LabelPositioning.positionRelative(touchable.getBoundingBox, relativeTo.touchable.getBoundingBox, position))
@@ -71,6 +104,4 @@ case class RichGraphicalContent(val bcgc: BoundedColorisableGraphicalContent, va
     x).compose(this, touchableOverride)
   }
     
-  def over (x: RichGraphicalContent) = debugOver (x)
-  def over (x: RichGraphicalContent, touchableOverride: Touchable) = debugOver (x, touchableOverride) */
-}
+*/

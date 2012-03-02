@@ -15,4 +15,5 @@ class RichRectangle2D(self : Rectangle2D.Double) {
 	}
 	def createUnion(other : Rectangle2D.Double) = self.createUnion(other).asInstanceOf[Rectangle2D.Double]
 	def createUnionD(other : Rectangle2D.Double) = createUnion(other) 
+	def center = new Point2D.Double(getCenterX, getCenterY)
 }

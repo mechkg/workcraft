@@ -34,6 +34,8 @@ import org.workcraft.gui.graph.tools.ConnectionManager
 import org.workcraft.graphics.ColorisableGraphicalContent
 import org.workcraft.graphics.Colorisation
 
+import RichGraphicalContent._
+
 class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends GraphEditable {
   val selection = Variable.create[Set[VisualEntity]](Set.empty)
   def createTools (editor : GraphEditor) : java.lang.Iterable[_ <: GraphEditorTool] = {
@@ -89,22 +91,21 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Grap
         case NodeVisualEntity(n) => {
           n match {
             case StgVisualNode(ExplicitPlaceNode(p)) => Visual.place(vstg.math.places.lookup(p).get)
-            case StgVisualNode(TransitionNode(t)) => constant(Visual.transition(t)(vstg))
+            case StgVisualNode(TransitionNode(t)) => constant(Visual.transition(t)(vstg).get)
             case GroupVisualNode(g) => constant({
-              val rect = Graphics.rectangle(1, 1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE))
-              (rect, rect)
+              rectangle(1, 1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE))
             }) // todo: recursively draw all? 
           }
         }
-        case ArcVisualEntity(arcId) => {
+        case ArcVisualEntity(arcId) => ({
           (for(arc <- vstg.math.arcs.lookup(arcId)) yield{
             val visual = vstg.visual.arcs.get(arcId).getOrElse(Polyline(Nil))          
             for (first  <- touchableC(NodeVisualEntity(StgVisualNode(arc.first)));
             second <- touchableC(NodeVisualEntity(StgVisualNode(arc.second)))
            ) yield (VisualConnectionG.getConnectionGui(first, second, visual) : RichGraphicalContent) 
-          }).getOrElse(constant(None))
-        }
-      })) yield result.translate(position : Point2D)
+          }).get
+        } : Expression[RichGraphicalContent])
+      })) yield result.translate(position)
     
     
     def deepCenters(n : StgConnectable) : Expression[Point2D.Double] = n match {

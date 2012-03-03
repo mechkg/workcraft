@@ -46,14 +46,32 @@ class PetriNetEditor(net: PetriNet) extends ModelEditor {
     def screenSpaceContent = Variable.create(GraphicalContent.Empty)
     def userSpaceContent = Variable.create(GraphicalContent.Empty)
     def mouseListener = Some(new DummyMouseListener {
-      override def mousePressed(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double) = ioPure.pure ({
-        if (modifiers.contains(Control))
-        	println("Heee hee heee " + position)
-        else
-          println(position)
+      override def buttonClicked(button: MouseButton, clickCount: Int, modifiers: Set[Modifier], position: Point2D.Double) = ioPure.pure({
+        println("Button clicked: " + " " + button + " " + position)
+      })
+      override def mouseMoved(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit] = ioPure.pure({
+        println("Moved: " + position)
+      })
+
+      override def dragStarted(button: MouseButton, position: Point2D.Double, modifiers: Set[Modifier]) = ioPure.pure({
+        println("Drag started: " + " " + button + " " + position)
+      })
+      override def dragged(button: MouseButton, position: Point2D.Double, modifiers: Set[Modifier]) = ioPure.pure({
+        println("Dragged: " + " " + button + " " + position)
+      })
+      override def dragFinished(button: MouseButton, position: Point2D.Double, modifiers: Set[Modifier]) = ioPure.pure({
+        println("Drag finished: " + " " + button + " " + position)
+      })
+
+      override def buttonReleased(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double) = ioPure.pure({
+        println("Button released: " + position)
+      })
+
+      override def buttonPressed(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double) = ioPure.pure({
+        println("Button pressed: " + position)
       })
     })
-    def keyBindings = List(KeyBinding("Sumshit", KeyEvent.VK_Q, KeyPressed, Set(),  ioPure.pure {JOptionPane.showMessageDialog (null, "KUZUKA!", "Important message!", JOptionPane.INFORMATION_MESSAGE)} ))
+    def keyBindings = List(KeyBinding("Sumshit", KeyEvent.VK_Q, KeyPressed, Set(), ioPure.pure { JOptionPane.showMessageDialog(null, "KUZUKA!", "Important message!", JOptionPane.INFORMATION_MESSAGE) }))
     def button = new Button {
       def hotkey = Some(KeyEvent.VK_K)
       def icon = None

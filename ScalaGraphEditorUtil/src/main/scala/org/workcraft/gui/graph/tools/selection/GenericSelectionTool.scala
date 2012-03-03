@@ -182,11 +182,13 @@ class GenericSelectionTool[Node](
     new ToolMouseListener {
       override def mousePressed(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double) : IO[Unit] = {}.pure[IO]
       override def mouseReleased(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double) : IO[Unit] = {}.pure[IO]
-      override def mouseClicked(button: MouseButton, clickCount: Int, modifiers: Set[Modifier], position: Point2D.Double): IO[Unit]
-      override def mouseMoved(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit]
-      override def mouseEntered(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit]
-      override def mouseExited(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit]
-      override def mouseClicked(e: GraphEditorMouseEvent) = me.mouseClicked(e)
+      override def mouseClicked(button: MouseButton, clickCount: Int, modifiers: Set[Modifier], position: Point2D.Double): IO[Unit] = 
+        IO.ioPure.pure(me.mouseClicked(e))
+      override def mouseMoved(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit] = 
+        IO.ioPure.pure(me.mouseMoved(e))
+      override def mouseEntered(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit] = {}.pure[IO]
+      override def mouseExited(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit] = {}.pure[IO]
+
       override def finishDrag(e : GraphEditorMouseEvent) = me.finishDrag(e)
       override def isDragging : Boolean = me.isDragging
       override def mousePressed(e : GraphEditorMouseEvent) = me.mousePressed(e)

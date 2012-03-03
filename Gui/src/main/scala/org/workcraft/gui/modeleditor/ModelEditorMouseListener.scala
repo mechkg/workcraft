@@ -85,7 +85,8 @@ class ModelEditorMouseListener(val viewport: Viewport, val hasFocus: Expression[
             viewport.pan(currentPositionSS.x - prevPositionSS.x, currentPositionSS.y - prevPositionSS.y).unsafePerformIO
           else
             toolListener.map(_.dragged(button(btn), toUserSpace(currentPositionSS), modifiers(e))).foreach(_.unsafePerformIO)
-        }
+        } else
+          toolListener.map(_.mouseMoved(modifiers(e), toUserSpace(currentPositionSS))).foreach(_.unsafePerformIO)
       }
     }
 

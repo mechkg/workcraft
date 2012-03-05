@@ -21,6 +21,9 @@ import java.awt.event.ActionEvent
 import javax.swing.JButton
 import java.io.IOException
 import javax.imageio.ImageIO
+import org.workcraft.graphics.GraphicalContent
+import org.workcraft.gui.modeleditor.Viewport
+import java.awt.Rectangle
 
 object GUI {
 
@@ -116,4 +119,25 @@ object GUI {
     frame.setSize(parentSize.width / 2, parentSize.height / 2)
     centerToParent(frame, parent)
   }
+
+  def editorMessage(viewport: Viewport, color: Color, message: String): Expression[GraphicalContent] = for {
+    font <- CommonVisualSettings.editorMessageFont;
+    shape <- viewport.dimensions
+  } yield GraphicalContent(g => {
+    g.setFont(font)
+    val r = g.getFont().getStringBounds(message, g.getFontRenderContext()).getBounds()
+
+    val (x, y, w, h) = shape
+
+    r.x = w / 2 - r.width / 2
+    r.y = h - 20 - r.height
+
+    g.setColor(new Color(240, 240, 240, 192))
+    g.fillRoundRect(r.x - 10, r.y - 10, r.width + 20, r.height + 20, 5, 5)
+    g.setColor(new Color(224, 224, 224))
+    g.drawRoundRect(r.x - 10, r.y - 10, r.width + 20, r.height + 20, 5, 5)
+    g.setColor(color)
+    val lm = g.getFont().getLineMetrics(message, g.getFontRenderContext())
+    g.drawString(message, r.x, r.y + r.height - lm.getDescent().toInt)
+  })
 }

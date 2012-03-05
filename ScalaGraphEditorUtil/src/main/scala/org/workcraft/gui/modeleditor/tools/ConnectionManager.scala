@@ -1,4 +1,4 @@
-package org.workcraft.gui.graph.tools
+package org.workcraft.gui.modeleditor.tools
 import org.workcraft.exceptions.InvalidConnectionException
 import org.workcraft.scala.effects.IO
 

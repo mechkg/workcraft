@@ -16,13 +16,12 @@ import org.workcraft.graphics.GraphicalContent
 import org.workcraft.gui.modeleditor.tools.Button
 import org.workcraft.gui.modeleditor.KeyBinding
 import java.awt.event.KeyEvent
-import org.workcraft.gui.modeleditor.KeyPressed
+import org.workcraft.gui.modeleditor.Modifier
 import javax.swing.JOptionPane
 import org.workcraft.gui.modeleditor.tools.DummyMouseListener
 import org.workcraft.gui.modeleditor.MouseButton
 import java.awt.geom.Point2D
-import org.workcraft.gui.modeleditor.Modifier
-import org.workcraft.gui.modeleditor.Control
+import org.workcraft.gui.modeleditor.KeyEventType
 
 sealed trait Node
 
@@ -71,7 +70,7 @@ class PetriNetEditor(net: PetriNet) extends ModelEditor {
         println("Button pressed: " + position)
       })
     })
-    def keyBindings = List(KeyBinding("Sumshit", KeyEvent.VK_Q, KeyPressed, Set(), ioPure.pure { JOptionPane.showMessageDialog(null, "KUZUKA!", "Important message!", JOptionPane.INFORMATION_MESSAGE) }))
+    def keyBindings = List(KeyBinding("Sumshit", KeyEvent.VK_Q, KeyEventType.KeyPressed, Set(), ioPure.pure { JOptionPane.showMessageDialog(null, "KUZUKA!", "Important message!", JOptionPane.INFORMATION_MESSAGE) }))
     def button = new Button {
       def hotkey = Some(KeyEvent.VK_K)
       def icon = None

@@ -1,4 +1,4 @@
-package org.workcraft.gui.graph.tools.selection
+package org.workcraft.gui.modeleditor.tools.selection
 
 import java.awt.BasicStroke
 import java.awt.Color
@@ -7,16 +7,17 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import org.workcraft.scala.Expressions._
 import org.workcraft.exceptions.NotSupportedException
-import org.workcraft.gui.graph.Viewport
-import org.workcraft.gui.graph.tools.DragHandle
-import org.workcraft.gui.graph.tools.selection.GenericSelectionTool.SelectionMode
+import org.workcraft.gui.modeleditor.tools.selection.GenericSelectionToolMouseListener.SelectionMode
 import org.workcraft.util.Geometry
 import pcollections.HashTreePSet
 import pcollections.PSet
 import org.workcraft.scala.grapheditor.tools.HitTester
 import org.workcraft.dependencymanager.advanced.user.Variable
-import org.workcraft.scala.Scalaz._
+import scalaz._
+import Scalaz._
 import org.workcraft.graphics.GraphicalContent
+import org.workcraft.gui.modeleditor.tools.DragHandle
+import org.workcraft.gui.modeleditor.Viewport
 
 object SelectionDragHandler {
   protected val selectionBorderColor = new Color(200, 200, 200)
@@ -62,30 +63,25 @@ class SelectionDragHandler[Node](selection : ModifiableExpression[Set[Node]], hi
         case Some(selBox) => hitTester.boxHitTest(selBox.p1, selBox.p2).toSet
       })
   
-  def startDrag(dragStart : Point2D.Double, mode : SelectionMode) : DragHandle = {
+  def startDrag(dragStart: Point2D.Double, mode : SelectionMode): DragHandle = {
     selectionMode.setValue(mode)
     new DragHandle {
-      override def setOffset(offset : Point2D.Double) =
-        selectionBox.setValue(Some(new SelectionRectangle(dragStart, Geometry.add(dragStart, offset))))
-      
-      override def commit = {
-        assign(selection, effectiveSelection)
-        selectionBox.setValue(null)
-        selectionMode.setValue(SelectionMode.None)
-      }
-      
-      override def cancel =
-        selectionBox.setValue(null)
+      override def dragged(pos : Point2D.Double) = set(selectionBox, Some(new SelectionRectangle(dragStart, pos)))
+      override def commit = assign(selection, effectiveSelection) >>=| set(selectionBox, None) >>=| set(selectionMode, SelectionMode.None)
+      override def cancel = set (selectionBox, None)
     }
   }
   
-  def graphicalContent(viewPort : Viewport) : Expression[GraphicalContent] =
-    selectionBox map {
+  def graphicalContent(viewPort : Viewport) : Expression[GraphicalContent] = for {
+    selectionBox <- selectionBox;
+    pixelSizeInUserSpace <- viewPort.pixelSizeInUserSpace
+  } yield {
+    selectionBox match {
       case None => { GraphicalContent.Empty }
       case Some(selBox) =>
         new GraphicalContent {
           override def draw(g : Graphics2D) = {
-            g.setStroke(new BasicStroke(viewPort.pixelSizeInUserSpace.getX.toFloat))
+            g.setStroke(new BasicStroke(pixelSizeInUserSpace.getX.toFloat))
             g.setColor(selectionFillColor)
             g.fill(selBox.asRectangle)
             g.setColor(selectionBorderColor)
@@ -93,4 +89,5 @@ class SelectionDragHandler[Node](selection : ModifiableExpression[Set[Node]], hi
           }
         }
     }
+  }
 }

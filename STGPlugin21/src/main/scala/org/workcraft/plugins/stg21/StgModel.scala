@@ -3,12 +3,23 @@ import org.workcraft.services.ModelServiceProvider
 import org.workcraft.services.Service
 import org.workcraft.services.ModelScope
 import org.workcraft.gui.modeleditor.EditorService
+import org.workcraft.dependencymanager.advanced.user.Variable
+import org.workcraft.scala.Expressions._
+import org.workcraft.plugins.stg21.types.VisualStg
+import org.workcraft.scala.effects.IO
 
-class StgModel extends ModelServiceProvider {
+class StgModel(visualStg : ModifiableExpression[VisualStg]) extends ModelServiceProvider {
   def implementation[T](service: Service[ModelScope, T]) = service match {
-    case EditorService => Some(new PetriNetEditor(net))
+    case EditorService => Some(new StgGraphEditable(visualStg))
     case _ => None
   }
+}
+
+object StgModel {
+  def create(initial : VisualStg) : IO[ModelServiceProvider] = {
+    newVar(initial).map(new StgModel(_))
+  }
+  def create : IO[ModelServiceProvider] = create(VisualStg.empty)
 }
 /*
 class PetriNetEditor(net: PetriNet) extends ModelEditor {

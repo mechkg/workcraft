@@ -1,5 +1,4 @@
 package org.workcraft.plugins.stg21
-import org.workcraft.Module
 import org.workcraft.Framework
 import org.workcraft.dom.ModelDescriptor
 import org.workcraft.plugins.interop.DotGImporter
@@ -11,6 +10,7 @@ import org.workcraft.services.Service
 import org.workcraft.services.GlobalScope
 import org.workcraft.services.NewModelService
 import org.workcraft.services.NewModelImpl
+import org.workcraft.services.Module
 
 class StgModule extends Module {
   def name = "Signal Transition Graphs"
@@ -26,7 +26,7 @@ object StgServiceProvider extends GlobalServiceProvider {
 
 object NewStg extends NewModelImpl {
   def name = "Signal Transition Graph"
-  def create = new PetriNetModel
+  def create = StgModel.create.unsafePerformIO
 }
 
 /*class StgModule extends Module {

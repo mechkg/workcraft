@@ -6,9 +6,10 @@ import javax.swing.JMenuItem
 import org.workcraft.gui.docking.DockableWindow
 import org.workcraft.services.GlobalServiceManager
 import org.workcraft.services.NewModelImpl
+import javax.swing.JComponent
 
 class MainMenu(
-    mainWindow: MainWindow, utilityWindows: List[DockableWindow], 
+    mainWindow: MainWindow, utilityWindows: List[DockableWindow[_ <: JComponent]], 
     services: () => GlobalServiceManager,
     newModel: ((NewModelImpl, Boolean)) => Unit,
     reconfigure: () => Unit) extends JMenuBar {

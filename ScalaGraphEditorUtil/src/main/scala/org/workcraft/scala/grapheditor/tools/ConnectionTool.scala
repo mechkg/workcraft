@@ -4,7 +4,6 @@ import org.workcraft.scala.Util._
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.effects.IO._
 import org.workcraft.scala.Expressions._
-import org.workcraft.gui.graph.tools.ConnectionController
 import java.awt.geom.Point2D
 import org.workcraft.gui.graph.tools.AbstractTool
 import java.awt.Color

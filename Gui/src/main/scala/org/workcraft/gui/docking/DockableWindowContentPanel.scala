@@ -14,7 +14,7 @@ import java.awt.Font
 import javax.swing.JComponent
 import javax.swing.BorderFactory
 
-class DockableWindowContentPanel(val window: DockableWindow) extends JPanel {
+class DockableWindowContentPanel[A <: JComponent](val window: DockableWindow[A]) extends JPanel {
   object Header extends JPanel {
     def createHeaderButton(icon: Icon) = {
       val button = new JButton()

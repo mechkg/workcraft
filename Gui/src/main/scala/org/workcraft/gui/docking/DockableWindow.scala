@@ -8,20 +8,20 @@ import javax.swing.JTabbedPane
 import org.workcraft.gui.docking.tab.DockableTab
 import org.flexdock.docking.DockingManager
 
-case class DockableWindowConfiguration(
+case class DockableWindowConfiguration[A <: JComponent](
   val closeButton: Boolean = true,
   val minimiseButton: Boolean = false,
   val maximiseButton: Boolean = true, 
-  val onMinimiseClicked: DockableWindow => Unit = _ => {},
-  val onMaximiseClicked: DockableWindow => Unit = {_.toggleMaximised},
-  val onCloseClicked: DockableWindow => Unit = {_.close}    
+  val onMinimiseClicked: DockableWindow[A] => Unit = (_:DockableWindow[A]) => {},
+  val onMaximiseClicked: DockableWindow[A] => Unit = (w:DockableWindow[A]) => w.toggleMaximised,
+  val onCloseClicked: DockableWindow[A] => Unit = (w:DockableWindow[A]) => w.close    
 )
 
-class DockableWindow(
+class DockableWindow[A <: JComponent](
   val title: String,
   val persistentId: String,
-  val content: JComponent,
-  val configuration: DockableWindowConfiguration
+  val content: A,
+  val configuration: DockableWindowConfiguration[A]
   ) extends AbstractDockable(persistentId) {
 
   val contentPanel = new DockableWindowContentPanel(this)
@@ -32,7 +32,7 @@ class DockableWindow(
 
   def updateHeaders(port: DockingPort) {
     // T_T no better way of doing this since getDockables has no type
-    val dockables = port.getDockables().toArray().toList.map(_.asInstanceOf[DockableWindow])
+    val dockables = port.getDockables().toArray().toList.map(_.asInstanceOf[DockableWindow[A]])
 
     dockables.foreach(dockable => {
       (dockable.getComponent().getParent(), dockable.isMaximised) match {

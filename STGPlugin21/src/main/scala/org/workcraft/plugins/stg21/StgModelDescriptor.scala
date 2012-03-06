@@ -15,7 +15,7 @@ import org.workcraft.plugins.stg21.types.VisualModel
 import org.workcraft.plugins.stg21.modifiable._
 import org.workcraft.dependencymanager.advanced.core.Expression
 
-object StgModelDescriptor extends ModelDescriptor {
+/*object StgModelDescriptor extends ModelDescriptor {
 	val getDisplayName : String = "Signal Transition Graph";
 	def newDocument : ModelServices = newDocument(VisualStg.empty)
 	def newDocument (stg : MathStg) : ModelServices = newDocument(VisualStg(stg, VisualModel.empty))
@@ -27,3 +27,4 @@ object StgModelDescriptor extends ModelDescriptor {
 	}
 	def createServiceProvider(model : Model, storage : StorageManager) : ModelServices = { throw new NotSupportedException(); };
 }
+*/

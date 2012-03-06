@@ -28,9 +28,9 @@ class DockingRoot(val id: String) extends JPanel {
   setLayout(new BorderLayout)
   add(rootDockingPort, BorderLayout.CENTER)
 
-  def createWindowWithSetSplit(title: String, persistentId: String, content: JComponent, configuration: DockableWindowConfiguration,
-    neighbour: DockableWindow, relativeRegion: String = DockingConstants.CENTER_REGION, split: Double = 0.5) = {
-    val window = new DockableWindow(title, persistentId, content, configuration)
+  def createWindowWithSetSplit[A <: JComponent](title: String, persistentId: String, content: A, configuration: DockableWindowConfiguration[A],
+    neighbour: DockableWindow[_], relativeRegion: String = DockingConstants.CENTER_REGION, split: Double = 0.5) = {
+    val window = new DockableWindow[A](title, persistentId, content, configuration)
     DockingManager.registerDockable(window)
     DockingManager.dock(window, neighbour, relativeRegion)
     DockingManager.setSplitProportion(window, split.toFloat)
@@ -38,17 +38,17 @@ class DockingRoot(val id: String) extends JPanel {
     window
   }
 
-  def createWindow(title: String, persistentId: String, content: JComponent, configuration: DockableWindowConfiguration,
-    neighbour: DockableWindow, relativeRegion: String = DockingConstants.CENTER_REGION) = {
-    val window = new DockableWindow(title, persistentId, content, configuration)
+  def createWindow[A <: JComponent](title: String, persistentId: String, content: A, configuration: DockableWindowConfiguration[A],
+    neighbour: DockableWindow[_], relativeRegion: String = DockingConstants.CENTER_REGION) = {
+    val window = new DockableWindow[A](title, persistentId, content, configuration)
     DockingManager.registerDockable(window)
     DockingManager.dock(window, neighbour, relativeRegion)
 
     window
   }
 
-  def createRootWindow(title: String, persistentId: String, content: JComponent, configuration: DockableWindowConfiguration) = {
-    val window = new DockableWindow(title, persistentId, content, configuration)
+  def createRootWindow[A <: JComponent](title: String, persistentId: String, content: A, configuration: DockableWindowConfiguration[A]) = {
+    val window = new DockableWindow[A](title, persistentId, content, configuration)
     DockingManager.registerDockable(window)
     DockingManager.dock(window, rootDockingPort, DockingConstants.CENTER_REGION)
 

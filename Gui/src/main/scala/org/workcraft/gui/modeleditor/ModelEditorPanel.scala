@@ -26,8 +26,10 @@ import org.workcraft.gui.CommonVisualSettings
 import org.workcraft.gui.modeleditor.tools.ToolboxPanel
 import org.workcraft.logging.Logger
 import org.workcraft.gui.modeleditor.tools.ModelEditorTool
+import org.workcraft.gui.modeleditor.tools.Toolbox
+import org.workcraft.gui.modeleditor.tools.ToolEnvironment
 
-class ModelEditorPanel (toolbox: ToolboxPanel) (implicit logger: () => Logger[IO]) extends JPanel {
+class ModelEditorPanel (editor: ModelEditor) (implicit logger: () => Logger[IO]) extends JPanel {
   val panelDimensions = Variable.create((0, 0, getWidth, getHeight))
   val viewDimensions = panelDimensions.map { case (x,y,w,h) => (x + 15,y + 15, w - 15, h - 15) }
   
@@ -69,7 +71,9 @@ class ModelEditorPanel (toolbox: ToolboxPanel) (implicit logger: () => Logger[IO
     case None => DummyMouseListener
   }*/
   
-  val mListener = new ModelEditorMouseListener (view, hasfocus, toolbox.toolMouseListener,() => {requestFocus()}.pure[IO])
+  val toolbox = new Toolbox(editor.tools.map(_(ToolEnvironment(view, hasfocus))))
+  
+  val mListener = new ModelEditorMouseListener (view, hasfocus, toolbox.selectedToolMouseListener,() => {requestFocus()}.pure[IO])
   
   addMouseListener(mListener)
   addMouseMotionListener(mListener)
@@ -78,7 +82,7 @@ class ModelEditorPanel (toolbox: ToolboxPanel) (implicit logger: () => Logger[IO
   
   val kListener = new ModelEditorKeyListener(
       ModelEditorKeyListener.defaultBindings(this), 
-      toolbox.toolKeyBindings,
+      toolbox.selectedToolKeyBindings,
       toolbox.hotkeyBindings,
       logger 
       )
@@ -93,10 +97,10 @@ class ModelEditorPanel (toolbox: ToolboxPanel) (implicit logger: () => Logger[IO
     grid <- grid.graphicalContent;
     ruler <- ruler.graphicalContent;
     viewTransform <- view.transform
-   //tool <- toolboxPanel.selectedTool;
-    //hasFocus <- hasFocus;
-    //userSpaceContent <- tool.userSpaceContent(view, hasFocus)
-    //screenSpaceContent <- tool.screenSpaceContent(view, hasFocus)
+    tool <- toolbox.selectedTool;
+    hasFocus <- hasfocus;
+    userSpaceContent <- tool.userSpaceContent
+    screenSpaceContent <- tool.screenSpaceContent
   } yield GraphicalContent(g => {
     
     val screenTransform = new AffineTransform(g.getTransform)
@@ -121,13 +125,12 @@ class ModelEditorPanel (toolbox: ToolboxPanel) (implicit logger: () => Logger[IO
 
     g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-    //userSpaceContent.draw(GraphicalContent.cloneGraphics(g))
+    userSpaceContent.draw(GraphicalContent.cloneGraphics(g))
 
     g.setTransform(screenTransform)
 
     ruler.draw(g)
-
-    /*
+    
     if (hasFocus) {
       screenSpaceContent.draw(g)
       g.setTransform(screenTransform)
@@ -135,7 +138,7 @@ class ModelEditorPanel (toolbox: ToolboxPanel) (implicit logger: () => Logger[IO
       g.setStroke(borderStroke)
       g.setColor(foreground)
       g.drawRect(0, 0, getWidth() - 1, getHeight() - 1)
-    }*/
+    }
 
   })
   

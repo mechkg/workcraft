@@ -6,8 +6,9 @@ import javax.swing.BoxLayout
 import javax.swing.JLabel
 import javax.swing.Box
 import java.awt.Dimension
+import javax.swing.JComponent
 
-class DockableTab(window: DockableWindow) extends JPanel {
+class DockableTab[A <: JComponent](window: DockableWindow[A]) extends JPanel {
   setOpaque(false)
 
   setLayout(new BorderLayout())

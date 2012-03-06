@@ -8,7 +8,7 @@ import org.workcraft.gui.graph.tools.GraphEditorTool
 import java.awt.event.KeyEvent
 import org.workcraft.plugins.stg21.types.VisualStg
 import scalaz.State
-import org.workcraft.gui.graph.tools.NodeGeneratorTool
+import org.workcraft.gui.modeleditor.tools.NodeGeneratorTool
 import org.workcraft.scala.Util._
 import org.workcraft.scala.Expressions._
 import org.workcraft.gui.graph.tools.GraphEditorToolUtil
@@ -23,16 +23,15 @@ case class StgToolsProvider(visualStg : ModifiableExpression[VisualStg]) {
 		  (StgOperations.createSignalTransition(_ : Point2D.Double), "images/icons/svg/signal-transition.svg", "Signal Transition", KeyEvent.VK_T),
 		  (StgOperations.createDummyTransition(_ : Point2D.Double, "d"), "images/icons/svg/transition.svg", "Dummy Transition", KeyEvent.VK_D)
   )
-  
-  def mkNodeGeneratorTool(generator : (Point2D.Double => State[VisualStg, Any], java.lang.String, java.lang.String, Int)) = {
+  import org.workcraft.gui.modeleditor.tools._
+  def mkNodeGeneratorTool(generator : (Point2D.Double => State[VisualStg, Any], java.lang.String, java.lang.String, Int))
+     : ModelEditorToolMaker = {
     val (g, iconPath, name, hotkey) = generator
-    new NodeGeneratorTool(new NodeGenerator{
-      val getIdentification = GraphEditorToolUtil.createButton(name, iconPath, hotkey)
-	  def generate(where : Point2D.Double) = visualStg.modify(g(where)~>_)
-    }, asFunctionObject (x => x))
+    NodeGeneratorTool(Button.create(name, iconPath, Some(hotkey)).unsafePerformIO, 
+	  (where : Point2D.Double) => update(visualStg)(g(where)~>_))
   }
   
-  val nodeGeneratorTools = generators.map(mkNodeGeneratorTool)
+  val nodeGeneratorTools : List[ModelEditorToolMaker] = generators.map(mkNodeGeneratorTool)
   
 /*  
 	private Expression<? extends String> transitionName(final STG stg, final VisualSignalTransition vst) {

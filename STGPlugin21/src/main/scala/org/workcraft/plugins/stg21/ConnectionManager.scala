@@ -6,7 +6,7 @@ import org.workcraft.exceptions.InvalidConnectionException
 import org.workcraft.util.Action
 import org.workcraft.plugins.stg21.modifiable._
 import org.workcraft.scala.Expressions._
-import org.workcraft.gui.graph.tools.ConnectionManager
+import org.workcraft.gui.modeleditor.tools.ConnectionManager
 import org.workcraft.scala.effects.IO
 
 class StgConnectionManager(val visualStg : ModifiableExpression[VisualStg]) extends ConnectionManager[StgConnectable] {

@@ -55,23 +55,4 @@ public class GraphEditorToolUtil {
 	public static <D, T extends GraphEditorTool & DecorationProvider<D>> GraphEditorTool attachParameterisedPainter(final T tool, final Func<? super D, ? extends Expression<? extends GraphicalContent>> painterProvider) {
 		return attachPainter(tool, painterProvider.eval(tool.getDecoration()));
 	}
-	
-	public static Button createButton(final String label, final String svgIconPath, final int hotKeyCode) {
-		return new Button() {
-			@Override
-			public String getLabel() {
-				return label;
-			}
-
-			@Override
-			public Icon getIcon() {
-				return GUI.createIconFromSVG(svgIconPath);
-			}
-
-			@Override
-			public int getHotKeyCode() {
-				return hotKeyCode;
-			}
-		};
-	}
 }

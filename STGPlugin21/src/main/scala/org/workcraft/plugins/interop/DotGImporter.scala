@@ -23,44 +23,35 @@ package org.workcraft.plugins.interop
 
 import java.io.File
 import java.io.InputStream
-import org.workcraft.dependencymanager.advanced.user.StorageManager
-import org.workcraft.exceptions.DeserialisationException
-import org.workcraft.exceptions.FormatException
-import org.workcraft.interop.Importer
-import org.workcraft.interop.ModelServices
-import org.workcraft.interop.ServiceProvider
-import org.workcraft.plugins.stg.HistoryPreservingStorageManager
+
 import org.workcraft.plugins.stg.javacc.generated.DotGParser
-import org.workcraft.plugins.stg.javacc.generated.ParseException
 import org.workcraft.plugins.stg21.parsing.ParserHelper
 import org.workcraft.plugins.stg21.types.MathStg
-import org.workcraft.plugins.stg21.StgModelDescriptor
-import org.workcraft.plugins.stg21.types.VisualStg
 import org.workcraft.plugins.stg21.types.VisualModel
+import org.workcraft.plugins.stg21.types.VisualStg
+import org.workcraft.plugins.stg21.StgModel
+import org.workcraft.scala.effects.IO.ioPure
+import org.workcraft.scala.effects.IO
+import org.workcraft.services.Model
+import org.workcraft.services.Importer
+
+import scalaz.Scalaz._
 
 object DotGImporter extends Importer {
-	
-	override def accept(file : File) : Boolean = {
-		file.getName().endsWith(".g");
-	}
+  override def accept(file: File): IO[Boolean] = {
+    file.getName().endsWith(".g").pure[IO]
+  }
 
-	override val getDescription= "Signal Transition Graph (.g)"
-	  
-	@throws (classOf[DeserialisationException])
-	override def importFrom(in : InputStream) : ModelServices = {
-	  StgModelDescriptor.newDocument(VisualStg(importStg(in),VisualModel.empty))
-	}
+  override val description = "Signal Transition Graph (.g)"
 
-	@throws (classOf[DeserialisationException])
-	def importStg(in : InputStream) : MathStg = {
-		try {
-		    val helper : ParserHelper = new ParserHelper
-		    new DotGParser(in).parse(helper)
-			val  result : MathStg = helper.getStg
-			return result;
-		} catch {
-		  case (e : FormatException) => throw new DeserialisationException(e); 
-		  case (e : ParseException) => throw new DeserialisationException(e); 
-		}
-	}
+  override def importFrom(in: InputStream): IO[Model] = {
+    StgModel.create(VisualStg(importStg(in), VisualModel.empty))
+  }
+
+  def importStg(in: InputStream): MathStg = {
+    val helper: ParserHelper = new ParserHelper
+    new DotGParser(in).parse(helper)
+    val result: MathStg = helper.getStg
+    return result;
+  }
 }

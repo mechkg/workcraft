@@ -5,7 +5,7 @@ import org.workcraft.gui.graph.tools.GraphEditor
 import pcollections.PVector
 import org.workcraft.gui.propertyeditor.EditableProperty
 import pcollections.TreePVector
-import org.workcraft.gui.graph.tools.selection.GenericSelectionTool
+import org.workcraft.gui.modeleditor.tools.selection.GenericSelectionToolMouseListener
 import org.workcraft.dependencymanager.advanced.user.Variable
 import pcollections.HashTreePSet
 import org.workcraft.gui.graph.tools.HitTester
@@ -13,14 +13,14 @@ import java.awt.geom.Point2D
 import org.workcraft.gui.graph.tools.DragHandle
 import org.workcraft.gui.graph.tools.DragHandler
 import org.workcraft.plugins.stg21.types._
-import org.workcraft.scala.grapheditor.tools.SelectionTool
+import org.workcraft.scala.grapheditor.tools.GenericSelectionTool
 import org.workcraft.exceptions.NotImplementedException
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Expressions._
 import org.workcraft.graphics.RichGraphicalContent
 import java.awt.BasicStroke
 import java.awt.Color
-import org.workcraft.scala.grapheditor.tools.ConnectionTool
+import org.workcraft.scala.grapheditor.tools.GenericConnectionTool
 import org.workcraft.exceptions.InvalidConnectionException
 import org.workcraft.util.Action
 import org.workcraft.dom.visual.connections.VisualConnectionProperties
@@ -30,18 +30,20 @@ import org.workcraft.graphics.Graphics
 import org.workcraft.dom.visual.connections.Polyline
 import org.workcraft.graphics.TouchableC
 import org.workcraft.graphics.GraphicalContent
-import org.workcraft.gui.graph.tools.ConnectionManager
+import org.workcraft.gui.modeleditor.tools.ConnectionManager
 import org.workcraft.graphics.ColorisableGraphicalContent
 import org.workcraft.graphics.Colorisation
 import RichGraphicalContent._
 import org.workcraft.gui.modeleditor.ModelEditor
 import scalaz.NonEmptyList
 import org.workcraft.gui.modeleditor.tools.ModelEditorTool
+import org.workcraft.scala.grapheditor.tools.GenericConnectionTool
+import org.workcraft.gui.modeleditor.tools._
 
 class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends ModelEditor {
   val selection = Variable.create[Set[VisualEntity]](Set.empty)
   
-  def tools: NonEmptyList[ModelEditorTool] = {
+  def tools: NonEmptyList[ModelEditorToolMaker] = {
 
     def movableController(n : VisualNode) : ModifiableExpression[Point2D.Double] = {
       import org.workcraft.plugins.stg21.modifiable._
@@ -116,8 +118,6 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Mode
       case ArcConnectable(a) => constant(new Point2D.Double(0,0)) // TODO
     }
     
-    val selectionTool = SelectionTool.create[VisualEntity](visualEntities, selection, entityMovableController, (x => /*snap */x), touchable)
-    
     val connectionController = new StgConnectionManager(visualStg)
     
     val stgConnectables = for(v <- visualStg; n <- stgNodes) yield {
@@ -129,23 +129,32 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Mode
       case ArcConnectable(a) => touchableC(ArcVisualEntity(a))
     }
     
-    val connectionTool = ConnectionTool.create[StgConnectable](stgConnectables, (connectableTouchable(_)).map(_.map(_.touchable)), deepCenters, connectionController)
-    
-    val nodeGeneratorTools = org.workcraft.plugins.stg21.StgToolsProvider(visualStg).nodeGeneratorTools
-    
     def paint : Expression[GraphicalContent] = {
       for(entities <- visualEntities : Expression[_ <: List[VisualEntity]]; visuals <- entities.map(visual).toList.sequence) 
         yield (visuals.map(r => r.bcgc.cgc).foldl(ColorisableGraphicalContent.Empty)(_.compose(_)).applyColorisation(Colorisation.Empty))
     }
+
+    val connectionTool = GenericConnectionTool.apply[StgConnectable](stgConnectables, (connectableTouchable(_)).map(_.map(_.touchable)), deepCenters, connectionController, _ => paint)
     
+    val nodeGeneratorTools = org.workcraft.plugins.stg21.StgToolsProvider(visualStg).nodeGeneratorTools
+    
+    val selectionTool = GenericSelectionTool.apply[VisualEntity](
+        visualEntities, 
+        selection, 
+        entityMovableController, 
+        (x => /*snap */x), 
+        touchable,
+        (_ => paint),
+        Nil)
+    
+
 
     val simulationTool = null
 
-    NonEmptyList(
-      selectionTool.asGraphEditorTool((colorisation, selection) => paint),
-      connectionTool.asGraphEditorTool((colorisation,highlighted) => paint) ::
+    NonEmptyList.nel(
+      selectionTool,
+      connectionTool ::
       nodeGeneratorTools)
-    )
   }
 import scala.collection.JavaConversions._
   def properties : org.workcraft.dependencymanager.advanced.core.Expression[_ <: PVector[EditableProperty]] = {

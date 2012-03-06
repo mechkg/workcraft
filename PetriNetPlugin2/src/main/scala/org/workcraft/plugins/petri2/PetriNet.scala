@@ -40,7 +40,7 @@ class PetriNet {
 }
 
 class PetriNetEditor(net: PetriNet) extends ModelEditor {
-  def tools = NonEmptyList(new ModelEditorTool {
+  def tools = NonEmptyList(_ => new ModelEditorTool {
     def interfacePanel = None
     def screenSpaceContent = Variable.create(GraphicalContent.Empty)
     def userSpaceContent = Variable.create(GraphicalContent.Empty)

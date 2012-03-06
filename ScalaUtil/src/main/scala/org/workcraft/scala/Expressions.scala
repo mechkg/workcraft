@@ -103,4 +103,6 @@ object Expressions {
   def set[T](e: ModifiableExpression[T], value: T) = ioPure.pure { e.setValue(value) }
   
   def assign[T](to : ModifiableExpression[T], from : Expression[T]) : IO[Unit] = ioPure.pure (unsafeAssign(to, from))
+  
+  def newVar[T](x : T) : IO[Variable[T]] = ioPure.pure(Variable.create(x))
 }

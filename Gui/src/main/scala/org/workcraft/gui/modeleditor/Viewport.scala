@@ -29,6 +29,15 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
   }
 
   def inverseTransform: Expression[AffineTransform] = transform.map(_.createInverse)
+  
+  def pixelSizeInUserSpace = for {
+    uts <- userToScreen;
+    stu <- screenToUser
+  } yield {
+    val p = uts(origin)
+    val q = new Point2D.Double (p.getX+1, p.getY+1)
+    stu(q)
+  }
 
   def projection = dimensions.map {
     case (x, y, w, h) => {

@@ -26,6 +26,7 @@ import java.io.InputStream;
 
 import org.workcraft.exceptions.DeserialisationException;
 
+@Deprecated // moved to scala. can be deleted.
 public interface Importer {
 	public static final GlobalService<Importer> SERVICE_HANDLE = GlobalService.createNewService(Importer.class, "Importer");
 	

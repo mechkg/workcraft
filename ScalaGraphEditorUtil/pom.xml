@@ -2,10 +2,8 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.workcraft</groupId>
   <artifactId>ScalaGraphEditorUtil</artifactId>
-  <version>2.2-SNAPSHOT</version>
-
+  
   <name>Workcraft 2.2 utility classes for implementing graph editor clients in Scala</name>
   <url>http://workcraft.org</url>
 

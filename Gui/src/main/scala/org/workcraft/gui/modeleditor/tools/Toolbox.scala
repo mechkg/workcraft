@@ -1,83 +1,27 @@
 package org.workcraft.gui.modeleditor.tools
-import javax.swing.JPanel
+
 import org.workcraft.dependencymanager.advanced.user.Variable
-import javax.swing.JToggleButton
-import javax.swing.SwingConstants
-import java.awt.Insets
-import org.workcraft.scala.Expressions._
-import org.workcraft.gui.CommonVisualSettings
-import java.awt.image.BufferedImage
-import javax.swing.ImageIcon
-import java.awt.Dimension
-import java.awt.event.ActionListener
-import java.awt.event.ActionEvent
-import java.awt.FlowLayout
-import java.awt.BorderLayout
-import org.workcraft.gui.NotAvailablePanel
 import org.workcraft.gui.modeleditor.HotkeyBinding
+import org.workcraft.scala.Expressions.convertModifiableExpression
+import org.workcraft.scala.Expressions.monadicSyntaxV
+import org.workcraft.scala.Expressions.set
+import org.workcraft.scala.Expressions.Expression
 
-import org.workcraft.scala.effects.IO
-import org.workcraft.scala.effects.IO._
 import scalaz._
-import Scalaz._
 
-class ToolboxPanel(toolbox: Toolbox) extends JPanel {
-  private val buttons = toolbox.tools.map(t => (t, createButton(t)))
+class Toolbox(val tools: NonEmptyList[ModelEditorTool]) {
+  private val selectedTool_ = Variable.create(tools.head)
   
-  setFocusable(false)
-  
-  setLayout(new FlowLayout)
-  buttons.foreach(tb => add(tb._2))
-  
-  buttons.list.find( _._1 == eval(toolbox.selectedTool).unsafePerformIO).foreach(_._2.setSelected(true))
-  
-  def selectTool (tool: ModelEditorTool) = {
-    buttons.foreach(_._2.setSelected(false))
-    buttons.list.find(_._1 == tool).foreach(_._2.setSelected(true))
-    toolbox.selectTool(tool).unsafePerformIO    
-  }
-
-  def createButton(tool: ModelEditorTool) : JToggleButton = {
-    val button = new JToggleButton()
-
-    button.setFocusable(false);
-    button.setHorizontalAlignment(SwingConstants.LEFT)
-    button.setMargin(new Insets(0, 0, 0, 0))
-
-    val insets = button.getInsets()
-    val iconSize = unsafeEval(CommonVisualSettings.iconSize); // TODO: make the size update appropriately
-    val minSize = iconSize + Math.max(insets.left + insets.right, insets.top + insets.bottom)
-
-    tool.button.icon match {
-      case Some(icon) => {
-        val crop = new BufferedImage(iconSize, iconSize, BufferedImage.TYPE_INT_ARGB)
-        icon.paintIcon(button, crop.getGraphics(), (iconSize - icon.getIconWidth()) / 2, (iconSize - icon.getIconHeight()) / 2)
-        button.setIcon(new ImageIcon(crop))
-        button.setPreferredSize(new Dimension(minSize, minSize))
-      }
-      case None => {
-        button.setText(tool.button.label)
-        button.setPreferredSize(new Dimension(120, minSize))
-      }
-    }
-
-    tool.button.hotkey match {
-      case Some(key) => {
-        button.setToolTipText("[" + Character.toString(key.toChar) + "] " + tool.button.label)
-      }
-      case None => {
-        button.setToolTipText(tool.button.label)
-      }
-    }
-
-    button.addActionListener(new ActionListener {
-      def actionPerformed(e: ActionEvent) {
-        selectTool(tool)
-      }
-    })
+  def selectedTool: Expression[ModelEditorTool] = selectedTool_
+  def selectTool (tool: ModelEditorTool) = set(selectedTool_, tool)
     
-    button
-  }
+  private val hotkeys = tools.list.flatMap(t => t.button.hotkey.map((t, _))).groupBy(_._2).mapValues(_.map(_._1))
+  private val cyclicHotkeyIterator = hotkeys.mapValues(Stream.continually(_).flatten.iterator)
+
+  val hotkeyBindings = hotkeys.keys.map(key => HotkeyBinding(key, selectTool(cyclicHotkeyIterator(key).next))).toList
+  
+  val selectedToolKeyBindings = selectedTool_.map(_.keyBindings)
+  val selectedToolMouseListener = selectedTool_.map(_.mouseListener)
 }
 /*
 

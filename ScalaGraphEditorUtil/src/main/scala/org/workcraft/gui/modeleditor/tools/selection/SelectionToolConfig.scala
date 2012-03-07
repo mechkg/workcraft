@@ -1,4 +1,4 @@
-package org.workcraft.gui.graph.tools.selection
+package org.workcraft.gui.modeleditor.tools.selection
 
 import java.awt.geom.Point2D
 
@@ -6,8 +6,6 @@ import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import org.workcraft.dom.Node
 import org.workcraft.dom.visual.VisualGroup
-import org.workcraft.gui.graph.tools.HitTester
-import org.workcraft.gui.graph.tools.MovableController
 import org.workcraft.util.Function
 
 import pcollections.PSet

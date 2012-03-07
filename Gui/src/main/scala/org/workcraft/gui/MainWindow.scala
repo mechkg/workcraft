@@ -61,20 +61,17 @@ class MainWindow(
   val loggerDockable = createUtilityWindow("Log", "Log", loggerWindow, placeholderDockable, DockingConstants.SOUTH_REGION, 0.8)
   val toolboxDockable = createUtilityWindow("Toolbox", "Toolbox", toolboxWindow, placeholderDockable, DockingConstants.EAST_REGION, 0.8)
 
-  var openEditors = List[DockableWindow]()
+  var openEditors = List[DockableWindow[ModelEditorPanel]]()
 
   val menu = new MainMenu(this, List(loggerDockable, toolboxDockable), globalServices, { case (m, b) => newModel(m, b) }, reconfigure)
   this.setJMenuBar(menu)
 
-  val editorStates = new scala.collection.mutable.HashMap[DockableWindow, EditorState]
-  val editorDockables = new scala.collection.mutable.HashMap[DockableWindow, ModelServiceProvider]
-
-  def closeUtilityWindow(window: DockableWindow) = {
+  def closeUtilityWindow(window: DockableWindow[_ <: JComponent]) = {
     window.close
     menu.windowsMenu.update(window)
   }
 
-  def createUtilityWindow(title: String, persistentId: String, content: JComponent, relativeTo: DockableWindow, relativeRegion: String, split: Double): DockableWindow =
+  def createUtilityWindow(title: String, persistentId: String, content: JComponent, relativeTo: DockableWindow[_], relativeRegion: String, split: Double): DockableWindow[_ <: JComponent] =
     dockingRoot.createWindowWithSetSplit(title, persistentId, content, DockableWindowConfiguration(maximiseButton = false, onCloseClicked = closeUtilityWindow), relativeTo, relativeRegion, split)
 
   private def applyGuiConfiguration(configOption: Option[GuiConfiguration]) = SwingUtilities.invokeLater(new Runnable {
@@ -113,22 +110,17 @@ class MainWindow(
       openEditor(model)
   }
 
-  def setFocus(editorDockable: DockableWindow) {
+  def setFocus(editorDockable: DockableWindow[ModelEditorPanel]) {
     toolboxWindow.removeAll()
-    toolboxWindow.add(editorStates(editorDockable).toolbox, BorderLayout.CENTER)
+    toolboxWindow.add(new ToolboxPanel(editorDockable.content.toolbox), BorderLayout.CENTER)
   }
 
   def openEditor(model: ModelServiceProvider) {
     model.implementation(EditorService) match {
       case None => JOptionPane.showMessageDialog(this, "The model type that you have chosen does not support visual editing :(", "Warning", JOptionPane.WARNING_MESSAGE)
       case Some(editor) => {
-        val toolbox = new ToolboxPanel(editor.tools)
-        val editorState = new EditorState(toolbox)
-        val editorPanel = new ModelEditorPanel(toolbox)(implicitLogger)
+        val editorPanel = new ModelEditorPanel(editor)(implicitLogger)
         val editorDockable = dockingRoot.createWindow("Говноэдитор", "unused", editorPanel, DockableWindowConfiguration(onCloseClicked = closeEditor), if (openEditors.isEmpty) placeholderDockable else (openEditors.head), DockingConstants.CENTER_REGION)
-
-        editorDockables += ((editorDockable, model))
-        editorStates += ((editorDockable, editorState))
 
         if (openEditors.isEmpty) {
           openEditors = List(editorDockable)
@@ -141,12 +133,10 @@ class MainWindow(
     }
   }
 
-  def closeEditor(editorDockable: DockableWindow) {
+  def closeEditor(editorDockable: DockableWindow[ModelEditorPanel]) {
     // TODO: Ask to save etc.
 
     openEditors -= editorDockable
-    editorDockables -= editorDockable
-    editorStates -= editorDockable
 
     if (openEditors.isEmpty)
       DockingManager.dock(placeholderDockable, editorDockable, DockingConstants.CENTER_REGION)

@@ -105,6 +105,8 @@ sealed trait IO[+A] {
 }*/
 
 object IO {
+  def Empty = ioPure.pure({})
+  
   def apply[A](f: World[RealWorld] => (World[RealWorld], A)): IO[A] = new IO[A] {
     private[effects] def apply(rw: World[RealWorld]) = f(rw)
   }

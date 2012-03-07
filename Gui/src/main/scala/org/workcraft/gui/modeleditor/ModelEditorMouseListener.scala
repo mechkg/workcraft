@@ -57,7 +57,7 @@ class ModelEditorMouseListener(val viewport: Viewport, val hasFocus: Expression[
     screenToUser(new Point2D.Double(p.getX, p.getY))
   }
 
-  def modifiers(e: MouseEvent): Set[Modifier] = Set((Alt, e.isAltDown()), (Shift, e.isShiftDown()), (Control, e.isControlDown())).filter(_._2).map(_._1)
+  def modifiers(e: MouseEvent): Set[Modifier] = Set((Modifier.Alt, e.isAltDown()), (Modifier.Shift, e.isShiftDown()), (Modifier.Control, e.isControlDown())).filter(_._2).map(_._1)
 
   def button(code: Int) = code match {
     case MouseEvent.BUTTON1 => LeftButton

@@ -1,23 +1,22 @@
-package org.workcraft.gui.graph.tools.selection
+package org.workcraft.gui.modeleditor.tools.selection
 
 import java.awt.geom.Point2D
 import java.util.HashMap
-
 import org.workcraft.scala.Expressions._
-import org.workcraft.gui.graph.tools.DragHandle
-import org.workcraft.gui.graph.tools.DragHandler
+import org.workcraft.scala.effects.IO
+import scalaz._
+import Scalaz._
 import org.workcraft.util.Geometry
-
-import pcollections.PCollection
+import org.workcraft.gui.modeleditor.tools.DragHandler
+import org.workcraft.gui.modeleditor.tools.DragHandle
 
 class MoveDragHandler[Node]
-   ( selection : Expression[Iterable[Node]]
-     , movableController : Node => Option[ModifiableExpression[Point2D.Double]] 
-     , snap : Point2D.Double => Point2D.Double)
+   (selection : Expression[Iterable[Node]]
+    , movableController : Node => Option[ModifiableExpression[Point2D.Double]] 
+    , snap : Point2D.Double => Point2D.Double)
       extends DragHandler[Node] {
-  
-  override def startDrag(hitNode : Node) : DragHandle = new DragHandle {
 
+  override def dragStarted(pos: Point2D.Double, hitNode : Node) = new DragHandle {
       val originalPosition = getNodePos(hitNode, movableController)
       
       var originalPositions : HashMap[Node, Point2D.Double] = new HashMap[Node, Point2D.Double]
@@ -32,21 +31,16 @@ class MoveDragHandler[Node]
         }
       }
       
-      private def offsetSelection (totalOffset : Point2D.Double) ={
-        for(node <- unsafeEval(selection)) {
-          movableController.apply(node) match{
-            case None => {}
-            case Some(pos) => {
-              val posVal = unsafeEval(pos)
-              val origPosVal = getOriginalPositionWithDefault(node, posVal)
-              pos.setValue(Geometry.add(origPosVal, totalOffset))
-            }
-          }
+      private def offsetSelection (totalOffset : Point2D.Double) = eval(selection) >>= (nodes => {
+          nodes.toList.traverse_ (node => movableController(node) match {
+            case None => IO.Empty
+            case Some(pos) => update (pos)(posVal => Geometry.add(getOriginalPositionWithDefault(node, posVal), totalOffset))
+          })
         }
-      }
+      )
       
       def snapper(newValue : Point2D.Double) = {
-          val newSnapped = snap.apply(newValue)
+          val newSnapped = snap(newValue)
           val totalOffset = Geometry.subtract(newSnapped, originalPosition)
           offsetSelection(totalOffset)
         }
@@ -56,12 +50,10 @@ class MoveDragHandler[Node]
       def getNodePos(hitNode : Node, movableController : Node => Option[ModifiableExpression[Point2D.Double]]) : Point2D.Double =
         movableController(hitNode).map{arg => unsafeEval(arg)}.getOrElse(new Point2D.Double(0,0))
       
-      override def setOffset(offset : Point2D.Double) =
-        snapper(Geometry.add(originalPosition, offset))
+      override def dragged(pos : Point2D.Double) = snapper(pos)
       
-      override def commit = { }
+      override def commit = IO.Empty
       
-      override def cancel =
-        setOffset(new Point2D.Double(0,0))
+      override def cancel = dragged (originalPosition)
   }
 }

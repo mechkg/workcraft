@@ -16,6 +16,7 @@ object CommonVisualSettings /*implements SettingsPage*/ {
 	val fillColor = Variable.create(Color.WHITE)
 	val serifFont = Variable.create(new Font("Serif", Font.PLAIN, 1))
 	val sansSerifFont = Variable.create(new Font("SansSerif", Font.PLAIN, 1))
+	val editorMessageFont = Variable.create(new Font("SansSerif", Font.PLAIN, 12))
 	
 	
 	/*

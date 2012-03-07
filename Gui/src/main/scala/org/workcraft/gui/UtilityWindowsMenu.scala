@@ -4,8 +4,9 @@ import javax.swing.JMenu
 import javax.swing.JCheckBoxMenuItem
 import java.awt.event.ActionListener
 import java.awt.event.ActionEvent
+import javax.swing.JComponent
 
-class UtilityWindowMenuItem(window: DockableWindow) extends JCheckBoxMenuItem {
+class UtilityWindowMenuItem(window: DockableWindow[_]) extends JCheckBoxMenuItem {
   setText(window.title)
   setSelected(!window.isClosed)
 
@@ -20,9 +21,9 @@ class UtilityWindowMenuItem(window: DockableWindow) extends JCheckBoxMenuItem {
   })
 }
 
-class UtilityWindowsMenu(val utilityWindows: List[DockableWindow]) extends JMenu("Windows") {
-  val menuItems = utilityWindows.map(w => (w, new UtilityWindowMenuItem(w))).toMap
+class UtilityWindowsMenu(val utilityWindows: List[DockableWindow[_ <: JComponent]]) extends JMenu("Windows") {
+  val menuItems: Map[DockableWindow[_ <: JComponent], UtilityWindowMenuItem]= utilityWindows.map(w => (w, new UtilityWindowMenuItem(w))).toMap
   utilityWindows.sortBy(_.title).foreach(w => add(menuItems(w)))
 
-  def update(window: DockableWindow) = menuItems.get(window).foreach(_.setSelected(!window.isClosed))
+  def update(window: DockableWindow[_ <: JComponent]) = menuItems.get(window).foreach(_.setSelected(!window.isClosed))
 }

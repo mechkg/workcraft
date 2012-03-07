@@ -3,51 +3,66 @@ import org.workcraft.scala.Expressions._
 import org.workcraft.scala.Util._
 import org.workcraft.scala.Scalaz._
 import java.awt.geom.Point2D
-import org.workcraft.gui.graph.tools.selection.MoveDragHandler
-import org.workcraft.gui.graph.tools.selection.GenericSelectionTool
-import org.workcraft.gui.graph.Viewport
-import org.workcraft.gui.graph.tools.AbstractTool
-import org.workcraft.gui.graph.tools.Colorisation
+import org.workcraft.gui.modeleditor.tools.selection.MoveDragHandler
+import org.workcraft.gui.modeleditor.Viewport
 import java.awt.Color
 import org.workcraft.dependencymanager.advanced.core.Expressions
-import org.workcraft.gui.graph.tools.GraphEditorMouseListener
 import org.workcraft.graphics.Touchable
 import org.workcraft.graphics.GraphicalContent
-import org.workcraft.gui.modeleditor.tools.ModelEditorTool
+import org.workcraft.gui.modeleditor.tools._
+import org.workcraft.gui.modeleditor.KeyBinding
+import org.workcraft.gui.modeleditor.tools.Button
+import java.awt.event.KeyEvent
+import org.workcraft.gui.GUI
+import org.workcraft.graphics.Colorisation
+import org.workcraft.gui.modeleditor.tools.selection.GenericSelectionToolMouseListener
+import ModelEditorTool.ModelEditorToolConstructor
 
-class SelectionTool[N](val mouseListener: ToolMouseListener,
-  val selectionBoxGraphics: (Viewport, Expression[Boolean]) => Expression[GraphicalContent],
-  val effectiveSelection: Expression[Set[N]]) {
-  def asGraphEditorTool ( paint: (Colorisation, Expression[Set[N]]) => Expression[GraphicalContent]) =
-  {
-    def graphics (viewport : Viewport, hasFocus: Expression[Boolean]) =
-      (paint (SelectionTool.highlightedColorisation, effectiveSelection) <**> selectionBoxGraphics(viewport, hasFocus)) (_.compose(_))
-      
-    new ModelEditorTool {
-      def button = GenericSelectionTool.button
-      def mouseListener = 
-    }
-    ToolHelper.asGraphEditorTool(Some(mouseListener), None, 
-        Some(graphics), None, None, GenericSelectionTool.button)
-  }
+class GenericSelectionTool[N](
+  viewport: Viewport,
+  nodes: Expression[Iterable[N]],
+  selection: ModifiableExpression[Set[N]],
+  position: N => Option[ModifiableExpression[Point2D.Double]],
+  snap: Point2D.Double => Point2D.Double,
+  touchable: N => Expression[Touchable],
+  paint: (N => Colorisation) => Expression[GraphicalContent],
+  customKeyBindings: List[KeyBinding]) extends ModelEditorTool {
+
+  private val mouseListener_ = new GenericSelectionToolMouseListener(selection, HitTester.create(nodes, touchable), new MoveDragHandler(selection, position, snap))
+
+  def button = GenericSelectionTool.button
+
+  def keyBindings = customKeyBindings
+  def mouseListener = Some(mouseListener_)
+  def userSpaceContent = mouseListener_.effectiveSelection >>=
+    (selection => (paint(n => if (selection contains n) GenericSelectionTool.highlightedColorisation else Colorisation.Empty) |@|
+      mouseListener_.userSpaceContent(viewport))(_.compose(_)))
+  def screenSpaceContent = constant(GraphicalContent.Empty)
+  def interfacePanel = None
 }
 
-object SelectionTool {
-  val highlightedColorisation = new Colorisation {
-    override def getColorisation = new Color(99, 130, 191).brighter()
-    override def getBackground = null
+object GenericSelectionTool {
+  val button = new Button {
+    override def label = "Selection tool"
+    override def hotkey = Some(KeyEvent.VK_S)
+    override def icon = Some(GUI.createIconFromSvgUsingSettingsSize("images/icons/svg/select.svg").unsafePerformIO)
   }
 
-  def create[N](
+  val highlightedColorisation = Colorisation(Some(new Color(99, 130, 191).brighter), None)
+  def apply[N](
     nodes: Expression[Iterable[N]],
     selection: ModifiableExpression[Set[N]],
-    movableController: N => Option[ModifiableExpression[Point2D.Double]],
+    position: N => Option[ModifiableExpression[Point2D.Double]],
     snap: Point2D.Double => Point2D.Double,
-    touchableProvider: N => Expression[Touchable]
-    ) = {
-    val dragHandler = new MoveDragHandler[N](selection, movableController, snap)
-    val genericSelectionTool = new GenericSelectionTool[N](selection.jexpr, HitTester.create(nodes, touchableProvider), dragHandler)
-
-    new SelectionTool[N](genericSelectionTool.getMouseListener, (viewport, focus) => genericSelectionTool.userSpaceContent(viewport), genericSelectionTool.effectiveSelection)
-  }
+    touchable: N => Expression[Touchable],
+    paint: (N => Colorisation) => Expression[GraphicalContent],
+    customKeyBindings: List[KeyBinding]): ModelEditorToolConstructor = env => new GenericSelectionTool(
+      env.viewport,
+      nodes,
+      selection,
+      position,
+      snap,
+      touchable,
+      paint,
+      customKeyBindings)
 }

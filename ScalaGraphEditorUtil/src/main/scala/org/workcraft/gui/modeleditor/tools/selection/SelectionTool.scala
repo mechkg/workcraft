@@ -1,4 +1,4 @@
-package org.workcraft.gui.graph.tools.selection
+package org.workcraft.gui.modeleditor.tools.selection
 
 import java.awt.Color
 import java.awt.event.KeyEvent

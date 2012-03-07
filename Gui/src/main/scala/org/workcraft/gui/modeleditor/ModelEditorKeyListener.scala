@@ -13,19 +13,26 @@ import org.workcraft.logging.MessageClass
 
 sealed trait Modifier
 
-case object Control extends Modifier
-case object Shift extends Modifier
-case object Alt extends Modifier
+object Modifier {
+  case object Control extends Modifier
+  case object Shift extends Modifier
+  case object Alt extends Modifier
+}
 
 sealed trait KeyEventType
 
-case object KeyPressed extends KeyEventType
-case object KeyReleased extends KeyEventType
-case object KeyTyped extends KeyEventType
+object KeyEventType {
+  case object KeyPressed extends KeyEventType
+  case object KeyReleased extends KeyEventType
+  case object KeyTyped extends KeyEventType
+}
 
 case class KeyEvent(keyCode: Int, keyChar: Char, eventType: KeyEventType, modifiers: Set[Modifier])
 
 object KeyEvent {
+  import Modifier._
+  import KeyEventType._
+  
   def show(ke: KeyEvent) = {
     (if (ke.modifiers.contains(Alt)) "Alt+" else "") +
       (if (ke.modifiers.contains(Control)) "Control+" else "") +
@@ -52,13 +59,13 @@ case class KeyBinding(description: String, keyCode: Int, eventType: KeyEventType
 case class HotkeyBinding(keyCode: Int, action: IO[Unit])
 
 class ModelEditorKeyListener(editorKeys: List[KeyBinding], toolKeys: Expression[List[KeyBinding]], hotkeys: List[HotkeyBinding], logger: () => Logger[IO]) extends KeyListener {
+  import Modifier._
+  import KeyEventType._
 
   def handlers(event: KeyEvent) = for {
     toolKeys <- toolKeys
-  } yield 
-    (editorKeys ++ hotkeys.map(k => KeyBinding("Tool hotkey: " + k.keyCode.toChar, k.keyCode, KeyPressed, Set(), k.action)) ++ toolKeys)
+  } yield (editorKeys ++ hotkeys.map(k => KeyBinding("Tool hotkey: " + k.keyCode.toChar, k.keyCode, KeyPressed, Set(), k.action)) ++ toolKeys)
     .filter(h => (h.keyCode == event.keyCode && h.modifiers == event.modifiers && h.eventType == event.eventType))
-  
 
   def handleEvent(event: KeyEvent) = {
     val h = unsafeEval(handlers(event))
@@ -66,8 +73,8 @@ class ModelEditorKeyListener(editorKeys: List[KeyBinding], toolKeys: Expression[
       case 0 => {}
       case 1 => h.head.action.unsafePerformIO
       case _ => {
-        logger().log("Key conflict! \"" + KeyEvent.show(event) + "\" is bound to: " + h.map(_.description).map("\""+_+"\"").reduceLeft(_+" and "+_) , MessageClass.Warning).unsafePerformIO
-        h.foreach( k =>{println ("Executing " + k.description); k.action.unsafePerformIO})
+        logger().log("Key conflict! \"" + KeyEvent.show(event) + "\" is bound to: " + h.map(_.description).map("\"" + _ + "\"").reduceLeft(_ + " and " + _), MessageClass.Warning).unsafePerformIO
+        h.foreach(k => { println("Executing " + k.description); k.action.unsafePerformIO })
       }
     }
   }
@@ -78,12 +85,14 @@ class ModelEditorKeyListener(editorKeys: List[KeyBinding], toolKeys: Expression[
 }
 
 object ModelEditorKeyListener {
-  def defaultBindings (editor: ModelEditorPanel) = List (
-      KeyBinding ("Viewport pan left", JKeyEvent.VK_LEFT, KeyPressed, Set(Control), editor.view.pan(20, 0)),
-      KeyBinding ("Viewport pan right", JKeyEvent.VK_RIGHT, KeyPressed, Set(Control), editor.view.pan(-20, 0)),
-      KeyBinding ("Viewport pan up", JKeyEvent.VK_UP, KeyPressed, Set(Control), editor.view.pan(0, 20)),
-      KeyBinding ("Viewport pan down", JKeyEvent.VK_DOWN, KeyPressed, Set(Control), editor.view.pan(0, -20)),
-      KeyBinding ("Viewport zoom in", JKeyEvent.VK_EQUALS, KeyPressed, Set(), editor.view.zoom(1)),
-      KeyBinding ("Viewport zoom out", JKeyEvent.VK_MINUS, KeyPressed, Set(), editor.view.zoom(-1))
-      )
+  import Modifier._
+  import KeyEventType._
+  
+  def defaultBindings(editor: ModelEditorPanel) = List(
+    KeyBinding("Viewport pan left", JKeyEvent.VK_LEFT, KeyPressed, Set(Control), editor.view.pan(20, 0)),
+    KeyBinding("Viewport pan right", JKeyEvent.VK_RIGHT, KeyPressed, Set(Control), editor.view.pan(-20, 0)),
+    KeyBinding("Viewport pan up", JKeyEvent.VK_UP, KeyPressed, Set(Control), editor.view.pan(0, 20)),
+    KeyBinding("Viewport pan down", JKeyEvent.VK_DOWN, KeyPressed, Set(Control), editor.view.pan(0, -20)),
+    KeyBinding("Viewport zoom in", JKeyEvent.VK_EQUALS, KeyPressed, Set(), editor.view.zoom(1)),
+    KeyBinding("Viewport zoom out", JKeyEvent.VK_MINUS, KeyPressed, Set(), editor.view.zoom(-1)))
 }

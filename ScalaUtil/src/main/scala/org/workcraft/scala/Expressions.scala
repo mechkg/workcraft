@@ -17,7 +17,8 @@ import org.workcraft.scala.effects.IO
 import org.workcraft.scala.effects.IO._
 
 object Expressions {
-  
+  case class Expression[+T](jexpr : JExpression[_ <: T])
+   
   case class ModifiableExpression[T](expr : Expression[T], val setValue : T => Unit) {
     def jexpr : JModifiableExpression[T] = {
       def sv(t : T) = setValue(t)
@@ -37,6 +38,8 @@ object Expressions {
     }
   }
   
+  def expr[A, T <: Expression[A]](a: T): Expression[A] = a
+  
   implicit def convertModifiableExpression[T](me : JModifiableExpression[T]) = ModifiableExpression[T](decorateExpression(me), x => me.setValue(x))
   
   implicit object JExpressionMonad extends Monad[JExpression] {
@@ -44,7 +47,7 @@ object Expressions {
     override def bind[A,B](a : JExpression[A], f : A => JExpression[B]) : JExpression[B] = bindJ(a, asFunctionObject(f))
   }
   
-  implicit def decorateExpression[T](e : JExpression[_ <: T]) = Expression[T](e)
+  implicit def decorateExpression[T](e : JExpression[_ <: T]): Expression[T] = Expression[T](e)
   
   implicit def modifiableExpressionAsReadonly[T](m : ModifiableExpression[T]) : Expression[T] = m.expr
   
@@ -89,8 +92,6 @@ object Expressions {
       me.setValue(f(unsafeEval(me.jexpr)))
     }
   }
-  
-  case class Expression[+T](jexpr : JExpression[_ <: T])
   
   def unsafeEval[T](e : Expression[T]) : T = GlobalCache.eval(e.jexpr)
 

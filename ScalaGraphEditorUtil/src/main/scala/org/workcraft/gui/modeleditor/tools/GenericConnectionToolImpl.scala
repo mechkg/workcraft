@@ -27,7 +27,8 @@ import org.workcraft.scala.effects.IO._
 import org.workcraft.gui.modeleditor.MouseButton
 import org.workcraft.gui.modeleditor.LeftButton
 import org.workcraft.gui.modeleditor.RightButton
-import org.workcraft.gui.modeleditor.tools.{DummyMouseListener => DML} 
+import org.workcraft.gui.modeleditor.tools.{DummyMouseListener => DML}
+import org.workcraft.graphics.Graphics
 
 class GenericConnectionToolImpl[N](centerProvider: N => Expression[Point2D.Double],
   connectionManager: ConnectionManager[N],
@@ -48,34 +49,24 @@ class GenericConnectionToolImpl[N](centerProvider: N => Expression[Point2D.Doubl
       case None => constant(GraphicalContent.Empty)
       case Some(first) => {
         warningMessage.setValue(None)
-        mouseOverObject >>= {
-          case None => constant(GraphicalContent.Empty)
-          case Some(mouseOver) => {
-            val color = connectionManager.connect(first, mouseOver) match {
-              case Left(err) => { warningMessage.setValue(Some(err.getMessage)); Color.RED }
-              case Right(_) => { Color.GREEN }
-            }
-            drawConnectingLine(color)
-          }
+        mouseOverObject >>= (mouseOverObject =>
+          {
+            def zogo : (Color, Expression[Point2D.Double]) = (mouseOverObject match {
+              case None => (Color.BLUE, lastMouseCoords)
+              case Some(second) => connectionManager.connect(first, second) match {
+                case Left(err) => { warningMessage.setValue(Some(err.getMessage)); (Color.RED, lastMouseCoords) }
+                case Right(_) => (Color.GREEN, centerProvider(second))
+              }})
+            val (color, p2) = zogo
+            for(
+              p1 <- centerProvider(first);
+              p2 <- p2;
+              px <- viewport.pixelSizeInUserSpace
+            ) yield (Graphics.line(p1, p2, new BasicStroke(px.getX.toFloat), color).graphicalContent)
+          })
         }
       }
-    }
-
-  private def drawConnectingLine(color: Color): Expression[GraphicalContent] = {
-    first >>= {
-      case None => throw new RuntimeException("Should not happen!")
-      case Some(first) =>
-        for (
-          center <- centerProvider(first); lastCoords <- lastMouseCoords
-        ) yield (
-          new GraphicalContent {
-            override def draw(g: Graphics2D) = {
-              g.setColor(color)
-              g.draw(new Line2D.Double(center.getX, center.getY, lastCoords.getX, lastCoords.getY))
-            }
-          })
-    }
-  }
+    
 
   val mouseListener: ToolMouseListener = new DML {
     override def mouseMoved(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit] =

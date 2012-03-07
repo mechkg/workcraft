@@ -10,8 +10,8 @@ import java.awt.geom.AffineTransform
 
 object Java2DDecoration {
   implicit def decorateRectangle2D(rect : Rectangle2D.Double) = new RichRectangle2D(rect)
-  private def doubulizeRect(rect : Rectangle2D) = new Rectangle2D.Double(rect.getMinX, rect.getMinY, rect.getWidth, rect.getHeight)
-  private def doubulizePt(pt : Point2D) = new Point2D.Double(pt.getX, pt.getY)
+  implicit def doubulizeRect(rect : Rectangle2D) = new Rectangle2D.Double(rect.getMinX, rect.getMinY, rect.getWidth, rect.getHeight)
+  implicit def doubulizePt(pt : Point2D) = new Point2D.Double(pt.getX, pt.getY)
   implicit def decorateGlyphVector(glyph : GlyphVector) = new {
     import glyph._
     def visualBounds = doubulizeRect(getVisualBounds)

@@ -9,7 +9,7 @@ import java.awt.geom.Path2D
 
 import Java2DDecoration._
 
-class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color, val touchThreshold: Double) {
+class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color) {
   lazy val graphicalContent = GraphicalContent( g => {
       g.setStroke(stroke)
       g.setColor(color)
@@ -24,7 +24,7 @@ class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color, va
   
   lazy val boundedColorisableGraphicalContent = BoundedColorisableGraphicalContent (colorisableGraphicalContent, BoundingBox(p.bounds))
   
-  lazy val touchable = new Touchable {
+  def touchable(touchThreshold: Double) = new Touchable {
     val pathError = 0.01
     val segments = getSegments(p.getPathIterator(null, pathError))
 
@@ -84,5 +84,5 @@ class Path private (val p: Path2D, val stroke: BasicStroke, val color: Color, va
 }
 
 object Path {
-  def apply(p: Path2D, stroke: BasicStroke, color: Color, touchThreshold: Double) = new Path (p, stroke, color, touchThreshold) 
+  def apply(p: Path2D, stroke: BasicStroke, color: Color) = new Path (p, stroke, color) 
 }

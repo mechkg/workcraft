@@ -9,18 +9,20 @@ import org.workcraft.graphics.Graphics
 import org.workcraft.graphics.LabelPositioning
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.gui.CommonVisualSettings
+import org.workcraft.graphics.Touchable
+import java.awt.geom.Rectangle2D
 
 object VisualPlace {
-  implicit def image (p: Place) : Expression[BoundedColorisableGraphicalContent] = 
+  def image (tokens: Expression[Int], label: Expression[String]) : Expression[BoundedColorisableGraphicalContent] = 
     for (
-        tokens <- p.tokens;
-        label <- p.label;
+        t <- tokens;
+        label <- label;
         font <- CommonVisualSettings.serifFont;
         size <- CommonVisualSettings.size;
         strokeWidth <- CommonVisualSettings.strokeWidth;
         foreColor <- CommonVisualSettings.foregroundColor;
         fillColor <- CommonVisualSettings.fillColor;
-        tokensImage <- TokenPainter.image(p.tokens)
+        tokensImage <- TokenPainter.image(tokens)
     ) yield {
       val place = circle(size, Some((new BasicStroke (strokeWidth.toFloat), foreColor)), Some(fillColor)).boundedColorisableGraphicalContent
       
@@ -33,12 +35,14 @@ object VisualPlace {
       
       labelImage.alignSideways(placeWithTokens, LabelPositioning.Bottom).compose(placeWithTokens)
     }
+  
+  val touchable = CommonVisualSettings.size.map(size => Touchable.fromCircle(size/2))
 }
 
 object VisualTransition {
-  def image (t: Transition) : Expression[BoundedColorisableGraphicalContent] =
+  def image (label: Expression[String]) : Expression[BoundedColorisableGraphicalContent] =
     for (
-        label <- t.label;
+        label <- label;
         font <- CommonVisualSettings.serifFont;
         size <- CommonVisualSettings.size;
         strokeWidth <- CommonVisualSettings.strokeWidth;
@@ -50,4 +54,6 @@ object VisualTransition {
       
       (labelImage alignSideways (transitionImage, LabelPositioning.Bottom)).compose(transitionImage)
     }
+  
+  val touchable = CommonVisualSettings.size.map(size => Touchable.fromRect(new Rectangle2D.Double (-size/2, -size/2, size, size)))
 }

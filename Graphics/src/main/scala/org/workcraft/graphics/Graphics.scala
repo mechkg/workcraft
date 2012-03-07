@@ -37,9 +37,17 @@ package org.workcraft.graphics {
       case object None extends VerticalAlignment
     }
 
-    def path(p: Path2D, stroke: BasicStroke, color: Color, touchThreshold: Double) =
-      Path(p, stroke, color, touchThreshold)
+    def path(p: Path2D, stroke: BasicStroke, color: Color) =
+      Path(p, stroke, color)
 
+    def line(p1 : Point2D.Double, p2 : Point2D.Double, stroke : BasicStroke, color : Color) = 
+      path({
+        val p = new Path2D.Double
+        p.moveTo(p1.getX, p1.getY)	
+        p.lineTo(p2.getX, p2.getY)
+        p
+      }, stroke, color)
+    
     def shape(s: java.awt.Shape, stroke: Option[(Stroke, Color)], fill: Option[Color]) =
       Shape(s, stroke, fill)
 

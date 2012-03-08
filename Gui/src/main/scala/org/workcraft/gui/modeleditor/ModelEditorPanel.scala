@@ -38,7 +38,7 @@ class ModelEditorPanel (editor: ModelEditor) (implicit logger: () => Logger[IO])
     def start = {
       val repainter = graphicalContent.map(_ => { ModelEditorPanel.this.repaint(); new Image })
       new Timer(1, new ActionListener {
-        override def actionPerformed(e: ActionEvent) = unsafeEval(repainter)
+        override def actionPerformed(e: ActionEvent) = repainter.unsafeEval
       }).start
     }
   }
@@ -145,8 +145,8 @@ class ModelEditorPanel (editor: ModelEditor) (implicit logger: () => Logger[IO])
   Repainter.start
   
   override def paint(g: Graphics) = {
-    val g2d = g.asInstanceOf[Graphics2D]
-    unsafeEval(graphicalContent).draw(g2d)
+    val g2d = g.asInstanceOf[Graphics2D] // woohoo
+    graphicalContent.unsafeEval.draw(g2d)
   }
 }
 

@@ -53,7 +53,7 @@ class ModelEditorMouseListener(val viewport: Viewport, val hasFocus: Expression[
   }
 
   def toUserSpace(p: Point) = {
-    val screenToUser = unsafeEval(viewport.screenToUser)
+    val screenToUser = viewport.screenToUser.unsafeEval
     screenToUser(new Point2D.Double(p.getX, p.getY))
   }
 
@@ -67,7 +67,7 @@ class ModelEditorMouseListener(val viewport: Viewport, val hasFocus: Expression[
 
   def mouseMoved(e: MouseEvent) = {
     val currentPositionSS = e.getPoint
-    val toolListener = unsafeEval(toolMouseListener)
+    val toolListener = toolMouseListener.unsafeEval
 
     if (pressedButtons.isEmpty)
       toolListener.map(_.mouseMoved(modifiers(e), toUserSpace(currentPositionSS))).foreach(_.unsafePerformIO)
@@ -97,7 +97,7 @@ class ModelEditorMouseListener(val viewport: Viewport, val hasFocus: Expression[
   def mouseDragged(e: MouseEvent) = mouseMoved(e)
 
   def mouseClicked(e: MouseEvent) = {
-    val toolListener = unsafeEval(toolMouseListener)
+    val toolListener = toolMouseListener.unsafeEval
     toolListener.map(_.buttonClicked(button(e.getButton), e.getClickCount(), modifiers(e), toUserSpace(e.getPoint()))).foreach(_.unsafePerformIO)
   }
 
@@ -106,12 +106,12 @@ class ModelEditorMouseListener(val viewport: Viewport, val hasFocus: Expression[
   def mouseExited(e: MouseEvent) = {}
 
   def mousePressed(e: MouseEvent) = {
-    if (!unsafeEval(hasFocus)) requestFocus().unsafePerformIO
+    if (!hasFocus.unsafeEval) requestFocus().unsafePerformIO
 
     pressedButtons += ((e.getButton(), e.getPoint()))
 
     if (e.getButton() != panButton) {
-      val toolListener = unsafeEval(toolMouseListener)
+      val toolListener = toolMouseListener.unsafeEval
       toolListener.map(_.buttonPressed(button(e.getButton()), modifiers(e), toUserSpace(e.getPoint()))).foreach(_.unsafePerformIO)
     }
   }
@@ -120,13 +120,13 @@ class ModelEditorMouseListener(val viewport: Viewport, val hasFocus: Expression[
     pressedButtons -= e.getButton
 
     if (e.getButton() != panButton) {
-      val toolListener = unsafeEval(toolMouseListener)
+      val toolListener = toolMouseListener.unsafeEval
       toolListener.map(_.buttonReleased(button(e.getButton()), modifiers(e), toUserSpace(e.getPoint()))).foreach(_.unsafePerformIO)
     }
 
     if (draggingButtons.contains(e.getButton())) {
       if (e.getButton() != panButton) {
-        val toolListener = unsafeEval(toolMouseListener)
+        val toolListener = toolMouseListener.unsafeEval
         toolListener.map(_.dragFinished(button(e.getButton), toUserSpace(e.getPoint), modifiers(e))).foreach(_.unsafePerformIO)
       }
       draggingButtons -= e.getButton

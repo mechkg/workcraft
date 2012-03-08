@@ -66,9 +66,9 @@ class SelectionDragHandler[Node](selection : ModifiableExpression[Set[Node]], hi
   def startDrag(dragStart: Point2D.Double, mode : SelectionMode): DragHandle = {
     selectionMode.setValue(mode)
     new DragHandle {
-      override def dragged(pos : Point2D.Double) = set(selectionBox, Some(new SelectionRectangle(dragStart, pos)))
-      override def commit = assign(selection, effectiveSelection) >>=| set(selectionBox, None) >>=| set(selectionMode, SelectionMode.None)
-      override def cancel = set (selectionBox, None)
+      override def dragged(pos : Point2D.Double) = selectionBox.set (Some(new SelectionRectangle(dragStart, pos)))
+      override def commit = (selection := effectiveSelection) >>=| selectionBox.set(None) >>=| selectionMode.set(SelectionMode.None)
+      override def cancel = selectionBox.set(None)
     }
   }
   

@@ -111,30 +111,30 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
   }
 
   def pan(dx: Int, dy: Int): IO[Unit] = (for {
-    userToScreen <- eval(userToScreen);
-    screenToUser <- eval(screenToUser)
+    userToScreen <- userToScreen.eval;
+    screenToUser <- screenToUser.eval
   } yield {
     val originInScreenSpace = userToScreen(origin)
 
     val panInScreenSpace = new Point2D.Double(originInScreenSpace.getX + dx, originInScreenSpace.getY + dy)
     val panInUserSpace = screenToUser(panInScreenSpace)
 
-    update(translationX)(_ + panInUserSpace.getX) >>=| update(translationY)(_ + panInUserSpace.getY)
+    translationX.update(_ + panInUserSpace.getX) >>=| translationY.update(_ + panInUserSpace.getY)
   }).join
 
   def zoom(levels: Int): IO[Unit] =
-    update(scale)(s => Math.min(Math.max(s * Math.pow(Viewport.scaleFactor, levels), 0.01), 1.0))
+    scale.update(s => Math.min(Math.max(s * Math.pow(Viewport.scaleFactor, levels), 0.01), 1.0))
 
   def zoomTo(levels: Int, anchor: Point2D.Double): IO[Unit] = (for {
-    screenToUser1 <- eval(screenToUser);
+    screenToUser1 <- screenToUser.eval;
     val anchorInOldSpace = screenToUser1(anchor);
     _ <- zoom(levels);
-    screenToUser2 <- eval(screenToUser);
+    screenToUser2 <- screenToUser.eval;
     val anchorInNewSpace = screenToUser2(anchor);
-    tx <- eval(translationX);
-    ty <- eval(translationY)
+    tx <- translationX.eval;
+    ty <- translationY.eval
   } yield {
-    set (translationX, tx + anchorInNewSpace.getX - anchorInOldSpace.getX) >>=| set(translationY, ty + anchorInNewSpace.getY - anchorInOldSpace.getY)
+   translationX.set(tx + anchorInNewSpace.getX - anchorInOldSpace.getX) >>=| translationY.set(ty + anchorInNewSpace.getY - anchorInOldSpace.getY)
   }).join
 }
 

@@ -63,7 +63,7 @@ object GUI {
   }
 
   def createIconFromSvgUsingSettingsSize(path: String) =
-    eval(CommonVisualSettings.iconSize) >>= (size => createIconFromSvg(path, size, size, None))
+    CommonVisualSettings.iconSize.eval >>= (size => createIconFromSvg(path, size, size, None))
 
   def createIconFromSvg(path: String, height: Int, width: Int, background: Option[Color]): IO[ImageIcon] = ioPure.pure {
     System.setProperty("org.apache.batik.warn_destination", "false")

@@ -30,7 +30,7 @@ case class StgToolsProvider(visualStg : ModifiableExpression[VisualStg]) {
      : ModelEditorToolConstructor = {
     val (g, iconPath, name, hotkey) = generator
     NodeGeneratorTool(Button.create(name, iconPath, Some(hotkey)).unsafePerformIO, 
-	  (where : Point2D.Double) => update(visualStg)(g(where)~>_))
+	  (where : Point2D.Double) => visualStg.update(g(where)~>_))
   }
   
   val nodeGeneratorTools : List[ModelEditorToolConstructor] = generators.map(mkNodeGeneratorTool)

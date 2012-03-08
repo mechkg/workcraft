@@ -68,10 +68,10 @@ class ModelEditorKeyListener(editorKeys: List[KeyBinding], toolKeys: Expression[
     .filter(h => (h.keyCode == event.keyCode && h.modifiers == event.modifiers && h.eventType == event.eventType))
 
   def handleEvent(event: KeyEvent) = {
-    val h = unsafeEval(handlers(event))
-    h.length match {
-      case 0 => {}
-      case 1 => h.head.action.unsafePerformIO
+    val h = handlers(event).unsafeEval
+    h match {
+      case Nil => {}
+      case head::Nil => head.action.unsafePerformIO
       case _ => {
         logger().log("Key conflict! \"" + KeyEvent.show(event) + "\" is bound to: " + h.map(_.description).map("\"" + _ + "\"").reduceLeft(_ + " and " + _), MessageClass.Warning).unsafePerformIO
         h.foreach(k => { println("Executing " + k.description); k.action.unsafePerformIO })

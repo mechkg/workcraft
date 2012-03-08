@@ -62,12 +62,12 @@ class GenericSelectionToolMouseListener[Node](
     else if (button == LeftButton) {
       hitTester.hitTest(position) match {
         case Some(node) => (modifiers.contains(Modifier.Shift), modifiers.contains(Modifier.Control)) match {
-          case (false, false) => set(selection, Set(node))
-          case (true, false) => update(selection)(_ + node)
-          case (false, true) => update(selection)(_ - node)
+          case (false, false) => selection.set(Set(node))
+          case (true, false) => selection.update(_ + node)
+          case (false, true) => selection.update(_ - node)
           case (true, true) => IO.Empty // both Shift and Control are down, such action is undefined
         }
-        case None if (modifiers.isEmpty) => set(selection, Set[Node]())
+        case None if (modifiers.isEmpty) => selection.set(Set[Node]())
         case _ => IO.Empty
       }
     } else IO.Empty
@@ -83,7 +83,7 @@ class GenericSelectionToolMouseListener[Node](
             // mouse down without modifiers, begin move-drag
             dragHandle = Some(nodeDragHandler.dragStarted(position, hitNode))
 
-            eval(selection) >>= (sel => if (sel.contains(hitNode)) set(selection, Set(hitNode)) else IO.Empty)
+            selection.eval >>= (sel => if (sel.contains(hitNode)) selection.set(Set(hitNode)) else IO.Empty)
           } else
             // do nothing if pressed on a node with modifiers
             IO.Empty

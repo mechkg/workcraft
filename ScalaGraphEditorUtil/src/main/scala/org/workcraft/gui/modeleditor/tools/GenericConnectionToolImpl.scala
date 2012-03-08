@@ -70,30 +70,30 @@ class GenericConnectionToolImpl[N](centerProvider: N => Expression[Point2D.Doubl
 
   val mouseListener: ToolMouseListener = new DML {
     override def mouseMoved(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit] =
-      set(lastMouseCoords, position) >>=|
+      lastMouseCoords.set(position) >>=|
         hitTester(position) >>= (n => {
-          set(mouseOverObject, n) >>=|
+          mouseOverObject.set(n) >>=|
             (if (!leftFirst && mouseExitRequiredForSelfLoop)
-              eval(first) >>= (f => if (f == n) set(mouseOverObject, None) else ioPure.pure { leftFirst = true })
+              first.eval >>= (f => if (f == n) mouseOverObject.set(None) else ioPure.pure { leftFirst = true })
             else
               IO.Empty)
         })
 
     override def buttonPressed(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double): IO[Unit] = button match {
-      case LeftButton => eval(first) >>= {
-        case None => eval(mouseOverObject) >>= {
+      case LeftButton => first.eval >>= {
+        case None => mouseOverObject.eval >>= {
           case None => IO.Empty
-          case Some(mouseOver) => assign(first, mouseOverObject) >>=| ioPure.pure { leftFirst = false } >>=| mouseMoved(modifiers, position)
+          case Some(mouseOver) => (first := mouseOverObject) >>=| ioPure.pure { leftFirst = false } >>=| mouseMoved(modifiers, position)
         }
         case Some(currentFirst) => {
-          eval(mouseOverObject) >>= {
+          mouseOverObject.eval >>= {
             case None => IO.Empty
             case Some(mouseOver) => {
               connectionManager.connect(currentFirst, mouseOver) match {
                 case Right(connect) => {
                   connect >>=| (
-                    if (modifiers.contains(Modifier.Control)) assign(first, mouseOverObject) >>=| set(mouseOverObject, None)
-                    else set(first, None))
+                    if (modifiers.contains(Modifier.Control)) (first := mouseOverObject) >>=| mouseOverObject.set(None)
+                    else first.set(None))
                 }
                 case Left(err) => ioPure.pure { Toolkit.getDefaultToolkit.beep }
               }
@@ -101,7 +101,7 @@ class GenericConnectionToolImpl[N](centerProvider: N => Expression[Point2D.Doubl
           }
         }
       }
-      case RightButton => set(first, None) >>=| set(mouseOverObject, None)
+      case RightButton => first.set(None) >>=| mouseOverObject.set(None)
       case _ => IO.Empty
     }
   }

@@ -29,7 +29,7 @@ class ToolboxPanel(toolbox: Toolbox) extends JPanel {
   setLayout(new FlowLayout)
   buttons.foreach(tb => add(tb._2))
   
-  buttons.list.find( _._1 == eval(toolbox.selectedTool).unsafePerformIO).foreach(_._2.setSelected(true))
+  buttons.list.find( _._1 == toolbox.selectedTool.unsafeEval).foreach(_._2.setSelected(true))
   
   def selectTool (tool: ModelEditorTool) = {
     buttons.foreach(_._2.setSelected(false))
@@ -45,7 +45,7 @@ class ToolboxPanel(toolbox: Toolbox) extends JPanel {
     button.setMargin(new Insets(0, 0, 0, 0))
 
     val insets = button.getInsets()
-    val iconSize = unsafeEval(CommonVisualSettings.iconSize); // TODO: make the size update appropriately
+    val iconSize = CommonVisualSettings.iconSize.unsafeEval // TODO: make the size update appropriately
     val minSize = iconSize + Math.max(insets.left + insets.right, insets.top + insets.bottom)
 
     tool.button.icon match {

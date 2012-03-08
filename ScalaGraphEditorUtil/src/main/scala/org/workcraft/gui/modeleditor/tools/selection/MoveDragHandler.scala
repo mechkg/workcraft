@@ -31,10 +31,10 @@ class MoveDragHandler[Node]
         }
       }
       
-      private def offsetSelection (totalOffset : Point2D.Double) = eval(selection) >>= (nodes => {
+      private def offsetSelection (totalOffset : Point2D.Double) = selection.eval >>= (nodes => {
           nodes.toList.traverse_ (node => movableController(node) match {
             case None => IO.Empty
-            case Some(pos) => update (pos)(posVal => Geometry.add(getOriginalPositionWithDefault(node, posVal), totalOffset))
+            case Some(pos) => pos.update(posVal => Geometry.add(getOriginalPositionWithDefault(node, posVal), totalOffset))
           })
         }
       )
@@ -48,7 +48,7 @@ class MoveDragHandler[Node]
       snapper(originalPosition)
       
       def getNodePos(hitNode : Node, movableController : Node => Option[ModifiableExpression[Point2D.Double]]) : Point2D.Double =
-        movableController(hitNode).map{arg => unsafeEval(arg)}.getOrElse(new Point2D.Double(0,0))
+        movableController(hitNode).map{arg => arg.unsafeEval}.getOrElse(new Point2D.Double(0,0))
       
       override def dragged(pos : Point2D.Double) = snapper(pos)
       

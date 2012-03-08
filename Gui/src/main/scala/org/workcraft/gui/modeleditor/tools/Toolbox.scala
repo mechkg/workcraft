@@ -4,7 +4,6 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 import org.workcraft.gui.modeleditor.HotkeyBinding
 import org.workcraft.scala.Expressions.convertModifiableExpression
 import org.workcraft.scala.Expressions.monadicSyntaxV
-import org.workcraft.scala.Expressions.set
 import org.workcraft.scala.Expressions.Expression
 
 import scalaz._
@@ -13,7 +12,7 @@ class Toolbox(val tools: NonEmptyList[ModelEditorTool]) {
   private val selectedTool_ = Variable.create(tools.head)
   
   def selectedTool: Expression[ModelEditorTool] = selectedTool_
-  def selectTool (tool: ModelEditorTool) = set(selectedTool_, tool)
+  def selectTool (tool: ModelEditorTool) = selectedTool_.set(tool)
     
   private val hotkeys = tools.list.flatMap(t => t.button.hotkey.map((t, _))).groupBy(_._2).mapValues(_.map(_._1))
   private val cyclicHotkeyIterator = hotkeys.mapValues(Stream.continually(_).flatten.iterator)

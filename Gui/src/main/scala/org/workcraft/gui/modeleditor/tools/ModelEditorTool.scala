@@ -16,7 +16,7 @@ trait Button {
 }
 
 object Button {
-  def create(_label: String, iconPath: String, _hotkey: Option[Int]): IO[Button] = {
+  def apply(_label: String, iconPath: String, _hotkey: Option[Int]): IO[Button] = {
     GUI.createIconFromSvgUsingSettingsSize(iconPath).map(ico => new Button {
       val label = _label
       val icon = Some(ico)

@@ -14,11 +14,11 @@ import javax.swing.JPanel
 import org.workcraft.scala.effects.IO
 import org.workcraft.scala.effects.IO._
 import scalaz.Scalaz._
-
 import ModelEditorTool.ModelEditorToolConstructor
+import org.workcraft.graphics.Colorisation
 
 object NodeGeneratorTool {
-  def apply(look : Button, action : Point2D.Double => IO[Unit]) : ModelEditorToolConstructor = env => 
+  def apply(look : Button, painter: Expression[GraphicalContent], action : Point2D.Double => IO[Unit]) : ModelEditorToolConstructor = env => 
     new ModelEditorTool {
     def button = look
     def keyBindings = Nil
@@ -27,7 +27,7 @@ object NodeGeneratorTool {
         if(btn == LeftButton) action(position) else {}.pure[IO]
       }
     })
-    def userSpaceContent: Expression[GraphicalContent] = constant(GraphicalContent.Empty) 
+    def userSpaceContent: Expression[GraphicalContent] = painter 
     def screenSpaceContent: Expression[GraphicalContent] = 
       GUI.editorMessage(env.viewport, Color.BLACK, "Click to create a " + look.label)
     def interfacePanel: Option[JPanel] = None    

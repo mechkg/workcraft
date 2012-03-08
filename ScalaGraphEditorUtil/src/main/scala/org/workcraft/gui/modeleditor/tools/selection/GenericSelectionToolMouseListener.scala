@@ -83,7 +83,7 @@ class GenericSelectionToolMouseListener[Node](
             // mouse down without modifiers, begin move-drag
             dragHandle = Some(nodeDragHandler.dragStarted(position, hitNode))
 
-            selection.eval >>= (sel => if (sel.contains(hitNode)) selection.set(Set(hitNode)) else IO.Empty)
+            selection.eval >>= (sel => if (!sel.contains(hitNode)) selection.set(Set(hitNode)) else IO.Empty)
           } else
             // do nothing if pressed on a node with modifiers
             IO.Empty

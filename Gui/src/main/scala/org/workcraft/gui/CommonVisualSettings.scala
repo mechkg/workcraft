@@ -7,6 +7,8 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 import pcollections.PVector
 import pcollections.TreePVector
 
+import org.workcraft.scala.Expressions._
+
 object CommonVisualSettings /*implements SettingsPage*/ {
 	val size = Variable.create(1.0)
 	val strokeWidth = Variable.create(0.1)
@@ -15,6 +17,12 @@ object CommonVisualSettings /*implements SettingsPage*/ {
 	val foregroundColor = Variable.create(Color.BLACK)
 	val fillColor = Variable.create(Color.WHITE)
 	val serifFont = Variable.create(new Font("Serif", Font.PLAIN, 1))
+	
+	val labelFont = for {
+	  size <- size;
+	  font <- serifFont
+	} yield font.deriveFont((size*0.5).toFloat)
+	
 	val sansSerifFont = Variable.create(new Font("SansSerif", Font.PLAIN, 1))
 	val editorMessageFont = Variable.create(new Font("SansSerif", Font.PLAIN, 12))
 	

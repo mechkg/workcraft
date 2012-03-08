@@ -25,20 +25,21 @@ import org.workcraft.scala.grapheditor.tools.GenericSelectionTool
 import org.workcraft.scala.Expressions._
 import org.workcraft.graphics.Colorisation
 import java.awt.geom.AffineTransform
+import org.workcraft.gui.modeleditor.tools.NodeGeneratorTool
 
 sealed trait Node
 
 sealed trait Component extends Node
-case class Place private[petri2] extends Component
-case class Transition private[petri2] extends Component
+class Place private[petri2] extends Component
+class Transition private[petri2] extends Component
 
 sealed trait Arc extends Node
 case class ProducerArc private[petri2] (from: Transition, to: Place) extends Arc
 case class ConsumerArc private[petri2] (from: Place, to: Transition) extends Arc
 
 class PetriNet {
-  val marking = Map[Place, ModifiableExpression[Int]]()
-  val labelling = Map[Component, ModifiableExpression[String]]()
+  val marking = Variable.create(Map[Place, Int]())
+  val labelling = Variable.create(Map[Component, String]())
   val places = Variable.create(List[Place]())
   val transitions = Variable.create(List[Transition]())
   val arcs = Variable.create(List[Arc]())
@@ -50,8 +51,24 @@ class PetriNet {
   } yield p ++ t ++ a
 
  
-  def tokens(place: Place) = marking(place)
-  def label(c: Component) = labelling(c)
+  def tokens(place: Place) = marking.map(_(place))
+  def label(c: Component) = labelling.map(_(c))
+  
+  private def newPlace = ioPure.pure{ new Place }
+  private def newTransition = ioPure.pure {new Transition}
+  
+  def createPlace: IO[Place] = for {
+    p <- newPlace;
+    _ <- places.update(p :: _);
+    _ <- marking.update (_ + (p-> 0));
+    _ <- labelling.update (_ + (p -> "Pitsot"))
+  } yield p 
+  
+  def createTransition: IO[Transition] = for {
+    t <- newTransition;
+    _ <- transitions.update(t::_);
+    _ <- labelling.update(_ + (t -> "Sto"))
+  } yield t
 }
 
 class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
@@ -68,29 +85,36 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
    
   def componentTransform(c: Component) = componentPosition(c).map(p => AffineTransform.getTranslateInstance(p.getX, p.getY))
 
-  def componentPosition(c: Component) = model.layout(c)
+  def componentPosition(c: Component): ModifiableExpression[Point2D.Double] =
+    ModifiableExpression (model.layout.map(_(c)), p => model.layout.update(_ + (c -> p)))
 
-  def nodePosition(n: Node) = n match {
+  def nodePosition(n: Node): Option[ModifiableExpression[Point2D.Double]] = n match {
     case _: Arc => None
-    case c: Component => componentPosition(c)
+    case c: Component => Some(componentPosition(c))
   }
 
   def touchable(n: Node) = n match {
-    case _: Place => VisualPlace.touchable
-    case _: Transition => VisualTransition.touchable
+    case p: Place => (VisualPlace.touchable <**> componentTransform(p)) ((touchable, xform) => touchable.transform(xform))
+    case t: Transition => (VisualTransition.touchable <**> componentTransform(t)) ((touchable, xform) => touchable.transform(xform))
     case _: Arc => null
   }
 
-  private def selectionTool = GenericSelectionTool(
+  private def selectionTool = GenericSelectionTool[Node](
     model.net.nodes,
     model.selection,
-    null,
+    nodePosition(_),
     x => x,
-    null,
-    null,
-    null)
+    touchable(_),
+    image(_),
+    List())
+    
+  private def placeGeneratorTool = 
+    NodeGeneratorTool(Button("Place", "images/icons/svg/place.svg", Some(KeyEvent.VK_P)).unsafePerformIO, image(_ => Colorisation(None, None)), model.createPlace(_))
+  
+  private def transitionGeneratorTool =
+    NodeGeneratorTool(Button("Transition", "images/icons/svg/transition.svg", Some(KeyEvent.VK_T)).unsafePerformIO, image(_ => Colorisation(None, None)), model.createTransition(_))
 
-  def tools = null
+  def tools = NonEmptyList(selectionTool, placeGeneratorTool, transitionGeneratorTool)
   def keyBindings = List(KeyBinding("Sumshit", KeyEvent.VK_Q, KeyEventType.KeyPressed, Set(), ioPure.pure { JOptionPane.showMessageDialog(null, "KUZUKA!", "Important message!", JOptionPane.INFORMATION_MESSAGE) }))
   def button = new Button {
     def hotkey = Some(KeyEvent.VK_K)
@@ -102,7 +126,11 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
 class PetriNetModel extends Model {
   val net = new PetriNet
   val selection = Variable.create(Set[Node]())
-  val layout = Map[Component, ModifiableExpression[Point2D.Double]]()
+  val layout = Variable.create(Map[Component, Point2D.Double]())
+  
+  def createPlace(p: Point2D.Double): IO[Unit] = net.createPlace >>= (place => layout.update(_ + (place -> p)))
+  def createTransition(p: Point2D.Double): IO[Unit] = net.createTransition >>= (transition => layout.update(_ + (transition -> p)))
+  
 
   def implementation[T](service: Service[ModelScope, T]) = service match {
     case EditorService => Some(new PetriNetEditor(this))

@@ -17,8 +17,8 @@ object VisualPlace {
     for (
         t <- tokens;
         label <- label;
-        font <- CommonVisualSettings.serifFont;
         size <- CommonVisualSettings.size;
+        font <- CommonVisualSettings.labelFont;
         strokeWidth <- CommonVisualSettings.strokeWidth;
         foreColor <- CommonVisualSettings.foregroundColor;
         fillColor <- CommonVisualSettings.fillColor;
@@ -43,7 +43,7 @@ object VisualTransition {
   def image (label: Expression[String]) : Expression[BoundedColorisableGraphicalContent] =
     for (
         label <- label;
-        font <- CommonVisualSettings.serifFont;
+        font <- CommonVisualSettings.labelFont;
         size <- CommonVisualSettings.size;
         strokeWidth <- CommonVisualSettings.strokeWidth;
         foreColor <- CommonVisualSettings.foregroundColor;

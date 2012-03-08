@@ -29,7 +29,7 @@ case class StgToolsProvider(visualStg : ModifiableExpression[VisualStg]) {
   def mkNodeGeneratorTool(generator : (Point2D.Double => State[VisualStg, Any], java.lang.String, java.lang.String, Int))
      : ModelEditorToolConstructor = {
     val (g, iconPath, name, hotkey) = generator
-    NodeGeneratorTool(Button.create(name, iconPath, Some(hotkey)).unsafePerformIO, 
+    NodeGeneratorTool(Button(name, iconPath, Some(hotkey)).unsafePerformIO, 
 	  (where : Point2D.Double) => visualStg.update(g(where)~>_))
   }
   

@@ -137,7 +137,7 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Mode
 
     val connectionTool = GenericConnectionTool.apply[StgConnectable](stgConnectables, (connectableTouchable(_)).map(_.map(_.touchable)), deepCenters, connectionController, _ => paint)
     
-    val nodeGeneratorTools = org.workcraft.plugins.stg21.StgToolsProvider(visualStg).nodeGeneratorTools
+    val nodeGeneratorTools = org.workcraft.plugins.stg21.StgToolsProvider(visualStg).nodeGeneratorTools(paint)
     
     val selectionTool = GenericSelectionTool.apply[VisualEntity](
         visualEntities, 

@@ -72,12 +72,16 @@ class PetriNet {
 }
 
 class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
-  def image(colorisation: Node => Colorisation): Expression[GraphicalContent] =
+  
+  val imageV: Expression[(Node => Colorisation) => GraphicalContent] =
   (model.net.places.expr <**> model.net.transitions.expr)((p, t) =>
-    (p++t).map(c => ((componentImage(c)) <**> componentTransform(c))
-        ((img, xform) => img.transform(xform).cgc.applyColorisation(colorisation(c))))
-      .sequence.map(_.foldLeft(GraphicalContent.Empty)(_.compose(_)))).join
-          
+    (p++t).traverse
+      (c => (componentImage(c) <**> componentTransform(c)) ((img, xform) => (c, img.transform(xform).cgc)))
+      .map{list => (colorisation : (Node => Colorisation)) => (list.map {case (c, img) => img.applyColorisation(colorisation(c))}.foldLeft(GraphicalContent.Empty)(_.compose(_)))}
+      ).join
+  
+  def image(colorisation: Node => Colorisation): Expression[GraphicalContent] = imageV map (_(colorisation))
+
   def componentImage (c: Component) = c match {
     case p:Place => VisualPlace.image(model.net.tokens(p), model.net.label(p))
     case t:Transition => VisualTransition.image(model.net.label(t)) 

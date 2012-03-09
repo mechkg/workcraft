@@ -34,7 +34,7 @@ class GenericSelectionTool[N](
 
   def keyBindings = customKeyBindings
   def mouseListener = Some(mouseListener_)
-  def userSpaceContent = mouseListener_.effectiveSelection >>=
+  val userSpaceContent = mouseListener_.effectiveSelection >>=
     (selection => (paint(n => if (selection contains n) GenericSelectionTool.highlightedColorisation else Colorisation.Empty) |@|
       mouseListener_.userSpaceContent(viewport))(_.compose(_)))
   def screenSpaceContent = constant(GraphicalContent.Empty)

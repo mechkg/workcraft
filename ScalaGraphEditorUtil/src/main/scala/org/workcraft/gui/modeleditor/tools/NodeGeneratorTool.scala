@@ -24,7 +24,7 @@ object NodeGeneratorTool {
     def keyBindings = Nil
     def mouseListener : Option[ToolMouseListener] = Some(new DummyMouseListener{
       override def buttonPressed(btn : MouseButton, modifiers : Set[Modifier], position : Point2D.Double) : IO[Unit] = {
-        if(btn == LeftButton) action(position) else {}.pure[IO]
+        (if(btn == LeftButton) action(position) else {}.pure[IO]).replicateM_(500)
       }
     })
     def userSpaceContent: Expression[GraphicalContent] = painter 

@@ -1,5 +1,6 @@
 package org.workcraft.dependencymanager.advanced.core;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import org.workcraft.dependencymanager.util.listeners.Listener;
@@ -55,7 +56,7 @@ public abstract class ExpressionBase<T> implements Expression<T> {
 		public boolean valid() {
 			return listeners != null;
 		}
-		HashSet<Handle> dependencies = new HashSet<Handle>(); // used to make sure the dependencies don't get garbage collected too early
+		ArrayList<Handle> dependencies = new ArrayList<Handle>(1); // used to make sure the dependencies don't get garbage collected too early
 		//Exception stackTrace = new Exception("Stack trace");
 
 		WeakFireOnceListenersCollection listeners = new WeakFireOnceListenersCollection();

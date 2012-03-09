@@ -9,7 +9,7 @@ public class WeakHashSet<T> implements Set<T> {
 
 	Object dummy = new Object();
 	
-	WeakHashMap<T,Object> map = new WeakHashMap<T, Object>(); 
+	WeakHashMap<T,Object> map = new WeakHashMap<T, Object>(1, 0.75f); 
 	
 	@Override
 	public int size() {

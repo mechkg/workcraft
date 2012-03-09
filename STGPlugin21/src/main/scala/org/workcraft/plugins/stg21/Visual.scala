@@ -15,8 +15,8 @@ import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.graphics.TouchableC
 import org.workcraft.graphics.Java2DDecoration._
 import java.awt.Stroke
-
 import RichGraphicalContent._
+import org.workcraft.gui.CommonVisualSettings
 
 object Visual {
   val font = new Font("Sans-serif", Font.PLAIN, 1).deriveFont(0.75f);
@@ -42,7 +42,7 @@ object Visual {
   
   def place(p : ExplicitPlace) : Expression[RichGraphicalContent] = {
     var circ = circle(1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE))
-    for(img <- TokenPainter.image(constant(p.initialMarking))) yield (circ.under(img))
+    for(settings <- CommonVisualSettings.settings; img <- TokenPainter.image(constant(p.initialMarking), settings)) yield (circ.under(img))
   }
   
   def transition(t : Id[Transition])(stg : VisualStg) : Option[RichGraphicalContent] = {

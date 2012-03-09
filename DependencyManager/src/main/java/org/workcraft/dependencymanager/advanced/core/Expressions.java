@@ -26,10 +26,10 @@ import pcollections.TreePVector;
 
 public class Expressions {
 	public static <T> Expression<T> constant(final T value) {
-		return new ExpressionBase<T> () {
+		return new Expression<T> () {
 			@Override
-			public T evaluate(EvaluationContext resolver) {
-				return value;
+			public ValueHandleTuple<? extends T> getValue(Listener subscriber) {
+				return new ValueHandleTuple<T>(value, Handle.Util.DUMMY);
 			}
 		};
 	}

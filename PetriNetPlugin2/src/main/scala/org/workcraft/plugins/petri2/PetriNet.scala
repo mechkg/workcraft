@@ -26,6 +26,9 @@ import org.workcraft.scala.Expressions._
 import org.workcraft.graphics.Colorisation
 import java.awt.geom.AffineTransform
 import org.workcraft.gui.modeleditor.tools.NodeGeneratorTool
+import org.workcraft.graphics.ColorisableGraphicalContent
+import org.workcraft.graphics.BoundedColorisableGraphicalContent
+import org.workcraft.gui.CommonVisualSettings
 
 sealed trait Node
 
@@ -73,18 +76,32 @@ class PetriNet {
 
 class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
   
+  def treeFold[A](z: A, f: (A, A) => A, l: List[A]): A = l match {
+    case Nil => z
+    case x::Nil => f (z, x)
+    case q@(x::xs) => treeFold (z, f, q.grouped(2).map({ 
+      case List(a,b) => f(a,b)
+      case List(a) => a
+      case _ => throw new RuntimeException ("Should not happen")
+    }).toList)
+  }
+    
+  def treeSequence[A] (l: List[Expression[A]]) : Expression[List[A]] =
+    treeFold[Expression[List[A]]](constant(List()), (q,p) => (q <**> p)(_++_), l.map(_.lwmap(List(_))))
+  
   val imageV: Expression[(Node => Colorisation) => GraphicalContent] =
+    CommonVisualSettings.settings >>= (settings =>
   (model.net.places.expr <**> model.net.transitions.expr)((p, t) =>
-    (p++t).traverse
-      (c => (componentImage(c) <**> componentTransform(c)) ((img, xform) => (c, img.transform(xform).cgc)))
-      .map{list => (colorisation : (Node => Colorisation)) => (list.map {case (c, img) => img.applyColorisation(colorisation(c))}.foldLeft(GraphicalContent.Empty)(_.compose(_)))}
-      ).join
+    treeSequence((p++t).map
+      (c => (componentImage(c, settings) <**> componentTransform(c) ) ((img, xform) => (c, img.transform(xform).cgc))))
+      .map{list => (colorisation : (Node => Colorisation)) => treeFold[GraphicalContent](GraphicalContent.Empty, (_.compose(_)), (list.map {case (c, img) => img.applyColorisation(colorisation(c))}))}
+      ).join)
   
   def image(colorisation: Node => Colorisation): Expression[GraphicalContent] = imageV map (_(colorisation))
 
-  def componentImage (c: Component) = c match {
-    case p:Place => VisualPlace.image(model.net.tokens(p), model.net.label(p))
-    case t:Transition => VisualTransition.image(model.net.label(t)) 
+  def componentImage (c: Component, settings : CommonVisualSettings) : Expression[BoundedColorisableGraphicalContent] = c match {
+    case p:Place => VisualPlace.image(model.net.tokens(p), model.net.label(p), settings)
+    case t:Transition => VisualTransition.image(model.net.label(t), settings)
   }       
    
   def componentTransform(c: Component) = componentPosition(c).map(p => AffineTransform.getTranslateInstance(p.getX, p.getY))

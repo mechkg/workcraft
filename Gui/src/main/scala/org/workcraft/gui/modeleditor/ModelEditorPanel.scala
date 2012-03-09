@@ -37,9 +37,9 @@ class ModelEditorPanel (editor: ModelEditor) (implicit logger: () => Logger[IO])
     class Image
     def start = {
       val repainter = graphicalContent.map(_ => { ModelEditorPanel.this.repaint(); new Image })
-      new Timer(1, new ActionListener {
+      new Timer(30, new ActionListener {
         override def actionPerformed(e: ActionEvent) = repainter.unsafeEval
-      }).start
+      }).start 
     }
   }
 
@@ -90,10 +90,9 @@ class ModelEditorPanel (editor: ModelEditor) (implicit logger: () => Logger[IO])
   addKeyListener(kListener)
 
   def reshape = panelDimensions.setValue(0, 0, getWidth, getHeight)
-
+  
   val graphicalContent = for {
-    background <- CommonVisualSettings.backgroundColor;
-    foreground <- CommonVisualSettings.foregroundColor;
+    settings <- CommonVisualSettings.settings;
     grid <- grid.graphicalContent;
     ruler <- ruler.graphicalContent;
     viewTransform <- view.transform
@@ -110,7 +109,7 @@ class ModelEditorPanel (editor: ModelEditor) (implicit logger: () => Logger[IO])
       firstPaint = false
     }
 
-    g.setBackground(background)
+    g.setBackground(settings.backgroundColor)
     g.clearRect(0, 0, getWidth(), getHeight())
     grid.draw(g)
     g.setTransform(screenTransform)
@@ -136,7 +135,7 @@ class ModelEditorPanel (editor: ModelEditor) (implicit logger: () => Logger[IO])
       g.setTransform(screenTransform)
 
       g.setStroke(borderStroke)
-      g.setColor(foreground)
+      g.setColor(settings.foregroundColor)
       g.drawRect(0, 0, getWidth() - 1, getHeight() - 1)
     }
 

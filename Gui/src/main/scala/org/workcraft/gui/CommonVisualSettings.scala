@@ -9,23 +9,25 @@ import pcollections.TreePVector
 
 import org.workcraft.scala.Expressions._
 
+case class CommonVisualSettings (
+	size:Double = 1.0,
+	strokeWidth:Double = 0.1,
+	iconSize:Int = 16,
+	backgroundColor:Color = Color.WHITE,
+	foregroundColor:Color = Color.BLACK,
+	fillColor:Color = Color.WHITE,
+	serifFont:Font = new Font("Serif", Font.PLAIN, 1),
+	labelFont:Font = new Font("Serif", Font.PLAIN, 1),
+	labelFontSize: Double = 0.5,
+	sansSerifFont:Font = new Font("SansSerif", Font.PLAIN, 1),
+	editorMessageFont:Font = new Font("SansSerif", Font.PLAIN, 12)
+	) {
+  def effectiveLabelFont = labelFont.deriveFont(labelFontSize.toFloat)
+}
+
 object CommonVisualSettings /*implements SettingsPage*/ {
-	val size = Variable.create(1.0)
-	val strokeWidth = Variable.create(0.1)
-	val iconSize = Variable.create(16)
-	val backgroundColor = Variable.create(Color.WHITE)
-	val foregroundColor = Variable.create(Color.BLACK)
-	val fillColor = Variable.create(Color.WHITE)
-	val serifFont = Variable.create(new Font("Serif", Font.PLAIN, 1))
-	
-	val labelFont = for {
-	  size <- size;
-	  font <- serifFont
-	} yield font.deriveFont((size*0.5).toFloat)
-	
-	val sansSerifFont = Variable.create(new Font("SansSerif", Font.PLAIN, 1))
-	val editorMessageFont = Variable.create(new Font("SansSerif", Font.PLAIN, 12))
-	
+  val settings = Variable.create(CommonVisualSettings())
+
 	
 	/*
 	@Override

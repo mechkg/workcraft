@@ -63,7 +63,7 @@ object GUI {
   }
 
   def createIconFromSvgUsingSettingsSize(path: String) =
-    CommonVisualSettings.iconSize.eval >>= (size => createIconFromSvg(path, size, size, None))
+    CommonVisualSettings.settings.map(_.iconSize).eval >>= (size => createIconFromSvg(path, size, size, None))
 
   def createIconFromSvg(path: String, height: Int, width: Int, background: Option[Color]): IO[ImageIcon] = ioPure.pure {
     System.setProperty("org.apache.batik.warn_destination", "false")
@@ -121,7 +121,7 @@ object GUI {
   }
 
   def editorMessage(viewport: Viewport, color: Color, message: String): Expression[GraphicalContent] = for {
-    font <- CommonVisualSettings.editorMessageFont;
+    font <- CommonVisualSettings.settings.map(_.editorMessageFont);
     shape <- viewport.dimensions
   } yield GraphicalContent(g => {
     g.setFont(font)

@@ -13,47 +13,32 @@ import org.workcraft.graphics.Touchable
 import java.awt.geom.Rectangle2D
 
 object VisualPlace {
-  def image (tokens: Expression[Int], label: Expression[String]) : Expression[BoundedColorisableGraphicalContent] = 
-    for (
-        t <- tokens;
-        label <- label;
-        size <- CommonVisualSettings.size;
-        font <- CommonVisualSettings.labelFont;
-        strokeWidth <- CommonVisualSettings.strokeWidth;
-        foreColor <- CommonVisualSettings.foregroundColor;
-        fillColor <- CommonVisualSettings.fillColor;
-        tokensImage <- TokenPainter.image(tokens)
-    ) yield {
-      val place = circle(size, Some((new BasicStroke (strokeWidth.toFloat), foreColor)), Some(fillColor)).boundedColorisableGraphicalContent
+  def image (tokens: Expression[Int], label: Expression[String], settings: CommonVisualSettings) : Expression[BoundedColorisableGraphicalContent] =
+    
+    (label <**> TokenPainter.image(tokens, settings))( (label, tokensImage) => {
+      val place = circle(settings.size, Some((new BasicStroke (settings.strokeWidth.toFloat), settings.foregroundColor)), Some(settings.fillColor)).boundedColorisableGraphicalContent
       
       val placeWithTokens = tokensImage match {
         case Some(i) => place.compose(i)
         case _ => place
       }
 
-      val labelImage = Graphics.label (label, font, foreColor).boundedColorisableGraphicalContent
+      val labelImage = Graphics.label (label, settings.effectiveLabelFont, settings.foregroundColor).boundedColorisableGraphicalContent
       
       labelImage.alignSideways(placeWithTokens, LabelPositioning.Bottom).compose(placeWithTokens)
-    }
+    })
   
-  val touchable = CommonVisualSettings.size.map(size => Touchable.fromCircle(size/2))
+  val touchable = CommonVisualSettings.settings.map(settings => Touchable.fromCircle(settings.size/2))
 }
 
 object VisualTransition {
-  def image (label: Expression[String]) : Expression[BoundedColorisableGraphicalContent] =
-    for (
-        label <- label;
-        font <- CommonVisualSettings.labelFont;
-        size <- CommonVisualSettings.size;
-        strokeWidth <- CommonVisualSettings.strokeWidth;
-        foreColor <- CommonVisualSettings.foregroundColor;
-        fillColor <- CommonVisualSettings.fillColor
-        ) yield {
-      val transitionImage = rectangle (size, size, Some ((new BasicStroke(strokeWidth.toFloat), foreColor)), Some(fillColor)).boundedColorisableGraphicalContent
-      val labelImage = Graphics.label(label, font, foreColor).boundedColorisableGraphicalContent
+  def image (label: Expression[String], settings: CommonVisualSettings) : Expression[BoundedColorisableGraphicalContent] =
+    label.map{label =>
+      val transitionImage = rectangle (settings.size, settings.size, Some ((new BasicStroke(settings.strokeWidth.toFloat), settings.foregroundColor)), Some(settings.fillColor)).boundedColorisableGraphicalContent
+      val labelImage = Graphics.label(label, settings.labelFont, settings.foregroundColor).boundedColorisableGraphicalContent
       
       (labelImage alignSideways (transitionImage, LabelPositioning.Bottom)).compose(transitionImage)
     }
   
-  val touchable = CommonVisualSettings.size.map(size => Touchable.fromRect(new Rectangle2D.Double (-size/2, -size/2, size, size)))
+  val touchable = CommonVisualSettings.settings.map(settings => Touchable.fromRect(new Rectangle2D.Double (-settings.size/2, -settings.size/2, settings.size, settings.size)))
 }

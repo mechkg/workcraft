@@ -15,11 +15,19 @@ import org.workcraft.dependencymanager.advanced.user.Setter
 import javax.swing.SwingUtilities
 import org.workcraft.scala.effects.IO
 import org.workcraft.scala.effects.IO._
+import org.workcraft.dependencymanager.util.listeners.Listener
+import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleTuple
 
 object Expressions {
   case class Expression[+T](jexpr: JExpression[_ <: T]) {
     def unsafeEval: T = GlobalCache.eval(jexpr)
     def eval: IO[T] = ioPure.pure { unsafeEval }
+    def lwmap[S] (f : T => S) : Expression[S] = Expression(new JExpression[S] {
+      override def getValue(subscriber : Listener) : ValueHandleTuple[S] = { 
+        val res = jexpr.getValue(subscriber)
+        new ValueHandleTuple(f(res.value), res.handle)
+      }
+    })
   }
 
   case class ModifiableExpression[T](expr: Expression[T], set: T => IO[Unit]) {
@@ -60,6 +68,8 @@ object Expressions {
   implicit def modifiableExpressionAsReadonly[T](m: ModifiableExpression[T]): Expression[T] = m.expr
 
   implicit object ExpressionMonad extends Monad[Expression] {
+    override def fmap[A, B](fa: Expression[A], f: A => B): Expression[B] = fmapJ[A, B] (asFunctionObject(f), fa.jexpr)
+    override def apply[A, B](f: Expression[A => B], a: Expression[A]): Expression[B] = fmapJ[A=>B, A, B](asFunctionObject2(_(_)), f.jexpr, a.jexpr) 
     override def pure[A](x: => A) = constant(x)
     override def bind[A, B](a: Expression[A], f: A => Expression[B]): Expression[B] = decorateExpression(bindJ[A, B](a.jexpr: JExpression[_ <: A], asFunctionObject(((_: Expression[B]).jexpr).compose(f))))
   }

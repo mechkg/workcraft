@@ -45,7 +45,7 @@ class ToolboxPanel(toolbox: Toolbox) extends JPanel {
     button.setMargin(new Insets(0, 0, 0, 0))
 
     val insets = button.getInsets()
-    val iconSize = CommonVisualSettings.iconSize.unsafeEval // TODO: make the size update appropriately
+    val iconSize = CommonVisualSettings.settings.unsafeEval.iconSize // TODO: make the size update appropriately
     val minSize = iconSize + Math.max(insets.left + insets.right, insets.top + insets.bottom)
 
     tool.button.icon match {

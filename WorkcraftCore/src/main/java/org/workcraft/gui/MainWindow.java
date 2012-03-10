@@ -75,7 +75,6 @@ import org.workcraft.exceptions.VisualModelInstantiationException;
 import org.workcraft.gui.actions.Action;
 import org.workcraft.gui.actions.ScriptedActionListener;
 import org.workcraft.gui.graph.GraphEditorPanel;
-import org.workcraft.gui.propertyeditor.SettingsEditorDialog;
 import org.workcraft.gui.tabs.DockableTab;
 import org.workcraft.gui.tasks.TaskFailureNotifier;
 import org.workcraft.gui.tasks.TaskManagerWindow;
@@ -117,7 +116,7 @@ public class MainWindow extends JFrame {
 	private OutputWindow outputWindow;
 	private ErrorWindow errorWindow;
 	private JavaScriptWindow jsWindow;
-	private PropertyEditorWindow propertyEditorWindow;
+	//private PropertyEditorWindow propertyEditorWindow;
 	private SimpleContainer toolboxWindow;
 	private SimpleContainer toolInterfaceWindow;
 
@@ -143,7 +142,7 @@ public class MainWindow extends JFrame {
 	protected void createWindows() {
 		workspaceWindow  = new WorkspaceWindow(framework);
 		workspaceWindow.setVisible(true);
-		propertyEditorWindow = new PropertyEditorWindow(framework);
+		//propertyEditorWindow = new PropertyEditorWindow(framework);
 
 		outputWindow = new OutputWindow(framework);
 		errorWindow = new ErrorWindow(framework);
@@ -355,8 +354,8 @@ public class MainWindow extends JFrame {
 		DockableWindow javaScript =  createDockableWindow (jsWindow, "Javascript", outputDockable, DockableWindowContentPanel.CLOSE_BUTTON);
 
 		DockableWindow wsvd = createDockableWindow (workspaceWindow, "Workspace", DockableWindowContentPanel.CLOSE_BUTTON, DockingManager.EAST_REGION, 0.8f);
-		DockableWindow propertyEditor = createDockableWindow (propertyEditorWindow, "Property editor", wsvd,  DockableWindowContentPanel.CLOSE_BUTTON, DockingManager.NORTH_REGION, 0.5f);
-		DockableWindow toolbox = createDockableWindow (toolboxWindow, "Editor tools", propertyEditor, DockableWindowContentPanel.HEADER|DockableWindowContentPanel.CLOSE_BUTTON, DockingManager.SOUTH_REGION, 0.5f);
+		//DockableWindow propertyEditor = createDockableWindow (propertyEditorWindow, "Property editor", wsvd,  DockableWindowContentPanel.CLOSE_BUTTON, DockingManager.NORTH_REGION, 0.5f);
+		DockableWindow toolbox = createDockableWindow (toolboxWindow, "Editor tools", null, DockableWindowContentPanel.HEADER|DockableWindowContentPanel.CLOSE_BUTTON, DockingManager.SOUTH_REGION, 0.5f);
 		DockableWindow tiw = createDockableWindow(toolInterfaceWindow, "Tool controls", toolbox, DockableWindowContentPanel.CLOSE_BUTTON, DockingManager.SOUTH_REGION, 0.5f);
 		
 
@@ -380,7 +379,7 @@ public class MainWindow extends JFrame {
 		registerUtilityWindow (problems);
 		registerUtilityWindow (javaScript);
 		registerUtilityWindow (wsvd);
-		registerUtilityWindow (propertyEditor);
+		//registerUtilityWindow (propertyEditor);
 		registerUtilityWindow (toolbox);
 		registerUtilityWindow (tasks);
 		registerUtilityWindow (tiw);
@@ -965,8 +964,8 @@ public class MainWindow extends JFrame {
 
 	}
 
-	public PropertyEditorWindow getPropertyView() {
-		return propertyEditorWindow;
+	public Object getPropertyView() {
+		return null;
 	}
 
 	public Framework getFramework() {
@@ -1005,10 +1004,11 @@ public class MainWindow extends JFrame {
 	}
 
 	public void editSettings() {
-		SettingsEditorDialog dlg = new SettingsEditorDialog(this);
-		dlg.setModal(false);
-		dlg.setResizable(true);
-		dlg.setVisible(true);
+		throw new RuntimeException("Everything is deprecated");
+		//SettingsEditorDialog dlg = new SettingsEditorDialog(this);
+		//dlg.setModal(false);
+		//dlg.setResizable(true);
+		//dlg.setVisible(true);
 	}
 
 	public WorkspaceWindow getWorkspaceView() {

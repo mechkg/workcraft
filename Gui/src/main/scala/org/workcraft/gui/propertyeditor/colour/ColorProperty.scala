@@ -7,7 +7,6 @@ import org.workcraft.gui.propertyeditor.EditableProperty
 
 object ColorProperty {
   def create(name:String, property:ModifiableExpression[Color]):EditableProperty = {
-    return EditableProperty.Util.create(name, new ColorCellEditor(), ColorCellRenderer.INSTANCE, property)
+    return EditableProperty(name, ColorCellEditor, ColorCellRenderer, property)
   }
-
 }

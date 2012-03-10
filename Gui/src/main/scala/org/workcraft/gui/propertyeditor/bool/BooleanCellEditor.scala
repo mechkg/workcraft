@@ -8,7 +8,21 @@ import org.workcraft.gui.propertyeditor.GenericCellEditor
 import org.workcraft.gui.propertyeditor.GenericEditorProvider
 import org.workcraft.util.Action
 
+import org.workcraft.scala.effects.IO
 
-object BooleanCellEditor {
-  var INSTANCE:GenericEditorProvider[Boolean] = new GenericEditorProvider[Boolean]
+object BooleanCellEditor extends GenericEditorProvider[Boolean] {
+  override def createEditor(initialValue: Boolean, accept: IO[Unit], cancel: IO[Unit]): GenericCellEditor[Boolean] = {
+    val checkBox = new JCheckBox()
+    checkBox.setOpaque(false)
+    checkBox.setFocusable(false)
+    checkBox.addItemListener(new ItemListener {
+      override def itemStateChanged(e: ItemEvent) {
+        accept.unsafePerformIO
+      }
+    })
+    new GenericCellEditor[Boolean] {
+      override def component: Component = checkBox
+      override def getValue: Boolean = checkBox.isSelected
+    }
+  }
 }

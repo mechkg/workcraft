@@ -2,41 +2,37 @@ package org.workcraft.gui.propertyeditor
 
 import javax.swing.table.AbstractTableModel
 import org.workcraft.exceptions.NotSupportedException
-import checkers.nullness.quals.Nullable
 import pcollections.PVector
 
 
 class PropertyEditorTableModel extends AbstractTableModel {
+  import PropertyEditorTableModel._
   override  def getColumnName(col:Int):String = {
     return columnNames(col)
   }
 
-  def setProperties(properties:PVector[EditableProperty]):Unit = {
-    this.properties = properties
+  def setProperties(_properties:Option[List[EditableProperty]]):Unit = {
+    this.properties = _properties
     fireTableDataChanged()
     fireTableStructureChanged()
   }
 
   def clearObject():Unit = {
-    setProperties(null)
+    setProperties(None)
   }
 
   def getColumnCount():Int = {
-    if (properties == null) 
-      return 0
-    else 
-      return 2
-
-
+    properties match{
+      case None => 0
+      case Some(p) => 2
+    }
   }
 
-  def getRowCount():Int = {
-    if (properties == null) 
-      return 0
-    else 
-      return properties.size()
-
-
+  def getRowCount:Int = {
+    properties match {
+      case None => 0
+      case Some(p) => p.size
+    }
   }
 
   override  def isCellEditable(row:Int, col:Int):Boolean = {
@@ -49,8 +45,8 @@ class PropertyEditorTableModel extends AbstractTableModel {
   }
 
   def getValueAt(row:Int, col:Int):Object = {
-    if (col == 0) 
-      return properties.get(row).name()
+    if (col == 0)
+      return properties.get.apply(row).name
     else 
       return null
 
@@ -65,10 +61,9 @@ class PropertyEditorTableModel extends AbstractTableModel {
 
 
   }
-  @Nullable
-   var properties:PVector[EditableProperty] = null
+  var properties:Option[List[EditableProperty]] = None
 }
 
 object PropertyEditorTableModel {
-  val columnNames:Array[String] = ("property", "value")
+  val columnNames:Array[String] = Array("property", "value")
 }

@@ -1,20 +1,12 @@
 package org.workcraft.gui.propertyeditor.integer
 
-import org.workcraft.dependencymanager.advanced.core.Expression
-import org.workcraft.dependencymanager.advanced.core.Expressions
-import org.workcraft.dependencymanager.advanced.core.ModifiableExpressionCombinator
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import org.workcraft.gui.propertyeditor.EditableProperty
 import org.workcraft.gui.propertyeditor.string.StringProperty
+import org.workcraft.scala.Expressions._
 
 
 object IntegerProperty {
-  def create(name:String, property:ModifiableExpression[Integer]):EditableProperty = {
-    return StringProperty.create(name, convertToString(property))
+  def apply(name:String, property:ModifiableExpression[Integer]):EditableProperty = {
+    return StringProperty(name, property.xmap(_.toString)(Integer.parseInt(_)))
   }
-
-  private def convertToString(property:ModifiableExpression[Integer]):ModifiableExpression[String] = {
-    return Expressions.bind(property, new ModifiableExpressionCombinator[IntegerString])
-  }
-
 }

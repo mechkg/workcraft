@@ -35,8 +35,6 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpression;
 import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionImpl;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
-import org.workcraft.gui.propertyeditor.EditableProperty;
-import org.workcraft.gui.propertyeditor.dubble.DoubleProperty;
 import org.workcraft.serialisation.xml.NoAutoSerialisation;
 import org.workcraft.util.Geometry;
 
@@ -92,11 +90,11 @@ public abstract class VisualTransformableNode extends VisualNode implements Mova
 	};
 	
 	@Override
-	public PVector<EditableProperty> getProperties() {
-		return super.getProperties()
+	public PVector<? extends Object> getProperties() { return null; }
+	/*		return super.getProperties()
 		.plus(DoubleProperty.create("X", x()))
 		.plus(DoubleProperty.create("Y", y()));
-	};
+	}; */
 
 	public VisualTransformableNode(StorageManager storage) {
 		super(storage);

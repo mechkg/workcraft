@@ -2,7 +2,7 @@
 
 * Download [Eclipse Indigo](http://www.eclipse.org/downloads/packages/eclipse-ide-java-developers/indigor)
 
-* Install Scala IDE: [update site](http://download.scala-ide.org/releases-29/2.0.0-beta)
+* Install Scala IDE: [update site](http://download.scala-ide.org/releases-29/stable/site)
 
 * (recommended) Increase eclipse heap sise to a value suggested by Scala IDE (1GB+).
 

@@ -1,7 +1,6 @@
 package org.workcraft.gui.propertyeditor
 
-import org.workcraft.Config
-
+case class Config
 
 trait SettingsPage extends Properties {
   def save(config:Config):Unit

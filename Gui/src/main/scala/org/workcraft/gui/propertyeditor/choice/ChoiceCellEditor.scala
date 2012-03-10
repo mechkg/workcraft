@@ -8,32 +8,29 @@ import org.workcraft.gui.propertyeditor.GenericCellEditor
 import org.workcraft.util.Action
 import org.workcraft.util.Pair
 import pcollections.PVector
+import org.workcraft.scala.effects.IO
 
 
-class ChoiceCellEditor[T ] extends GenericCellEditor[T] {
-  /*
-  def this(initialValue:T, choice:PVector[Pair[StringT]], accept:Action) = {
-    comboBox = new JComboBox()
-    comboBox.setEditable(false)
-    comboBox.setFocusable(false)
-    for (val p <- choice) {
+class ChoiceCellEditor[T](initialValue:T, choice:List[(String, T)], accept:IO[Unit]) extends GenericCellEditor[T] {
+  
+   val comboBox = new JComboBox()
+   comboBox.setEditable(false)
+   comboBox.setFocusable(false)
+   for (val p <- choice) {
       var comboBoxItem:ComboboxItemWrapper = new ComboboxItemWrapper(p)
       comboBox.addItem(comboBoxItem)
-      if (p.getSecond().equals(initialValue)) 
+      if (p._2 == initialValue) 
         comboBox.setSelectedItem(comboBoxItem)
-
-
-    }
-    comboBox.addItemListener(new ItemListener())
-  }
-  */
-  override  def component():Component = {
+   }
+   comboBox.addItemListener(new ItemListener{
+     override def itemStateChanged(event : ItemEvent) = accept.unsafePerformIO
+   })
+  
+  override  def component:Component = {
     return comboBox
   }
 
-  @SuppressWarningsC"unchecked")
-   override  def getValue():T = {
-    return comboBox.getSelectedItem().asInstanceOf[ComboboxItemWrapper] .getValue().asInstanceOf[T] 
+   override  def getValue:T = {
+    return comboBox.getSelectedItem().asInstanceOf[ComboboxItemWrapper].getValue.asInstanceOf[T] 
   }
-  private var comboBox:JComboBox = null
 }

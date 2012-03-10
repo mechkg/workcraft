@@ -4,7 +4,7 @@ import org.workcraft.Framework;
 import org.workcraft.Module;
 import org.workcraft.PluginManager;
 import org.workcraft.Tool;
-import org.workcraft.gui.propertyeditor.SettingsPage;
+//import org.workcraft.gui.propertyeditor.SettingsPage;
 import org.workcraft.plugins.layout.DotLayoutSettings;
 import org.workcraft.plugins.layout.NullLayout;
 import org.workcraft.plugins.layout.RandomLayout;
@@ -19,9 +19,9 @@ public class BuiltinTools implements Module {
 		p.registerClass(Tool.SERVICE_HANDLE, new NullLayout());
 		p.registerClass(Tool.SERVICE_HANDLE, new RandomLayout());
 		
-		p.registerClass(SettingsPage.SERVICE_HANDLE, new DotLayoutSettings());
-		p.registerClass(SettingsPage.SERVICE_HANDLE, new RandomLayoutSettings());
-		p.registerClass(SettingsPage.SERVICE_HANDLE, new CommonVisualSettings());
+		//p.registerClass(SettingsPage.SERVICE_HANDLE, new DotLayoutSettings());
+		//p.registerClass(SettingsPage.SERVICE_HANDLE, new RandomLayoutSettings());
+		//p.registerClass(SettingsPage.SERVICE_HANDLE, new CommonVisualSettings());
 	}
 
 	@Override

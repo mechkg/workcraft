@@ -23,25 +23,21 @@ package org.workcraft.plugins.layout;
 
 import org.workcraft.Config;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.gui.propertyeditor.EditableProperty;
-import org.workcraft.gui.propertyeditor.SettingsPage;
-import org.workcraft.gui.propertyeditor.bool.BooleanProperty;
-import org.workcraft.gui.propertyeditor.string.StringProperty;
 
 import pcollections.PVector;
 import pcollections.TreePVector;
 
-public class DotLayoutSettings implements SettingsPage {
+public class DotLayoutSettings {
 	public final static Variable<Boolean> importConnectionsShape = Variable.create(false);
 	public final static Variable<String> dotCommand = Variable.create("dot");
 	
-	@Override
+/*	@Override
 	public PVector<EditableProperty> getProperties() {
 		return TreePVector.<EditableProperty>empty()
 			.plus(StringProperty.create("Dot command", dotCommand))
 			.plus(BooleanProperty.create("Import connections shape from Dot graph (experimental)", importConnectionsShape))
 			;
-	}
+	}*/
 
 	public void load(Config config) {
 		dotCommand.setValue(config.getString("DotLayout.dotCommand", "dot"));
@@ -56,7 +52,6 @@ public class DotLayoutSettings implements SettingsPage {
 	public String getSection() {
 		return "Layout";
 	}
-	@Override
 	public String getName() {
 		return "Dot";
 	}

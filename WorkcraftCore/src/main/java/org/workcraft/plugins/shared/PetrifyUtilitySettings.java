@@ -22,14 +22,11 @@
 package org.workcraft.plugins.shared;
 import org.workcraft.Config;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.gui.propertyeditor.EditableProperty;
-import org.workcraft.gui.propertyeditor.SettingsPage;
-import org.workcraft.gui.propertyeditor.string.StringProperty;
 
 import pcollections.PVector;
 import pcollections.TreePVector;
 
-public class PetrifyUtilitySettings implements SettingsPage {
+public class PetrifyUtilitySettings {
 
 	public static final Variable<String> petrifyCommand = Variable.create("petrify");
 	public static final Variable<String> petrifyArgs = Variable.create("");
@@ -47,7 +44,7 @@ public class PetrifyUtilitySettings implements SettingsPage {
 	private static final String write_sgCommandKey = "Tools.write_sg.command";
 	private static final String write_sgArgsKey = "Tools.write_sg.args";
 	
-	@Override
+	/*@Override
 	public PVector<EditableProperty> getProperties() {
 		return TreePVector.<EditableProperty>empty()
 			.plus(StringProperty.create("petrify command", petrifyCommand))
@@ -56,7 +53,7 @@ public class PetrifyUtilitySettings implements SettingsPage {
 			.plus(StringProperty.create("Additional write_sg command line arguments", write_sgArgs))
 			.plus(StringProperty.create("draw_astg command", draw_astgCommand))
 			.plus(StringProperty.create("Additional draw_astg command line arguments", draw_astgArgs));
-	}
+	}*/
 
 	public void load(Config config) {
 		petrifyCommand.setValue(config.getString(petrifyCommandKey, "petrify"));
@@ -80,7 +77,7 @@ public class PetrifyUtilitySettings implements SettingsPage {
 		return "External tools";
 	}
 
-	@Override
+//	@Override
 	public String getName() {
 		return "Petrify";
 	}

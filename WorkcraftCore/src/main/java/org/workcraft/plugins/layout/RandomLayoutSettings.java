@@ -23,20 +23,17 @@ package org.workcraft.plugins.layout;
 
 import org.workcraft.Config;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.gui.propertyeditor.EditableProperty;
-import org.workcraft.gui.propertyeditor.SettingsPage;
-import org.workcraft.gui.propertyeditor.dubble.DoubleProperty;
 
 import pcollections.PVector;
 import pcollections.TreePVector;
 
-public class RandomLayoutSettings implements SettingsPage {
+public class RandomLayoutSettings {
 	public static final Variable<Double> startX = Variable.create(0.0);
 	public static final Variable<Double>  startY = Variable.create(0.0);
 	public static final Variable<Double>  rangeX = Variable.create(30.0);
 	public static final Variable<Double>  rangeY = Variable.create(30.0);
 	
-	@Override
+	/*@Override
 	public PVector<EditableProperty> getProperties() {
 		return TreePVector.<EditableProperty>empty()
 		.plus(DoubleProperty.create("Start X", startX))
@@ -44,7 +41,7 @@ public class RandomLayoutSettings implements SettingsPage {
 		.plus(DoubleProperty.create("Range X", rangeX))
 		.plus(DoubleProperty.create("Range Y", rangeY))
 		;
-	}
+	}*/
 	public void load(Config config) {
 		startX.setValue(config.getDouble("RandomLayout.startX", 0));
 		startY.setValue(config.getDouble("RandomLayout.startY", 0));
@@ -63,7 +60,7 @@ public class RandomLayoutSettings implements SettingsPage {
 		return "Layout";
 	}
 
-	@Override
+	// @Override
 	public String getName() {
 		return "Random";
 	}

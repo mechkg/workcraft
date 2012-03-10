@@ -1,20 +1,12 @@
 package org.workcraft.gui.propertyeditor.dubble
 
-import org.workcraft.dependencymanager.advanced.core.Expression
-import org.workcraft.dependencymanager.advanced.core.Expressions
-import org.workcraft.dependencymanager.advanced.core.ModifiableExpressionCombinator
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
 import org.workcraft.gui.propertyeditor.EditableProperty
 import org.workcraft.gui.propertyeditor.string.StringProperty
+import org.workcraft.scala.Expressions._
 
 
 object DoubleProperty {
-  def create(name:String, property:ModifiableExpression[Double]):EditableProperty = {
-    return StringProperty.create(name, convertToString(property))
+  def apply(name:String, property:ModifiableExpression[Double]):EditableProperty = {
+    return StringProperty(name, property.xmap(_.formatted("%.2f"))(java.lang.Double.parseDouble(_)))
   }
-
-  private def convertToString(property:ModifiableExpression[Double]):ModifiableExpression[String] = {
-    return Expressions.bind(property, new ModifiableExpressionCombinator[DoubleString])
-  }
-
 }

@@ -10,33 +10,31 @@ import javax.swing.JDialog
 import org.workcraft.gui.propertyeditor.GenericCellEditor
 import org.workcraft.gui.propertyeditor.GenericEditorProvider
 import org.workcraft.util.Action
+import org.workcraft.scala.effects.IO
 
 
-class ColorCellEditor extends GenericEditorProvider[Color] {
-  override  def createEditor(initialValue:Color, accept:Action, cancel:Action):GenericCellEditor[Color] = {
+object ColorCellEditor extends GenericEditorProvider[Color] {
+  override  def createEditor(initialValue:Color, accept:IO[Unit], cancel:IO[Unit]):GenericCellEditor[Color] = {
     return new GenericCellEditorImplementation(initialValue, accept, cancel)
   }
-  class GenericCellEditorImplementation with GenericCellEditor[Color] {
-    /*
-    def this(initialValue:Color, accept:Action, cancel:Action) = {
-      button = new JButton()
-      button.setBorderPainted(false)
-      button.setFocusable(false)
-      button.setBackground(initialValue)
-      colorChooser = new JColorChooser()
-      colorChooser.setColor(initialValue)
-      val dialog:JDialog = JColorChooser.createDialog(null, "Pick a Color", true, colorChooser, new ActionListener(), new ActionListener())
-      button.addActionListener(new ActionListener())
-    }
-    */
-    override  def component():Component = {
-      return button
-    }
-
-    override  def getValue():Color = {
-      return colorChooser.getColor()
-    }
-    val button:JButton = null
-    val colorChooser:JColorChooser = null
+  class GenericCellEditorImplementation(initialValue:Color, accept:IO[Unit], cancel:IO[Unit]) extends GenericCellEditor[Color] {
+    
+    val button : JButton = new JButton()
+    button.setBorderPainted(false)
+    button.setFocusable(false)
+    button.setBackground(initialValue)
+    val colorChooser = new JColorChooser()
+    colorChooser.setColor(initialValue)
+    val dialog:JDialog = JColorChooser.createDialog(null, "Pick a Color", true, colorChooser, new ActionListener(){
+      override def actionPerformed(e : ActionEvent) = accept.unsafePerformIO
+    }, new ActionListener(){override def actionPerformed(e : ActionEvent) = cancel.unsafePerformIO})
+    button.addActionListener(new ActionListener(){
+//					The user has clicked the cell, so
+//					bring up the dialog.
+      override def actionPerformed(e : ActionEvent) = dialog.setVisible(true)
+    })
+    
+    override def component:Component = button
+    override def getValue:Color = colorChooser.getColor
   }
 }

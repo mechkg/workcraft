@@ -6,8 +6,20 @@ import javax.swing.BorderFactory
 import javax.swing.JLabel
 import org.workcraft.gui.propertyeditor.RendererProvider
 
+object ColorCellRenderer extends RendererProvider[Color] {
+  private val isBordered: Boolean = true
 
-object ColorCellRenderer {
-  private val isBordered:Boolean = true
-  var INSTANCE:RendererProvider[Color] = new RendererProvider[Color]
+  override def createRenderer(value: Color): Component = {
+    val label: JLabel = new JLabel
+    label.setOpaque(true); //MUST do this for background to show up.
+    label.setFocusable(false);
+
+    label.setBackground(value);
+    if (isBordered) {
+      val borderBackground = Color.WHITE; // TODO: label.isSelected ? table.getSelectionBackground() : table.getBackground()
+      label.setBorder(BorderFactory.createMatteBorder(2, 5, 2, 5, borderBackground));
+    }
+
+    return label;
+  }
 }

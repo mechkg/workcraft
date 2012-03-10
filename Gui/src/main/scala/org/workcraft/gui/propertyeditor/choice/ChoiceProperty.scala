@@ -10,19 +10,23 @@ import org.workcraft.gui.propertyeditor.string.StringProperty
 import org.workcraft.util.Action
 import org.workcraft.util.Pair
 import pcollections.PVector
+import org.workcraft.scala.effects.IO
 
 
 object ChoiceProperty {
-  private final def createEditorProvider(choice:PVector[Pair[StringT]]):GenericEditorProvider[T] = {
-    return new GenericEditorProvider[T]
+  
+  def apply[T](name:String, choice:List[(String,T)], property:ModifiableExpression[T]):EditableProperty = {
+    
+    val e = new GenericEditorProvider[T] {
+			override def createEditor(initialValue : T, accept : IO[Unit], cancel : IO[Unit]) : GenericCellEditor[T] =
+				new ChoiceCellEditor[T](initialValue, choice, accept)
+    }
+    
+    val r = new RendererProvider[T] {
+      val m = choice.map{case (a,b) => (b,a)}.toMap
+      def createRenderer(value:T):Component = StringProperty.RendererProvider.createRenderer(m(value))
+    }
+    
+    return EditableProperty(name, e, r, property)
   }
-
-  private final def createRendererProvider(choice:PVector[Pair[StringT]]):RendererProvider[T] = {
-    return new RendererProvider[T]
-  }
-
-  def create(name:String, choice:PVector[Pair[StringT]], property:ModifiableExpression[T]):EditableProperty = {
-    return EditableProperty.Util.create(name, createEditorProvider(choice), createRendererProvider(choice), property)
-  }
-
 }

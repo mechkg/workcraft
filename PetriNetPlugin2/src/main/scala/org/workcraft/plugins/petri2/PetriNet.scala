@@ -29,6 +29,7 @@ import org.workcraft.gui.modeleditor.tools.NodeGeneratorTool
 import org.workcraft.graphics.ColorisableGraphicalContent
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.gui.CommonVisualSettings
+import org.workcraft.gui.propertyeditor.EditableProperty
 
 sealed trait Node
 
@@ -75,6 +76,8 @@ class PetriNet {
 }
 
 class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
+  
+  def props : Expression[List[EditableProperty]] = constant(Nil)
   
   def treeFold[A](z: A, f: (A, A) => A, l: List[A]): A = l match {
     case Nil => z

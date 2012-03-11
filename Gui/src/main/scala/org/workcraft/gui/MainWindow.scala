@@ -36,6 +36,7 @@ import javax.swing.JOptionPane
 import org.workcraft.services.ModelServiceProvider
 import org.workcraft.gui.modeleditor.EditorState
 import org.workcraft.gui.modeleditor.tools.ToolboxPanel
+import org.workcraft.gui.propertyeditor.PropertyEditorWindow
 
 class MainWindow(
   val globalServices: () => GlobalServiceManager,
@@ -56,10 +57,13 @@ class MainWindow(
 
   val toolboxWindow = new JPanel(new BorderLayout)
   toolboxWindow.add(new NotAvailablePanel(), BorderLayout.CENTER)
+  
+  val propEdWindow = new PropertyEditorWindow
 
   val placeholderDockable = dockingRoot.createRootWindow("", "DocumentPlaceholder", new DocumentPlaceholder, DockableWindowConfiguration(false, false, false))
   val loggerDockable = createUtilityWindow("Log", "Log", loggerWindow, placeholderDockable, DockingConstants.SOUTH_REGION, 0.8)
   val toolboxDockable = createUtilityWindow("Toolbox", "Toolbox", toolboxWindow, placeholderDockable, DockingConstants.EAST_REGION, 0.8)
+  val propEdDockable = createUtilityWindow("PropEd", "PropEd", propEdWindow, placeholderDockable, DockingConstants.EAST_REGION, 0.8)
 
   var openEditors = List[DockableWindow[ModelEditorPanel]]()
 
@@ -113,6 +117,7 @@ class MainWindow(
   def setFocus(editorDockable: DockableWindow[ModelEditorPanel]) {
     toolboxWindow.removeAll()
     toolboxWindow.add(new ToolboxPanel(editorDockable.content.toolbox), BorderLayout.CENTER)
+    propEdWindow.propertyObject.setValue(editorDockable.content.editor.props.map(Some(_)))
   }
 
   def openEditor(model: ModelServiceProvider) {

@@ -29,7 +29,7 @@ import org.workcraft.gui.modeleditor.tools.ModelEditorTool
 import org.workcraft.gui.modeleditor.tools.Toolbox
 import org.workcraft.gui.modeleditor.tools.ToolEnvironment
 
-class ModelEditorPanel (editor: ModelEditor) (implicit logger: () => Logger[IO]) extends JPanel {
+class ModelEditorPanel (val editor: ModelEditor) (implicit logger: () => Logger[IO]) extends JPanel {
   val panelDimensions = Variable.create((0, 0, getWidth, getHeight))
   val viewDimensions = panelDimensions.map { case (x,y,w,h) => (x + 15,y + 15, w - 15, h - 15) }
   

@@ -14,11 +14,9 @@ import org.workcraft.scala.effects.IO._
 
 class PropertyEditorTable extends JTable with PropertyEditor {
   val model:PropertyEditorTableModel = new PropertyEditorTableModel
-  {
-    setModel(model)
-    setTableHeader(null)
-    setFocusable(false)
-  }
+  setModel(model)
+  setTableHeader(null)
+  setFocusable(false)
   
   override  def getCellEditor(row:Int, col:Int):TableCellEditor =
     if (col == 0) 

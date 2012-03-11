@@ -158,9 +158,9 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Mode
       nodeGeneratorTools)
   }
 import scala.collection.JavaConversions._
-  def properties : org.workcraft.dependencymanager.advanced.core.Expression[_ <: PVector[EditableProperty]] = {
+  def props : Expression[List[EditableProperty]] = {
     for(s <- (selection : Expression[Set[VisualEntity]]);
-      props <- sequenceExpressions(s.toList.map(e => EditableProperties.objProperties(e)(visualStg)))
-    ) yield (TreePVector.from(scala.collection.JavaConversions.asJavaCollection(props.flatten)))
+      props <- s.toList.traverse(e => EditableProperties.objProperties(e)(visualStg))
+    ) yield (props.flatten)
   }
 }

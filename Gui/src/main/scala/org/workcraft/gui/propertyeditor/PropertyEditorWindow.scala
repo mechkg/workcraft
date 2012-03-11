@@ -20,6 +20,8 @@ class PropertyEditorWindow extends JPanel {
   setLayout(new BorderLayout(0, 0))
   add(new DisabledPanel(), BorderLayout.CENTER)
   validate()
+  val propertyObject:Variable[Expression[Option[List[EditableProperty]]]] = Variable.create(constant(None))
+  private val prop:Expression[Option[List[EditableProperty]]] = (propertyObject : Expression[Expression[Option[List[EditableProperty]]]]).join
   @SuppressWarnings(Array("unused"))
   private val refresher:AutoRefreshExpression = new AutoRefreshExpression {
 			override def onEvaluate(context : EvaluationContext) = {
@@ -30,8 +32,6 @@ class PropertyEditorWindow extends JPanel {
 			    }
 			}
   }
-  val propertyObject:Variable[Expression[Option[List[EditableProperty]]]] = Variable.create(constant(None))
-  private val prop:Expression[Option[List[EditableProperty]]] = (propertyObject : Expression[Expression[Option[List[EditableProperty]]]]).join
 
   def setObject(o:List[EditableProperty]):Unit = {
     removeAll()

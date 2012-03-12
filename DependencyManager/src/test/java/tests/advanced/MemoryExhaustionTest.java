@@ -1,10 +1,12 @@
 package tests.advanced;
 
-import static org.workcraft.dependencymanager.advanced.core.GlobalCache.*;
+import static org.workcraft.dependencymanager.advanced.core.GlobalCache.eval;
+import static tests.advanced.MemoryTools.memoryExhaustionTest;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.workcraft.dependencymanager.advanced.core.DummyEvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
@@ -12,16 +14,14 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.SumExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.dependencymanager.util.listeners.Listener;
-
-import static tests.advanced.MemoryTools.*;
+import org.workcraft.util.Action;
 
 public class MemoryExhaustionTest {
 	@Test
 	public void testTT() {
 	    final int M = 1000;
-		memoryExhaustionTest(500, new Listener(){
-			public void changed(){
+		memoryExhaustionTest(500, new Action(){
+			public void run(){
 				for(int i=0;i<M;i++) {
 					final ExpressionBase<Object> expr = new ExpressionBase<Object>() {
 						@Override
@@ -38,8 +38,8 @@ public class MemoryExhaustionTest {
 	@Test
 	public void test1() {
 	    final int M = 1000;
-		memoryExhaustionTest(500, new Listener(){
-			public void changed(){
+		memoryExhaustionTest(500, new Action(){
+			public void run(){
 				int totalSum = 0;
 				for(int j=0;j<M;j++)
 				{
@@ -47,6 +47,7 @@ public class MemoryExhaustionTest {
 					totalSum+=sum.evaluate(new DummyEvaluationContext());
 					totalSum+=eval(sum);
 				}
+				Assert.assertEquals((8+9)*M*2, totalSum);
 			}
 		});
 	}
@@ -54,8 +55,8 @@ public class MemoryExhaustionTest {
 	@Test
 	public void test2() {
 	    final int M = 1000;
-		memoryExhaustionTest(500, new Listener(){
-			public void changed(){
+		memoryExhaustionTest(500, new Action(){
+			public void run(){
 				List<Variable<Integer>> vars = new ArrayList<Variable<Integer>>(); 
 				List<ExpressionBase<Integer>> expressions = new ArrayList<ExpressionBase<Integer>>();
 				for(int i=0;i<M;i++) {

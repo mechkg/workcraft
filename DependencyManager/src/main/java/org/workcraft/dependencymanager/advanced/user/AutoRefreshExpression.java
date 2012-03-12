@@ -4,6 +4,7 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext;
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase;
 import org.workcraft.dependencymanager.advanced.core.Handle;
 import org.workcraft.dependencymanager.util.listeners.Listener;
+import org.workcraft.util.Action;
 
 /**
  * This class class is to be overridden by clients who wish to receive 
@@ -19,8 +20,13 @@ public abstract class AutoRefreshExpression extends ExpressionBase<Null> {
 	Handle handle; // to make sure it is not garbage collected
 	Listener l = new Listener() {
 		@Override
-		public void changed() {
-			eval();
+		public Action changed() {
+			return new Action(){
+				@Override
+				public void run() {
+					eval();
+				}
+			};
 		}
 	};
 

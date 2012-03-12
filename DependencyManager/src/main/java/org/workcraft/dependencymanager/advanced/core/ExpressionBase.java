@@ -1,10 +1,10 @@
 package org.workcraft.dependencymanager.advanced.core;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import org.workcraft.dependencymanager.util.listeners.Listener;
 import org.workcraft.dependencymanager.util.listeners.WeakFireOnceListenersCollection;
+import org.workcraft.util.Action;
 
 
 /**
@@ -83,14 +83,15 @@ public abstract class ExpressionBase<T> implements Expression<T> {
 		}*/
 		
 		@Override
-		public void changed() {
+		public Action changed() {
 			if(listeners != null) {
 				if(!filled)
 					invalidationStackTrace = new RuntimeException("Expression invalidation stack trace");
 				WeakFireOnceListenersCollection l = listeners;
 				listeners = null;
-				l.changed();
-			}
+				return l.changed();
+			} else
+				return Action.EMPTY;
 		}
 	}
 	
@@ -150,7 +151,7 @@ public abstract class ExpressionBase<T> implements Expression<T> {
 		if(cache!=null) {
 			Cache<?> c = cache;
 			cache = null;
-			c.changed();
+			c.changed().run();
 		}
 	}
 	

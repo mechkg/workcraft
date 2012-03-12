@@ -23,7 +23,7 @@ public class GlobalCache {
 		destination.setValue(eval(source));
 	}
 
-	public static AutoRefreshExpression autoRefresh(final ExpressionBase<?> expr) {
+	public static AutoRefreshExpression autoRefresh(final Expression<?> expr) {
 
 		return new AutoRefreshExpression() {
 			@Override

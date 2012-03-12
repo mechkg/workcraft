@@ -10,7 +10,7 @@ import org.workcraft.dependencymanager.advanced.user.SumExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 
 
-public class Tests {
+public class SimpleTest {
 	private final class StupidVar extends ExpressionBase<Integer> {
 		private Integer val;
 

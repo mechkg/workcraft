@@ -1,21 +1,21 @@
 package tests.advanced;
 
 import org.junit.Assert;
-import org.workcraft.dependencymanager.util.listeners.Listener;
+import org.workcraft.util.Action;
 
 public class MemoryTools {
 	private static long usedMemory() {
 		return Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
 	}
-	public static void memoryExhaustionTest(int N, Listener job) {
+	public static void memoryExhaustionTest(int N, Action job) {
 		goodGC();
 	    long startMem = usedMemory();
 	    
-	    int memoryLimitMb = 15;
+	    int memoryLimitMb = 8;
 	    
-	    for(int i=0;i<N;i++)
+	    for(int i=0;i<N/2;i++)
 		{
-			job.changed();
+			job.run();
 			fairGC();
 			long additionalMemoryUsed = usedMemory()-startMem;
 			System.out.println(String.format("working (%s), additional memory used: %s...", i, additionalMemoryUsed));

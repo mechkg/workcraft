@@ -9,7 +9,7 @@ import org.workcraft.dependencymanager.advanced.core.GlobalCache;
 import org.workcraft.dependencymanager.advanced.user.SumExpression;
 import org.workcraft.dependencymanager.advanced.user.Variable;
 
-public class LazynessTests {
+public class LazynessTest {
 	
 	static class LazyVar extends Variable<Integer> {
 

@@ -132,5 +132,10 @@
 			<artifactId>Graphics</artifactId>
 			<version>2.2-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.workcraft</groupId>
+			<artifactId>DependencyManager</artifactId>
+			<version>2.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>

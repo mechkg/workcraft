@@ -59,7 +59,6 @@ import org.workcraft.exceptions.OperationCancelledException;
 import org.workcraft.exceptions.PluginInstantiationException;
 import org.workcraft.exceptions.SerialisationException;
 import org.workcraft.gui.MainWindow;
-import org.workcraft.gui.propertyeditor.SettingsPage;
 import org.workcraft.interop.ModelService;
 import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
@@ -214,15 +213,18 @@ public class Framework {
 	public void loadConfig(String fileName) {
 		config.load(fileName);
 
-		for (SettingsPage page : pluginManager.getPlugins(SettingsPage.SERVICE_HANDLE)) {
+		throw new RuntimeException("Deprecated");
+		/*for (SettingsPage page : pluginManager.getPlugins(SettingsPage.SERVICE_HANDLE)) {
 			page.load(config);
-		}
+		}*/
 	}
 
 	public void saveConfig(String fileName) {
+		if(true)throw new RuntimeException("Deprecated");
+		/*
 		for (SettingsPage page : pluginManager.getPlugins(SettingsPage.SERVICE_HANDLE)) {
 			page.save(config);
-		}
+		}*/
 
 		config.save(fileName);
 	}

@@ -28,8 +28,9 @@ import org.workcraft.logging.Logger
 import org.workcraft.gui.modeleditor.tools.ModelEditorTool
 import org.workcraft.gui.modeleditor.tools.Toolbox
 import org.workcraft.gui.modeleditor.tools.ToolEnvironment
+import org.workcraft.services.ModelServiceProvider
 
-class ModelEditorPanel (editor: ModelEditor) (implicit logger: () => Logger[IO]) extends JPanel {
+class ModelEditorPanel (val model: ModelServiceProvider, val editor: ModelEditor) (implicit logger: () => Logger[IO]) extends JPanel {
   val panelDimensions = Variable.create((0, 0, getWidth, getHeight))
   val viewDimensions = panelDimensions.map { case (x,y,w,h) => (x + 15,y + 15, w - 15, h - 15) }
   
@@ -79,6 +80,7 @@ class ModelEditorPanel (editor: ModelEditor) (implicit logger: () => Logger[IO])
   addMouseMotionListener(mListener)
   addComponentListener(Resizer)
   addMouseWheelListener(mListener)
+  addFocusListener(FocusListener)
   
   val kListener = new ModelEditorKeyListener(
       ModelEditorKeyListener.defaultBindings(this), 
@@ -116,10 +118,10 @@ class ModelEditorPanel (editor: ModelEditor) (implicit logger: () => Logger[IO])
 
     g.transform(viewTransform)
 
-    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
     g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-    g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+    g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
     // g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
     g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);

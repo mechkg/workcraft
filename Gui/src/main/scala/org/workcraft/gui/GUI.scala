@@ -32,13 +32,13 @@ object GUI {
     case url => try { Right(ImageIO.read(url)) } catch { case e => Left(e) }
   }
 
-  def menuItem(text: String, mnemonic: Option[Char], accelerator: Option[KeyStroke], action: () => Unit) = {
+  def menuItem(text: String, mnemonic: Option[Char], accelerator: Option[KeyStroke], action: => Unit) = {
     val result = new JMenuItem(text)
     mnemonic.foreach(result.setMnemonic(_))
     accelerator.foreach(result.setAccelerator(_))
     result.addActionListener(new ActionListener {
       def actionPerformed(e: ActionEvent) = {
-        action()
+        action
       }
     })
     result
@@ -132,7 +132,7 @@ object GUI {
     r.x = w / 2 - r.width / 2
     r.y = h - 20 - r.height
 
-    g.setColor(new Color(240, 240, 240, 192))
+    g.setColor(new Color(240, 240, 240))
     g.fillRoundRect(r.x - 10, r.y - 10, r.width + 20, r.height + 20, 5, 5)
     g.setColor(new Color(224, 224, 224))
     g.drawRoundRect(r.x - 10, r.y - 10, r.width + 20, r.height + 20, 5, 5)

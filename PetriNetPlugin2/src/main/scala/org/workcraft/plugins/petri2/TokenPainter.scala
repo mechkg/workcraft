@@ -35,6 +35,6 @@ object TokenPainter {
         else
           Some(radialTokensImage)
       } else
-        Some(label(tokens.toString, settings.labelFont.deriveFont(settings.labelFontSize.toFloat), settings.foregroundColor).boundedColorisableGraphicalContent)
+        Some(label(tokens.toString, settings.labelFont.deriveFont(settings.labelFontSize.toFloat), settings.foregroundColor).boundedColorisableGraphicalContent.centerToBoundingBox)
     })
 }

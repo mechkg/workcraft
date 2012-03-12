@@ -25,16 +25,11 @@ import java.awt.Font;
 
 import org.workcraft.Config;
 import org.workcraft.dependencymanager.advanced.user.Variable;
-import org.workcraft.gui.propertyeditor.EditableProperty;
-import org.workcraft.gui.propertyeditor.SettingsPage;
-import org.workcraft.gui.propertyeditor.colour.ColorProperty;
-import org.workcraft.gui.propertyeditor.dubble.DoubleProperty;
-import org.workcraft.gui.propertyeditor.integer.IntegerProperty;
 
 import pcollections.PVector;
 import pcollections.TreePVector;
 
-public class CommonVisualSettings implements SettingsPage {
+public class CommonVisualSettings {
 	
 	public static final Variable<Double> size = Variable.create(1.0);
 	public static final Variable<Double> strokeWidth = Variable.create(0.1);
@@ -45,7 +40,7 @@ public class CommonVisualSettings implements SettingsPage {
 	public static final Variable<Font> serifFont = Variable.create(new Font("Serif", Font.PLAIN, 1));
 	public static final Variable<Font> sansSerifFont = Variable.create(new Font("SansSerif", Font.PLAIN, 1));
 	
-	@Override
+	/*@Override
 	public PVector<EditableProperty> getProperties() {
 		return TreePVector.<EditableProperty>empty()
 		.plus(IntegerProperty.create("Base icon width (pixels, 8-256)", iconSize))
@@ -54,7 +49,7 @@ public class CommonVisualSettings implements SettingsPage {
 		.plus(ColorProperty.create("Editor background color", backgroundColor))
 		.plus(ColorProperty.create("Default foreground color", foregroundColor))
 		.plus(ColorProperty.create("Default fill color", fillColor));
-	}
+	}*/
 
 	public void load(Config config) {
 		size.setValue(config.getDouble("CommonVisualSettings.size", 1.0));
@@ -74,12 +69,12 @@ public class CommonVisualSettings implements SettingsPage {
 		config.setColor("CommonVisualSettings.fillColor", fillColor.getValue());
 	}
 
-	@Override
+	// @Override
 	public String getName() {
 		return "Common visual settings";
 	}
 
-	@Override
+	// @Override
 	public String getSection() {
 		return "Visual";
 	}

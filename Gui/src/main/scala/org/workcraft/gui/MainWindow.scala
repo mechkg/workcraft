@@ -36,6 +36,8 @@ import javax.swing.JOptionPane
 import org.workcraft.services.ModelServiceProvider
 import org.workcraft.gui.modeleditor.EditorState
 import org.workcraft.gui.modeleditor.tools.ToolboxPanel
+import org.workcraft.gui.propertyeditor.PropertyEditorWindow
+import org.workcraft.scala.Expressions._
 
 class MainWindow(
   val globalServices: () => GlobalServiceManager,
@@ -57,11 +59,15 @@ class MainWindow(
   val toolboxWindow = new JPanel(new BorderLayout)
   toolboxWindow.add(new NotAvailablePanel(), BorderLayout.CENTER)
 
+  val propEdWindow = new PropertyEditorWindow
+
   val placeholderDockable = dockingRoot.createRootWindow("", "DocumentPlaceholder", new DocumentPlaceholder, DockableWindowConfiguration(false, false, false))
   val loggerDockable = createUtilityWindow("Log", "Log", loggerWindow, placeholderDockable, DockingConstants.SOUTH_REGION, 0.8)
   val toolboxDockable = createUtilityWindow("Toolbox", "Toolbox", toolboxWindow, placeholderDockable, DockingConstants.EAST_REGION, 0.8)
+  val propEdDockable = createUtilityWindow("PropEd", "PropEd", propEdWindow, toolboxDockable, DockingConstants.NORTH_REGION, 0.8)
 
   var openEditors = List[DockableWindow[ModelEditorPanel]]()
+  var editorInFocus: Option[DockableWindow[ModelEditorPanel]] = None
 
   val menu = new MainMenu(this, List(loggerDockable, toolboxDockable), globalServices, { case (m, b) => newModel(m, b) }, reconfigure)
   this.setJMenuBar(menu)
@@ -110,16 +116,27 @@ class MainWindow(
       openEditor(model)
   }
 
-  def setFocus(editorDockable: DockableWindow[ModelEditorPanel]) {
+  def setFocus(editorDockable: Option[DockableWindow[ModelEditorPanel]]) {
     toolboxWindow.removeAll()
-    toolboxWindow.add(new ToolboxPanel(editorDockable.content.toolbox), BorderLayout.CENTER)
+    editorDockable match {
+      case Some(editor) => {
+        toolboxWindow.add(new ToolboxPanel(editor.content.toolbox), BorderLayout.CENTER)
+        propEdWindow.propertyObject.setValue(editor.content.editor.props.map(Some(_)))
+      }
+      case None => {
+        toolboxWindow.add(new NotAvailablePanel)
+        propEdWindow.propertyObject.setValue(constant(None))        
+      }
+    }
+    
+    editorInFocus = editorDockable
   }
 
   def openEditor(model: ModelServiceProvider) {
     model.implementation(EditorService) match {
       case None => JOptionPane.showMessageDialog(this, "The model type that you have chosen does not support visual editing :(", "Warning", JOptionPane.WARNING_MESSAGE)
       case Some(editor) => {
-        val editorPanel = new ModelEditorPanel(editor)(implicitLogger)
+        val editorPanel = new ModelEditorPanel(model, editor)(implicitLogger)
         val editorDockable = dockingRoot.createWindow("Говноэдитор", "unused", editorPanel, DockableWindowConfiguration(onCloseClicked = closeEditor), if (openEditors.isEmpty) placeholderDockable else (openEditors.head), DockingConstants.CENTER_REGION)
 
         if (openEditors.isEmpty) {
@@ -128,16 +145,16 @@ class MainWindow(
         } else
           openEditors ::= editorDockable
 
-        setFocus(editorDockable)
+        setFocus(Some(editorDockable))
       }
     }
   }
 
   def closeEditor(editorDockable: DockableWindow[ModelEditorPanel]) {
     // TODO: Ask to save etc.
-
+    
     openEditors -= editorDockable
-
+    
     if (openEditors.isEmpty)
       DockingManager.dock(placeholderDockable, editorDockable, DockingConstants.CENTER_REGION)
 

@@ -33,14 +33,12 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Node;
 import org.workcraft.dom.visual.PopupMenuBuilder.PopupMenuSegment;
 import org.workcraft.gui.actions.ScriptedActionListener;
-import org.workcraft.gui.propertyeditor.EditableProperty;
-import org.workcraft.gui.propertyeditor.Properties;
 
 import pcollections.PVector;
 import pcollections.TreePVector;
 
 
-public abstract class VisualNode implements Properties, Node {
+public abstract class VisualNode implements Node {
 
 	public VisualNode(StorageManager storage) {
 		parent = storage.create(null);
@@ -66,7 +64,7 @@ public abstract class VisualNode implements Properties, Node {
 		return popupMenuBuilder.build(actionListener);
 	}
 	
-	public PVector<EditableProperty> getProperties() {
+	public PVector<? extends Object> getProperties() {
 		return TreePVector.empty();
 	}
 }

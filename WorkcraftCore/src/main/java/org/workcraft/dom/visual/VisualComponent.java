@@ -39,9 +39,6 @@ import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.math.MathNode;
 import org.workcraft.exceptions.NotImplementedException;
 import org.workcraft.gui.Coloriser;
-import org.workcraft.gui.propertyeditor.EditableProperty;
-import org.workcraft.gui.propertyeditor.colour.ColorProperty;
-import org.workcraft.gui.propertyeditor.string.StringProperty;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 
 import pcollections.PVector;
@@ -67,13 +64,13 @@ public abstract class VisualComponent extends VisualTransformableNode implements
 	private final ModifiableExpression<Color> fillColor;
 	
 	@Override
-	public PVector<EditableProperty> getProperties() {
-		return super.getProperties()
+	public PVector<? extends Object> getProperties() { return null; }
+/*		return super.getProperties()
 		.plus(StringProperty.create("Label", label()))
 		.plus(ColorProperty.create("Label color", labelColor()))
 		.plus(ColorProperty.create("Foreground color", foregroundColor()))
 		.plus(ColorProperty.create("Fill color", fillColor()));
-	}
+	} */
 
 	public VisualComponent(MathNode refNode, StorageManager storage) {
 		super(storage);

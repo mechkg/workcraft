@@ -49,13 +49,11 @@ import org.workcraft.dependencymanager.advanced.user.Variable;
 import org.workcraft.dom.visual.GraphicalContent;
 import org.workcraft.gui.MainWindow;
 import org.workcraft.gui.Overlay;
-import org.workcraft.gui.PropertyEditorWindow;
 import org.workcraft.gui.ToolboxPanel;
 import org.workcraft.gui.graph.tools.DummyMouseListener;
 import org.workcraft.gui.graph.tools.GraphEditor;
 import org.workcraft.gui.graph.tools.GraphEditorMouseListener;
 import org.workcraft.gui.graph.tools.GraphEditorTool;
-import org.workcraft.gui.propertyeditor.EditableProperty;
 import org.workcraft.interop.ServiceNotAvailableException;
 import org.workcraft.plugins.shared.CommonVisualSettings;
 import org.workcraft.util.Function;
@@ -87,7 +85,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 			repaint();
 			{
 				// WTF this code is here?
-				mainWindow.getPropertyView().repaint();
+				mainWindow.getPropertyView();//.repaint();
 			}
 			return new ImageModel();
 		}
@@ -190,7 +188,7 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		
 		add(overlay, BorderLayout.CENTER);
 		
-		updatePropertyView(graphEditable.properties());
+		//updatePropertyView(graphEditable.properties());
 	}
 
 	private void reshape() {
@@ -276,10 +274,10 @@ public class GraphEditorPanel extends JPanel implements GraphEditor {
 		return mainWindow;
 	}
 	
-	private void updatePropertyView(Expression<? extends PVector<EditableProperty>> properties) {
-		final PropertyEditorWindow propertyWindow = mainWindow.getPropertyView();
+	private void updatePropertyView(Expression<? extends PVector<Object>> properties) {
+		//final PropertyEditorWindow propertyWindow = mainWindow.getPropertyView();
 		
-		propertyWindow.propertyObject.setValue(properties);
+		//propertyWindow.propertyObject.setValue(properties);
 	}
 
 	@Override

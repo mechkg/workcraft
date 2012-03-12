@@ -46,6 +46,8 @@ object Expressions {
         }
       })
     }
+    
+    def xmap[S](f: T => S)(g: S => T) = ModifiableExpression(expr.lwmap(f), set.contramap(g))
   }
 
   class ThreadSafeVariable[T](initialValue: T) extends Variable[T](initialValue) {

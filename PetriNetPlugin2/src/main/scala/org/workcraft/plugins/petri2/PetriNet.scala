@@ -30,8 +30,19 @@ import org.workcraft.graphics.ColorisableGraphicalContent
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.gui.CommonVisualSettings
 import org.workcraft.scala.grapheditor.tools.GenericConnectionTool
+import org.workcraft.gui.propertyeditor.EditableProperty
 import org.workcraft.gui.modeleditor.tools.ConnectionManager
 import org.workcraft.exceptions.InvalidConnectionException
+import org.workcraft.dom.visual.connections.StaticVisualConnectionData
+import org.workcraft.dom.visual.connections.Polyline
+import org.workcraft.dom.visual.connections.VisualConnectionGui
+import org.workcraft.dom.visual.connections.VisualConnectionProperties
+import java.awt.Color
+import java.awt.BasicStroke
+import org.workcraft.dom.visual.connections.VisualConnectionContext
+import org.workcraft.dom.visual.connections.ConnectionGui
+import org.workcraft.gui.propertyeditor.integer.IntegerProperty
+import org.workcraft.services.ModelService
 
 sealed trait Node
 
@@ -39,26 +50,39 @@ sealed trait Component extends Node
 class Place private[petri2] extends Component
 class Transition private[petri2] extends Component
 
-sealed trait Arc extends Node
+sealed trait Arc extends Node {
+  def from: Component
+  def to: Component
+}
 case class ProducerArc private[petri2] (from: Transition, to: Place) extends Arc
 case class ConsumerArc private[petri2] (from: Place, to: Transition) extends Arc
 
-class PetriNet {
-  val marking = Variable.create(Map[Place, Int]())
-  val labelling = Variable.create(Map[Component, String]())
-  val places = Variable.create(List[Place]())
-  val transitions = Variable.create(List[Transition]())
-  val arcs = Variable.create(List[Arc]())
+object PetriNetSnapshotService extends ModelService[PetriNetSnapshot]
 
-  val nodes: Expression[List[Node]] = (places.expr <***> (transitions, arcs))((p, t, a) => p ++ t ++ a)
+case class PetriNetSnapshot (marking: Map[Place, Int], labelling: Map[Component, String], places: List[Place], transitions: List[Transition], arcs: List[Arc])
+
+object PetriNetSnapshot {
+  val Empty = PetriNetSnapshot (Map(), Map(), List(), List(), List())
+}
+
+class PetriNet (initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
+  val marking = Variable.create(initialState.marking)
+  val labelling = Variable.create(initialState.labelling)
+  val places = Variable.create(initialState.places)
+  val transitions = Variable.create(initialState.transitions)
+  val arcs = Variable.create(initialState.arcs)
+
+  val nodes: Expression[List[Node]] = (places.expr <***> (transitions, arcs))((p, t, a) => a ++ t ++ p)
 
   val components: Expression[List[Component]] = (places.expr <**> transitions)((p, t) => p ++ t)
 
-  def tokens(place: Place) = marking.map(_(place))
+  def tokens(place: Place) = ModifiableExpression (marking.map(_(place)), (t:Int) => marking.update( _ + (place -> t)))
   def label(c: Component) = labelling.map(_(c))
 
   private def newPlace = ioPure.pure { new Place }
   private def newTransition = ioPure.pure { new Transition }
+  private def newProducerArc(from: Transition, to: Place) = ioPure.pure { new ProducerArc(from, to) }
+  private def newConsumerArc(from: Place, to: Transition) = ioPure.pure { new ConsumerArc(from, to) }
 
   def createPlace: IO[Place] = for {
     p <- newPlace;
@@ -72,9 +96,32 @@ class PetriNet {
     _ <- transitions.update(t :: _);
     _ <- labelling.update(_ + (t -> "Sto"))
   } yield t
+
+  def createProducerArc(from: Transition, to: Place) = for {
+    a <- newProducerArc(from, to);
+    _ <- arcs.update(a :: _)
+  } yield a
+
+  def createConsumerArc(from: Place, to: Transition) = for {
+    a <- newConsumerArc(from, to);
+    _ <- arcs.update(a :: _)
+  } yield a
+  
+  def snapshot = for {
+    places <- places;
+    transitions <- transitions;
+    arcs <- arcs;
+    labelling <- labelling;
+    marking <- marking
+  } yield PetriNetSnapshot (marking, labelling, places, transitions, arcs)
 }
 
 class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
+
+  def props: Expression[List[EditableProperty]] = model.selection.map (_.flatMap ({
+    case p:Place => Some(IntegerProperty("Tokens", model.net.tokens(p)))
+    case _ => None
+  }).toList)
 
   def treeFold[A](z: A, f: (A, A) => A, l: List[A]): A = l match {
     case Nil => z
@@ -91,8 +138,8 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
 
   val imageV: Expression[(Node => Colorisation) => GraphicalContent] =
     CommonVisualSettings.settings >>= (settings =>
-      (model.net.places.expr <**> model.net.transitions.expr)((p, t) =>
-        treeSequence((p ++ t).map(c => (componentImage(c, settings) <**> componentTransform(c))((img, xform) => (c, img.transform(xform).cgc))))
+      (model.net.places.expr <***> (model.net.transitions, model.net.arcs))((p, t, a) =>
+        (treeSequence(a.map(a => arcImage(a).map(i => (a, i.graphicalContent))) ++ (p ++ t).map(c => (componentImage(c, settings) <**> componentTransform(c))((img, xform) => (c, img.transform(xform).cgc)))))
           .map { list => (colorisation: (Node => Colorisation)) => treeFold[GraphicalContent](GraphicalContent.Empty, (_.compose(_)), (list.map { case (c, img) => img.applyColorisation(colorisation(c)) })) }).join)
 
   def image(colorisation: Node => Colorisation): Expression[GraphicalContent] = imageV map (_(colorisation))
@@ -100,6 +147,16 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
   def componentImage(c: Component, settings: CommonVisualSettings): Expression[BoundedColorisableGraphicalContent] = c match {
     case p: Place => VisualPlace.image(model.net.tokens(p), model.net.label(p), settings)
     case t: Transition => VisualTransition.image(model.net.label(t), settings)
+  }
+
+  def arcImage(a: Arc): Expression[ConnectionGui] = for {
+    visualArcs <- model.visualArcs;
+    t1 <- touchable(a.from);
+    t2 <- touchable(a.to);
+    ap1 <- componentPosition(a.from);
+    ap2 <- componentPosition(a.to)
+  } yield {
+    VisualConnectionGui.getConnectionGui(model.properties, VisualConnectionContext.makeContext(t1, ap1, t2, ap2), visualArcs(a))
   }
 
   def componentTransform(c: Component) = componentPosition(c).map(p => AffineTransform.getTranslateInstance(p.getX, p.getY))
@@ -115,7 +172,7 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
   def touchable(n: Node) = n match {
     case p: Place => (VisualPlace.touchable <**> componentTransform(p))((touchable, xform) => touchable.transform(xform))
     case t: Transition => (VisualTransition.touchable <**> componentTransform(t))((touchable, xform) => touchable.transform(xform))
-    case _: Arc => null
+    case a: Arc => arcImage(a).map(_.shape.touchable)
   }
 
   private def selectionTool = GenericSelectionTool[Node](
@@ -127,21 +184,20 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
     image(_),
     List())
 
-  private val arrowPoint = constant(new Point2D.Double(0,0)) 
-  
   private val connectionManager = new ConnectionManager[Component] {
-    def connect(node1 : Component, node2 : Component) : Either[InvalidConnectionException, IO[Unit]] = (node1, node2) match {
-      case (from: Place, to: Transition) => Right(IO.Empty)
-      case (from: Transition, to: Place ) => Right(IO.Empty)
-      case _ => Left(new InvalidConnectionException ("kakashka"))
+    def connect(node1: Component, node2: Component): Either[InvalidConnectionException, IO[Unit]] = (node1, node2) match {
+      case (from: Place, to: Transition) => Right(model.createConsumerArc(from, to))
+      case (from: Transition, to: Place) => Right(model.createProducerArc(from, to))
+      case (_: Place, _: Place) => Left(new InvalidConnectionException("Arcs between places are invalid"))
+      case (_: Transition, _: Transition) => Left(new InvalidConnectionException("Arcs between transitions are invalid"))
     }
   }
-    
+
   private def connectionTool =
     GenericConnectionTool[Component](model.net.components, touchable(_), componentPosition(_), connectionManager, (f => image({
-      case _:Arc => Colorisation.Empty
-      case c:Component => f(c)  
-    } )))
+      case _: Arc => Colorisation.Empty
+      case c: Component => f(c)
+    })))
 
   private def placeGeneratorTool =
     NodeGeneratorTool(Button("Place", "images/icons/svg/place.svg", Some(KeyEvent.VK_P)).unsafePerformIO, image(_ => Colorisation(None, None)), model.createPlace(_))
@@ -159,12 +215,24 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
 }
 
 class PetriNetModel extends Model {
+ val properties = new VisualConnectionProperties {
+    override def getDrawColor = Color.green
+    override def getArrowWidth = 0.1
+    override def getArrowLength = 0.2
+    override def hasArrow = true
+    override def getStroke = new BasicStroke(0.05f)
+  }
+  
+  
   val net = new PetriNet
   val selection = Variable.create(Set[Node]())
   val layout = Variable.create(Map[Component, Point2D.Double]())
+  val visualArcs = Variable.create(Map[Arc, StaticVisualConnectionData]())
 
   def createPlace(p: Point2D.Double): IO[Unit] = net.createPlace >>= (place => layout.update(_ + (place -> p)))
   def createTransition(p: Point2D.Double): IO[Unit] = net.createTransition >>= (transition => layout.update(_ + (transition -> p)))
+  def createConsumerArc(from: Place, to: Transition) = net.createConsumerArc(from, to) >>= (a => visualArcs.update(_ + (a -> Polyline(List()))))
+  def createProducerArc(from: Transition, to: Place) = net.createProducerArc(from, to) >>= (a => visualArcs.update(_ + (a -> Polyline(List()))))
 
   def implementation[T](service: Service[ModelScope, T]) = service match {
     case EditorService => Some(new PetriNetEditor(this))

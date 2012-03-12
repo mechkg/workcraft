@@ -32,9 +32,6 @@ import org.workcraft.dependencymanager.advanced.user.ModifiableExpressionFilter;
 import org.workcraft.dependencymanager.advanced.user.StorageManager;
 import org.workcraft.dom.Connection;
 import org.workcraft.exceptions.NotSupportedException;
-import org.workcraft.gui.propertyeditor.EditableProperty;
-import org.workcraft.gui.propertyeditor.choice.ChoiceProperty;
-import org.workcraft.gui.propertyeditor.dubble.DoubleProperty;
 import org.workcraft.util.Pair;
 
 import pcollections.PVector;

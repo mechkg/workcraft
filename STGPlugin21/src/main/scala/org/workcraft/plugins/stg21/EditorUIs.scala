@@ -11,15 +11,14 @@ import scala.collection.JavaConversions._
 import pcollections.TreePVector
 
 object EditorUIs {
-  case class EditorUI[T](create : String => ModifiableExpression[T] => EditableProperty);
-  implicit val stringEditorUI : EditorUI[String] = EditorUI (name => x => StringProperty.create(name, x))
-  implicit val integerEditorUI : EditorUI[Integer] = EditorUI (name => x => IntegerProperty.create(name, x))
-  implicit val intEditorUI : EditorUI[Int] = EditorUI (name => x => IntegerProperty.create(name, x.applyIso[Integer](x => x, x => x)))
-  implicit val doubleEditorUI : EditorUI[java.lang.Double] = EditorUI (name => x => DoubleProperty.create(name, x))
+  case class EditorUI[T](create : String => ModifiableExpression[T] => EditableProperty)
+  implicit val stringEditorUI : EditorUI[String] = EditorUI (name => x => StringProperty(name, x))
+  implicit val intEditorUI : EditorUI[Int] = EditorUI (name => x => IntegerProperty(name, x))
+  // implicit val doubleEditorUI : EditorUI[java.lang.Double] = EditorUI (name => x => DoubleProperty(name, x))
   implicit val valueDoubleEditorUI : EditorUI[Double] = 
-    EditorUI (name => x => DoubleProperty.create(name, x.applyIso[java.lang.Double](x => x, x => x)))
+    EditorUI (name => x => DoubleProperty(name, x))
   case class Choice[T] (values : List[(String, T)])
   implicit def choiceEditorUI[T] (implicit choice : Choice[T]) : EditorUI[T] = EditorUI { name => x =>
-    ChoiceProperty.create(name, TreePVector.from[org.workcraft.util.Pair[String, T]](choice.values.map(p => org.workcraft.util.Pair.of(p._1,p._2))), x)
+    ChoiceProperty(name, (choice.values), x)
   }
 }

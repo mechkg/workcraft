@@ -38,6 +38,7 @@ import org.workcraft.gui.modeleditor.EditorState
 import org.workcraft.gui.modeleditor.tools.ToolboxPanel
 import org.workcraft.gui.propertyeditor.PropertyEditorWindow
 import org.workcraft.scala.Expressions._
+import org.workcraft.dependencymanager.advanced.user.Variable
 
 class MainWindow(
   val globalServices: () => GlobalServiceManager,
@@ -67,7 +68,7 @@ class MainWindow(
   val propEdDockable = createUtilityWindow("PropEd", "PropEd", propEdWindow, toolboxDockable, DockingConstants.NORTH_REGION, 0.8)
 
   var openEditors = List[DockableWindow[ModelEditorPanel]]()
-  var editorInFocus: Option[DockableWindow[ModelEditorPanel]] = None
+  var editorInFocus: ModifiableExpression[Option[DockableWindow[ModelEditorPanel]]] = Variable.create[Option[DockableWindow[ModelEditorPanel]]](None)
 
   val menu = new MainMenu(this, List(loggerDockable, toolboxDockable), globalServices, { case (m, b) => newModel(m, b) }, reconfigure)
   this.setJMenuBar(menu)
@@ -129,7 +130,7 @@ class MainWindow(
       }
     }
     
-    editorInFocus = editorDockable
+    editorInFocus.set(editorDockable).unsafePerformIO
   }
 
   def openEditor(model: ModelServiceProvider) {
@@ -137,7 +138,7 @@ class MainWindow(
       case None => JOptionPane.showMessageDialog(this, "The model type that you have chosen does not support visual editing :(", "Warning", JOptionPane.WARNING_MESSAGE)
       case Some(editor) => {
         val editorPanel = new ModelEditorPanel(model, editor)(implicitLogger)
-        val editorDockable = dockingRoot.createWindow("Говноэдитор", "unused", editorPanel, DockableWindowConfiguration(onCloseClicked = closeEditor), if (openEditors.isEmpty) placeholderDockable else (openEditors.head), DockingConstants.CENTER_REGION)
+        val editorDockable = dockingRoot.createWindow("Untitled", "unused", editorPanel, DockableWindowConfiguration(onCloseClicked = closeEditor), if (openEditors.isEmpty) placeholderDockable else (openEditors.head), DockingConstants.CENTER_REGION)
 
         if (openEditors.isEmpty) {
           openEditors = List(editorDockable)

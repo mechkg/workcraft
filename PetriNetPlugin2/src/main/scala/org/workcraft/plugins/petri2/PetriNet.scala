@@ -43,6 +43,8 @@ import org.workcraft.dom.visual.connections.VisualConnectionContext
 import org.workcraft.dom.visual.connections.ConnectionGui
 import org.workcraft.gui.propertyeditor.integer.IntegerProperty
 import org.workcraft.services.ModelService
+import org.workcraft.services.Format
+import org.workcraft.services.DefaultFormatService
 
 sealed trait Node
 
@@ -57,7 +59,7 @@ sealed trait Arc extends Node {
 case class ProducerArc private[petri2] (from: Transition, to: Place) extends Arc
 case class ConsumerArc private[petri2] (from: Place, to: Transition) extends Arc
 
-object PetriNetSnapshotService extends ModelService[PetriNetSnapshot]
+object PetriNetSnapshotService extends ModelService[IO[PetriNetSnapshot]]
 
 case class PetriNetSnapshot (marking: Map[Place, Int], labelling: Map[Component, String], places: List[Place], transitions: List[Transition], arcs: List[Arc])
 
@@ -236,6 +238,8 @@ class PetriNetModel extends Model {
 
   def implementation[T](service: Service[ModelScope, T]) = service match {
     case EditorService => Some(new PetriNetEditor(this))
+    case PetriNetSnapshotService => Some(net.snapshot.eval)
+    case DefaultFormatService => Some(Format.LolaPetriNet)
     case _ => None
   }
 }

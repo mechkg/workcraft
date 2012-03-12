@@ -15,5 +15,7 @@ public class ServiceNotAvailableException extends Exception {
 	public ServiceNotAvailableException(ServiceHandle<?, ?> service) {
 		super("Service not available: " + service.toString());
 	}
+	
+	
 
 }

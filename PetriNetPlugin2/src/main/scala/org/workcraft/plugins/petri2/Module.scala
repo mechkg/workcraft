@@ -6,6 +6,8 @@ import org.workcraft.services.NewModelImpl
 import org.workcraft.services.GlobalScope
 import org.workcraft.services.NewModelService
 import org.workcraft.services.ModelServiceProvider
+import org.workcraft.services.Exporter
+import org.workcraft.services.ExporterService
 
 object NewPetriNet extends NewModelImpl {
   def name = "Petri Net"
@@ -15,6 +17,7 @@ object NewPetriNet extends NewModelImpl {
 object PetriNetServiceProvider extends GlobalServiceProvider {
   def implementation[T](service: Service[GlobalScope, T]) = service match {
     case NewModelService => Some(NewPetriNet)
+    case ExporterService => Some(LolaExporter)
     case _ => None
   }
 }

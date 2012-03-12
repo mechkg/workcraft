@@ -8,51 +8,87 @@ import javax.swing.JOptionPane
 import java.awt.Window
 import javax.swing.filechooser.FileFilter
 import java.io.File
+import org.workcraft.services.DefaultFormatService
+import org.workcraft.services.Format
+import org.workcraft.services.ExportJob
+import java.io.FileOutputStream
+import org.workcraft.scala.effects.IO
+import org.workcraft.services.FileExportJob
 
 object SaveDialog {
-  def show(parentWindow: Window, file: Option[File], model: ModelServiceProvider, globalServices: GlobalServiceManager) = {
-    val exporters = globalServices.implementations(ExporterService).flatMap(e => e.export(model) match {
-      case Left(_) => None
-      case Right(job) => Some((e.targetFormat, job))
+
+  //
+  // Save        }
+  // Save as...  } use default format
+  // 
+  // Export...   } choose format
+
+  def partitionEither[A, B](list: List[Either[A, B]]) =
+    list.foldRight((List[A](), List[B]()))((item, lists) => item match {
+      case Left(left) => (left :: lists._1, lists._2)
+      case Right(right) => (lists._1, right :: lists._2)
     })
 
-    if (exporters.isEmpty)
-      JOptionPane.showMessageDialog(parentWindow, "Workcraft was unable to find any plug-ins that could save this model.", "Warning", JOptionPane.WARNING_MESSAGE)
-    else {
-      val fc = new JFileChooser()
-      fc.setDialogType(JFileChooser.SAVE_DIALOG)
+  def chooseFile(currentFile: Option[File], parentWindow: Window, format: Format): Option[File] = {
+    val fc = new JFileChooser()
+    fc.setDialogType(JFileChooser.SAVE_DIALOG)
 
-      exporters.foreach({
-        case (fmt, _) => fc.addChoosableFileFilter(new FileFilter {
-          def accept(file: File) = file.getName().endsWith(fmt.extension)
-          def getDescription: String = fmt.description
-        })
-      })
+    fc.setFileFilter(new FileFilter {
+      def accept(file: File) = file.isDirectory || file.getName.endsWith(format.extension)
+      def getDescription = format.description + "(" + format.extension + ")"
+    })
+    fc.setAcceptAllFileFilterUsed(false)
 
-      fc.setAcceptAllFileFilterUsed(false)
+    currentFile.foreach(f => fc.setCurrentDirectory(f.getParentFile))
 
-      file.foreach(f => fc.setCurrentDirectory(f.getParentFile))
+    def choose: Option[File] = if (fc.showSaveDialog(parentWindow) == JFileChooser.APPROVE_OPTION) {
+      var path = fc.getSelectedFile().getPath()
 
-      def choose: Option[File] = if (fc.showSaveDialog(parentWindow) == JFileChooser.APPROVE_OPTION) {
-        var path = fc.getSelectedFile().getPath()
+      if (!path.endsWith(format.extension))
+        path += format.extension
 
-        println(fc.getFileFilter())
+      val f = new File(path)
 
-        /*if (!path.endsWith(FileFilters.DOCUMENT_EXTENSION))
-					path += FileFilters.DOCUMENT_EXTENSION; */
+      if (!f.exists())
+        Some(f)
+      else if (JOptionPane.showConfirmDialog(parentWindow, "The file \"" + f.getName() + "\" already exists. Do you want to overwrite it?", "Confirm",
+        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+        Some(f)
+      else
+        choose
+    } else
+      None
 
-        val f = new File(path);
+    choose
+  }
 
-        if (!f.exists())
-          Some(f)
-        else if (JOptionPane.showConfirmDialog(parentWindow, "The file \"" + f.getName() + "\" already exists. Do you want to overwrite it?", "Confirm",
-          JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
-          Some(f)
-        else
-          choose
-      } else
-        None
+  def saveAs(parentWindow: Window, model: ModelServiceProvider, globalServices: GlobalServiceManager): Option[FileExportJob] = model.implementation(DefaultFormatService) match {
+    case None => {
+      JOptionPane.showMessageDialog(parentWindow, "Current model does not define a default file format.\nTry using export and choosing a specific format instead.", "Error", JOptionPane.ERROR_MESSAGE)
+      None
     }
+
+    case Some(format) => {
+      val exporters = globalServices.implementations(ExporterService).filter(_.targetFormat == format)
+      val (unapplicable, applicable) = partitionEither(exporters.map(_.export(model)))
+
+      if (applicable.isEmpty) {
+        val explanation = if (exporters.isEmpty)
+          "Because no export plug-ins are available for this format."
+        else
+          "Because:\n" + unapplicable.map("- " + _.toString).reduceRight(_ + "\n" + _)
+
+        JOptionPane.showMessageDialog(parentWindow,
+          "Workcraft was unable to save this model in its default format:\n" + format.description + " (" + format.extension + ")\n" + explanation, "Error", JOptionPane.ERROR_MESSAGE)
+
+        None
+
+      } else
+        // TODO: handle more than one exporter
+        chooseFile(None, parentWindow, format).map(FileExportJob(_, applicable.head))
+    }
+  }
+}     
 
     /*
 	
@@ -86,5 +122,4 @@ object SaveDialog {
 			throw new RuntimeException(e);
 		}
   }*/
-  }
-}
+ 

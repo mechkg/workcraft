@@ -29,6 +29,9 @@ import org.workcraft.gui.modeleditor.tools.NodeGeneratorTool
 import org.workcraft.graphics.ColorisableGraphicalContent
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.gui.CommonVisualSettings
+import org.workcraft.scala.grapheditor.tools.GenericConnectionTool
+import org.workcraft.gui.modeleditor.tools.ConnectionManager
+import org.workcraft.exceptions.InvalidConnectionException
 
 sealed trait Node
 
@@ -47,67 +50,62 @@ class PetriNet {
   val transitions = Variable.create(List[Transition]())
   val arcs = Variable.create(List[Arc]())
 
-  val nodes: Expression[List[Node]] = for {
-    p <- places;
-    t <- transitions;
-    a <- arcs
-  } yield p ++ t ++ a
+  val nodes: Expression[List[Node]] = (places.expr <***> (transitions, arcs))((p, t, a) => p ++ t ++ a)
 
- 
+  val components: Expression[List[Component]] = (places.expr <**> transitions)((p, t) => p ++ t)
+
   def tokens(place: Place) = marking.map(_(place))
   def label(c: Component) = labelling.map(_(c))
-  
-  private def newPlace = ioPure.pure{ new Place }
-  private def newTransition = ioPure.pure {new Transition}
-  
+
+  private def newPlace = ioPure.pure { new Place }
+  private def newTransition = ioPure.pure { new Transition }
+
   def createPlace: IO[Place] = for {
     p <- newPlace;
     _ <- places.update(p :: _);
-    _ <- marking.update (_ + (p-> 0));
-    _ <- labelling.update (_ + (p -> "Pitsot"))
-  } yield p 
-  
+    _ <- marking.update(_ + (p -> 0));
+    _ <- labelling.update(_ + (p -> "Pitsot"))
+  } yield p
+
   def createTransition: IO[Transition] = for {
     t <- newTransition;
-    _ <- transitions.update(t::_);
+    _ <- transitions.update(t :: _);
     _ <- labelling.update(_ + (t -> "Sto"))
   } yield t
 }
 
 class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
-  
+
   def treeFold[A](z: A, f: (A, A) => A, l: List[A]): A = l match {
     case Nil => z
-    case x::Nil => f (z, x)
-    case q@(x::xs) => treeFold (z, f, q.grouped(2).map({ 
-      case List(a,b) => f(a,b)
+    case x :: Nil => f(z, x)
+    case q @ (x :: xs) => treeFold(z, f, q.grouped(2).map({
+      case List(a, b) => f(a, b)
       case List(a) => a
-      case _ => throw new RuntimeException ("Should not happen")
+      case _ => throw new RuntimeException("Should not happen")
     }).toList)
   }
-    
-  def treeSequence[A] (l: List[Expression[A]]) : Expression[List[A]] =
-    treeFold[Expression[List[A]]](constant(List()), (q,p) => (q <**> p)(_++_), l.map(_.lwmap(List(_))))
-  
+
+  def treeSequence[A](l: List[Expression[A]]): Expression[List[A]] =
+    treeFold[Expression[List[A]]](constant(List()), (q, p) => (q <**> p)(_ ++ _), l.map(_.lwmap(List(_))))
+
   val imageV: Expression[(Node => Colorisation) => GraphicalContent] =
     CommonVisualSettings.settings >>= (settings =>
-  (model.net.places.expr <**> model.net.transitions.expr)((p, t) =>
-    treeSequence((p++t).map
-      (c => (componentImage(c, settings) <**> componentTransform(c) ) ((img, xform) => (c, img.transform(xform).cgc))))
-      .map{list => (colorisation : (Node => Colorisation)) => treeFold[GraphicalContent](GraphicalContent.Empty, (_.compose(_)), (list.map {case (c, img) => img.applyColorisation(colorisation(c))}))}
-      ).join)
-  
+      (model.net.places.expr <**> model.net.transitions.expr)((p, t) =>
+        treeSequence((p ++ t).map(c => (componentImage(c, settings) <**> componentTransform(c))((img, xform) => (c, img.transform(xform).cgc))))
+          .map { list => (colorisation: (Node => Colorisation)) => treeFold[GraphicalContent](GraphicalContent.Empty, (_.compose(_)), (list.map { case (c, img) => img.applyColorisation(colorisation(c)) })) }).join)
+
   def image(colorisation: Node => Colorisation): Expression[GraphicalContent] = imageV map (_(colorisation))
 
-  def componentImage (c: Component, settings : CommonVisualSettings) : Expression[BoundedColorisableGraphicalContent] = c match {
-    case p:Place => VisualPlace.image(model.net.tokens(p), model.net.label(p), settings)
-    case t:Transition => VisualTransition.image(model.net.label(t), settings)
-  }       
-   
+  def componentImage(c: Component, settings: CommonVisualSettings): Expression[BoundedColorisableGraphicalContent] = c match {
+    case p: Place => VisualPlace.image(model.net.tokens(p), model.net.label(p), settings)
+    case t: Transition => VisualTransition.image(model.net.label(t), settings)
+  }
+
   def componentTransform(c: Component) = componentPosition(c).map(p => AffineTransform.getTranslateInstance(p.getX, p.getY))
 
   def componentPosition(c: Component): ModifiableExpression[Point2D.Double] =
-    ModifiableExpression (model.layout.map(_(c)), p => model.layout.update(_ + (c -> p)))
+    ModifiableExpression(model.layout.map(_(c)), p => model.layout.update(_ + (c -> p)))
 
   def nodePosition(n: Node): Option[ModifiableExpression[Point2D.Double]] = n match {
     case _: Arc => None
@@ -115,8 +113,8 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
   }
 
   def touchable(n: Node) = n match {
-    case p: Place => (VisualPlace.touchable <**> componentTransform(p)) ((touchable, xform) => touchable.transform(xform))
-    case t: Transition => (VisualTransition.touchable <**> componentTransform(t)) ((touchable, xform) => touchable.transform(xform))
+    case p: Place => (VisualPlace.touchable <**> componentTransform(p))((touchable, xform) => touchable.transform(xform))
+    case t: Transition => (VisualTransition.touchable <**> componentTransform(t))((touchable, xform) => touchable.transform(xform))
     case _: Arc => null
   }
 
@@ -128,14 +126,30 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
     touchable(_),
     image(_),
     List())
-    
-  private def placeGeneratorTool = 
-    NodeGeneratorTool(Button("Place", "images/icons/svg/place.svg", Some(KeyEvent.VK_P)).unsafePerformIO, image(_ => Colorisation(None, None)), model.createPlace(_))
+
+  private val arrowPoint = constant(new Point2D.Double(0,0)) 
   
+  private val connectionManager = new ConnectionManager[Component] {
+    def connect(node1 : Component, node2 : Component) : Either[InvalidConnectionException, IO[Unit]] = (node1, node2) match {
+      case (from: Place, to: Transition) => Right(IO.Empty)
+      case (from: Transition, to: Place ) => Right(IO.Empty)
+      case _ => Left(new InvalidConnectionException ("kakashka"))
+    }
+  }
+    
+  private def connectionTool =
+    GenericConnectionTool[Component](model.net.components, touchable(_), componentPosition(_), connectionManager, (f => image({
+      case _:Arc => Colorisation.Empty
+      case c:Component => f(c)  
+    } )))
+
+  private def placeGeneratorTool =
+    NodeGeneratorTool(Button("Place", "images/icons/svg/place.svg", Some(KeyEvent.VK_P)).unsafePerformIO, image(_ => Colorisation(None, None)), model.createPlace(_))
+
   private def transitionGeneratorTool =
     NodeGeneratorTool(Button("Transition", "images/icons/svg/transition.svg", Some(KeyEvent.VK_T)).unsafePerformIO, image(_ => Colorisation(None, None)), model.createTransition(_))
 
-  def tools = NonEmptyList(selectionTool, placeGeneratorTool, transitionGeneratorTool)
+  def tools = NonEmptyList(selectionTool, connectionTool, placeGeneratorTool, transitionGeneratorTool)
   def keyBindings = List(KeyBinding("Sumshit", KeyEvent.VK_Q, KeyEventType.KeyPressed, Set(), ioPure.pure { JOptionPane.showMessageDialog(null, "KUZUKA!", "Important message!", JOptionPane.INFORMATION_MESSAGE) }))
   def button = new Button {
     def hotkey = Some(KeyEvent.VK_K)
@@ -148,10 +162,9 @@ class PetriNetModel extends Model {
   val net = new PetriNet
   val selection = Variable.create(Set[Node]())
   val layout = Variable.create(Map[Component, Point2D.Double]())
-  
+
   def createPlace(p: Point2D.Double): IO[Unit] = net.createPlace >>= (place => layout.update(_ + (place -> p)))
   def createTransition(p: Point2D.Double): IO[Unit] = net.createTransition >>= (transition => layout.update(_ + (transition -> p)))
-  
 
   def implementation[T](service: Service[ModelScope, T]) = service match {
     case EditorService => Some(new PetriNetEditor(this))

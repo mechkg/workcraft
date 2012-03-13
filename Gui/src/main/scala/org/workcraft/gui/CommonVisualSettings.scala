@@ -17,7 +17,7 @@ case class CommonVisualSettings (
 	foregroundColor:Color = Color.BLACK,
 	fillColor:Color = Color.WHITE,
 	serifFont:Font = new Font("Serif", Font.PLAIN, 1),
-	labelFont:Font = new Font("Serif", Font.PLAIN, 1),
+	labelFont:Font = new Font("SansSerif", Font.PLAIN, 1),
 	labelFontSize: Double = 0.5,
 	sansSerifFont:Font = new Font("SansSerif", Font.PLAIN, 1),
 	editorMessageFont:Font = new Font("SansSerif", Font.PLAIN, 12)

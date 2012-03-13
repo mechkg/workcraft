@@ -49,6 +49,7 @@ import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleT
 import org.workcraft.dependencymanager.advanced.core.Handle;
 import org.workcraft.dependencymanager.util.listeners.Listener;
 import org.workcraft.gui.workspace.Path;
+import org.workcraft.util.Action;
 
 public class TreeWindow<Node> extends JPanel
 {
@@ -73,9 +74,10 @@ public class TreeWindow<Node> extends JPanel
 		List<Handle> handles = new ArrayList<Handle>();
 		
 		@Override
-		public void changed() {
+		public Action changed() {
 			handles.clear();
 			tree.repaint();
+			return Action.EMPTY;
 		}
 		
 		public <T> T eval(Expression<T> expr) {

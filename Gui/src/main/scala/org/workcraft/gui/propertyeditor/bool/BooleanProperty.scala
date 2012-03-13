@@ -1,11 +1,13 @@
 package org.workcraft.gui.propertyeditor.bool
 
-import org.workcraft.dependencymanager.advanced.user.ModifiableExpression
+
 import org.workcraft.gui.propertyeditor.EditableProperty
+import org.workcraft.scala.Expressions.Expression
+import org.workcraft.scala.Expressions._
 
 
 object BooleanProperty {
-  def create(name:String, expr:ModifiableExpression[Boolean]):EditableProperty = {
-    return EditableProperty(name, BooleanCellEditor, BooleanCellRenderer, expr)
-  }
+  def create(name:String, expr:ModifiableExpression[Boolean]): Expression[EditableProperty] = expr.map ( v => 
+    EditableProperty (name, BooleanCellEditor, BooleanCellRenderer, v, expr.set(_:Boolean))
+  )
 }

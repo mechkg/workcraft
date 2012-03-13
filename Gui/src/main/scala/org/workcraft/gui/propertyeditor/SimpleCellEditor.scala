@@ -1,9 +1,9 @@
 package org.workcraft.gui.propertyeditor
 
 import java.awt.Component
-
+import org.workcraft.scala.effects.IO
 
 trait SimpleCellEditor {
-  def commit():Unit
-  def getComponent():Component
+  def commit: IO[Option[String]]
+  def getComponent(): Component
 }

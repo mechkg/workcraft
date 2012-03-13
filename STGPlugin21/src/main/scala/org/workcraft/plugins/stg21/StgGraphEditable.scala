@@ -158,7 +158,7 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Mode
       nodeGeneratorTools)
   }
 
-  def props : Expression[List[EditableProperty]] = {
+  def props : Expression[List[Expression[EditableProperty]]] = {
     for(s <- (selection : Expression[Set[VisualEntity]]);
       props <- s.toList.traverse(e => EditableProperties.objProperties(e)(visualStg))
     ) yield (props.flatten)

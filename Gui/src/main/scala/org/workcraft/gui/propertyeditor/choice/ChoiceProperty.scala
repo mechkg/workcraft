@@ -11,22 +11,23 @@ import org.workcraft.util.Action
 import org.workcraft.util.Pair
 import pcollections.PVector
 import org.workcraft.scala.effects.IO
-
+import org.workcraft.scala.Expressions.Expression
+import org.workcraft.scala.Expressions._
 
 object ChoiceProperty {
-  
-  def apply[T](name:String, choice:List[(String,T)], property:ModifiableExpression[T]):EditableProperty = {
-    
+
+  def apply[T](name: String, choice: List[(String, T)], property: ModifiableExpression[T]): Expression[EditableProperty] = property.map(value => {
+
     val e = new GenericEditorProvider[T] {
-			override def createEditor(initialValue : T, accept : IO[Unit], cancel : IO[Unit]) : GenericCellEditor[T] =
-				new ChoiceCellEditor[T](initialValue, choice, accept)
+      override def createEditor(initialValue: T, accept: IO[Unit], cancel: IO[Unit]): GenericCellEditor[T] =
+        new ChoiceCellEditor[T](initialValue, choice, accept)
     }
-    
+
     val r = new RendererProvider[T] {
-      val m = choice.map{case (a,b) => (b,a)}.toMap
-      def createRenderer(value:T):Component = StringProperty.RendererProvider.createRenderer(m(value))
+      val m = choice.map(_.swap).toMap
+      def createRenderer(value: T): Component = StringProperty.RendererProvider.createRenderer(m(value))
     }
-    
-    return EditableProperty(name, e, r, property)
-  }
+
+    EditableProperty(name, e, r, value, property.set(_: T))
+  })
 }

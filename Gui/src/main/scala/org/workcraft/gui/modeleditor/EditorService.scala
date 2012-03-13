@@ -11,5 +11,5 @@ object EditorService extends Service[ModelScope, ModelEditor]
 
 trait ModelEditor {
   def tools: NonEmptyList[ModelEditorToolConstructor]
-  def props : Expression[List[EditableProperty]]
+  def props : Expression[List[Expression[EditableProperty]]]
 }

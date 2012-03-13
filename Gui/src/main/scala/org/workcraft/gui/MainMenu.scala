@@ -12,7 +12,7 @@ class MainMenu(
     mainWindow: MainWindow, utilityWindows: List[DockableWindow[_ <: JComponent]], 
     services: () => GlobalServiceManager,
     newModel: ((NewModelImpl, Boolean)) => Unit,
-    reconfigure: () => Unit) extends JMenuBar {
+    reconfigure: => Unit) extends JMenuBar {
   val fileMenu = new FileMenu(services, mainWindow, newModel)
   val windowsMenu = new UtilityWindowsMenu(utilityWindows)
   

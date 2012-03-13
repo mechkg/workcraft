@@ -17,6 +17,8 @@ import org.workcraft.scala.effects.IO
 import org.workcraft.scala.effects.IO._
 import org.workcraft.dependencymanager.util.listeners.Listener
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleTuple
+import org.workcraft.dependencymanager.advanced.user.AutoRefreshExpression
+import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 
 object Expressions {
   case class Expression[+T](jexpr: JExpression[_ <: T]) {
@@ -48,6 +50,13 @@ object Expressions {
     }
     
     def xmap[S](f: T => S)(g: S => T) = ModifiableExpression(expr.lwmap(f), set.contramap(g))
+    
+    def validate[E] (validator : T => Option[E]) : ModifiableExpressionWithValidation[T,E] = ModifiableExpressionWithValidation(expr, x => {
+      validator(x) match {
+        case None => set(x) >| None
+        case Some(err) => ioPure.pure(Some(err))
+      }
+    })
   }
 
   class ThreadSafeVariable[T](initialValue: T) extends Variable[T](initialValue) {
@@ -76,6 +85,13 @@ object Expressions {
     override def bind[A, B](a: Expression[A], f: A => Expression[B]): Expression[B] = decorateExpression(bindJ[A, B](a.jexpr: JExpression[_ <: A], asFunctionObject(((_: Expression[B]).jexpr).compose(f))))
   }
 
+  case class ModifiableExpressionWithValidation[T,E](expr: Expression[T], set: T => IO[Option[E]]) {
+    def xmap[S](f : T => S)(g : S => Either[E, T]) = ModifiableExpressionWithValidation[S,E](expr.map(f), s => g(s) match{
+      case Left(err) => ioPure.pure(Some(err))
+      case Right(t) => set(t)
+    })
+  }
+  
   def constant[T](x: T): Expression[T] = jConstant(x)
 
   /**
@@ -108,4 +124,35 @@ object Expressions {
   def sequenceExpressions[A](collection: Iterable[Expression[_ <: A]]): Expression[List[A]] = collection.foldRight(constant(Nil: List[A]))((head: Expression[_ <: A], tail: Expression[List[A]]) => for (tail <- tail; head <- head) yield head :: tail)
 
   def newVar[T](x: T): IO[Variable[T]] = ioPure.pure(Variable.create(x))
+  
+  def evanescentAutoRefresh[T] (expr: Expression[T], update: T => IO[Unit]) = new AutoRefreshHandle (new AutoRefreshExpression {
+    override def onEvaluate (context: EvaluationContext) = {
+      update(context.resolve(expr)).unsafePerformIO      
+    }
+  })
+  
+  object DisposableAutoRefreshExpression {
+    val hashmap = scala.collection.mutable.HashSet[AutoRefreshExpression]()
+  }
+  
+  class DisposableAutoRefreshExpression[T] (expr: Expression[T], update: T => IO[Unit]) extends AutoRefreshExpression {
+       
+    DisposableAutoRefreshExpression.hashmap += this
+    
+    private var disposeRequested = false
+    
+    override def onEvaluate (context: EvaluationContext) = {
+      if (!disposeRequested)
+    	  update(context.resolve(expr)).unsafePerformIO      
+    }
+    
+    def dispose = {
+      disposeRequested = true
+      DisposableAutoRefreshExpression.hashmap -= this
+    }
+  }
+  
+  class AutoRefreshHandle (private val ref: AnyRef)
+  
+  def manualDisposeAutoRefresh[T] (expr: Expression[T], update: T => IO[Unit]): DisposableAutoRefreshExpression[T]  = new DisposableAutoRefreshExpression(expr, update)
 }

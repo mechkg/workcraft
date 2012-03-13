@@ -45,6 +45,11 @@ import org.workcraft.gui.propertyeditor.integer.IntegerProperty
 import org.workcraft.services.ModelService
 import org.workcraft.services.Format
 import org.workcraft.services.DefaultFormatService
+import org.workcraft.gui.propertyeditor.dubble.DoubleProperty
+import javax.swing.Timer
+import java.awt.event.ActionListener
+import java.awt.event.ActionEvent
+import org.workcraft.gui.propertyeditor.string.StringProperty
 
 sealed trait Node
 
@@ -61,15 +66,18 @@ case class ConsumerArc private[petri2] (from: Place, to: Transition) extends Arc
 
 object PetriNetSnapshotService extends ModelService[IO[PetriNetSnapshot]]
 
-case class PetriNetSnapshot (marking: Map[Place, Int], labelling: Map[Component, String], places: List[Place], transitions: List[Transition], arcs: List[Arc])
-
-object PetriNetSnapshot {
-  val Empty = PetriNetSnapshot (Map(), Map(), List(), List(), List())
+case class PetriNetSnapshot(marking: Map[Place, Int], labelling: Map[Component, String], places: List[Place], transitions: List[Transition], arcs: List[Arc]) {
+  val names = labelling.toList.map({ case (a, b) => (b, a) }).toMap
 }
 
-class PetriNet (initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
+object PetriNetSnapshot {
+  val Empty = PetriNetSnapshot(Map(), Map(), List(), List(), List())
+}
+
+class PetriNet(initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
   val marking = Variable.create(initialState.marking)
   val labelling = Variable.create(initialState.labelling)
+  val names = Variable.create(initialState.names)
   val places = Variable.create(initialState.places)
   val transitions = Variable.create(initialState.transitions)
   val arcs = Variable.create(initialState.arcs)
@@ -78,7 +86,7 @@ class PetriNet (initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
 
   val components: Expression[List[Component]] = (places.expr <**> transitions)((p, t) => p ++ t)
 
-  def tokens(place: Place) = ModifiableExpression (marking.map(_(place)), (t:Int) => marking.update( _ + (place -> t)))
+  def tokens(place: Place) = ModifiableExpression(marking.map(_(place)), (t: Int) => marking.update(_ + (place -> t)))
   def label(c: Component) = labelling.map(_(c))
 
   private def newPlace = ioPure.pure { new Place }
@@ -86,17 +94,42 @@ class PetriNet (initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
   private def newProducerArc(from: Transition, to: Place) = ioPure.pure { new ProducerArc(from, to) }
   private def newConsumerArc(from: Place, to: Transition) = ioPure.pure { new ConsumerArc(from, to) }
 
+  private var placeNameCounter = 0
+  private var transitionNameCounter = 0
+
+  private def newPlaceName =
+    names.eval >>= (names => ioPure.pure {
+      def name = "p" + placeNameCounter
+      while (names.contains(name)) placeNameCounter += 1
+      val result = name
+      placeNameCounter += 1
+      result
+    })
+
+  private def newTransitionName =
+    names.eval >>= (names => ioPure.pure {
+      def name = "t" + transitionNameCounter
+      while (names.contains(name)) transitionNameCounter += 1
+      val result = name
+      transitionNameCounter += 1
+      result
+    })
+
   def createPlace: IO[Place] = for {
     p <- newPlace;
+    name <- newPlaceName;
     _ <- places.update(p :: _);
     _ <- marking.update(_ + (p -> 0));
-    _ <- labelling.update(_ + (p -> "Pitsot"))
+    _ <- labelling.update(_ + (p -> name))
+    _ <- names.update(_ + (name -> p))
   } yield p
+  
 
   def createTransition: IO[Transition] = for {
     t <- newTransition;
+    name <- newTransitionName;
     _ <- transitions.update(t :: _);
-    _ <- labelling.update(_ + (t -> "Sto"))
+    _ <- labelling.update(_ + (t -> name))
   } yield t
 
   def createProducerArc(from: Transition, to: Place) = for {
@@ -108,21 +141,46 @@ class PetriNet (initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
     a <- newConsumerArc(from, to);
     _ <- arcs.update(a :: _)
   } yield a
-  
+
   def snapshot = for {
     places <- places;
     transitions <- transitions;
     arcs <- arcs;
     labelling <- labelling;
     marking <- marking
-  } yield PetriNetSnapshot (marking, labelling, places, transitions, arcs)
+  } yield PetriNetSnapshot(marking, labelling, places, transitions, arcs)
 }
 
 class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
 
-  def props: Expression[List[EditableProperty]] = model.selection.map (_.flatMap ({
-    case p:Place => Some(IntegerProperty("Tokens", model.net.tokens(p)))
-    case _ => None
+  def isValidIdentifier(s : String) = s.matches("[a-zA-Z_][0-9a-zA-Z_]*")
+  
+  def name(p : Place) : ModifiableExpressionWithValidation[String, String] = {
+    val expr = model.net.labelling.map(_(p)) 
+    ModifiableExpressionWithValidation(
+    expr
+    , name => if (isValidIdentifier(name)){(
+      for{
+        oldName <- expr.eval;
+        names <- model.net.names.eval
+      } yield if(name != oldName) {
+          if(names.contains(name)) ioPure.pure(Some("The name '"+ name +"' is already taken."))
+          else {
+            model.net.names.set(names - oldName + ((name, p))) >|>
+            model.net.labelling.update(_ + ((p, name))) >| None
+          }
+        } else
+          ioPure.pure(None)).join} else ioPure.pure(Some("Names must be non-empty Latin alphanumeric strings not starting with a digit."))
+      )
+    }
+  
+  def props: Expression[List[Expression[EditableProperty]]] = model.selection.map(_.toList.flatMap({
+    case p: Place => List(
+        IntegerProperty("Tokens", model.net.tokens(p).validate(x => if(x < 0) Some("Token count cannot be negative.") else None)), 
+        DoubleProperty("X", componentX(p)),
+        StringProperty("Name", name(p))
+        )
+    case _ => Nil
   }).toList)
 
   def treeFold[A](z: A, f: (A, A) => A, l: List[A]): A = l match {
@@ -166,6 +224,9 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
   def componentPosition(c: Component): ModifiableExpression[Point2D.Double] =
     ModifiableExpression(model.layout.map(_(c)), p => model.layout.update(_ + (c -> p)))
 
+  def componentX(c: Component): ModifiableExpression[Double] =
+    ModifiableExpression(model.layout.map(_(c).getX), x => model.layout.update(m => m + (c -> new Point2D.Double(x, m(c).getY))))
+
   def nodePosition(n: Node): Option[ModifiableExpression[Point2D.Double]] = n match {
     case _: Arc => None
     case c: Component => Some(componentPosition(c))
@@ -208,7 +269,7 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
     NodeGeneratorTool(Button("Transition", "images/icons/svg/transition.svg", Some(KeyEvent.VK_T)).unsafePerformIO, image(_ => Colorisation(None, None)), model.createTransition(_))
 
   def tools = NonEmptyList(selectionTool, connectionTool, placeGeneratorTool, transitionGeneratorTool)
-  def keyBindings = List(KeyBinding("Sumshit", KeyEvent.VK_Q, KeyEventType.KeyPressed, Set(), ioPure.pure { JOptionPane.showMessageDialog(null, "KUZUKA!", "Important message!", JOptionPane.INFORMATION_MESSAGE) }))
+  def keyBindings = List() 
   def button = new Button {
     def hotkey = Some(KeyEvent.VK_K)
     def icon = None
@@ -217,15 +278,14 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
 }
 
 class PetriNetModel extends Model {
- val properties = new VisualConnectionProperties {
+  val properties = new VisualConnectionProperties {
     override def getDrawColor = Color.green
     override def getArrowWidth = 0.1
     override def getArrowLength = 0.2
     override def hasArrow = true
     override def getStroke = new BasicStroke(0.05f)
   }
-  
-  
+
   val net = new PetriNet
   val selection = Variable.create(Set[Node]())
   val layout = Variable.create(Map[Component, Point2D.Double]())

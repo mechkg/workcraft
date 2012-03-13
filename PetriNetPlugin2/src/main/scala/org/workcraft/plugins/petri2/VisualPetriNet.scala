@@ -35,7 +35,7 @@ object VisualTransition {
   def image (label: Expression[String], settings: CommonVisualSettings) : Expression[BoundedColorisableGraphicalContent] =
     label.map{label =>
       val transitionImage = rectangle (settings.size, settings.size, Some ((new BasicStroke(settings.strokeWidth.toFloat), settings.foregroundColor)), Some(settings.fillColor)).boundedColorisableGraphicalContent
-      val labelImage = Graphics.label(label, settings.labelFont, settings.foregroundColor).boundedColorisableGraphicalContent
+      val labelImage = Graphics.label(label, settings.effectiveLabelFont, settings.foregroundColor).boundedColorisableGraphicalContent
       
       (labelImage alignSideways (transitionImage, LabelPositioning.Bottom)).compose(transitionImage)
     }

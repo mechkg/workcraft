@@ -50,7 +50,7 @@ import org.workcraft.dom.visual.connections.Bezier
 object EditableProperties {
   
   type VisualStgEditableProperty[T] = Lens[VisualStg, T]
-  type EditablePropertiesOf[T] = ModifiableExpression[T] => Expression[List[EditableProperty]]
+  type EditablePropertiesOf[T] = ModifiableExpression[T] => Expression[List[Expression[EditableProperty]]]
   
   implicit def decorateEditablePropertyOf[T](self : EditablePropertiesOf[T]) = new {
     def on[Q](lens : Lens[Q,T]) : EditablePropertiesOf[Q] = q => self(q.refract(lens))

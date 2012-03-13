@@ -8,3 +8,7 @@ import org.workcraft.scala.effects.IO
 trait GenericEditorProvider[T] {
   def createEditor(initialValue:T, accept:IO[Unit], cancel:IO[Unit]):GenericCellEditor[T]
 }
+
+trait GenericVerifiableEditor[T] {
+  def create()  
+}

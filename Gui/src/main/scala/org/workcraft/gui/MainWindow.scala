@@ -42,7 +42,7 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 
 class MainWindow(
   val globalServices: () => GlobalServiceManager,
-  reconfigure: () => Unit,
+  reconfigure: => Unit,
   shutdown: MainWindow => Unit,
   configuration: Option[GuiConfiguration]) extends JFrame {
   val loggerWindow = new LoggerWindow

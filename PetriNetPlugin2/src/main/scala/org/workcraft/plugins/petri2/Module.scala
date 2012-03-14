@@ -15,10 +15,10 @@ object NewPetriNet extends NewModelImpl {
 }
 
 object PetriNetServiceProvider extends GlobalServiceProvider {
-  def implementation[T](service: Service[GlobalScope, T]) = service match {
-    case NewModelService => Some(NewPetriNet)
-    case ExporterService => Some(LolaExporter)
-    case _ => None
+  def implementations[T](service: Service[GlobalScope, T]) = service match {
+    case NewModelService => List(NewPetriNet)
+    case ExporterService => List(LolaExporter, PnExporter)
+    case _ => Nil
   }
 }
 

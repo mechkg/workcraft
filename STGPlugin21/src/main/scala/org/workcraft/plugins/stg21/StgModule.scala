@@ -18,9 +18,9 @@ class StgModule extends Module {
 }
 
 object StgServiceProvider extends GlobalServiceProvider {
-  def implementation[T](service: Service[GlobalScope, T]) = service match {
-    case NewModelService => Some(NewStg)
-    case _ => None
+  def implementations[T](service: Service[GlobalScope, T]) = service match {
+    case NewModelService => List(NewStg)
+    case _ => Nil
   }
 }
 

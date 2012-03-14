@@ -65,6 +65,9 @@ case class ProducerArc private[petri2] (from: Transition, to: Place) extends Arc
 case class ConsumerArc private[petri2] (from: Place, to: Transition) extends Arc
 
 object PetriNetSnapshotService extends ModelService[IO[PetriNetSnapshot]]
+object VisualPetriNetService extends ModelService[IO[VisualPetriNet]]
+
+case class VisualPetriNet(net: PetriNetSnapshot, layout: Map[Component, Point2D.Double])
 
 case class PetriNetSnapshot(marking: Map[Place, Int], labelling: Map[Component, String], places: List[Place], transitions: List[Transition], arcs: List[Arc]) {
   val names = labelling.toList.map({ case (a, b) => (b, a) }).toMap
@@ -73,7 +76,7 @@ case class PetriNetSnapshot(marking: Map[Place, Int], labelling: Map[Component, 
 object PetriNetSnapshot {
   val Empty = PetriNetSnapshot(Map(), Map(), List(), List(), List())
   val namePattern = "[a-zA-Z_][0-9a-zA-Z_]*"
-  def isValidName(s : String) = s.matches(namePattern)
+  def isValidName(s: String) = s.matches(namePattern)
 }
 
 class PetriNet(initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
@@ -125,7 +128,6 @@ class PetriNet(initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
     _ <- labelling.update(_ + (p -> name))
     _ <- names.update(_ + (name -> p))
   } yield p
-  
 
   def createTransition: IO[Transition] = for {
     t <- newTransition;
@@ -155,33 +157,30 @@ class PetriNet(initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
 
 class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
 
-  
-  
-  def name(p : Place) : ModifiableExpressionWithValidation[String, String] = {
-    val expr = model.net.labelling.map(_(p)) 
+  def name(p: Place): ModifiableExpressionWithValidation[String, String] = {
+    val expr = model.net.labelling.map(_(p))
     ModifiableExpressionWithValidation(
-    expr
-    , name => if (PetriNetSnapshot.isValidName(name)){(
-      for{
-        oldName <- expr.eval;
-        names <- model.net.names.eval
-      } yield if(name != oldName) {
-          if(names.contains(name)) ioPure.pure(Some("The name '"+ name +"' is already taken."))
-          else {
-            model.net.names.set(names - oldName + ((name, p))) >|>
-            model.net.labelling.update(_ + ((p, name))) >| None
-          }
-        } else
-          ioPure.pure(None)).join} else ioPure.pure(Some("Names must be non-empty Latin alphanumeric strings not starting with a digit."))
-      )
-    }
-  
+      expr, name => if (PetriNetSnapshot.isValidName(name)) {
+        (
+          for {
+            oldName <- expr.eval;
+            names <- model.net.names.eval
+          } yield if (name != oldName) {
+            if (names.contains(name)) ioPure.pure(Some("The name '" + name + "' is already taken."))
+            else {
+              model.net.names.set(names - oldName + ((name, p))) >|>
+                model.net.labelling.update(_ + ((p, name))) >| None
+            }
+          } else
+            ioPure.pure(None)).join
+      } else ioPure.pure(Some("Names must be non-empty Latin alphanumeric strings not starting with a digit.")))
+  }
+
   def props: Expression[List[Expression[EditableProperty]]] = model.selection.map(_.toList.flatMap({
     case p: Place => List(
-        IntegerProperty("Tokens", model.net.tokens(p).validate(x => if(x < 0) Some("Token count cannot be negative.") else None)), 
-        DoubleProperty("X", componentX(p)),
-        StringProperty("Name", name(p))
-        )
+      IntegerProperty("Tokens", model.net.tokens(p).validate(x => if (x < 0) Some("Token count cannot be negative.") else None)),
+      DoubleProperty("X", componentX(p)),
+      StringProperty("Name", name(p)))
     case _ => Nil
   }).toList)
 
@@ -271,7 +270,7 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
     NodeGeneratorTool(Button("Transition", "images/icons/svg/transition.svg", Some(KeyEvent.VK_T)).unsafePerformIO, image(_ => Colorisation(None, None)), model.createTransition(_))
 
   def tools = NonEmptyList(selectionTool, connectionTool, placeGeneratorTool, transitionGeneratorTool)
-  def keyBindings = List() 
+  def keyBindings = List()
   def button = new Button {
     def hotkey = Some(KeyEvent.VK_K)
     def icon = None
@@ -301,7 +300,8 @@ class PetriNetModel extends Model {
   def implementation[T](service: Service[ModelScope, T]) = service match {
     case EditorService => Some(new PetriNetEditor(this))
     case PetriNetSnapshotService => Some(net.snapshot.eval)
-    case DefaultFormatService => Some(Format.LolaPetriNet)
+    case VisualPetriNetService => Some(((net.snapshot <**> layout)((pn, layout) => VisualPetriNet(pn, layout))).eval)
+    case DefaultFormatService => Some(Format.WorkcraftPetriNet)
     case _ => None
   }
 }

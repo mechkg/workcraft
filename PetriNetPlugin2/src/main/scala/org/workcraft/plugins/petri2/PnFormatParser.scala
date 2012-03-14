@@ -7,92 +7,167 @@ import scala.util.parsing.combinator.token.Tokens
 import scala.util.parsing.combinator.syntactical.TokenParsers
 import scala.util.parsing.combinator.Parsers
 import scala.util.parsing.input.CharSequenceReader
+import java.io.InputStream
+import scala.collection.immutable.PagedSeq
+import scala.util.parsing.input.PagedSeqReader
+import java.awt.geom.Point2D
 
 sealed trait PnTokens
 
 object PnTokens {
   sealed trait Token
 
-  case object LeftBracket extends Token
-  case object Eof extends Token
-  case object RightBracket extends Token
-  
   sealed trait Keyword extends Token
-  
+
   case object Places extends Keyword
   case object Layout extends Keyword
   case object Transitions extends Keyword
   case object Arcs extends Keyword
-    
+  case object Marking extends Keyword
+
+  case object LeftBracket extends Token
+  case object Eof extends Token
+  case object RightBracket extends Token
+
   case object Comma extends Token
   case class Name(name: String) extends Token
   case class IntNumber(value: Int) extends Token
-  case class DoubleNumber(value: Double) extends Token  
-  case class ErrorToken(msg:String) extends Token
+  case class DoubleNumber(value: Double) extends Token
+  case class ErrorToken(msg: String) extends Token
 }
 
 class PnLexer extends Scanners with RegexParsers {
   override type Elem = Char
   override type Token = PnTokens.Token
-  
+
   import PnTokens._
 
-  def places = "Places".r ^^^ Places
-  def transitions = "Transitions".r ^^^ Transitions
-  def arcs = "Arcs".r ^^^ Arcs
-  def layout = "Layout".r ^^^ Layout
+  def places = "Places:".r ^^^ Places
+  def transitions = "Transitions:".r ^^^ Transitions
+  def arcs = "Arcs:".r ^^^ Arcs
+  def layout = "Layout:".r ^^^ Layout
+  def marking = "Marking:".r ^^^ Marking
   def name = PetriNetSnapshot.namePattern.r.map(Name(_))
   def integer = "[0-9]+".r.map(s => IntNumber(s.toInt))
   def double = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?".r.map(s => DoubleNumber(s.toDouble))
-  
+
   def lb = "\\(".r.map(_ => LeftBracket)
   def rb = "\\)".r.map(_ => RightBracket)
   def comma = ",".r.map(_ => Comma)
-  def eof = "\\z".r.map (_ => Eof)
+  def eof = "\\z".r.map(_ => Eof)
 
-  def token = places | transitions | arcs | layout | double | name | integer | lb | rb | comma | eof
-    
+  def token = places | transitions | arcs | layout | marking | double | name | integer | lb | rb | comma | eof
+
   def whitespace = "\\s*".r
-  
+
   def errorToken(msg: String) = ErrorToken(msg)
-  
+
   def scanner(in: String) = new Scanner(in)
+
+  def scanner(in: InputStream) = new Scanner(new PagedSeqReader(PagedSeq.fromSource(scala.io.Source.fromInputStream(in)(scala.io.Codec.UTF8))))
 }
 
 class PnFormatParser extends Parsers {
-  case class PartialResult (places: List[String], transitions: List[String], arcs: List[(String, String)], layout: List[(String, (Double, Double))]) {
-    def + (other: PartialResult) = PartialResult (places ::: other.places, transitions ::: other.transitions, arcs ::: other.arcs, layout ::: other.layout)
+  val lexer = new PnLexer
+
+  case class PartialResult(places: List[String], transitions: List[String], arcs: List[(String, String)], layout: List[(String, (Double, Double))], marking: List[(String, Int)]) {
+    def +(other: PartialResult) =
+      PartialResult(places ::: other.places, transitions ::: other.transitions, arcs ::: other.arcs, layout ::: other.layout, marking ::: other.marking)
   }
-  
-  override type Elem = PnTokens.Token 
-  
+
+  override type Elem = PnTokens.Token
+
   import PnTokens._
-  
+
   def name = acceptMatch("valid place/transition name", { case Name(s) => s })
-  
-  def double = acceptMatch("double-precision coordinate", {case DoubleNumber(v) => v})
-  
-  def arc = (LeftBracket ~> (name ~ name) <~ RightBracket) map ( r => (r._1, r._2))
-  
-  def position = (LeftBracket ~> (name ~ (double ~ double)) <~ RightBracket) map ( r => (r._1, (r._2._1, r._2._2)) )
-      
-  def section: Parser[PartialResult] = acceptIf(e => e match {case _: Keyword => true
-      case _ => false
-    })(e => "expected 'Places', 'Transitions', 'Arcs' or 'Layout' but found " + e.toString()) flatMap ({
-      case Places => (name+) map (ps => PartialResult(ps, Nil, Nil, Nil)) 
-      case Transitions => (name+) map (ts => PartialResult(Nil, ts, Nil, Nil))
-      case Arcs => (arc+) map (arcs => PartialResult(Nil, Nil, arcs, Nil))
-      case Layout => (position+) ^^^ (PartialResult(List("gavno"), List("gavno"), Nil, Nil))
-    }) flatMap ( p => (section map (p+_)) | Eof ^^^ (PartialResult(Nil, Nil, Nil, Nil)))
-    
-  def net = section
+
+  def double = acceptMatch("double-precision coordinate", { case DoubleNumber(v) => v })
+
+  def integer = acceptMatch("non-negative integer", { case IntNumber(v) => v })
+
+  def arc = (LeftBracket ~> (name ~ name) <~ RightBracket) map (r => (r._1, r._2))
+
+  def position = (LeftBracket ~> (name ~ (double ~ double)) <~ RightBracket) map (r => (r._1, (r._2._1, r._2._2)))
+
+  def marking = (LeftBracket ~> (name ~ integer) <~ RightBracket) map (r => (r._1, r._2))
+
+  def section: Parser[PartialResult] = (acceptIf(e => e match {
+    case _: Keyword => true
+    case _ => false
+  })(e => "expected 'Places:', 'Transitions:', 'Arcs:', 'Marking:' or 'Layout:' but found " + e.toString())).flatMap({
+    case Places => (name*) map (ps => PartialResult(ps, Nil, Nil, Nil, Nil))
+    case Transitions => (name*) map (ts => PartialResult(Nil, ts, Nil, Nil, Nil))
+    case Arcs => (arc*) map (arcs => PartialResult(Nil, Nil, arcs, Nil, Nil))
+    case Layout => (position*) map (pos => PartialResult(Nil, Nil, Nil, pos, Nil))
+    case Marking => (marking*) map (mrk => PartialResult(Nil, Nil, Nil, Nil, mrk))
+  }).flatMap(p => (section | Eof ^^^ (PartialResult(Nil, Nil, Nil, Nil, Nil))) map (p + _))
+
+  def parse(in: String): Either[String, VisualPetriNet] = section(lexer.scanner(in)) match {
+    case Success(a, b) => {
+      val allNames = a.places ++ a.transitions
+      val distinctNames = allNames.distinct
+
+      if (allNames.length != distinctNames.length)
+        Left("Duplicate names found: " + (allNames -- distinctNames).mkString(", "))
+      else {
+        val places = a.places.map(name => (new Place, name))
+        val placeLabelling = places.toMap
+        val placeLookup = places.map(_.swap).toMap
+
+        val transitions = a.transitions.map(name => (new Transition, name))
+        val transitionLabelling = transitions.toMap
+        val transitionLookup = transitions.map(_.swap).toMap
+
+        def componentLookup(name: String) = List(placeLookup.get(name), transitionLookup.get(name)).flatten match {
+          case Nil => None
+          case a :: Nil => Some(a)
+        }
+
+        val arcs = a.arcs.map(a => a match {
+          case (from, to) =>
+            if (placeLookup.contains(from) && transitionLookup.contains(to))
+              Right(new ConsumerArc(placeLookup(from), transitionLookup(to)))
+            else if (placeLookup.contains(to) && transitionLookup.contains(from))
+              Right(new ProducerArc(transitionLookup(from), placeLookup(to)))
+            else
+              Left(a)
+        })
+
+        val arcErrors = arcs.flatMap({ case Right(_) => None; case Left(e) => Some(e.toString()) })
+
+        if (!arcErrors.isEmpty)
+          Left("Following arcs refer to undefined names:\n" + arcErrors.mkString(" "))
+        else {
+          val goodArcs = arcs.flatMap({ case Right(a) => Some(a); case Left(_) => None })
+
+          val layout = a.layout.foldRight(Map[Component, Point2D.Double]())((entry, map) => {
+            val (name, (x, y)) = entry
+            componentLookup(name) match {
+              case Some(c) => map + (c -> new Point2D.Double(x, y))
+              case None => map
+            }
+          }).withDefaultValue(new Point2D.Double(0, 0))
+
+          val marking = a.marking.foldRight(Map[Place, Int]())((entry, map) => {
+            val (name, tokens) = entry
+            placeLookup.get(name) match {
+              case Some(c) => map + (c -> tokens)
+              case None => map
+            }
+          }).withDefaultValue(0)
+
+          Right(VisualPetriNet(PetriNetSnapshot(marking, placeLabelling ++ transitionLabelling, places.map(_._1), transitions.map(_._1), goodArcs), layout))
+        }
+      }
+    }
+    case err => Left(err.toString)
+  }
+  def parse(in: InputStream) = section(lexer.scanner(in))
 }
 
 object Test extends PnFormatParser with App {
-  val l = new PnLexer
-  
-  net(l.scanner("Places p0 p1 p2 p3 Transitions t0 t1 t2 t3 Arcs (p0 t1) (p1 t3) Layout (p0 1 1)")) match {
-    case Success(a, b) => print(a)
-    case x => println(x)
+  parse("Places: Transitions: t0 t1 t2 t3 Layout: (p0 1 1) Arcs:") match {
+    case Left(err) => println(err)
+    case Right(VisualPetriNet(pn, layout)) => { println(pn); println(layout) }
   }
 }

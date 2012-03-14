@@ -72,6 +72,8 @@ case class PetriNetSnapshot(marking: Map[Place, Int], labelling: Map[Component, 
 
 object PetriNetSnapshot {
   val Empty = PetriNetSnapshot(Map(), Map(), List(), List(), List())
+  val namePattern = "[a-zA-Z_][0-9a-zA-Z_]*"
+  def isValidName(s : String) = s.matches(namePattern)
 }
 
 class PetriNet(initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
@@ -153,13 +155,13 @@ class PetriNet(initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
 
 class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
 
-  def isValidIdentifier(s : String) = s.matches("[a-zA-Z_][0-9a-zA-Z_]*")
+  
   
   def name(p : Place) : ModifiableExpressionWithValidation[String, String] = {
     val expr = model.net.labelling.map(_(p)) 
     ModifiableExpressionWithValidation(
     expr
-    , name => if (isValidIdentifier(name)){(
+    , name => if (PetriNetSnapshot.isValidName(name)){(
       for{
         oldName <- expr.eval;
         names <- model.net.names.eval

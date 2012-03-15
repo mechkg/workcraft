@@ -42,6 +42,7 @@ import org.workcraft.gui.modeleditor.tools._
 import org.workcraft.gui.modeleditor.tools.ModelEditorTool.ModelEditorToolConstructor
 
 class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends ModelEditor {
+  val undo = None
   val selection = Variable.create[Set[VisualEntity]](Set.empty)
   
   def tools: NonEmptyList[ModelEditorToolConstructor] = {

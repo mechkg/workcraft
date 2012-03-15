@@ -8,16 +8,18 @@ import org.workcraft.services.NewModelService
 import org.workcraft.services.ModelServiceProvider
 import org.workcraft.services.Exporter
 import org.workcraft.services.ExporterService
+import org.workcraft.services.FileOpenService
 
 object NewPetriNet extends NewModelImpl {
   def name = "Petri Net"
-  def create = new PetriNetModel
+  def create = PetriNetModel.Empty
 }
 
 object PetriNetServiceProvider extends GlobalServiceProvider {
   def implementations[T](service: Service[GlobalScope, T]) = service match {
     case NewModelService => List(NewPetriNet)
     case ExporterService => List(LolaExporter, PnExporter)
+    case FileOpenService => List(PnFileOpen)
     case _ => Nil
   }
 }

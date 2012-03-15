@@ -25,6 +25,8 @@ class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, new
   val items = mainWindow.editorInFocus.map(editor => {
     val newWork = menuItem("New work", Some('N'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK)),
       CreateWorkDialog.show(services().implementations(NewModelService), mainWindow).foreach(newModel(_)))
+      
+    val open = menuItem("Open file...", Some('O'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK)), OpenDialog.open(mainWindow, services()).foreach(mainWindow.openEditor(_)))
 
     val save = editor match {
       case Some(e) => {
@@ -43,7 +45,7 @@ class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, new
 
     val exit = menuItem("Exit", Some('x'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)), mainWindow.exit)
 
-    List(newWork) ++ save ++ List(new JSeparator()) ++ List(exit)
+    List(newWork, open) ++ save ++ List(new JSeparator(), exit)
   })
 
   setMnemonic('F')

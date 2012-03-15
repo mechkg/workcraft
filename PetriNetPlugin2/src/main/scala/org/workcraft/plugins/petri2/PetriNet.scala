@@ -278,7 +278,7 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
   }
 }
 
-class PetriNetModel extends Model {
+class PetriNetModel (initialNet: PetriNetSnapshot, initialLayout: Map[Component, Point2D.Double]) extends Model {
   val properties = new VisualConnectionProperties {
     override def getDrawColor = Color.green
     override def getArrowWidth = 0.1
@@ -286,11 +286,12 @@ class PetriNetModel extends Model {
     override def hasArrow = true
     override def getStroke = new BasicStroke(0.05f)
   }
-
-  val net = new PetriNet
+  
+  val net = new PetriNet(initialNet)
+  
   val selection = Variable.create(Set[Node]())
-  val layout = Variable.create(Map[Component, Point2D.Double]())
-  val visualArcs = Variable.create(Map[Arc, StaticVisualConnectionData]())
+  val layout = Variable.create(initialLayout)
+  val visualArcs = Variable.create(Map[Arc, StaticVisualConnectionData]().withDefaultValue(new Polyline(List())))
 
   def createPlace(p: Point2D.Double): IO[Unit] = net.createPlace >>= (place => layout.update(_ + (place -> p)))
   def createTransition(p: Point2D.Double): IO[Unit] = net.createTransition >>= (transition => layout.update(_ + (transition -> p)))
@@ -304,6 +305,10 @@ class PetriNetModel extends Model {
     case DefaultFormatService => Some(Format.WorkcraftPetriNet)
     case _ => None
   }
+}
+
+object PetriNetModel {
+  def Empty = new PetriNetModel (PetriNetSnapshot.Empty, Map())
 }
 
 /*

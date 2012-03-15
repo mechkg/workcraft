@@ -11,6 +11,7 @@ import java.io.InputStream
 import scala.collection.immutable.PagedSeq
 import scala.util.parsing.input.PagedSeqReader
 import java.awt.geom.Point2D
+import java.io.File
 
 sealed trait PnTokens
 
@@ -31,8 +32,7 @@ object PnTokens {
 
   case object Comma extends Token
   case class Name(name: String) extends Token
-  case class IntNumber(value: Int) extends Token
-  case class DoubleNumber(value: Double) extends Token
+  case class Number(s: String) extends Token
   case class ErrorToken(msg: String) extends Token
 }
 
@@ -48,15 +48,15 @@ class PnLexer extends Scanners with RegexParsers {
   def layout = "Layout:".r ^^^ Layout
   def marking = "Marking:".r ^^^ Marking
   def name = PetriNetSnapshot.namePattern.r.map(Name(_))
-  def integer = "[0-9]+".r.map(s => IntNumber(s.toInt))
-  def double = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?".r.map(s => DoubleNumber(s.toDouble))
+  
+  def number = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?".r.map(Number(_))
 
   def lb = "\\(".r.map(_ => LeftBracket)
   def rb = "\\)".r.map(_ => RightBracket)
   def comma = ",".r.map(_ => Comma)
   def eof = "\\z".r.map(_ => Eof)
 
-  def token = places | transitions | arcs | layout | marking | double | name | integer | lb | rb | comma | eof
+  def token = places | transitions | arcs | layout | marking | number | name | lb | rb | comma | eof
 
   def whitespace = "\\s*".r
 
@@ -64,7 +64,7 @@ class PnLexer extends Scanners with RegexParsers {
 
   def scanner(in: String) = new Scanner(in)
 
-  def scanner(in: InputStream) = new Scanner(new PagedSeqReader(PagedSeq.fromSource(scala.io.Source.fromInputStream(in)(scala.io.Codec.UTF8))))
+  def scanner(in: File) = new Scanner(new PagedSeqReader(PagedSeq.fromSource(scala.io.Source.fromFile(in)(scala.io.Codec.UTF8))))
 }
 
 class PnFormatParser extends Parsers {
@@ -78,12 +78,14 @@ class PnFormatParser extends Parsers {
   override type Elem = PnTokens.Token
 
   import PnTokens._
+  
+  def isInt (s: String) = s.matches("[0-9]+")
 
   def name = acceptMatch("valid place/transition name", { case Name(s) => s })
 
-  def double = acceptMatch("double-precision coordinate", { case DoubleNumber(v) => v })
+  def double = acceptMatch("double-precision coordinate", { case Number(v) => v.toDouble })
 
-  def integer = acceptMatch("non-negative integer", { case IntNumber(v) => v })
+  def integer = acceptMatch("non-negative integer", {case Number(v) if isInt(v) => v.toInt; })
 
   def arc = (LeftBracket ~> (name ~ name) <~ RightBracket) map (r => (r._1, r._2))
 
@@ -102,7 +104,7 @@ class PnFormatParser extends Parsers {
     case Marking => (marking*) map (mrk => PartialResult(Nil, Nil, Nil, Nil, mrk))
   }).flatMap(p => (section | Eof ^^^ (PartialResult(Nil, Nil, Nil, Nil, Nil))) map (p + _))
 
-  def parse(in: String): Either[String, VisualPetriNet] = section(lexer.scanner(in)) match {
+  def parse(in: File): Either[String, VisualPetriNet] = section(lexer.scanner(in)) match {
     case Success(a, b) => {
       val allNames = a.places ++ a.transitions
       val distinctNames = allNames.distinct
@@ -161,13 +163,5 @@ class PnFormatParser extends Parsers {
       }
     }
     case err => Left(err.toString)
-  }
-  def parse(in: InputStream) = section(lexer.scanner(in))
-}
-
-object Test extends PnFormatParser with App {
-  parse("Places: Transitions: t0 t1 t2 t3 Layout: (p0 1 1) Arcs:") match {
-    case Left(err) => println(err)
-    case Right(VisualPetriNet(pn, layout)) => { println(pn); println(layout) }
-  }
+  }  
 }

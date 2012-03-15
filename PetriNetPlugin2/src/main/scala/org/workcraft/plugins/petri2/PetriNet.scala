@@ -50,6 +50,7 @@ import javax.swing.Timer
 import java.awt.event.ActionListener
 import java.awt.event.ActionEvent
 import org.workcraft.gui.propertyeditor.string.StringProperty
+import org.workcraft.services.UndoAction
 
 sealed trait Node
 
@@ -93,6 +94,10 @@ class PetriNet(initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
 
   def tokens(place: Place) = ModifiableExpression(marking.map(_(place)), (t: Int) => marking.update(_ + (place -> t)))
   def label(c: Component) = labelling.map(_(c))
+  
+  def loadState (state: PetriNetSnapshot): IO[Unit] = 
+    marking.set(state.marking) >>=| labelling.set(state.labelling) >>=| names.set(state.names) >>=|
+    places.set(state.places) >>=| transitions.set(state.transitions) >>=|  arcs.set(state.arcs)
 
   private def newPlace = ioPure.pure { new Place }
   private def newTransition = ioPure.pure { new Transition }
@@ -134,6 +139,7 @@ class PetriNet(initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
     name <- newTransitionName;
     _ <- transitions.update(t :: _);
     _ <- labelling.update(_ + (t -> name))
+    _ <- names.update(_ + (name -> t))
   } yield t
 
   def createProducerArc(from: Transition, to: Place) = for {
@@ -155,8 +161,11 @@ class PetriNet(initialState: PetriNetSnapshot = PetriNetSnapshot.Empty) {
   } yield PetriNetSnapshot(marking, labelling, places, transitions, arcs)
 }
 
-class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
+case class EditorState(description: String, net: VisualPetriNet, selection: Set[Node])
 
+class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
+  val selection = Variable.create(Set[Node]())
+  
   def name(p: Place): ModifiableExpressionWithValidation[String, String] = {
     val expr = model.net.labelling.map(_(p))
     ModifiableExpressionWithValidation(
@@ -176,7 +185,7 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
       } else ioPure.pure(Some("Names must be non-empty Latin alphanumeric strings not starting with a digit.")))
   }
 
-  def props: Expression[List[Expression[EditableProperty]]] = model.selection.map(_.toList.flatMap({
+  def props: Expression[List[Expression[EditableProperty]]] = selection.map(_.toList.flatMap({
     case p: Place => List(
       IntegerProperty("Tokens", model.net.tokens(p).validate(x => if (x < 0) Some("Token count cannot be negative.") else None)),
       DoubleProperty("X", componentX(p)),
@@ -241,12 +250,12 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
 
   private def selectionTool = GenericSelectionTool[Node](
     model.net.nodes,
-    model.selection,
+    selection,
     nodePosition(_),
     x => x,
     touchable(_),
     image(_),
-    List())
+    List(KeyBinding("Delete selection", KeyEvent.VK_DELETE, KeyEventType.KeyPressed, Set(), selection.eval >>= (sel => selection.update(_ -- sel) >>=| model.deleteNodes (sel)))))
 
   private val connectionManager = new ConnectionManager[Component] {
     def connect(node1: Component, node2: Component): Either[InvalidConnectionException, IO[Unit]] = (node1, node2) match {
@@ -276,22 +285,55 @@ class PetriNetEditor(model: PetriNetModel) extends ModelEditor {
     def icon = None
     def label = "Hi :-)"
   }
+  
+  val undoStack = Variable.create(List[EditorState]())
+  val redoStack = Variable.create(List[EditorState]())
+  
+  def saveState (description: String): IO[EditorState] = (model.snapshot.eval <**> selection.eval) (EditorState(description,_ ,_))
+  
+  def loadState (state: EditorState): IO[Unit] = model.loadState(state.net) >>=| selection.set(state.selection)
+    
+  def pushUndoState (description: String): IO[Unit] =  saveState(description) >>= (state => undoStack.update( state :: _))
+  
+  def undo = None
 }
 
-class PetriNetModel (initialNet: PetriNetSnapshot, initialLayout: Map[Component, Point2D.Double]) extends Model {
+class PetriNetModel(initialNet: PetriNetSnapshot, initialLayout: Map[Component, Point2D.Double]) extends Model {
   val properties = new VisualConnectionProperties {
-    override def getDrawColor = Color.green
-    override def getArrowWidth = 0.1
-    override def getArrowLength = 0.2
+    override def getDrawColor = Color.BLACK
+    override def getArrowWidth = 0.2
+    override def getArrowLength = 0.4
     override def hasArrow = true
     override def getStroke = new BasicStroke(0.05f)
   }
-  
+
   val net = new PetriNet(initialNet)
+
   
-  val selection = Variable.create(Set[Node]())
   val layout = Variable.create(initialLayout)
   val visualArcs = Variable.create(Map[Arc, StaticVisualConnectionData]().withDefaultValue(new Polyline(List())))
+  
+  def loadState (vpn: VisualPetriNet): IO[Unit] = net.loadState(vpn.net) >>=| layout.set(vpn.layout)
+  
+  def snapshot: Expression[VisualPetriNet] = (net.snapshot <**> layout)((net, layout) => VisualPetriNet(net, layout))
+
+  def deleteArc(a: Arc): IO[Unit] =
+    net.arcs.update(_ - a) >>=| visualArcs.update(_ - a)
+
+  def deleteComponent(c: Component): IO[Unit] =
+    (net.arcs.eval >>= (_.filter(arc => (arc.to == c) || (arc.from == c)).map(deleteArc(_)).traverse_(x => x))) >>=| net.labelling.update(_ - c) >>=| layout.update(_ - c)
+
+  def deletePlace(p: Place): IO[Unit] = deleteComponent(p) >>=| net.places.update(_ - p)
+
+  def deleteTransition(t: Transition): IO[Unit] = deleteComponent(t) >>=| net.transitions.update(_ - t)
+
+  def deleteNode(n: Node): IO[Unit] = n match {
+    case p: Place => deletePlace(p)
+    case t: Transition => deleteTransition(t)
+    case a: Arc => deleteArc(a)
+  }
+
+  def deleteNodes(nodes: Set[Node]): IO[Unit] = nodes.map(deleteNode(_)).traverse_(x => x)
 
   def createPlace(p: Point2D.Double): IO[Unit] = net.createPlace >>= (place => layout.update(_ + (place -> p)))
   def createTransition(p: Point2D.Double): IO[Unit] = net.createTransition >>= (transition => layout.update(_ + (transition -> p)))
@@ -308,7 +350,7 @@ class PetriNetModel (initialNet: PetriNetSnapshot, initialLayout: Map[Component,
 }
 
 object PetriNetModel {
-  def Empty = new PetriNetModel (PetriNetSnapshot.Empty, Map())
+  def Empty = new PetriNetModel(PetriNetSnapshot.Empty, Map())
 }
 
 /*

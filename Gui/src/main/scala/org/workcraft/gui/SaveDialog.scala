@@ -61,6 +61,8 @@ object SaveDialog {
 
     choose
   }
+  
+  def export (parentWindow: Window, model: ModelServiceProvider, format: Format, exporter: ExportJob) = {}
 
   def saveAs(parentWindow: Window, model: ModelServiceProvider, globalServices: GlobalServiceManager): Option[FileExportJob] = model.implementation(DefaultFormatService) match {
     case None => {

@@ -1,8 +1,9 @@
 package org.workcraft.services
 import org.workcraft.scala.effects.IO
+import org.workcraft.scala.Expressions.Expression
 
-object UndoService extends Service[ModelScope, UndoImpl]
+object UndoService extends Service[ModelScope, Undo]
 
-trait UndoImpl {
-  def undo: Option[IO[Unit]]
-}
+case class Undo (undo: Expression[Option[UndoAction]]) 
+
+case class UndoAction (description: String, action: IO[Unit])

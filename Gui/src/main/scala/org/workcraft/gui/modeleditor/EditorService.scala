@@ -6,10 +6,11 @@ import tools._
 import tools.ModelEditorTool.ModelEditorToolConstructor
 import org.workcraft.scala.Expressions.Expression
 import org.workcraft.gui.propertyeditor.EditableProperty
-
+import org.workcraft.services.Undo
 object EditorService extends Service[ModelScope, ModelEditor]
 
 trait ModelEditor {
   def tools: NonEmptyList[ModelEditorToolConstructor]
-  def props : Expression[List[Expression[EditableProperty]]]
+  def props: Expression[List[Expression[EditableProperty]]]
+  def undo: Option[Undo]
 }

@@ -19,6 +19,10 @@ import java.awt.EventDispatchThread
 import javax.swing.event.MenuListener
 import javax.swing.event.MenuEvent
 import javax.swing.JSeparator
+import org.workcraft.services.ExporterService
+import org.workcraft.services.ExportJob
+import org.workcraft.services.Format
+import org.workcraft.services.DefaultFormatService
 
 class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, newModel: ((NewModelImpl, Boolean)) => Unit) extends ReactiveMenu("File") {
 
@@ -42,10 +46,38 @@ class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, new
         List(save, saveAs)
       }
     }
-
+    
+    def disabledExportMenu = {
+        val export = menuItem ("Export...", None, None, {})
+        export.setEnabled(false)
+        export
+    }
+    
+    def exportMenu (model: ModelServiceProvider, ex: List[(Format, ExportJob)]) = ex match {
+      case Nil => disabledExportMenu 
+      case x => {
+         val menu = new JMenu ("Export...")
+         x.map ( { case (fmt, job) => menuItem (fmt.description + " (" + fmt.extension+")", None, None, { SaveDialog.export(mainWindow, model, fmt, job) })}).foreach (menu.add(_))
+         menu
+      } 
+    } 
+    
+    val export = editor match {
+      case Some(e) => {
+        val defaultFormat = e.content.model.implementation(DefaultFormatService)
+        
+        val exporters = services().implementations(ExporterService).map( exp => (exp.targetFormat, exp.export(e.content.model)))
+        .flatMap({case (format, Right(job)) if (defaultFormat.map(_ != format).getOrElse(true)) => Some((format, job)); case _ => None})
+        
+        exportMenu (e.content.model, exporters)            
+      }
+      case None => disabledExportMenu
+    }
+    
+    
     val exit = menuItem("Exit", Some('x'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)), mainWindow.exit)
 
-    List(newWork, open) ++ save ++ List(new JSeparator(), exit)
+    List(newWork, open) ++ save ++ List(export, new JSeparator(), exit)
   })
 
   setMnemonic('F')

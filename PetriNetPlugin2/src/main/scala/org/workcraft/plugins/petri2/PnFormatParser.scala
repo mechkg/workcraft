@@ -39,7 +39,7 @@ object PnTokens {
 class PnLexer extends Scanners with RegexParsers {
   override type Elem = Char
   override type Token = PnTokens.Token
-
+  
   import PnTokens._
 
   def places = "Places:".r ^^^ Places

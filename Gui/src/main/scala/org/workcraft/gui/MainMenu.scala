@@ -14,6 +14,7 @@ class MainMenu(
     newModel: ((NewModelImpl, Boolean)) => Unit,
     reconfigure: => Unit) extends JMenuBar {
   val fileMenu = new FileMenu(services, mainWindow, newModel)
+  val editMenu = new EditMenu(mainWindow)
   val windowsMenu = new UtilityWindowsMenu(utilityWindows)
   
   val utilityMenu = new JMenu("Utility")
@@ -21,6 +22,8 @@ class MainMenu(
   utilityMenu.add(GUI.menuItem("Reconfigure", Some('R'), None, reconfigure))
   
   add(fileMenu)
+  add(editMenu)
   add(windowsMenu)
   add(utilityMenu)
+ 
 }

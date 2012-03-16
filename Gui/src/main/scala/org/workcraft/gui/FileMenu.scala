@@ -26,7 +26,8 @@ import org.workcraft.services.DefaultFormatService
 
 class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, newModel: ((NewModelImpl, Boolean)) => Unit) extends ReactiveMenu("File") {
 
-  val items = mainWindow.editorInFocus.map(editor => {
+  // Must be lazy because Scala allows to read uninitialized values
+  lazy val items = mainWindow.editorInFocus.map(editor => {
     val newWork = menuItem("New work", Some('N'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK)),
       CreateWorkDialog.show(services().implementations(NewModelService), mainWindow).foreach(newModel(_)))
       
@@ -59,8 +60,8 @@ class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, new
          val menu = new JMenu ("Export...")
          x.map ( { case (fmt, job) => menuItem (fmt.description + " (" + fmt.extension+")", None, None, { SaveDialog.export(mainWindow, model, fmt, job) })}).foreach (menu.add(_))
          menu
-      } 
-    } 
+      }
+    }
     
     val export = editor match {
       case Some(e) => {

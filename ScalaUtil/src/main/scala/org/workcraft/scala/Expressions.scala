@@ -19,6 +19,7 @@ import org.workcraft.dependencymanager.util.listeners.Listener
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleTuple
 import org.workcraft.dependencymanager.advanced.user.AutoRefreshExpression
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
+import org.workcraft.dependencymanager.advanced.user.SwingAutoRefreshExpression
 
 object Expressions {
   case class Expression[+T](jexpr: JExpression[_ <: T]) {
@@ -126,9 +127,11 @@ object Expressions {
   def newVar[T](x: T): IO[Variable[T]] = ioPure.pure(Variable.create(x))
   
   def evanescentAutoRefresh[T] (expr: Expression[T], update: T => IO[Unit]) = new AutoRefreshHandle (new AutoRefreshExpression {
-    override def onEvaluate (context: EvaluationContext) = {
-      update(context.resolve(expr)).unsafePerformIO      
-    }
+    override def onEvaluate (context: EvaluationContext) = update(context.resolve(expr)).unsafePerformIO      
+  })
+  
+  def swingAutoRefresh[T] (expr: Expression[T], update: T => IO[Unit]) = new AutoRefreshHandle (new SwingAutoRefreshExpression {
+    override def onEvaluate (context: EvaluationContext) = update(context.resolve(expr)).unsafePerformIO 
   })
   
   object DisposableAutoRefreshExpression {

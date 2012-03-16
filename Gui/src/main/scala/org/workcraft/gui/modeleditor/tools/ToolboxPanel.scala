@@ -24,16 +24,19 @@ import Scalaz._
 class ToolboxPanel(toolbox: Toolbox) extends JPanel {
   private val buttons = toolbox.tools.map(t => (t, createButton(t)))
   
+  private val refresh = swingAutoRefresh(toolbox.selectedTool, (tool: ModelEditorTool) => ioPure.pure {
+    buttons.foreach(_._2.setSelected(false))
+    buttons.list.find( _._1 == tool).foreach(_._2.setSelected(true))
+  }) 
+  
   setFocusable(false)
   
-  setLayout(new FlowLayout)
+  setLayout(new FlowLayout(FlowLayout.LEADING))
   buttons.foreach(tb => add(tb._2))
   
   buttons.list.find( _._1 == toolbox.selectedTool.unsafeEval).foreach(_._2.setSelected(true))
   
   def selectTool (tool: ModelEditorTool) = {
-    buttons.foreach(_._2.setSelected(false))
-    buttons.list.find(_._1 == tool).foreach(_._2.setSelected(true))
     toolbox.selectTool(tool).unsafePerformIO    
   }
 

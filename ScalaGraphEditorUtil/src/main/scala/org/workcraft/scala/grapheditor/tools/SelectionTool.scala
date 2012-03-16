@@ -17,26 +17,42 @@ import org.workcraft.gui.GUI
 import org.workcraft.graphics.Colorisation
 import org.workcraft.gui.modeleditor.tools.selection.GenericSelectionToolMouseListener
 import ModelEditorTool.ModelEditorToolConstructor
+import org.workcraft.scala.effects.IO
+import org.workcraft.dependencymanager.advanced.user.Variable
+
+import scalaz._
+import Scalaz._
+
+import org.workcraft.scala.Expressions._
 
 class GenericSelectionTool[N](
   viewport: Viewport,
   nodes: Expression[Iterable[N]],
   selection: ModifiableExpression[Set[N]],
-  position: N => Option[ModifiableExpression[Point2D.Double]],
-  snap: Point2D.Double => Point2D.Double,
+  moveOperation: (Set[N], Point2D.Double) => IO[Unit],
+  offsetSnap: (N, Point2D.Double) => Point2D.Double,
   touchable: N => Expression[Touchable],
-  paint: (N => Colorisation) => Expression[GraphicalContent],
+  paint: (N => Colorisation, Set[N], Point2D.Double) => Expression[GraphicalContent],
   customKeyBindings: List[KeyBinding]) extends ModelEditorTool {
 
-  private val mouseListener_ = new GenericSelectionToolMouseListener(selection, HitTester.create(nodes, touchable), new MoveDragHandler(selection, position, snap))
+  private val currentOffset = Variable.create(new Point2D.Double(0, 0))
+
+  private val mouseListener_ = new GenericSelectionToolMouseListener(selection, HitTester.create(nodes, touchable),
+    new MoveDragHandler(currentOffset, offsetSnap, (selection.expr <**> currentOffset)(moveOperation(_, _)).eval.join))
 
   def button = GenericSelectionTool.button
 
   def keyBindings = customKeyBindings
   def mouseListener = Some(mouseListener_)
-  val userSpaceContent = mouseListener_.effectiveSelection >>=
-    (selection => (paint(n => if (selection contains n) GenericSelectionTool.highlightedColorisation else Colorisation.Empty) |@|
-      mouseListener_.userSpaceContent(viewport))(_.compose(_)))
+  val userSpaceContent = {
+    val modelImage = (mouseListener_.effectiveSelection <**> (currentOffset))((selection, offset) =>
+      paint(n => if (selection contains n) GenericSelectionTool.highlightedColorisation else Colorisation.Empty, selection, offset)).join
+
+    val selectionBoxImage = mouseListener_.userSpaceContent(viewport)
+
+    (modelImage <**> selectionBoxImage)(_.compose(_))
+  }
+
   def screenSpaceContent = constant(GraphicalContent.Empty)
   def interfacePanel = None
 }
@@ -52,17 +68,17 @@ object GenericSelectionTool {
   def apply[N](
     nodes: Expression[Iterable[N]],
     selection: ModifiableExpression[Set[N]],
-    position: N => Option[ModifiableExpression[Point2D.Double]],
-    snap: Point2D.Double => Point2D.Double,
+    moveOperation: (Set[N], Point2D.Double) => IO[Unit],
+    offsetSnap: (N, Point2D.Double) => Point2D.Double,
     touchable: N => Expression[Touchable],
-    paint: (N => Colorisation) => Expression[GraphicalContent],
+    paint: (N => Colorisation, Set[N], Point2D.Double) => Expression[GraphicalContent],
     customKeyBindings: List[KeyBinding]): ModelEditorToolConstructor = env => new GenericSelectionTool(
-      env.viewport,
-      nodes,
-      selection,
-      position,
-      snap,
-      touchable,
-      paint,
-      customKeyBindings)
+    env.viewport,
+    nodes,
+    selection,
+    moveOperation,
+    offsetSnap,
+    touchable,
+    paint,
+    customKeyBindings)
 }

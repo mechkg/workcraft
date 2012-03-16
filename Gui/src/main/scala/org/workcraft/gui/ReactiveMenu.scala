@@ -10,8 +10,7 @@ import javax.swing.JComponent
 abstract class ReactiveMenu(title: String) extends JMenu(title) {
   def items: Expression[List[JComponent]]
   
-  val refresh = {
-    swingAutoRefresh(items, (i: List[JComponent]) => ioPure.pure{
+  val refresh = swingAutoRefresh(items, (i: List[JComponent]) => ioPure.pure{
   
       removeAll()
       items.eval.unsafePerformIO.foreach(add(_))
@@ -20,5 +19,4 @@ abstract class ReactiveMenu(title: String) extends JMenu(title) {
       else
         setEnabled(true)
   })
-  }
 }

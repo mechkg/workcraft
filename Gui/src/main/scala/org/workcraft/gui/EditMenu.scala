@@ -24,18 +24,27 @@ import org.workcraft.services.ExportJob
 import org.workcraft.services.Format
 import org.workcraft.services.DefaultFormatService
 
+import org.workcraft.scala.Expressions._
+
+import scalaz._
+import Scalaz._
+
 class EditMenu(mainWindow: MainWindow) extends ReactiveMenu("Edit") {
-  
+
   // Must be lazy because Scala allows to read uninitialized values
-  lazy val items = mainWindow.editorInFocus.map(_.flatMap(_.content.editor.undo) match {
+  lazy val items = mainWindow.editorInFocus >>= (_.flatMap(_.content.editor.undo) match {
     case Some(undo) => {
-      List(undo.undo.unsafeEval match {
-        case Some(action) => menuItem("Undo: " + action.description, Some('U'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK)), { action.action.unsafePerformIO })
-        case None => menuItem("Nothing to undo", None, None, {})
-      })
+      undo.undo.map {
+        case Some(action) => List(menuItem("Undo: " + action.description, Some('U'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK)), { action.action.unsafePerformIO }))
+        case None => {
+          val item = menuItem("Nothing to undo", None, None, {})
+          item.setEnabled(false)
+          List(item)
+        }
+      }
     }
     case None => {
-      List()
+      constant(List())
     }
   })
 

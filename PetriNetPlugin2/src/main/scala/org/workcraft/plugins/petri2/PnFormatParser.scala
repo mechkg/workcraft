@@ -47,7 +47,7 @@ class PnLexer extends Scanners with RegexParsers {
   def arcs = "Arcs:".r ^^^ Arcs
   def layout = "Layout:".r ^^^ Layout
   def marking = "Marking:".r ^^^ Marking
-  def name = PetriNetSnapshot.namePattern.r.map(Name(_))
+  def name = PetriNet.namePattern.r.map(Name(_))
   
   def number = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?".r.map(Number(_))
 
@@ -158,7 +158,7 @@ class PnFormatParser extends Parsers {
             }
           }).withDefaultValue(0)
 
-          Right(VisualPetriNet(PetriNetSnapshot(marking, placeLabelling ++ transitionLabelling, places.map(_._1), transitions.map(_._1), goodArcs), layout))
+          Right(VisualPetriNet(PetriNet(marking, placeLabelling ++ transitionLabelling, places.map(_._1), transitions.map(_._1), goodArcs), layout))
         }
       }
     }

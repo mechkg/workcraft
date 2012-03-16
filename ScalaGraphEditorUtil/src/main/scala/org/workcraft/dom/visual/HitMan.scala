@@ -71,7 +71,7 @@ object HitMan {
         }
 
         override def boxHitTest(boxStart : Point2D.Double, boxEnd : Point2D.Double) : List[N] = {
-          HitMan.boxHitTest[Option[N]]({case Some(n) => Some(tp(n)); case None => None}, contents.map(x => Some(x)), boxStart, boxEnd).map({case Some(x) => x})
+          HitMan.boxHitTest[Option[N]]({case Some(n) => Some(tp(n)); case None => None}, contents.map(x => Some(x)), boxStart, boxEnd).map(_.get)
         }
       }
     }

@@ -36,5 +36,6 @@ object Java2DDecoration {
       t.transform(pt, p)
       p
     }
+    def + (other: Point2D) = new Point2D.Double (pt.getX + other.getX, pt.getY + other.getY)
   }
 }

@@ -15,16 +15,16 @@ import Scalaz._
 object LolaExporter extends Exporter {
   val targetFormat = Format.LolaPetriNet
 
-  def export(model: ModelServiceProvider): Either[ServiceNotAvailableException, ExportJob] = model.implementation(PetriNetSnapshotService) match {
+  def export(model: ModelServiceProvider): Either[ServiceNotAvailableException, ExportJob] = model.implementation(PetriNetService) match {
     case Some(impl) => Right(new LolaExportJob(impl))
-    case None => Left(new ServiceNotAvailableException(PetriNetSnapshotService))
+    case None => Left(new ServiceNotAvailableException(PetriNetService))
   }
 }
 
-class LolaExportJob(snapshot: IO[PetriNetSnapshot]) extends ExportJob {
+class LolaExportJob(snapshot: IO[PetriNet]) extends ExportJob {
   val complete = false
   
-  def context (net: PetriNetSnapshot) : (Map[Transition, List[Place]], Map[Transition, List[Place]]) =
+  def context (net: PetriNet) : (Map[Transition, List[Place]], Map[Transition, List[Place]]) =
     net.arcs.foldRight((Map[Transition, List[Place]]().withDefault(_ => List()), Map[Transition, List[Place]]().withDefault(_ => List())))( {case (arc, (prod, cons)) => arc match {
       case c: ConsumerArc => (prod, cons + ( c.to -> (c.from :: cons(c.to)) ))
       case p: ProducerArc => (prod + (p.from -> (p.to :: prod(p.from))), cons)

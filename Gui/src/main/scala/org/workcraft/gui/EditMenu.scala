@@ -34,14 +34,24 @@ class EditMenu(mainWindow: MainWindow) extends ReactiveMenu("Edit") {
   // Must be lazy because Scala allows to read uninitialized values
   lazy val items = mainWindow.editorInFocus >>= (_.flatMap(_.content.editor.undo) match {
     case Some(undo) => {
-      undo.undo.map {
+      (undo.undo <**> undo.redo) ( (undo, redo) =>
+      (undo match {
         case Some(action) => List(menuItem("Undo: " + action.description, Some('U'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK)), { action.action.unsafePerformIO }))
         case None => {
           val item = menuItem("Nothing to undo", None, None, {})
           item.setEnabled(false)
           List(item)
         }
-      }
+      }) ++ 
+      (redo match {
+        case Some(action) => List(menuItem("Redo: " + action.description, Some('R'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK)), { action.action.unsafePerformIO }))
+        case None => {
+          val item = menuItem("Nothing to redo", None, None, {})
+          item.setEnabled(false)
+          List(item)
+        }
+      })
+      )
     }
     case None => {
       constant(List())

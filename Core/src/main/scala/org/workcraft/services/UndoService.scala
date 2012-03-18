@@ -4,6 +4,6 @@ import org.workcraft.scala.Expressions.Expression
 
 object UndoService extends Service[ModelScope, Undo]
 
-case class Undo (undo: Expression[Option[UndoAction]]) 
+case class Undo (undo: Expression[Option[UndoAction]], redo: Expression[Option[UndoAction]]) 
 
 case class UndoAction (description: String, action: IO[Unit])

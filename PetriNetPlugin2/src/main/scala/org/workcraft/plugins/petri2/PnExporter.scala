@@ -27,7 +27,7 @@ class PnExportJob(snapshot: IO[VisualPetriNet]) extends ExportJob {
   def job(stream: OutputStream) = snapshot >>= ( net => ioPure.pure {
     val writer = new PrintWriter(new BufferedOutputStream(stream))
     try {
-      val VisualPetriNet(pn, layout) = snapshot.unsafePerformIO
+      val VisualPetriNet(pn, layout, visualArcs) = snapshot.unsafePerformIO
       
       writer.println ("Places:")
       writer.println (pn.places.map(p => pn.labelling(p)).mkString(" "))

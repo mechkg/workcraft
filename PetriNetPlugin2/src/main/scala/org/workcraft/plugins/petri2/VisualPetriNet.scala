@@ -11,6 +11,8 @@ import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.gui.CommonVisualSettings
 import org.workcraft.graphics.Touchable
 import java.awt.geom.Rectangle2D
+import org.workcraft.dom.visual.connections.VisualConnectionProperties
+import java.awt.Color
 
 object VisualPlace {
   def image (tokens: Expression[Int], label: Expression[String], settings: CommonVisualSettings) : Expression[BoundedColorisableGraphicalContent] =
@@ -29,6 +31,17 @@ object VisualPlace {
     })
   
   val touchable = CommonVisualSettings.settings.map(settings => Touchable.fromCircle(settings.size/2))
+}
+
+object VisualArc {
+    val properties = new VisualConnectionProperties {
+    override def getDrawColor = Color.BLACK
+    override def getArrowWidth = 0.2
+    override def getArrowLength = 0.4
+    override def hasArrow = true
+    override def getStroke = new BasicStroke(0.05f)
+  }
+
 }
 
 object VisualTransition {

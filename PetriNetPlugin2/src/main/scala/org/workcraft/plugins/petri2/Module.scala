@@ -12,7 +12,7 @@ import org.workcraft.services.FileOpenService
 
 object NewPetriNet extends NewModelImpl {
   def name = "Petri Net"
-  def create = PetriNetModel.Empty
+  def create = new PetriNetModel(EditablePetriNet.create(VisualPetriNet.Empty).unsafePerformIO)
 }
 
 object PetriNetServiceProvider extends GlobalServiceProvider {

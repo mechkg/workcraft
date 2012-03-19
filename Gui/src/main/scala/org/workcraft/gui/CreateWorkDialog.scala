@@ -29,6 +29,9 @@ import javax.swing.JOptionPane
 import org.workcraft.services.NewModelImpl
 import java.awt.Font
 
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
+
 class CreateWorkDialog private (models: List[NewModelImpl]) extends JDialog {
   class ListElement(val newModel: NewModelImpl) {
     override def toString = newModel.name
@@ -149,7 +152,7 @@ class CreateWorkDialog private (models: List[NewModelImpl]) extends JDialog {
 }
 
 object CreateWorkDialog {
-  def show(models: List[NewModelImpl], parentWindow: Window): Option[(NewModelImpl, Boolean)] = {
+  def show(models: List[NewModelImpl], parentWindow: Window): IO[Option[(NewModelImpl, Boolean)]] = ioPure.pure {
     if (models.isEmpty) {
       JOptionPane.showMessageDialog(parentWindow, "Workcraft was unable to find any plug-ins that could create a new model.\n\nReconfiguring Workcraft (Utility->Reconfigure) might fix this.\n\nIf you are running Workcraft from a development environment such as Eclipse,\nplease make sure to add the plug-in classes to the classpath in run configuration. ", "Warning", JOptionPane.WARNING_MESSAGE)
       None

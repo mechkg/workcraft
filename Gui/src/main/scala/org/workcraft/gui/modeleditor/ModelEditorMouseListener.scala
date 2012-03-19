@@ -36,7 +36,7 @@ class ModelEditorMouseListener(val viewport: Viewport, val hasFocus: Expression[
 
   def dragStartThreshold(button: Int) = button match {
     case btn if btn == panButton => 0 // start drag immediately for viewport pan
-    case _ => 10 // use a threshold to generate drag events for the tools
+    case _ => 4 // use a threshold to generate drag events for the tools
   }
 
   def thresholdReached(button: Int, start: Point, position: Point) = start.distance(position) >= dragStartThreshold(button)

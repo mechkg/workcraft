@@ -26,4 +26,6 @@ class UtilityWindowsMenu(val utilityWindows: List[DockableWindow[_ <: JComponent
   utilityWindows.sortBy(_.title).foreach(w => add(menuItems(w)))
 
   def update(window: DockableWindow[_ <: JComponent]) = menuItems.get(window).foreach(_.setSelected(!window.isClosed))
+  
+  setMnemonic('W')
 }

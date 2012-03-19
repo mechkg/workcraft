@@ -72,8 +72,6 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
     case _ => Nil
   }).toList)
 
-
-
   val imageV: Expression[((Node => Colorisation), Set[Node], Point2D.Double) => GraphicalContent] =
     CommonVisualSettings.settings >>= (settings => {
       (net.components <**> net.arcs)((comp, a) => {

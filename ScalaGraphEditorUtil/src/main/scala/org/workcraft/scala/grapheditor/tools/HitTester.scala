@@ -14,16 +14,6 @@ import org.workcraft.graphics.Touchable
 trait HitTester[N] {
   def hitTest(point : Point2D.Double) : Option[N]
   def boxHitTest(boxStart : Point2D.Double, boxEnd : Point2D.Double) : List[N]
-  def forJava : org.workcraft.gui.graph.tools.HitTester[N] = {
-    val self = this
-    new org.workcraft.gui.graph.tools.HitTester[N] {
-      def hitTest(point : Point2D.Double) : Maybe[N] = self.hitTest(point) match {
-        case None => org.workcraft.util.Maybe.Util.nothing[N]
-        case Some(x) => org.workcraft.util.Maybe.Util.just(x)
-      } 
-      def boxHitTest(boxStart : Point2D.Double, boxEnd : Point2D.Double) : PCollection[N] = TreePVector.from(self.boxHitTest(boxStart, boxEnd))
-    }
-  }
 }
 
 object HitTester {

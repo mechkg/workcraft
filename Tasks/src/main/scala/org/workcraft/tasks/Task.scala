@@ -21,6 +21,7 @@ trait Task[+O, +E] {
     val outer = this
     
     new Task[O2, E2] {
+            
       def runTask (tc: TaskControl) = outer.runTask(tc) >>= {
         case Left(error) => Left(error).pure[IO]
         case Right(output) => tc.cancelRequest.>>=[Either[Option[E2], O2]] {
@@ -65,12 +66,6 @@ trait Task[+O, +E] {
     throw new RuntimeException("to shut up the compiler") */
   }.pure[IO]
 }
-
-/* trait NodeDescription {
-  def inputPorts
-  def outputPorts  
-} */
-
 
 object Task {
   def pure[O, E](outcome: O) = new Task[O, E] {

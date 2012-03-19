@@ -5,7 +5,6 @@ import java.awt.Color
 import org.workcraft.dependencymanager.advanced.user.Variable
 import org.workcraft.dom.visual.connections.Polyline
 import org.workcraft.dom.visual.connections.StaticVisualConnectionData
-import org.workcraft.dom.visual.connections.VisualConnectionProperties
 import org.workcraft.gui.modeleditor.EditorService
 import org.workcraft.scala.Expressions.Expression
 import org.workcraft.scala.Expressions.ExpressionMonad

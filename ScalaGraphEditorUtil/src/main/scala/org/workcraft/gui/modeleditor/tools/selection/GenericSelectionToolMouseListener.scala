@@ -4,9 +4,9 @@ import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.awt.geom.Point2D
 import javax.swing.Icon
-import org.workcraft.gui.events.GraphEditorMouseEvent
+
 import org.workcraft.gui.modeleditor.Viewport
-import org.workcraft.util.Geometry
+
 import org.workcraft.scala.grapheditor.tools.HitTester
 import org.workcraft.scala.Expressions._
 import java.awt.event.InputEvent

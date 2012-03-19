@@ -42,7 +42,7 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 
 class MainWindow(
   val globalServices: () => GlobalServiceManager,
-  reconfigure: => Unit,
+  reconfigure: IO[Unit],
   shutdown: MainWindow => Unit,
   configuration: Option[GuiConfiguration]) extends JFrame {
   val loggerWindow = new LoggerWindow
@@ -65,12 +65,12 @@ class MainWindow(
   val placeholderDockable = dockingRoot.createRootWindow("", "DocumentPlaceholder", new DocumentPlaceholder, DockableWindowConfiguration(false, false, false))
   val loggerDockable = createUtilityWindow("Log", "Log", loggerWindow, placeholderDockable, DockingConstants.SOUTH_REGION, 0.8)
   val toolboxDockable = createUtilityWindow("Toolbox", "Toolbox", toolboxWindow, placeholderDockable, DockingConstants.EAST_REGION, 0.8)
-  val propEdDockable = createUtilityWindow("PropEd", "PropEd", propEdWindow, toolboxDockable, DockingConstants.NORTH_REGION, 0.8)
+  val propEdDockable = createUtilityWindow("Properties", "PropEd", propEdWindow, toolboxDockable, DockingConstants.NORTH_REGION, 0.8)
 
   var openEditors = List[DockableWindow[ModelEditorPanel]]()
   var editorInFocus: ModifiableExpression[Option[DockableWindow[ModelEditorPanel]]] = Variable.create[Option[DockableWindow[ModelEditorPanel]]](None)
 
-  val menu = new MainMenu(this, List(loggerDockable, toolboxDockable), globalServices, { case (m, b) => newModel(m, b) }, reconfigure)
+  val menu = new MainMenu(this, List(loggerDockable, toolboxDockable, propEdDockable), globalServices, { case (m, b) => newModel(m, b) }, reconfigure)
   this.setJMenuBar(menu)
 
   def closeUtilityWindow(window: DockableWindow[_ <: JComponent]) = {
@@ -111,13 +111,11 @@ class MainWindow(
 
   private def applyIconManager(implicit logger: () => Logger[IO]) = MainWindowIconManager.apply(this, logger)
 
-  def newModel(newModelImpl: NewModelImpl, editorRequested: Boolean) = {
-    val model = newModelImpl.create
-    if (editorRequested)
-      openEditor(model)
-  }
+  def newModel(newModelImpl: NewModelImpl, editorRequested: Boolean) = 
+    newModelImpl.create >>= ( model => if (editorRequested) openEditor(model) else IO.Empty)
+  
 
-  def setFocus(editorDockable: Option[DockableWindow[ModelEditorPanel]]) {
+  def setFocus(editorDockable: Option[DockableWindow[ModelEditorPanel]]): IO[Unit] = ioPure.pure {
     toolboxWindow.removeAll()
     editorDockable match {
       case Some(editor) => {
@@ -133,9 +131,9 @@ class MainWindow(
     editorInFocus.set(editorDockable).unsafePerformIO
   }
 
-  def openEditor(model: ModelServiceProvider) {
+  def openEditor(model: ModelServiceProvider): IO[Unit] = {
     model.implementation(EditorService) match {
-      case None => JOptionPane.showMessageDialog(this, "The model type that you have chosen does not support visual editing :(", "Warning", JOptionPane.WARNING_MESSAGE)
+      case None => ioPure.pure { JOptionPane.showMessageDialog(this, "The model type that you have chosen does not support visual editing :(", "Warning", JOptionPane.WARNING_MESSAGE) }
       case Some(editor) => {
         val editorPanel = new ModelEditorPanel(model, editor)(implicitLogger)
         val editorDockable = dockingRoot.createWindow("Untitled", "unused", editorPanel, DockableWindowConfiguration(onCloseClicked = closeEditor), if (openEditors.isEmpty) placeholderDockable else (openEditors.head), DockingConstants.CENTER_REGION)
@@ -163,5 +161,5 @@ class MainWindow(
     DockingManager.undock(editorDockable)
   }
 
-  def exit = shutdown(this)
+  def exit = ioPure.pure { shutdown(this) }
 }

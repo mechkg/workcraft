@@ -32,17 +32,6 @@ import javax.swing.JPanel
 import org.workcraft.dependencymanager.advanced.core.{Expression => JExpression};
 
 import org.workcraft.scala.Expressions._
-import org.workcraft.dom.visual.GraphicalContent
-import org.workcraft.gui.events.GraphEditorKeyEvent
-import org.workcraft.gui.events.GraphEditorMouseEvent
-import org.workcraft.gui.graph.Viewport
-import org.workcraft.gui.graph.tools.AbstractTool
-import org.workcraft.gui.graph.tools.Colorisation
-import org.workcraft.gui.graph.tools.DecorationProvider
-import org.workcraft.gui.graph.tools.GraphEditorTool.Button
-import org.workcraft.util.GUI
-import org.workcraft.gui.graph.tools.DummyKeyListener
-import org.workcraft.gui.graph.tools.DummyMouseListener
 
 import scalaz._
 import Scalaz._
@@ -50,7 +39,7 @@ import Scalaz._
 import org.workcraft.swing.Swing
 
 case class SimColors (fg : Color, bg : Color)
-
+/*
 class SimulationTool[Node, Event]
     ( simControl : SimControl[Swing, Event]
       , simStateControl : SimStateControl[Swing]
@@ -113,3 +102,4 @@ class SimulationTool[Node, Event]
 
     override def userSpaceContent(viewport : Viewport, hasFocus : JExpression[java.lang.Boolean]) : JExpression[_ <: GraphicalContent] = constant(GraphicalContent.EMPTY).jexpr
 }
+*/

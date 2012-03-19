@@ -2,22 +2,35 @@ package org.workcraft.tasks.gui
 
 import info.clearthought.layout.TableLayout
 import info.clearthought.layout.TableLayoutConstants
-
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-
 import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JProgressBar
 import javax.swing.border.Border
+import org.workcraft.scala.Expressions._
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
+import scalaz.Scalaz._
 
-class TaskPanel extends JPanel {
+class TaskPanel (progress: Expression[Option[Double]], description: Expression[String], cancelAction: IO[Unit]) extends JPanel {
   private val sz = Array(Array(TableLayoutConstants.FILL, 80.0, 100.0), Array(20.0, 20.0, 20.0))
   private val lineBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY), BorderFactory.createEmptyBorder(3, 3, 3, 3))
+  
+  private val refresh = (progress: Option[Double], description: String) => ioPure.pure {
+    label.setText(description)
+    
+    progress match { 
+      case Some(p) => progressBar.setIndeterminate(false); progressBar.setValue((1000.0 * p).toInt)
+      case None => progressBar.setIndeterminate(true)
+      }
+  } 
+  
+  private val refresher = swingAutoRefresh(progress <|*|> description, refresh.tupled)
 
   setBorder(lineBorder)
 
@@ -47,19 +60,10 @@ class TaskPanel extends JPanel {
   add(progressBar, "0,1,2,1")
   add(btnCancel, "2,2")
 
-  def progressUpdate(progress: Double) = {
-    progressBar.setIndeterminate(false)
-    progressBar.setValue((progress * 1000).toInt)
-  }
-
-  @volatile
-  var _cancelRequested = false
-  
-  def cancelRequested = _cancelRequested
-
   def cancel = {
-    _cancelRequested = true;
-    btnCancel.setEnabled(false);
-    btnCancel.setText("Cancelling...");
+    btnCancel.setEnabled(false)
+    btnCancel.setText("Cancelling...")
+    
+    cancelAction.unsafePerformIO
   }
 }

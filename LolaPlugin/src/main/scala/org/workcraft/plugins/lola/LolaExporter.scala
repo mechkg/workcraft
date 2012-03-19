@@ -1,4 +1,5 @@
-package org.workcraft.plugins.petri2
+package org.workcraft.plugins.lola
+
 import org.workcraft.services.Exporter
 import org.workcraft.services.Format
 import org.workcraft.services.ModelServiceProvider
@@ -11,6 +12,12 @@ import java.io.PrintWriter
 import java.io.BufferedOutputStream
 import scalaz._
 import Scalaz._
+import org.workcraft.plugins.petri2.PetriNetService
+import org.workcraft.plugins.petri2.PetriNet
+import org.workcraft.plugins.petri2.Transition
+import org.workcraft.plugins.petri2.Place
+import org.workcraft.plugins.petri2.ConsumerArc
+import org.workcraft.plugins.petri2.ProducerArc
 
 object LolaExporter extends Exporter {
   val targetFormat = Format.LolaPetriNet

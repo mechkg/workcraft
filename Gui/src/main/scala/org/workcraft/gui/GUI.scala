@@ -24,6 +24,9 @@ import javax.imageio.ImageIO
 import org.workcraft.graphics.GraphicalContent
 import org.workcraft.gui.modeleditor.Viewport
 import java.awt.Rectangle
+import javax.swing.Icon
+import java.awt.Insets
+import java.awt.Dimension
 
 object GUI {
 
@@ -32,13 +35,13 @@ object GUI {
     case url => try { Right(ImageIO.read(url)) } catch { case e => Left(e) }
   }
 
-  def menuItem(text: String, mnemonic: Option[Char], accelerator: Option[KeyStroke], action: => Unit) = {
+  def menuItem(text: String, mnemonic: Option[Char], accelerator: Option[KeyStroke], action: IO[Unit]) = {
     val result = new JMenuItem(text)
     mnemonic.foreach(result.setMnemonic(_))
     accelerator.foreach(result.setAccelerator(_))
     result.addActionListener(new ActionListener {
       def actionPerformed(e: ActionEvent) = {
-        action
+        action.unsafePerformIO
       }
     })
     result
@@ -105,6 +108,18 @@ object GUI {
     graphicsNode.paint(g2d)
     g2d.dispose()
     new ImageIcon(bufferedImage)
+  }
+
+  def createIconButton(icon: Icon, toolTip: String) = for {
+    size <- CommonVisualSettings.settings.map(_.iconSize).eval
+  } yield {
+    val result = new JButton(icon)
+    result.setToolTipText(toolTip)
+    result.setMargin(new Insets(0, 0, 0, 0))
+    val insets = result.getInsets()
+    val minSize = size + Math.max(insets.left + insets.right, insets.top + insets.bottom)
+    result.setPreferredSize(new Dimension(minSize, minSize))
+    result
   }
 
   def centerToParent(frame: Window, parent: Window) = {

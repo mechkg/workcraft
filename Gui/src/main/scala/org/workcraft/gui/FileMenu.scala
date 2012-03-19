@@ -24,24 +24,29 @@ import org.workcraft.services.ExportJob
 import org.workcraft.services.Format
 import org.workcraft.services.DefaultFormatService
 
-class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, newModel: ((NewModelImpl, Boolean)) => Unit) extends ReactiveMenu("File") {
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
+import org.workcraft.scala.Expressions._
+import scalaz.Scalaz._
+
+class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, newModel: ((NewModelImpl, Boolean)) => IO[Unit]) extends ReactiveMenu("File") {
 
   // Must be lazy because Scala allows to read uninitialized values
   lazy val items = mainWindow.editorInFocus.map(editor => {
     val newWork = menuItem("New work", Some('N'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK)),
-      CreateWorkDialog.show(services().implementations(NewModelService), mainWindow).foreach(newModel(_)))
+      CreateWorkDialog.show(services().implementations(NewModelService), mainWindow) >>= { case Some(choice) => newModel(choice); case None => IO.Empty})
       
-    val open = menuItem("Open file...", Some('O'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK)), OpenDialog.open(mainWindow, services()).foreach(mainWindow.openEditor(_)))
+    val open = menuItem("Open file...", Some('O'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK)), OpenDialog.open(mainWindow, services()) >>= { case Some(model) => mainWindow.openEditor(model); case None => IO.Empty })
 
     val save = editor match {
       case Some(e) => {
-        val save = menuItem("Save", Some('S'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)), SaveDialog.saveAs(mainWindow, e.content.model, services()).foreach (_.job.unsafePerformIO))
-        val saveAs = menuItem("Save as...", Some('a'), None, SaveDialog.saveAs(mainWindow, e.content.model, services()).foreach(_.job.unsafePerformIO))
+        val save = menuItem("Save", Some('S'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)), SaveDialog.saveAs(mainWindow, e.content.model, services()) >>= { case Some(job) => job.job; case None => IO.Empty })
+        val saveAs = menuItem("Save as...", Some('a'), None, SaveDialog.saveAs(mainWindow, e.content.model, services()) >>= { case Some(job) => job.job; case None => IO.Empty })
         List(save, saveAs)
       }
       case None => {
-        val save = menuItem("Save", None, None, {})
-        val saveAs = menuItem("Save as...", None, None, {})
+        val save = menuItem("Save", None, None, IO.Empty)
+        val saveAs = menuItem("Save as...", None, None, IO.Empty)
         save.setEnabled(false)
         saveAs.setEnabled(false)
         List(save, saveAs)
@@ -49,7 +54,7 @@ class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, new
     }
     
     def disabledExportMenu = {
-        val export = menuItem ("Export...", None, None, {})
+        val export = menuItem ("Export...", None, None, IO.Empty)
         export.setEnabled(false)
         export
     }
@@ -58,7 +63,7 @@ class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, new
       case Nil => disabledExportMenu 
       case x => {
          val menu = new JMenu ("Export...")
-         x.map ( { case (fmt, job) => menuItem (fmt.description + " (" + fmt.extension+")", None, None, { SaveDialog.export(mainWindow, model, fmt, job) })}).foreach (menu.add(_))
+         x.map ( { case (fmt, job) => menuItem (fmt.description + " (" + fmt.extension+")", None, None, SaveDialog.export(mainWindow, model, fmt, job))}).foreach (menu.add(_))
          menu
       }
     }

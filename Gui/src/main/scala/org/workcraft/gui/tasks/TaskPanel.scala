@@ -1,4 +1,4 @@
-package org.workcraft.tasks.gui
+package org.workcraft.gui.tasks
 
 import info.clearthought.layout.TableLayout
 import info.clearthought.layout.TableLayoutConstants

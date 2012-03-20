@@ -6,6 +6,7 @@ import scalaz._
 import Scalaz._
 import java.io.File
 import java.io.FileOutputStream
+import org.workcraft.tasks.Task
 
 object ExporterService extends GlobalService[Exporter]
 
@@ -19,11 +20,11 @@ trait Exporter {
 }
 
 trait ExportJob {
-  def job(stream: OutputStream): IO[Unit]
+  def job(stream: File): IO[Option[Throwable]] 
 }
 
 class FileExportJob (val file: File, exportJob: ExportJob) {
-  val job = ioPure.pure {new FileOutputStream(file)} >>= (os => exportJob.job(os) >>=| ioPure.pure {os.close()})
+  val job = exportJob.job(file) 
 } 
 
 object FileExportJob {

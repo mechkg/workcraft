@@ -18,6 +18,8 @@ import org.workcraft.plugins.petri2.Transition
 import org.workcraft.plugins.petri2.Place
 import org.workcraft.plugins.petri2.ConsumerArc
 import org.workcraft.plugins.petri2.ProducerArc
+import java.io.File
+import java.io.FileOutputStream
 
 object LolaExporter extends Exporter {
   val targetFormat = Format.LolaPetriNet
@@ -37,9 +39,10 @@ class LolaExportJob(snapshot: IO[PetriNet]) extends ExportJob {
       case p: ProducerArc => (prod + (p.from -> (p.to :: prod(p.from))), cons)
     }})
   
-  def job(stream: OutputStream) = snapshot >>= ( net => ioPure.pure {
-    val writer = new PrintWriter(new BufferedOutputStream(stream))
+  def job(file: File) = snapshot >>= ( net => ioPure.pure {
+    var writer: PrintWriter = null
     try {
+      writer = new PrintWriter(new BufferedOutputStream(new FileOutputStream(file)))
       val (prod, cons) = context(net)
       
       val places = "PLACE " + net.places.map( p => net.labelling(p)).mkString(", ") + ";"
@@ -51,8 +54,13 @@ class LolaExportJob(snapshot: IO[PetriNet]) extends ExportJob {
         
         
       writer.println ( places + "\n" + marking + "\n" + transitions)
+      
+      None
+    } catch {
+      case e => Some(e)
     } finally {
-      writer.close()
+      if (writer!=null)
+    	  writer.close()
     }
   })
 }

@@ -27,7 +27,6 @@ object ModalTaskDialog {
       dialog.pack()
       
       GUI.centerToParent(dialog, parentWindow)
-      
 
       dialog.setModal(true)
       dialog.setVisible(true)

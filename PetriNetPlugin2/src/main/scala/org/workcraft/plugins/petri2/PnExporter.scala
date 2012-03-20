@@ -12,6 +12,8 @@ import java.io.PrintWriter
 import java.io.BufferedOutputStream
 import scalaz._
 import Scalaz._
+import java.io.FileOutputStream
+import java.io.File
 
 object PnExporter extends Exporter {
   val targetFormat = Format.WorkcraftPetriNet
@@ -23,23 +25,25 @@ object PnExporter extends Exporter {
 }
 
 class PnExportJob(snapshot: IO[VisualPetriNet]) extends ExportJob {
-  
-  def job(stream: OutputStream) = snapshot >>= ( net => ioPure.pure {
-    val writer = new PrintWriter(new BufferedOutputStream(stream))
+  def job(file: File) = snapshot >>= (net => ioPure.pure {
+    var writer = new PrintWriter(new BufferedOutputStream(new FileOutputStream(file)))
     try {
       val VisualPetriNet(pn, layout, visualArcs) = snapshot.unsafePerformIO
-      
-      writer.println ("Places:")
-      writer.println (pn.places.map(p => pn.labelling(p)).mkString(" "))
-      writer.println ("Transitions:")
-      writer.println (pn.transitions.map( t=> pn.labelling(t)).mkString(" "))
-      writer.println ("Arcs:")
-      writer.println (pn.arcs.map( a => "(" + pn.labelling(a.from) + " " + pn.labelling(a.to) + ")").mkString (" "))
-      writer.println ("Marking:")
-      writer.println (pn.places.map(p => "(" + pn.labelling(p) + " " + pn.marking(p) +")").mkString(" "))
-      writer.println ("Layout:")
-      writer.println (layout.toList.map ( { case (component, position) => "(" + pn.labelling(component) + " " + position.getX + " " + position.getY + ")"}).mkString(" "))
-      
+
+      writer.println("Places:")
+      writer.println(pn.places.map(p => pn.labelling(p)).mkString(" "))
+      writer.println("Transitions:")
+      writer.println(pn.transitions.map(t => pn.labelling(t)).mkString(" "))
+      writer.println("Arcs:")
+      writer.println(pn.arcs.map(a => "(" + pn.labelling(a.from) + " " + pn.labelling(a.to) + ")").mkString(" "))
+      writer.println("Marking:")
+      writer.println(pn.places.map(p => "(" + pn.labelling(p) + " " + pn.marking(p) + ")").mkString(" "))
+      writer.println("Layout:")
+      writer.println(layout.toList.map({ case (component, position) => "(" + pn.labelling(component) + " " + position.getX + " " + position.getY + ")" }).mkString(" "))
+
+      None
+    } catch {
+      case e => Some(e)
     } finally {
       writer.close()
     }

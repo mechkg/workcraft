@@ -31,8 +31,8 @@ object LolaDeadlockTool extends GuiTool {
 class LolaDeadlock extends Task[PetriNet, String] {
     def runTask(tc: TaskControl) = 
       tc.descriptionUpdate("Starting LoLA...") >>=|
-      ExternalProcess.run(List("ls"), None, new )
       
+      ExternalProcess.run(List("ls"), None, new )
       
       ioPure.pure {
 

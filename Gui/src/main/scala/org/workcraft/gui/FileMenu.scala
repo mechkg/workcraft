@@ -40,8 +40,8 @@ class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, new
 
     val save = editor match {
       case Some(e) => {
-        val save = menuItem("Save", Some('S'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)), SaveDialog.saveAs(mainWindow, e.content.model, services()) >>= { case Some(job) => job.job; case None => IO.Empty })
-        val saveAs = menuItem("Save as...", Some('a'), None, SaveDialog.saveAs(mainWindow, e.content.model, services()) >>= { case Some(job) => job.job; case None => IO.Empty })
+        val save = menuItem("Save", Some('S'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)), SaveDialog.saveAs(mainWindow, e.content.model, services()) >>= { case Some(job) => job.job >| Unit; case None => IO.Empty })
+        val saveAs = menuItem("Save as...", Some('a'), None, SaveDialog.saveAs(mainWindow, e.content.model, services()) >>= { case Some(job) => job.job >| Unit; case None => IO.Empty })
         List(save, saveAs)
       }
       case None => {

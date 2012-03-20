@@ -6,7 +6,7 @@ import org.workcraft.scala.Expressions._
 import org.workcraft.scala.effects.IO
 import scalaz._
 import Scalaz._
-import org.workcraft.util.Geometry
+
 import org.workcraft.gui.modeleditor.tools.DragHandler
 import org.workcraft.gui.modeleditor.tools.DragHandle
 

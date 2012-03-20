@@ -2,169 +2,71 @@ package org.workcraft.tasks
 
 import java.io.File
 import java.io.IOException
-import java.nio.ByteBuffer
-import java.nio.channels.Channels
-import java.nio.channels.ReadableByteChannel
-import java.nio.channels.WritableByteChannel
 import java.util.LinkedList
-
 import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
+import java.util.concurrent.atomic.AtomicBoolean
+import java.io.InputStream
+import java.util.Arrays
 
-class ExternalProcess {
-  
-class StreamReaderThread (channel: ReadableByteChannel)  extends Thread
-	{
-		val buffer = ByteBuffer.allocate(1024)
-		
-		def handleData(data: Array[Byte])
+class StreamReaderThread(stream: InputStream, read: Array[Byte] => IO[Unit]) extends Thread {
+  val buffer = new Array[Byte](0x10000)
 
-		def run: Unit =
-			while (true)
-				try {
-					buffer.rewind()
-					val result = channel.read(buffer)
+  override def run: Unit =
+    while (true)
+      try {
+        val result = stream.read(buffer)
 
-					if (result == -1) 
-						return
-					
-					if (result > 0) {
-						
+        if (result == -1)
+          return
 
-					buffer.rewind()
-					val data = new Array[Byte](result)
-					buffer.get(data)
+        if (result > 0)
+          read(Arrays.copyOfRange(buffer, 0, result)).unsafePerformIO
 
-					handleData(data)
-					}
-					
-					Thread.sleep(1)
-				} catch {
-				  case e: Throwable => return
-                    //  printStackTrace(); -- This exception is mostly caused by the process termination and spams the user with information about exceptions that should
-					//  just be ignored, so removed printing. mech. 
-				}
-		
-	}  
-		
-	object InputReaderThread extends StreamReaderThread(inputStream) {
-		
-		InputReaderThread()
-		{
-			super(inputStream);
-		}
-		
-		void handleData(byte[] data) {
-			outputData(data);
-		}
-	}
-	
-	class ErrorReaderThread extends StreamReaderThread {
-		ErrorReaderThread()
-		{
-			super(errorStream);
-		}
-
-		void handleData(byte[] data) {
-			errorData(data);
-		}
-	}
-
-	class WaiterThread extends Thread {
-		public void run() {
-			try {
-				process.waitFor();
-				processFinished();
-			} catch (InterruptedException e) {
-			}			
-		}
-	}
-	
-	private Process process = null;
-	private boolean finished = false;
-
-	private ReadableByteChannel inputStream = null;
-	private ReadableByteChannel errorStream = null;
-	private WritableByteChannel outputStream = null;
-
-	private LinkedList<ExternalProcessListener> listeners = new LinkedList<ExternalProcessListener>();
-
-	public ExternalProcess (String[] command, String workingDirectory) {
-		processBuilder = new ProcessBuilder(command);
-		processBuilder.directory(workingDirectory == null? null : new File(workingDirectory));
-	}
-
-	public ExternalProcess(String[] array, File workingDir) {
-		this(array, workingDir.getAbsolutePath());
-	}
-
-	private void outputData(byte[] data) {
-		for (ExternalProcessListener l : listeners)
-			l.outputData(data);
-	}
-
-	private void errorData(byte[] data) {
-		for (ExternalProcessListener l : listeners)
-			l.errorData(data);
-	}
-
-	private void processFinished() {
-		for (ExternalProcessListener l : listeners){
-			l.processFinished(process.exitValue());
-		}
-		finished = true;
-	}
-
-	public boolean isRunning() {
-		return process != null && !finished;		
-	}
-
-	public void start() throws IOException {
-
-	}
-
-	public void cancel() {
-		if (isRunning())
-			process.destroy();
-	}
-
-	public void writeData(byte[] data) {
-		try {
-			outputStream.write(ByteBuffer.wrap(data));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}		
-	}
-
-	public void addListener(ExternalProcessListener listener) {
-		listeners.add(listener);
-	}
-
-	public void removeListener(ExternalProcessListener listener) {
-		listeners.remove(listener);
-	}
-
-	public void closeInput() throws IOException {
-		outputStream.close();
-	}
-
+        Thread.sleep(1)
+      } catch {
+        case e: Throwable => return
+        //  printStackTrace(); -- This exception is mostly caused by the process termination and spams the user with information about exceptions that should
+        //  just be ignored, so removed printing. mech. 
+      }
 }
 
-case class ProcessHandle private[tasks] {
-//  def = fd
+class ProcessWaiterThread (process: Process, doWhenFinished: Int => IO[Unit]) extends Thread {
+  override def run = {
+    doWhenFinished(process.waitFor()).unsafePerformIO
+  }
+}
+
+case class ProcessHandle private[tasks] (private[tasks] val process: Process) {
+  def writeData (data: Array[Byte]): IO[Unit] = ioPure.pure { process.getOutputStream().write(data) }
+  def cancel: IO[Unit] = ioPure.pure { process.destroy() }
+}
+
+trait ProcessListener {
+  def stdout (data: Array[Byte]): IO[Unit]
+  def stderr (data: Array[Byte]): IO[Unit]
+  def finished (exitValue: Int) : IO[Unit]
+}
+
+trait DiscardingListener extends ProcessListener {
+  def stdout (data: Array[Byte]) = ioPure.pure {}
+  def stderr (data: Array[Byte]) = ioPure.pure {}
 }
 
 object ExternalProcess {
-  def start (command: List[String], workingDir : Option[File], stdout: Array[Byte] => IO[Unit], stdin: Array[Byte] => IO[Unit]): IO[ProcessHandle] = {
-		val processBuilder = new ProcessBuilder(scala.collection.JavaConversions.asJavaList(command))
-		workingDir.foreach(processBuilder.directory(_))
-		val process = processBuilder.start()
-		
-		val outputStream = Channels.newChannel(process.getOutputStream)
-		val errorStream = Channels.newChannel(process.getErrorStream)
-		val inputStream = Channels.newChannel(process.getInputStream)
-		
-		/*new InputReaderThread().start()
-		new ErrorReaderThread().start()
-		new WaiterThread().start()    */
+  def run(command: List[String], workingDir: Option[File], listener: ProcessListener): IO[Either[Throwable, ProcessHandle]] = ioPure.pure {
+    val processBuilder = new ProcessBuilder(scala.collection.JavaConversions.asJavaList(command))
+    workingDir.foreach(processBuilder.directory(_))
+    try {
+      val process = processBuilder.start()
+      
+      new StreamReaderThread (process.getInputStream(), listener.stdout(_)).start()
+      new StreamReaderThread (process.getErrorStream(), listener.stderr(_)).start()
+      new ProcessWaiterThread (process, listener.finished(_)).start()
+      
+      Right(ProcessHandle(process))
+    } catch {
+      case e: Throwable => Left(e)
+    }
   }
 }

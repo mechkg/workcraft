@@ -1,5 +1,6 @@
 package org.workcraft.gui.services
 import org.workcraft.scala.effects.IO
+import org.workcraft.scala.Expressions._
 import org.workcraft.services.Service
 import org.workcraft.services.ModelServiceProvider
 import org.workcraft.gui.MainWindow
@@ -18,5 +19,5 @@ object ToolClass {
 trait GuiTool {
   val description: String
   val classification: ToolClass
-  def run (mainWindow: MainWindow): Option[IO[Unit]]
+  def run (mainWindow: MainWindow): Expression[Option[IO[Unit]]]
 }

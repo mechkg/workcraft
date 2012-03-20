@@ -16,17 +16,13 @@ import org.workcraft.gui.services.ToolClass
 import org.workcraft.scala.effects.IO._
 import org.workcraft.gui.MainWindow
 import javax.swing.JOptionPane
-
-object TestTool extends GuiTool {
-  val description = "Do something"
-  val classification = ToolClass.Verification
-  def run (mainWindow: MainWindow) = Some(ioPure.pure { println ("hehe");  JOptionPane.showMessageDialog (mainWindow, "Hey", "Hey", JOptionPane.INFORMATION_MESSAGE)})
-}
+import org.workcraft.gui.tasks.ModalTaskDialog
+import scalaz.Scalaz._
 
 object LolaServiceProvider extends GlobalServiceProvider {
   def implementations[T](service: Service[GlobalScope, T]) = service match {
     case ExporterService => List(LolaExporter)
-    case GuiToolService => List(TestTool) 
+    case GuiToolService => List(LolaDeadlockTool) 
     case _ => Nil
   }
 }

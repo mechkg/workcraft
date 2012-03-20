@@ -29,7 +29,6 @@ import java.awt.Insets
 import java.awt.Dimension
 
 object GUI {
-
   def loadImageFromResource(path: String): Either[Throwable, BufferedImage] = ClassLoader.getSystemResource(path) match {
     case null => Left(new IOException("Resource not found: " + path))
     case url => try { Right(ImageIO.read(url)) } catch { case e => Left(e) }

@@ -7,10 +7,7 @@ import Scalaz._
 import org.workcraft.scala.effects.IO
 import org.workcraft.scala.effects.IO._
 
-trait TaskControl {
-  val cancelRequest : IO[Boolean]
-  val progressUpdate: Double => IO[Unit]
-}
+case class TaskControl(cancelRequest : IO[Boolean], progressUpdate: Double => IO[Unit], descriptionUpdate: String => IO[Unit])
 
 trait Task[+O, +E] {
   import Task._
@@ -21,11 +18,10 @@ trait Task[+O, +E] {
     val outer = this
     
     new Task[O2, E2] {
-            
       def runTask (tc: TaskControl) = outer.runTask(tc) >>= {
-        case Left(error) => Left(error).pure[IO]
+        case Left(error) => ioPure.pure { Left(error) }
         case Right(output) => tc.cancelRequest.>>=[Either[Option[E2], O2]] {
-          case true => Left(None).pure[IO]
+          case true => ioPure.pure { Left(None) }
           case false => f(output).runTask(tc)
         }
       }
@@ -43,28 +39,11 @@ trait Task[+O, +E] {
     }
   }
 
-  def runAsynchronously (tc: TaskControl) : IO[Unit] = {
-    // run task in a separate thread
-    val thread = new Thread() {
-      override def run() = runTask(tc).unsafePerformIO 
-    }
-
-    thread.start()
-
- /*    // monitor cancel request and task completion    
-    while (true) {
-      if (cancelRequest)
-        return runCancel.unsafePerformIO
-      else if (!thread.isAlive) thread.result match {
-        case Some(result) => return result
-        case None => throw new RuntimeException("Task thread finished but the result was None")
-      }
-      else
-        Thread.sleep(30)
-    }
-
-    throw new RuntimeException("to shut up the compiler") */
-  }.pure[IO]
+  def runAsynchronously (tc: TaskControl, finished: Either[Option[E], O] => IO[Unit]) : IO[Unit] = ioPure.pure {
+    new Thread() {
+      override def run() = (runTask(tc) >>= finished).unsafePerformIO
+    }.start()
+  }
 }
 
 object Task {

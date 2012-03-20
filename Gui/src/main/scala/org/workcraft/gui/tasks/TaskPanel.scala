@@ -30,7 +30,7 @@ class TaskPanel (progress: Expression[Option[Double]], description: Expression[S
       }
   } 
   
-  private val refresher = swingAutoRefresh(progress <|*|> description, refresh.tupled)
+  
 
   setBorder(lineBorder)
 
@@ -66,4 +66,6 @@ class TaskPanel (progress: Expression[Option[Double]], description: Expression[S
     
     cancelAction.unsafePerformIO
   }
+  
+  private val refresher = swingAutoRefresh(progress <|*|> description, refresh.tupled)
 }

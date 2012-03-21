@@ -14,8 +14,8 @@ import org.workcraft.services.ExportJob
 import java.io.FileOutputStream
 import org.workcraft.scala.effects.IO
 import org.workcraft.scala.effects.IO._
-import org.workcraft.services.FileExportJob
 import scalaz.Scalaz._
+import org.workcraft.services.ExportError
 
 object SaveDialog {
 
@@ -63,9 +63,9 @@ object SaveDialog {
     choose
   }
 
-  def export(parentWindow: Window, model: ModelServiceProvider, format: Format, exporter: ExportJob): IO[Unit] = IO.Empty
+  def export(parentWindow: Window, model: ModelServiceProvider, format: Format, exporter: ExportJob): IO[Option[IO[Option[ExportError]]]] = chooseFile (None, parentWindow, format).map(_.map(exporter.job(_)))
 
-  def saveAs(parentWindow: Window, model: ModelServiceProvider, globalServices: GlobalServiceManager): IO[Option[FileExportJob]] = model.implementation(DefaultFormatService) match {
+  def saveAs(parentWindow: Window, model: ModelServiceProvider, globalServices: GlobalServiceManager): IO[Option[IO[Option[ExportError]]]] = model.implementation(DefaultFormatService) match {
     case None => ioPure.pure {
       JOptionPane.showMessageDialog(parentWindow, "Current model does not define a default file format.\nTry using export and choosing a specific format instead.", "Error", JOptionPane.ERROR_MESSAGE)
       None
@@ -89,7 +89,7 @@ object SaveDialog {
 
       } else
         // TODO: handle more than one exporter
-        chooseFile(None, parentWindow, format).map(_.map(FileExportJob(_, applicable.head)))
+        chooseFile(None, parentWindow, format).map(_.map(applicable.head.job(_)))
     }
   }
 }     

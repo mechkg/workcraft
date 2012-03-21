@@ -10,6 +10,7 @@ import scalaz.Scalaz._
 import java.awt.Window
 import javax.swing.JDialog
 import org.workcraft.gui.GUI
+import javax.swing.SwingUtilities
 
 object ModalTaskDialog {
   def runTask[O, E](parentWindow: Window, title: String, task: Task[O, E]): IO[Either[Option[E], O]] =
@@ -20,12 +21,12 @@ object ModalTaskDialog {
 
       task.runAsynchronously(TaskControl(
         cancelRequested.eval, p => progress.set(Some(p)), description.set(_)),
-        (res: Either[Option[E], O]) => ioPure.pure { dialog.setVisible(false); result = res }).unsafePerformIO
+        (res: Either[Option[E], O]) => ioPure.pure { SwingUtilities.invokeLater { new Runnable { def run = { result = res; dialog.setVisible(false) } } } }).unsafePerformIO
 
       dialog.setTitle(title)
       dialog.setContentPane(new TaskPanel(progress, description, cancelRequested.set(true)))
       dialog.pack()
-      
+
       GUI.centerToParent(dialog, parentWindow)
 
       dialog.setModal(true)

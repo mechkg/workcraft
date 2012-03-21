@@ -20,6 +20,7 @@ import org.workcraft.plugins.petri2.ConsumerArc
 import org.workcraft.plugins.petri2.ProducerArc
 import java.io.File
 import java.io.FileOutputStream
+import org.workcraft.services.ExportError
 
 object LolaExporter extends Exporter {
   val targetFormat = Format.LolaPetriNet
@@ -32,35 +33,40 @@ object LolaExporter extends Exporter {
 
 class LolaExportJob(snapshot: IO[PetriNet]) extends ExportJob {
   val complete = false
-  
-  def context (net: PetriNet) : (Map[Transition, List[Place]], Map[Transition, List[Place]]) =
-    net.arcs.foldRight((Map[Transition, List[Place]]().withDefault(_ => List()), Map[Transition, List[Place]]().withDefault(_ => List())))( {case (arc, (prod, cons)) => arc match {
-      case c: ConsumerArc => (prod, cons + ( c.to -> (c.from :: cons(c.to)) ))
-      case p: ProducerArc => (prod + (p.from -> (p.to :: prod(p.from))), cons)
-    }})
-  
-  def job(file: File) = snapshot >>= ( net => ioPure.pure {
+
+  def context(net: PetriNet): (Map[Transition, List[Place]], Map[Transition, List[Place]]) =
+    net.arcs.foldRight((Map[Transition, List[Place]]().withDefault(_ => List()), Map[Transition, List[Place]]().withDefault(_ => List())))({
+      case (arc, (prod, cons)) => arc match {
+        case c: ConsumerArc => (prod, cons + (c.to -> (c.from :: cons(c.to))))
+        case p: ProducerArc => (prod + (p.from -> (p.to :: prod(p.from))), cons)
+      }
+    })
+
+  def job(file: File) = snapshot >>= (net => ioPure.pure {
     var writer: PrintWriter = null
-    try {
-      writer = new PrintWriter(new BufferedOutputStream(new FileOutputStream(file)))
-      val (prod, cons) = context(net)
-      
-      val places = "PLACE " + net.places.map( p => net.labelling(p)).mkString(", ") + ";"
-      val marking = "MARKING " + net.places.map ( p => net.labelling(p) + ": " + net.marking(p) ).mkString(", ") + ";"
-      val transitions = net.transitions.map (t => 
-        "TRANSITION " + net.labelling(t) + 
-        " CONSUME " + cons(t).map(p => net.labelling(p) + ": 1").mkString(", ") + "; " +
-        " PRODUCE " + prod(t).map(p => net.labelling(p) + ": 1").mkString(", ") + ";").mkString ("\n")
-        
-        
-      writer.println ( places + "\n" + marking + "\n" + transitions)
-      
-      None
-    } catch {
-      case e => Some(e)
-    } finally {
-      if (writer!=null)
-    	  writer.close()
-    }
+    if (net.places.isEmpty) Some(ExportError.Message("LoLA does not support nets with no places."))
+    else if (net.transitions.isEmpty) Some(ExportError.Message("LoLA does not support nets with no transitions."))
+    else
+      try {
+
+        writer = new PrintWriter(new BufferedOutputStream(new FileOutputStream(file)))
+        val (prod, cons) = context(net)
+
+        val places = "PLACE " + net.places.map(p => net.labelling(p)).mkString(", ") + ";"
+        val marking = "MARKING " + net.places.map(p => net.labelling(p) + ": " + net.marking(p)).mkString(", ") + ";"
+        val transitions = if (net.transitions.isEmpty) "" else net.transitions.map(t =>
+          "TRANSITION " + net.labelling(t) +
+            " CONSUME " + cons(t).map(p => net.labelling(p) + ": 1").mkString(", ") + "; " +
+            " PRODUCE " + prod(t).map(p => net.labelling(p) + ": 1").mkString(", ") + ";").mkString("\n")
+
+        writer.println(places + "\n" + marking + "\n" + transitions)
+
+        None
+      } catch {
+        case e => Some(ExportError.Exception(e))
+      } finally {
+        if (writer != null)
+          writer.close()
+      }
   })
 }

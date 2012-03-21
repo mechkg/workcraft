@@ -38,6 +38,17 @@ trait Task[+O, +E] {
       }
     }
   }
+  
+   def mapError2[E2] (f: E => E2) = {
+    val outer = this
+    new Task[O, E2] {
+      def runTask (tc: TaskControl) = outer.runTask(tc) map {
+        case Left(None) => Left(None)
+        case Left(Some(error)) => Left(Some(f(error)))
+        case Right(output) => Right(output)
+      }
+    }
+  }
 
   def runAsynchronously (tc: TaskControl, finished: Either[Option[E], O] => IO[Unit]) : IO[Unit] = ioPure.pure {
     new Thread() {

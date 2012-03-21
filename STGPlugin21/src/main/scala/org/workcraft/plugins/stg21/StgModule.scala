@@ -26,7 +26,7 @@ object StgServiceProvider extends GlobalServiceProvider {
 
 object NewStg extends NewModelImpl {
   def name = "Signal Transition Graph"
-  def create = StgModel.create.unsafePerformIO
+  def create = StgModel.create
 }
 
 /*class StgModule extends Module {

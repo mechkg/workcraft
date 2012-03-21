@@ -14,6 +14,7 @@ import scalaz._
 import Scalaz._
 import java.io.FileOutputStream
 import java.io.File
+import org.workcraft.services.ExportError
 
 object PnExporter extends Exporter {
   val targetFormat = Format.WorkcraftPetriNet
@@ -43,7 +44,7 @@ class PnExportJob(snapshot: IO[VisualPetriNet]) extends ExportJob {
 
       None
     } catch {
-      case e => Some(e)
+      case e => Some(ExportError.Exception(e))
     } finally {
       writer.close()
     }

@@ -100,7 +100,7 @@ class EditablePetriNet private (
 
   def deleteArc(a: Arc) = arcs.update(_ - a) >>=| visualArcs.update(_ - a)
 
-  private def deleteComponent(c: Component) = (incidentArcs.eval <**> labelling.eval)((a, l) => (a(c).map(deleteArc(_)).traverse_(x => x)) >>=| names.update(_ - l(c)) >>=| labelling.update(_ - c))
+  private def deleteComponent(c: Component) = (incidentArcs.eval <|*|> labelling.eval) >>= { case (a, l) => a(c).map(deleteArc(_)).sequence >>=| names.update(_ - l(c)) >>=| labelling.update(_ - c) }
 
   def deletePlace(p: Place) = deleteComponent(p) >>=| places.update(_ - p)
   
@@ -112,7 +112,7 @@ class EditablePetriNet private (
     case a: Arc => deleteArc(a)
   }
 
-  def deleteNodes(nodes: Set[Node]): IO[Unit] = nodes.map(deleteNode(_)).traverse_(x => x)
+  def deleteNodes(nodes: Set[Node]): IO[Unit] = nodes.toList.map(deleteNode(_)).sequence >| {}
 
   def saveState = for {
     places <- places;

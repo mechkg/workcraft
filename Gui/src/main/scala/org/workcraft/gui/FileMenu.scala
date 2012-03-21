@@ -23,25 +23,33 @@ import org.workcraft.services.ExporterService
 import org.workcraft.services.ExportJob
 import org.workcraft.services.Format
 import org.workcraft.services.DefaultFormatService
-
 import org.workcraft.scala.effects.IO
 import org.workcraft.scala.effects.IO._
 import org.workcraft.scala.Expressions._
 import scalaz.Scalaz._
+import org.workcraft.services.ExportError
+import javax.swing.JOptionPane
 
 class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, newModel: ((NewModelImpl, Boolean)) => IO[Unit]) extends ReactiveMenu("File") {
+  def handleExportError(error: Option[ExportError]): IO[Unit] = error match {
+    case None => IO.Empty
+    case Some(error) => ioPure.pure { JOptionPane.showMessageDialog(mainWindow, error match { case ExportError.Exception(e) => e.toString(); case ExportError.Message(m) => m }, "Error", JOptionPane.ERROR_MESSAGE) }
+  }
 
   // Must be lazy because Scala allows to read uninitialized values
   lazy val items = mainWindow.editorInFocus.map(editor => {
     val newWork = menuItem("New work", Some('N'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK)),
-      CreateWorkDialog.show(services().implementations(NewModelService), mainWindow) >>= { case Some(choice) => newModel(choice); case None => IO.Empty})
-      
+      CreateWorkDialog.show(services().implementations(NewModelService), mainWindow) >>= { case Some(choice) => newModel(choice); case None => IO.Empty })
+
     val open = menuItem("Open file...", Some('O'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK)), OpenDialog.open(mainWindow, services()) >>= { case Some(model) => mainWindow.openEditor(model); case None => IO.Empty })
 
     val save = editor match {
       case Some(e) => {
-        val save = menuItem("Save", Some('S'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)), SaveDialog.saveAs(mainWindow, e.content.model, services()) >>= { case Some(job) => job.job >| Unit; case None => IO.Empty })
-        val saveAs = menuItem("Save as...", Some('a'), None, SaveDialog.saveAs(mainWindow, e.content.model, services()) >>= { case Some(job) => job.job >| Unit; case None => IO.Empty })
+        val save = menuItem("Save", Some('S'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)), SaveDialog.saveAs(mainWindow, e.content.model, services()) >>= {
+          case Some(job) => job >>= handleExportError
+          case None => IO.Empty
+        })
+        val saveAs = menuItem("Save as...", Some('a'), None, SaveDialog.saveAs(mainWindow, e.content.model, services()) >>= { case Some(job) => job >>= handleExportError; case None => IO.Empty })
         List(save, saveAs)
       }
       case None => {
@@ -52,35 +60,39 @@ class FileMenu(services: () => GlobalServiceManager, mainWindow: MainWindow, new
         List(save, saveAs)
       }
     }
-    
+
     def disabledExportMenu = {
-        val export = menuItem ("Export...", None, None, IO.Empty)
-        export.setEnabled(false)
-        export
+      val export = menuItem("Export...", None, None, IO.Empty)
+      export.setEnabled(false)
+      export
     }
-    
-    def exportMenu (model: ModelServiceProvider, ex: List[(Format, ExportJob)]) = ex match {
-      case Nil => disabledExportMenu 
+
+    def exportMenu(model: ModelServiceProvider, ex: List[(Format, ExportJob)]) = ex match {
+      case Nil => disabledExportMenu
       case x => {
-         val menu = new JMenu ("Export...")
-         x.map ( { case (fmt, job) => menuItem (fmt.description + " (" + fmt.extension+")", None, None, SaveDialog.export(mainWindow, model, fmt, job))}).foreach (menu.add(_))
-         menu
+        val menu = new JMenu("Export...")
+        x.map({
+          case (fmt, job) => menuItem(fmt.description + " (" + fmt.extension + ")", None, None, SaveDialog.export(mainWindow, model, fmt, job) >>= {
+            case Some(job) => job >>= handleExportError
+            case None => IO.Empty
+          })
+        }).foreach(menu.add(_))
+        menu
       }
     }
-    
+
     val export = editor match {
       case Some(e) => {
         val defaultFormat = e.content.model.implementation(DefaultFormatService)
-        
-        val exporters = services().implementations(ExporterService).map( exp => (exp.targetFormat, exp.export(e.content.model)))
-        .flatMap({case (format, Right(job)) if (defaultFormat.map(_ != format).getOrElse(true)) => Some((format, job)); case _ => None})
-        
-        exportMenu (e.content.model, exporters)            
+
+        val exporters = services().implementations(ExporterService).map(exp => (exp.targetFormat, exp.export(e.content.model)))
+          .flatMap({ case (format, Right(job)) if (defaultFormat.map(_ != format).getOrElse(true)) => Some((format, job)); case _ => None })
+
+        exportMenu(e.content.model, exporters)
       }
       case None => disabledExportMenu
     }
-    
-    
+
     val exit = menuItem("Exit", Some('x'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)), mainWindow.exit)
 
     List(newWork, open) ++ save ++ List(export, new JSeparator(), exit)

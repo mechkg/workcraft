@@ -10,7 +10,7 @@ import org.workcraft.services.Undo
 object EditorService extends Service[ModelScope, ModelEditor]
 
 trait ModelEditor {
-  def tools: NonEmptyList[ModelEditorToolConstructor]
+  def tools: NonEmptyList[ModelEditorTool2]
   def props: Expression[List[Expression[EditableProperty]]]
   def undo: Option[Undo]
 }

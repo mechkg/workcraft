@@ -10,7 +10,8 @@ import org.workcraft.plugins.petri2.TokenPainter
 import org.workcraft.scala.Expressions._
 import org.workcraft.scala.Scalaz._
 import org.workcraft.graphics.Graphics
-import org.workcraft.graphics.RichGraphicalContent
+import org.workcraft.graphics.stg.RichGraphicalContent
+import org.workcraft.graphics.stg.NotSoRichGraphicalContent._
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.graphics.TouchableC
 import org.workcraft.graphics.Java2DDecoration._
@@ -40,9 +41,9 @@ object Visual {
     }
   }
   
-  def place(p : ExplicitPlace) : Expression[RichGraphicalContent] = {
+  def place(p : ExplicitPlace) : RichGraphicalContent = {
     var circ = circle(1, Some((new BasicStroke(0.1.toFloat), Color.BLACK)), Some(Color.WHITE))
-    for(settings <- CommonVisualSettings.settings; img <- TokenPainter.image(constant(p.initialMarking), settings)) yield (circ.under(img))
+    s => circ.under(TokenPainter.image(p.initialMarking, s))
   }
   
   def transition(t : Id[Transition])(stg : VisualStg) : Option[RichGraphicalContent] = {
@@ -55,6 +56,6 @@ object Visual {
             VisualSignalTransition.graphicalContent(sig.name + direction.symbol, sig.direction, None)// TODO: Background for simulation
         }
     )
-    yield res
+    yield _ => res
   }
 }

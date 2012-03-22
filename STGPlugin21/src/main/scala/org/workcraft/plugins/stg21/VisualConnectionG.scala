@@ -8,10 +8,11 @@ import java.awt.BasicStroke
 import org.workcraft.dom.visual.connections.StaticVisualConnectionData
 import org.workcraft.dom.visual.connections.Polyline
 import org.workcraft.dom.visual.connections.Bezier
-import org.workcraft.graphics.RichGraphicalContent
+import org.workcraft.graphics.stg.RichGraphicalContent
 import org.workcraft.graphics.TouchableC
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.dom.visual.connections.VisualConnectionContext
+import org.workcraft.graphics.stg.NotSoRichGraphicalContent
 
 object VisualConnectionG {
   
@@ -25,6 +26,6 @@ object VisualConnectionG {
 
   def getConnectionGui(first : TouchableC, second : TouchableC, arc : VisualArc) : RichGraphicalContent = {
     val gui = VisualConnectionGui.getConnectionGui(properties, VisualConnectionContext(first, second), arc)
-    new RichGraphicalContent (new BoundedColorisableGraphicalContent(gui.graphicalContent, gui.shape.touchable.boundingBox), gui.shape)
+    s => new NotSoRichGraphicalContent (new BoundedColorisableGraphicalContent(gui.graphicalContent, gui.shape.touchable.boundingBox), gui.shape)
   }
 }

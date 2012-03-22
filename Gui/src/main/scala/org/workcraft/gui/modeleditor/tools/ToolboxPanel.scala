@@ -31,13 +31,13 @@ class ToolboxPanel(toolbox: Toolbox) extends JPanel {
   
   buttons.list.find( _._1 == toolbox.selectedTool.unsafeEval).foreach(_._2.setSelected(true))
   
-  def selectTool (tool: ModelEditorTool) = {
+  def selectTool (tool: IO[ModelEditorTool2Activation]) = {
     buttons.foreach(_._2.setSelected(false))
     buttons.list.find(_._1 == tool).foreach(_._2.setSelected(true))
     toolbox.selectTool(tool).unsafePerformIO    
   }
 
-  def createButton(tool: ModelEditorTool) : JToggleButton = {
+  def createButton(tool: (Button, IO[ModelEditorTool2Activation])) : JToggleButton = {
     val button = new JToggleButton()
 
     button.setFocusable(false);
@@ -48,7 +48,7 @@ class ToolboxPanel(toolbox: Toolbox) extends JPanel {
     val iconSize = CommonVisualSettings.settings.unsafeEval.iconSize // TODO: make the size update appropriately
     val minSize = iconSize + Math.max(insets.left + insets.right, insets.top + insets.bottom)
 
-    tool.button.icon match {
+    tool._1.icon match {
       case Some(icon) => {
         val crop = new BufferedImage(iconSize, iconSize, BufferedImage.TYPE_INT_ARGB)
         icon.paintIcon(button, crop.getGraphics(), (iconSize - icon.getIconWidth()) / 2, (iconSize - icon.getIconHeight()) / 2)
@@ -56,23 +56,23 @@ class ToolboxPanel(toolbox: Toolbox) extends JPanel {
         button.setPreferredSize(new Dimension(minSize, minSize))
       }
       case None => {
-        button.setText(tool.button.label)
+        button.setText(tool._1.label)
         button.setPreferredSize(new Dimension(120, minSize))
       }
     }
 
-    tool.button.hotkey match {
+    tool._1.hotkey match {
       case Some(key) => {
-        button.setToolTipText("[" + Character.toString(key.toChar) + "] " + tool.button.label)
+        button.setToolTipText("[" + Character.toString(key.toChar) + "] " + tool._1.label)
       }
       case None => {
-        button.setToolTipText(tool.button.label)
+        button.setToolTipText(tool._1.label)
       }
     }
 
     button.addActionListener(new ActionListener {
       def actionPerformed(e: ActionEvent) {
-        selectTool(tool)
+        selectTool(tool._2)
       }
     })
     

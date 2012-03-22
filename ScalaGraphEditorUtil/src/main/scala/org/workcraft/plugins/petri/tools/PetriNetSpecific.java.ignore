@@ -48,49 +48,4 @@ public class PetriNetSpecific {
 		return result;
 	}
 	
-	public static SimulationModel<String, Map<Place, Integer>> petriNetAsSimulationModel (final PetriNetModel net) {
-		return new SimulationModel<String, Map<Place, Integer>>() {
-
-			@Override
-			public boolean canFire(String event) {
-				Transition t = transitionByName(event);
-				return t!=null && net.isEnabled(t);
-			}
-
-			@Override
-			public void fire(String event) {
-				Transition t = transitionByName(event);
-				if(t!=null)
-					net.fire(t);
-			}
-
-			private Transition transitionByName(String event) {
-				Node node = eval(net.referenceManager()).getNodeByReference(event);
-				return node instanceof Transition ? (Transition)node : null;
-			}
-
-			@Override
-			public boolean canUnfire(String event) {
-				Transition t = transitionByName(event);
-				return t!=null && net.isUnfireEnabled(t);
-			}
-
-			@Override
-			public void unfire(String event) {
-				Transition t = transitionByName(event);
-				if(t!=null)
-					net.unFire(t);
-			}
-
-			@Override
-			public Map<Place, Integer> saveState() {
-				return readMarking(net);
-			}
-
-			@Override
-			public void loadState(Map<Place, Integer> marking) {
-				applyMarking(net, marking);
-			}
-		};
-	}
 }

@@ -5,16 +5,17 @@ import org.workcraft.gui.modeleditor.HotkeyBinding
 import org.workcraft.scala.Expressions.convertModifiableExpression
 import org.workcraft.scala.Expressions.monadicSyntaxV
 import org.workcraft.scala.Expressions.Expression
-
 import scalaz._
+import Scalaz._
+import org.workcraft.scala.effects.IO
 
-class Toolbox(val tools: NonEmptyList[ModelEditorTool]) {
-  private val selectedTool_ = Variable.create(tools.head)
+class Toolbox(val tools: NonEmptyList[(Button, IO[ModelEditorTool2Activation])]) {
+  private val selectedTool_ = Variable.create(tools.head._2.unsafePerformIO)
   
-  def selectedTool: Expression[ModelEditorTool] = selectedTool_
-  def selectTool (tool: ModelEditorTool) = selectedTool_.set(tool)
+  def selectedTool: Expression[ModelEditorTool2Activation] = selectedTool_
+  def selectTool (tool: IO[ModelEditorTool2Activation]) = tool >>= (selectedTool_.set(_ : ModelEditorTool2Activation))
     
-  private val hotkeys = tools.list.flatMap(t => t.button.hotkey.map((t, _))).groupBy(_._2).mapValues(_.map(_._1))
+  private val hotkeys = tools.list.flatMap(t => t._1.hotkey.map((t, _))).groupBy(_._2).mapValues(_.map(_._1._2))
   private val cyclicHotkeyIterator = hotkeys.mapValues(Stream.continually(_).flatten.iterator)
 
   val hotkeyBindings = hotkeys.keys.map(key => HotkeyBinding(key, selectTool(cyclicHotkeyIterator(key).next))).toList

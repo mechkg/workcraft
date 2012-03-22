@@ -28,8 +28,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import org.workcraft.dom.visual.Touchable;
-import org.workcraft.dom.visual.connections.ParametricCurve;
-import org.workcraft.dom.visual.connections.PartialCurveInfo;
 import org.workcraft.dom.visual.connections.VisualConnectionProperties;
 
 public class Geometry {
@@ -161,54 +159,6 @@ public class Geometry {
 	}
 
 
-	public static double getBorderPointParameter (Touchable collisionNode, ParametricCurve curve, double tStart, double tEnd) 
-	{
-		Point2D.Double point = new Point2D.Double();
-
-		while(Math.abs(tEnd-tStart) > 1e-6)
-		{
-			double t = (tStart + tEnd)*0.5; 
-			point = curve.getPointOnCurve(t);
-
-			if (collisionNode.hitTest(point))
-				tStart = t;
-			else
-				tEnd = t;
-		}
-
-		return tStart;
-	}
-
-	public static PartialCurveInfo buildConnectionCurveInfo (VisualConnectionProperties connectionInfo, Touchable t1, Touchable t2, ParametricCurve curve, double endCutoff) {
-		PartialCurveInfo info = new PartialCurveInfo();
-		info.tStart = getBorderPointParameter(t1, curve, 0, 1);
-		info.tEnd = getBorderPointParameter(t2, curve, 1, endCutoff);
-
-		info.arrowHeadPosition = curve.getPointOnCurve(info.tEnd); 
-
-		double dt = info.tEnd;
-		double t = 0.0;
-
-		Point2D pt = new Point2D.Double();
-
-		double arrowLengthSq = connectionInfo.getArrowLength()*connectionInfo.getArrowLength();
-
-		while(dt > 1e-6)
-		{
-			dt /= 2.0;
-			t += dt;
-			pt = curve.getPointOnCurve(t);
-
-			if (info.arrowHeadPosition.distanceSq(pt) < arrowLengthSq)
-				t-=dt;
-		}
-
-		info.tEnd = t;
-		info.arrowOrientation = Math.atan2(info.arrowHeadPosition.getY() - pt.getY() , info.arrowHeadPosition.getX() - pt.getX());
-		
-		return info;
-	}
-	
 	/**
 	 * Interpretes points as complex numbers and multiplies them.
 	 * Can be used for the scale-with-rotate (translates 'a' from the basis of (b, rotate90CCW(b)) to the basis of ((1, 0), (0, 1))) 

@@ -11,6 +11,7 @@ import org.workcraft.graphics.VisualCurveProperties
 import org.workcraft.graphics.ParametricCurve
 import org.workcraft.graphics.Geometry.lerp
 import org.workcraft.graphics.Geometry.createRectangle
+import org.workcraft.dom.visual.connections.VisualConnectionContext
 
 object PolylineGui {
 

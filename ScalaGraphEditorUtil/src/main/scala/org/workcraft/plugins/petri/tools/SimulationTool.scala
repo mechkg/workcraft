@@ -28,12 +28,6 @@ import java.awt.geom.Point2D
 import javax.swing.Icon
 import javax.swing.JPanel
 import org.workcraft.scala.Expressions._
-import org.workcraft.gui.events.GraphEditorKeyEvent
-import org.workcraft.gui.events.GraphEditorMouseEvent
-import org.workcraft.gui.graph.Viewport
-import org.workcraft.gui.graph.tools.Colorisation
-import org.workcraft.gui.graph.tools.DecorationProvider
-import org.workcraft.gui.graph.tools.DummyKeyListener
 import scalaz._
 import Scalaz._
 import org.workcraft.swing.Swing
@@ -48,6 +42,7 @@ import org.workcraft.gui.GUI
 import org.workcraft.graphics.GraphicalContent
 import org.workcraft.gui.modeleditor.tools.Button
 import org.workcraft.scala.effects.IO
+import org.workcraft.graphics.Colorisation
 
 case class SimColors(fg: Color, bg: Color)
 
@@ -81,10 +76,7 @@ object SimulationTool {
 
       override def interfacePanel = None
 
-      def mkColorisation(col: Color, back: Color) = new Colorisation {
-        override def getColorisation = col
-        override def getBackground = back
-      }
+      def mkColorisation(col: Color, back: Color) = new Colorisation(Some(col), Some(back))
 
       val nextTransitionColorisation = colors map { case SimColors(fg, bg) => (bg, fg) }
       val enabledTransitionColorisation = colors map { case SimColors(fg, bg) => (fg, bg) }

@@ -21,11 +21,13 @@ import org.workcraft.gui.modeleditor.LeftButton
 import org.workcraft.gui.modeleditor.RightButton
 import org.workcraft.gui.modeleditor.tools.{ DummyMouseListener => DML }
 import org.workcraft.graphics.Graphics
+import java.awt.geom.Point2D
+import org.workcraft.gui.modeleditor.tools.DummyMouseListener
 
 class GenericSimulationToolMouseListener[Event](
   hitTester: Point2D.Double => IO[Option[Event]],
-  sim: SimulationModel) extends DummyMouseListener {
-  private val mouseOverObject: ModifiableExpression[Option[N]] = Variable.create[Option[N]](None)
+  sim: SimulationModel[Event, _]) extends DummyMouseListener {
+  private val mouseOverObject: ModifiableExpression[Option[Event]] = Variable.create[Option[Event]](None)
 
   override def mouseMoved(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit] =
     hitTester(position) >>= (n => mouseOverObject.set(n))

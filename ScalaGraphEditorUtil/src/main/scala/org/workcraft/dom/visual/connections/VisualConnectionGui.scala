@@ -12,13 +12,18 @@ import org.workcraft.graphics.DrawRequest
 import org.workcraft.graphics.Coloriser
 import org.workcraft.graphics.TouchableC
 import org.workcraft.graphics.BoundingBox
-import org.workcraft.graphics.ParametricCurve
 import org.workcraft.graphics.PartialCurveInfo
 import org.workcraft.graphics.VisualCurveProperties
 import java.awt.geom.Path2D
 import java.awt.geom.AffineTransform
 import java.awt.BasicStroke
 import org.workcraft.graphics.Geometry.buildConnectionCurveInfo
+import org.workcraft.dom.visual.connections.VisualConnectionContext
+import org.workcraft.dom.visual.connections.StaticVisualConnectionData
+import org.workcraft.dom.visual.connections.Polyline
+import org.workcraft.dom.visual.connections.Bezier
+import org.workcraft.dom.visual.connections.ConnectionGui
+import org.workcraft.dom.visual.connections.BezierGui
 
 object VisualConnectionGui {
 
@@ -46,9 +51,9 @@ object VisualConnectionGui {
 	}  
 
   case class ExprConnectionGui(
-    shape: Expression[Touchable], graphicalContent: Expression[ColorisableGraphicalContent], parametricCurve: Expression[ParametricCurve])
+    shape: Expression[Touchable], graphicalContent: Expression[ColorisableGraphicalContent], parametricCurve: Expression[org.workcraft.graphics.ParametricCurve])
 
-  def makeConnectionTouchable(curve: ParametricCurve, partial: PartialCurveInfo): TouchableC =
+  def makeConnectionTouchable(curve: org.workcraft.graphics.ParametricCurve, partial: PartialCurveInfo): TouchableC =
     new TouchableC(new Touchable {
       override def hitTest(point: Point2D.Double) = {
         val nearestT = curve.nearestPointT(point)

@@ -49,6 +49,8 @@ import org.workcraft.gui.modeleditor.KeyBinding
 import org.workcraft.gui.modeleditor.ToolMouseListener
 import javax.swing.JPanel
 
+import org.workcraft.graphics.Java2DDecoration._
+
 class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends ModelEditor {
   val undo = None
   val selection = Variable.create[Set[VisualEntity]](Set.empty)
@@ -105,10 +107,10 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Mode
     val selectionTool = GenericSelectionTool.apply[VisualEntity](
         visualStg.map(_.visualEntities),
         selection, 
-        n => entityPosition(n).map(l => visualStg.refract(l)),
-        (x => /*snap */x),
+        (nodes, offset) => visualStg.update(v => nodes.toList.foldl(v)((s, n) => entityPosition(n).map(_.mod(s, offset + _)).getOrElse(s))),
+        ((n, x) => /*snap */x),
         n => env.map({case (v, s) => v.touchable(n)(s)}),
-        (_ => paint),
+        ((_, _, _) => paint),
         Nil)
     
     implicit def decorateMET2A(a : ModelEditorTool2Activation) = new {

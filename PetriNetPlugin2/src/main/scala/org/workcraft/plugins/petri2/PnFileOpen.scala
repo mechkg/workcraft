@@ -7,7 +7,6 @@ import org.workcraft.scala.effects.IO._
 import org.workcraft.services.Format
 import org.workcraft.services.ModelServiceProvider
 import scalaz.Scalaz._
-import org.workcraft.services.FileExportJob
 
 object PnFileOpen extends FileOpen {
   lazy val parser = new PnFormatParser

@@ -16,6 +16,8 @@ import org.workcraft.gui.modeleditor.tools.GenericConnectionToolImpl
 import org.workcraft.gui.modeleditor.Viewport
 import org.workcraft.gui.modeleditor.tools.ToolEnvironment
 import org.workcraft.scala.grapheditor.tools.HitTester
+import scalaz._
+import Scalaz._
 
 class GenericSimulationTool[Node, Event, State] (
   viewport: Viewport,
@@ -27,10 +29,10 @@ class GenericSimulationTool[Node, Event, State] (
   paint: ((Node => Colorisation), State) => Expression[GraphicalContent]) extends ModelEditorTool {
   
   val hitTester = HitTester.create(eventSources, touchable)
-  val currentState = 
+  // val currentState = 
   
 
-  val mouseListener = new GenericSimulationToolMouseListener()
+  val mouseListener = null //new GenericSimulationToolMouseListener()
   
   
   
@@ -39,11 +41,11 @@ class GenericSimulationTool[Node, Event, State] (
   def button = GenericSimulationTool.button
   def keyBindings = List()
    
-  def userSpaceContent = impl.mouseOverNode >>= (mo =>
+  def userSpaceContent = null /*impl.mouseOverNode >>= (mo =>
     (paint(n => if (Some(n) == mo) highlightedColorisation else Colorisation.Empty) <**>
-      impl.connectingLineGraphicalContent(viewport))(_.compose(_)))
+      impl.connectingLineGraphicalContent(viewport))(_.compose(_))) */
 
-  def screenSpaceContent = impl.screenSpaceContent(viewport, hasFocus)
+  def screenSpaceContent = null //impl.screenSpaceContent(viewport, hasFocus)
   def interfacePanel = None
 }
 

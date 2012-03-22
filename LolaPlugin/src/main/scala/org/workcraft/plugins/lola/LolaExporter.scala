@@ -34,14 +34,6 @@ object LolaExporter extends Exporter {
 class LolaExportJob(snapshot: IO[PetriNet]) extends ExportJob {
   val complete = false
 
-  def context(net: PetriNet): (Map[Transition, List[Place]], Map[Transition, List[Place]]) =
-    net.arcs.foldRight((Map[Transition, List[Place]]().withDefault(_ => List()), Map[Transition, List[Place]]().withDefault(_ => List())))({
-      case (arc, (prod, cons)) => arc match {
-        case c: ConsumerArc => (prod, cons + (c.to -> (c.from :: cons(c.to))))
-        case p: ProducerArc => (prod + (p.from -> (p.to :: prod(p.from))), cons)
-      }
-    })
-
   def job(file: File) = snapshot >>= (net => ioPure.pure {
     var writer: PrintWriter = null
     if (net.places.isEmpty) Some(ExportError.Message("LoLA does not support nets with no places."))
@@ -50,7 +42,7 @@ class LolaExportJob(snapshot: IO[PetriNet]) extends ExportJob {
       try {
 
         writer = new PrintWriter(new BufferedOutputStream(new FileOutputStream(file)))
-        val (prod, cons) = context(net)
+        val (prod, cons) = net.incidence
 
         val places = "PLACE " + net.places.map(p => net.labelling(p)).mkString(", ") + ";"
         val marking = "MARKING " + net.places.map(p => net.labelling(p) + ": " + net.marking(p)).mkString(", ") + ";"

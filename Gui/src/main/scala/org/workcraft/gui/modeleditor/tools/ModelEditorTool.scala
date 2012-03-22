@@ -27,6 +27,10 @@ object Button {
 
 trait ModelEditorTool {
   def button: Button
+  def createInstance (env: ToolEnvironment): IO[ModelEditorToolInstance]
+}
+
+trait ModelEditorToolInstance {
   def keyBindings: List[KeyBinding]
   def mouseListener: Option[ToolMouseListener]
   def userSpaceContent: Expression[GraphicalContent]
@@ -35,7 +39,3 @@ trait ModelEditorTool {
 }
 
 case class ToolEnvironment(viewport: Viewport, hasFocus: Expression[Boolean])
-
-object ModelEditorTool {
-  type ModelEditorToolConstructor = ToolEnvironment => ModelEditorTool
-}

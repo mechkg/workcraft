@@ -18,6 +18,8 @@ object VisualPlace {
   def image (tokens: Expression[Int], label: Expression[String], settings: CommonVisualSettings) : Expression[BoundedColorisableGraphicalContent] =
     
     (label <**> TokenPainter.image(tokens, settings))( (label, tokensImage) => {
+      println ("Rebuilding image")
+      
       val place = circle(settings.size, Some((new BasicStroke (settings.strokeWidth.toFloat), settings.foregroundColor)), Some(settings.fillColor)).boundedColorisableGraphicalContent
       
       val placeWithTokens = tokensImage match {

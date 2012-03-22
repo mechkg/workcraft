@@ -3,7 +3,6 @@ package org.workcraft.plugins.petri2
 import java.awt.event.KeyEvent
 import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
-
 import org.workcraft.dependencymanager.advanced.user.Variable
 import org.workcraft.dom.visual.connections.ConnectionGui
 import org.workcraft.dom.visual.connections.VisualConnectionContext
@@ -23,7 +22,6 @@ import org.workcraft.gui.propertyeditor.integer.IntegerProperty
 import org.workcraft.gui.propertyeditor.string.StringProperty
 import org.workcraft.gui.propertyeditor.EditableProperty
 import org.workcraft.gui.CommonVisualSettings
-
 import org.workcraft.scala.Expressions._
 import org.workcraft.scala.effects.IO._
 import org.workcraft.scala.effects.IO
@@ -31,9 +29,9 @@ import org.workcraft.scala.grapheditor.tools.GenericConnectionTool
 import org.workcraft.scala.grapheditor.tools.GenericSelectionTool
 import org.workcraft.services.Undo
 import org.workcraft.services.UndoAction
-
 import scalaz.Scalaz._
 import scalaz._
+import org.workcraft.gui.modeleditor.sim.GenericSimulationTool
 
 case class EditorState(description: String, net: VisualPetriNet, selection: Set[Node])
 
@@ -51,19 +49,18 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
           } yield if (name != oldName) {
             if (names.contains(name)) ioPure.pure(Some("The name '" + name + "' is already taken."))
             else {
-              pushUndo ("change name") >>=|
-              net.names.set(names - oldName + ((name, p))) >>=|
-              net.labelling.update(_ + ((p, name))) >| None
+              pushUndo("change name") >>=|
+                net.names.set(names - oldName + ((name, p))) >>=|
+                net.labelling.update(_ + ((p, name))) >| None
             }
           } else
             ioPure.pure(None)).join
       } else ioPure.pure(Some("Names must be non-empty Latin alphanumeric strings not starting with a digit.")))
   }
-  
+
   def tokens(p: Place) = ModifiableExpressionWithValidation[Int, String](
-      net.tokens(p),
-      x => if (x < 0) ioPure.pure{Some("Token count cannot be negative.")} else pushUndo ("change token count") >>=| net.marking.update(_ + (p -> x)) >| None
-      )    
+    net.tokens(p),
+    x => if (x < 0) ioPure.pure { Some("Token count cannot be negative.") } else pushUndo("change token count") >>=| net.marking.update(_ + (p -> x)) >| None)
 
   def props: Expression[List[Expression[EditableProperty]]] = selection.map(_.toList.flatMap({
     case p: Place => List(
@@ -78,26 +75,57 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
 
         val arcImages = treeSequence(a.map(a => arcImage(a).map(img => ((f: Node => Colorisation) => img.graphicalContent.applyColorisation(f(a))))))
 
-        val componentImages = treeSequence(comp.map(c => (componentImage(c, settings) <**> componentPosition(c))((img, pos) 
-            => (color: Node => Colorisation, off: Set[Node], v: Point2D.Double) => img.cgc.applyColorisation(color(c)).transform(makeTransform(if (off.contains(c)) pos + v else pos)))))
+        val componentImages = treeSequence(comp.map(c => (componentImage(c, settings) <**> componentPosition(c))((img, pos) => (color: Node => Colorisation, off: Set[Node], v: Point2D.Double) => img.cgc.applyColorisation(color(c)).transform(makeTransform(if (off.contains(c)) pos + v else pos)))))
 
         (arcImages <|*|> componentImages)
-      }).join.map{ case (ai, ci) => (color: Node => Colorisation, off: Set[Node], v: Point2D.Double) => treeFold(GraphicalContent.Empty)(_.compose(_), ai.map(_(color))).compose(treeFold(GraphicalContent.Empty)(_.compose(_), ci.map(_(color, off, v))))  }
+      }).join.map { case (ai, ci) => (color: Node => Colorisation, off: Set[Node], v: Point2D.Double) => treeFold(GraphicalContent.Empty)(_.compose(_), ai.map(_(color))).compose(treeFold(GraphicalContent.Empty)(_.compose(_), ci.map(_(color, off, v)))) }
     })
-    
+
   def image(colorisation: Node => Colorisation, offsetNodes: Set[Node], offsetValue: Point2D.Double): Expression[GraphicalContent] = imageV map (_(colorisation, offsetNodes, offsetValue))
+
+  def imageC(colorisation: Component => Colorisation) =
+    (net.components <|**|> (net.arcs, CommonVisualSettings.settings)) >>= {
+      case (comp, a, settings) => {
+        treeSequence((a.map(a => arcImage(a).map(_.graphicalContent.applyColorisation(Colorisation.Empty))) ++
+          comp.map(c => (componentImage(c, settings) <**> componentTransform(c))(_.transform(_).cgc.applyColorisation(colorisation(c)))))).map(_.foldLeft(GraphicalContent.Empty)(_.compose(_)))
+      }
+    }
+
+  def imageForSelection(colorisation: Node => Colorisation, offsetNodes: Set[Node], offsetValue: Point2D.Double) =
+    (net.components <|**|> (net.arcs, CommonVisualSettings.settings)) >>= {
+      case (comp, a, settings) => {
+        treeSequence((a.map(a => arcImageWithOffset(a, offsetNodes, offsetValue).map(_.graphicalContent.applyColorisation(colorisation(a)))) ++
+          comp.map(c => (componentImage(c, settings) <**> componentTransformWithOffset(c, offsetNodes, offsetValue))(_.transform(_).cgc.applyColorisation(colorisation(c)))))).map(_.foldLeft(GraphicalContent.Empty)(_.compose(_)))
+      }
+    }
+
+  def imageForSimulation(colorisation: Transition => Colorisation, marking: Map[Place, Int]) =
+    (net.components <|**|> (net.arcs, CommonVisualSettings.settings)) >>= {
+      case (comp, a, settings) => {
+        treeSequence((a.map(a => arcImage(a).map(_.graphicalContent.applyColorisation(Colorisation.Empty))) ++
+          comp.map(c => ((c match {
+            case t: Transition => VisualTransition.image(net.label(t), settings)
+            case p: Place => {println (marking); VisualPlace.image(constant(marking(p)), net.label(p), settings)}
+          }) <**> componentTransform(c))(_.transform(_).cgc.applyColorisation(c match {
+            case t: Transition => colorisation(t)
+            case p: Place => Colorisation.Empty
+          }))))).map(_.foldLeft(GraphicalContent.Empty)(_.compose(_)))
+      }
+    }
 
   def componentImage(c: Component, settings: CommonVisualSettings): Expression[BoundedColorisableGraphicalContent] = c match {
     case p: Place => VisualPlace.image(net.tokens(p), net.label(p), settings)
     case t: Transition => VisualTransition.image(net.label(t), settings)
   }
 
-  def arcImage(a: Arc): Expression[ConnectionGui] = for {
+  def arcImage(a: Arc): Expression[ConnectionGui] = arcImageWithOffset(a, Set(), new Point2D.Double(0, 0))
+
+  def arcImageWithOffset(a: Arc, offsetNodes: Set[Node], offsetValue: Point2D.Double) = for {
     visualArcs <- net.visualArcs;
-    t1 <- touchable(a.from);
-    t2 <- touchable(a.to);
-    ap1 <- componentPosition(a.from);
-    ap2 <- componentPosition(a.to)
+    t1 <- touchableWithOffset(a.from, offsetNodes, offsetValue);
+    t2 <- touchableWithOffset(a.to, offsetNodes, offsetValue);
+    ap1 <- componentPositionWithOffset(a.from, offsetNodes, offsetValue);
+    ap2 <- componentPositionWithOffset(a.to, offsetNodes, offsetValue)
   } yield {
     VisualConnectionGui.getConnectionGui(VisualArc.properties, VisualConnectionContext.makeContext(t1, ap1, t2, ap2), visualArcs(a))
   }
@@ -106,14 +134,20 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
 
   def componentTransform(c: Component) = componentPosition(c).map(makeTransform(_))
 
+  def componentTransformWithOffset(c: Component, offsetNodes: Set[Node], offsetValue: Point2D.Double) = componentPositionWithOffset(c, offsetNodes, offsetValue).map(makeTransform(_))
+
   def componentPosition(c: Component) = net.layout.map(_(c))
+
+  def componentPositionWithOffset(c: Component, offsetNodes: Set[Node], offsetValue: Point2D.Double) = componentPosition(c).lwmap(pos => if (offsetNodes.contains(c)) pos + offsetValue else pos)
 
   def componentX(c: Component): ModifiableExpression[Double] =
     ModifiableExpression(net.layout.map(_(c).getX), x => net.layout.update(m => m + (c -> new Point2D.Double(x, m(c).getY))))
 
-  def touchable(n: Node) = n match {
-    case p: Place => (VisualPlace.touchable <**> componentTransform(p))((touchable, xform) => touchable.transform(xform))
-    case t: Transition => (VisualTransition.touchable <**> componentTransform(t))((touchable, xform) => touchable.transform(xform))
+  def touchable(n: Node) = touchableWithOffset(n, Set(), new Point2D.Double())
+
+  def touchableWithOffset(n: Node, offsetNodes: Set[Node], offsetValue: Point2D.Double) = n match {
+    case p: Place => (VisualPlace.touchable <**> componentTransformWithOffset(p, offsetNodes, offsetValue))((touchable, xform) => touchable.transform(xform))
+    case t: Transition => (VisualTransition.touchable <**> componentTransformWithOffset(t, offsetNodes, offsetValue))((touchable, xform) => touchable.transform(xform))
     case a: Arc => arcImage(a).map(_.shape.touchable)
   }
 
@@ -128,7 +162,7 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
     move,
     (_, x) => x,
     touchable(_),
-    image(_,_,_),
+    imageForSelection(_, _, _),
     List(KeyBinding("Delete selection", KeyEvent.VK_DELETE, KeyEventType.KeyPressed, Set(), pushUndo("delete nodes") >>=| selection.eval >>= (sel => selection.update(_ -- sel) >>=| net.deleteNodes(sel)))))
 
   private val connectionManager = new ConnectionManager[Component] {
@@ -139,20 +173,20 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
       case (_: Transition, _: Transition) => Left(new InvalidConnectionException("Arcs between transitions are invalid"))
     }
   }
+  
+  private def simulationTool = 
+    GenericSimulationTool[Transition, Map[Place, Int]](net.transitions, touchable(_), net.saveState.eval.map(vpn => new PetriNetSimulation(vpn.net)), imageForSimulation(_,_))
 
   private def connectionTool =
-    GenericConnectionTool[Component](net.components, touchable(_), componentPosition(_), connectionManager, (f => image({
-      case _: Arc => Colorisation.Empty
-      case c: Component => f(c)
-    }, Set(), new Point2D.Double(0,0))))
+    GenericConnectionTool[Component](net.components, touchable(_), componentPosition(_), connectionManager, imageC(_))
 
   private def placeGeneratorTool =
-    NodeGeneratorTool(Button("Place", "images/icons/svg/place.svg", Some(KeyEvent.VK_P)).unsafePerformIO, image(_ => Colorisation(None, None), Set(), new Point2D.Double(0,0)), pushUndo("create place") >>=| net.createPlace(_) >| Unit)
+    NodeGeneratorTool(Button("Place", "images/icons/svg/place.svg", Some(KeyEvent.VK_P)).unsafePerformIO, image(_ => Colorisation(None, None), Set(), new Point2D.Double(0, 0)), pushUndo("create place") >>=| net.createPlace(_) >| Unit)
 
   private def transitionGeneratorTool =
-    NodeGeneratorTool(Button("Transition", "images/icons/svg/transition.svg", Some(KeyEvent.VK_T)).unsafePerformIO, image(_ => Colorisation(None, None), Set(), new Point2D.Double(0,0)), pushUndo ("create transition") >>=| net.createTransition(_) >| Unit)
+    NodeGeneratorTool(Button("Transition", "images/icons/svg/transition.svg", Some(KeyEvent.VK_T)).unsafePerformIO, image(_ => Colorisation(None, None), Set(), new Point2D.Double(0, 0)), pushUndo("create transition") >>=| net.createTransition(_) >| Unit)
 
-  def tools = NonEmptyList(selectionTool, connectionTool, placeGeneratorTool, transitionGeneratorTool)
+  def tools = NonEmptyList(selectionTool, connectionTool, placeGeneratorTool, transitionGeneratorTool, simulationTool)
   def keyBindings = List()
   def button = new Button {
     def hotkey = Some(KeyEvent.VK_K)
@@ -168,21 +202,20 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
   def loadState(state: EditorState): IO[Unit] = net.loadState(state.net) >>=| selection.set(state.selection)
 
   def pushState(description: String, stack: ModifiableExpression[List[EditorState]]): IO[Unit] = (saveState(description) >>= (state => stack.update(s => (state :: s).take(100))))
-  
-  def pushUndo(description: String) = pushState(description, undoStack) >>=| redoStack.update (_ => Nil)
+
+  def pushUndo(description: String) = pushState(description, undoStack) >>=| redoStack.update(_ => Nil)
 
   def popUndo: IO[Unit] = undoStack.eval >>= ({
-    case top::rest => pushState (top.description, redoStack) >>=| loadState(top) >>=| undoStack.update(_ => rest)
-    case _ => ioPure.pure{}
+    case top :: rest => pushState(top.description, redoStack) >>=| loadState(top) >>=| undoStack.update(_ => rest)
+    case _ => ioPure.pure {}
   })
-  
+
   def popRedo: IO[Unit] = redoStack.eval >>= ({
-    case top::rest => pushState (top.description, undoStack) >>=| loadState(top) >>=| redoStack.update(_ => rest)
-    case _ => ioPure.pure{}
+    case top :: rest => pushState(top.description, undoStack) >>=| loadState(top) >>=| redoStack.update(_ => rest)
+    case _ => ioPure.pure {}
   })
 
   val undo = Some(Undo(
-      undoStack.map({ case top :: _ => Some(UndoAction(top.description, popUndo)); case x => None }),
-      redoStack.map({ case top :: _ => Some(UndoAction(top.description, popRedo)); case x => None })
-      ))
+    undoStack.map({ case top :: _ => Some(UndoAction(top.description, popUndo)); case x => None }),
+    redoStack.map({ case top :: _ => Some(UndoAction(top.description, popRedo)); case x => None })))
 }

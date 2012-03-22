@@ -16,51 +16,46 @@ import org.workcraft.gui.modeleditor.tools.GenericConnectionToolImpl
 import org.workcraft.gui.modeleditor.Viewport
 import org.workcraft.gui.modeleditor.tools.ToolEnvironment
 import org.workcraft.scala.grapheditor.tools.HitTester
+import org.workcraft.dependencymanager.advanced.user.Variable
+import scalaz.Scalaz._
+import org.workcraft.gui.modeleditor.tools.ModelEditorToolInstance
+import org.workcraft.gui.modeleditor.tools.ToolEnvironment
+import org.workcraft.scala.effects.IO
 
-class GenericSimulationTool[Node, Event, State] (
+class GenericSimulationToolInstance[Event, State](
   viewport: Viewport,
   hasFocus: Expression[Boolean],
-  eventSources: Expression[Iterable[Node]],
-  event: Node => Event,
-  touchable: Node => Expression[Touchable],
+  eventSources: Expression[Iterable[Event]],
+  touchable: Event => Expression[Touchable],
   sim: SimulationModel[Event, State],
-  paint: ((Node => Colorisation), State) => Expression[GraphicalContent]) extends ModelEditorTool {
-  
+  paint: ((Event => Colorisation), State) => Expression[GraphicalContent]) extends ModelEditorToolInstance {
+
   val hitTester = HitTester.create(eventSources, touchable)
-  val currentState = 
+  val mouseListener = Some(new GenericSimulationToolMouseListener(node => ioPure.pure { hitTester.hitTest(node) }, sim))
   
-
-  val mouseListener = new GenericSimulationToolMouseListener()
-  
-  
-  
-  
-
-  def button = GenericSimulationTool.button
   def keyBindings = List()
-   
-  def userSpaceContent = impl.mouseOverNode >>= (mo =>
-    (paint(n => if (Some(n) == mo) highlightedColorisation else Colorisation.Empty) <**>
-      impl.connectingLineGraphicalContent(viewport))(_.compose(_)))
 
-  def screenSpaceContent = impl.screenSpaceContent(viewport, hasFocus)
+  def userSpaceContent = (sim.currentState <|*|> sim.enabled) >>= { case (state, enabled) => (paint(ev => if (enabled(ev)) GenericSimulationTool.highlightedColorisation else Colorisation.Empty, state)) }
+
+  def screenSpaceContent = constant(GraphicalContent.Empty)
   def interfacePanel = None
 }
 
-object GenericSimulationTool {
-  def apply[Node, Event, State](  eventSources: Expression[Iterable[Node]],
-  event: Node => Event,
-  touchable: Node => Expression[Touchable],
-  sim: SimulationModel[Event, State],
-  paint: ((Node => Colorisation), State) => Expression[GraphicalContent]) = (env: ToolEnvironment) => 
-      new GenericSimulationTool(env.viewport, env.hasFocus, eventSources, event, touchable, sim, paint)
+case class GenericSimulationTool[Event, State] (
+  eventSources: Expression[Iterable[Event]],
+  touchable: Event => Expression[Touchable],
+  sim: IO[SimulationModel[Event, State]],
+  paint: ((Event => Colorisation), State) => Expression[GraphicalContent]) extends ModelEditorTool {
+  def button = GenericSimulationTool.button
+  def createInstance(env: ToolEnvironment) = sim >>= (sim => ioPure.pure { new GenericSimulationToolInstance (env.viewport, env. hasFocus, eventSources, touchable, sim, paint) })
+}
 
-  val highlightedColorisation = Colorisation(Some(new Color(99, 130, 191).brighter), None)
-  
-  val button =
-    new Button {
+object GenericSimulationTool {
+  val button = new Button {
       override def hotkey = Some(KeyEvent.VK_M)
-      override def icon = Some(GUI.createIconFromSvgUsingSettingsSize("images/icons/svg/play.svg").unsafePerformIO)
+      override def icon = Some(GUI.createIconFromSvgUsingSettingsSize("images/icons/svg/start.svg").unsafePerformIO)
       override def label = "Simulation tool"
     }
+  
+  val highlightedColorisation = Colorisation (Some(new Color(240, 180, 40)), None)
 }

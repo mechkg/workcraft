@@ -72,7 +72,7 @@ class ModelEditorPanel (val model: ModelServiceProvider, val editor: ModelEditor
     case None => DummyMouseListener
   }*/
   
-  val toolbox = new Toolbox(editor.tools.map(_(ToolEnvironment(view, hasfocus))))
+  val toolbox = Toolbox(ToolEnvironment(view, hasfocus), editor.tools).unsafePerformIO
   
   val mListener = new ModelEditorMouseListener (view, hasfocus, toolbox.selectedToolMouseListener,() => {requestFocus()}.pure[IO])
   
@@ -98,7 +98,7 @@ class ModelEditorPanel (val model: ModelServiceProvider, val editor: ModelEditor
     grid <- grid.graphicalContent;
     ruler <- ruler.graphicalContent;
     viewTransform <- view.transform
-    tool <- toolbox.selectedTool;
+    tool <- toolbox.selectedToolInstance;
     hasFocus <- hasfocus;
     userSpaceContent <- tool.userSpaceContent
     screenSpaceContent <- tool.screenSpaceContent

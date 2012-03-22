@@ -17,21 +17,21 @@ import org.workcraft.gui.GUI
 import org.workcraft.gui.modeleditor.tools.GenericConnectionToolImpl
 import org.workcraft.gui.modeleditor.Viewport
 import org.workcraft.gui.modeleditor.tools.ToolEnvironment
+import org.workcraft.gui.modeleditor.tools.ModelEditorToolInstance
 
-class GenericConnectionTool[N](
+class GenericConnectionToolInstance[N](
   viewport: Viewport,
   hasFocus: Expression[Boolean],
   components: Expression[Iterable[N]],
   touchableProvider: N => Expression[Touchable],
   arrowPoint: N => Expression[Point2D.Double],
   connectionController: ConnectionManager[N],
-  paint: (N => Colorisation) => Expression[GraphicalContent]) extends ModelEditorTool {
+  paint: (N => Colorisation) => Expression[GraphicalContent]) extends ModelEditorToolInstance {
 
   import GenericConnectionTool._
 
-  val impl = new GenericConnectionToolImpl(arrowPoint, connectionController, n => ioPure.pure{HitTester.create(components, touchableProvider).hitTest(n)})
+  val impl = new GenericConnectionToolImpl(arrowPoint, connectionController, n => ioPure.pure { HitTester.create(components, touchableProvider).hitTest(n) })
 
-  def button = GenericConnectionTool.button
   def keyBindings = List()
   def mouseListener = Some(impl.mouseListener)
   def userSpaceContent = impl.mouseOverNode >>= (mo =>
@@ -42,14 +42,18 @@ class GenericConnectionTool[N](
   def interfacePanel = None
 }
 
-object GenericConnectionTool {
-  def apply[N](components: Expression[Iterable[N]],
-    touchableProvider: N => Expression[Touchable],
-    arrowPoint: N => Expression[Point2D.Double],
-    connectionController: ConnectionManager[N],
-    paint: (N => Colorisation) => Expression[GraphicalContent]) = (env: ToolEnvironment) => 
-      new GenericConnectionTool(env.viewport, env.hasFocus, components, touchableProvider, arrowPoint, connectionController, paint)
+case class GenericConnectionTool[N](components: Expression[Iterable[N]],
+  touchableProvider: N => Expression[Touchable],
+  arrowPoint: N => Expression[Point2D.Double],
+  connectionController: ConnectionManager[N],
+  paint: (N => Colorisation) => Expression[GraphicalContent]) extends ModelEditorTool {
 
+  def button = GenericConnectionTool.button
+  def createInstance(env: ToolEnvironment) = ioPure.pure { new GenericConnectionToolInstance(env.viewport, env.hasFocus, components, touchableProvider, arrowPoint, connectionController, paint) }
+
+}
+
+object GenericConnectionTool {
   val highlightedColorisation = Colorisation(Some(new Color(99, 130, 191).brighter), None)
   val button =
     new Button {

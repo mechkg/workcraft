@@ -5,23 +5,35 @@ import org.workcraft.gui.modeleditor.HotkeyBinding
 import org.workcraft.scala.Expressions.convertModifiableExpression
 import org.workcraft.scala.Expressions.monadicSyntaxV
 import org.workcraft.scala.Expressions.Expression
-
 import scalaz._
+import Scalaz._
+import org.workcraft.scala.Expressions.ModifiableExpression
+import org.workcraft.scala.Expressions._
+import org.workcraft.scala.effects.IO
 
-class Toolbox(val tools: NonEmptyList[ModelEditorTool]) {
-  private val selectedTool_ = Variable.create(tools.head)
+class Toolbox(val env: ToolEnvironment, val tools: NonEmptyList[ModelEditorTool], val selected: ModifiableExpression[ModelEditorTool], val selectedInstance: ModifiableExpression[ModelEditorToolInstance]) {
+  val selectedTool: Expression[ModelEditorTool] = selected.expr
+  val selectedToolInstance = selectedInstance.expr
   
-  def selectedTool: Expression[ModelEditorTool] = selectedTool_
-  def selectTool (tool: ModelEditorTool) = selectedTool_.set(tool)
-    
+  def selectTool(tool: ModelEditorTool) = ((tool.createInstance(env)) >>= (i => selectedInstance.set(i))) >>=| selected.set(tool) 
+
   private val hotkeys = tools.list.flatMap(t => t.button.hotkey.map((t, _))).groupBy(_._2).mapValues(_.map(_._1))
   private val cyclicHotkeyIterator = hotkeys.mapValues(Stream.continually(_).flatten.iterator)
 
   val hotkeyBindings = hotkeys.keys.map(key => HotkeyBinding(key, selectTool(cyclicHotkeyIterator(key).next))).toList
-  
-  val selectedToolKeyBindings = selectedTool_.map(_.keyBindings)
-  val selectedToolMouseListener = selectedTool_.map(_.mouseListener)
+
+  val selectedToolKeyBindings = selectedToolInstance.map(_.keyBindings)
+  val selectedToolMouseListener = selectedToolInstance.map(_.mouseListener)
 }
+
+object Toolbox {
+  def apply(env: ToolEnvironment, tools: NonEmptyList[ModelEditorTool]): IO[Toolbox] = for {
+    inst <- tools.head.createInstance(env);
+    selected <- newVar(tools.head);
+    selectedInstance <- newVar(inst)
+  } yield (new Toolbox(env, tools, selected, selectedInstance))
+}
+
 /*
 
 public class ToolboxPanel extends JPanel implements GraphEditorKeyListener {

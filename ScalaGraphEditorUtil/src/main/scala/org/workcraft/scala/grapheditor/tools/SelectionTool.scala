@@ -16,8 +16,9 @@ import java.awt.event.KeyEvent
 import org.workcraft.gui.GUI
 import org.workcraft.graphics.Colorisation
 import org.workcraft.gui.modeleditor.tools.selection.GenericSelectionToolMouseListener
-import ModelEditorTool.ModelEditorToolConstructor
+
 import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 import org.workcraft.dependencymanager.advanced.user.Variable
 
 import scalaz._
@@ -25,7 +26,7 @@ import Scalaz._
 
 import org.workcraft.scala.Expressions._
 
-class GenericSelectionTool[N](
+class GenericSelectionToolInstance[N](
   viewport: Viewport,
   nodes: Expression[Iterable[N]],
   selection: ModifiableExpression[Set[N]],
@@ -33,14 +34,12 @@ class GenericSelectionTool[N](
   offsetSnap: (N, Point2D.Double) => Point2D.Double,
   touchable: N => Expression[Touchable],
   paint: (N => Colorisation, Set[N], Point2D.Double) => Expression[GraphicalContent],
-  customKeyBindings: List[KeyBinding]) extends ModelEditorTool {
+  customKeyBindings: List[KeyBinding]) extends ModelEditorToolInstance {
 
   private val currentOffset = Variable.create(new Point2D.Double(0, 0))
 
   private val mouseListener_ = new GenericSelectionToolMouseListener(selection, HitTester.create(nodes, touchable),
     new MoveDragHandler(currentOffset, offsetSnap, (selection.expr <**> currentOffset)(moveOperation(_, _)).eval.join))
-
-  def button = GenericSelectionTool.button
 
   def keyBindings = customKeyBindings
   def mouseListener = Some(mouseListener_)
@@ -57,6 +56,19 @@ class GenericSelectionTool[N](
   def interfacePanel = None
 }
 
+case class GenericSelectionTool[N] (
+  nodes: Expression[Iterable[N]],
+  selection: ModifiableExpression[Set[N]],
+  moveOperation: (Set[N], Point2D.Double) => IO[Unit],
+  offsetSnap: (N, Point2D.Double) => Point2D.Double,
+  touchable: N => Expression[Touchable],
+  paint: (N => Colorisation, Set[N], Point2D.Double) => Expression[GraphicalContent],
+  customKeyBindings: List[KeyBinding]) extends ModelEditorTool {
+  
+  def button = GenericSelectionTool.button
+  def createInstance (env: ToolEnvironment) = ioPure.pure { new GenericSelectionToolInstance (env.viewport, nodes, selection, moveOperation, offsetSnap, touchable, paint, customKeyBindings) }
+}
+
 object GenericSelectionTool {
   val button = new Button {
     override def label = "Selection tool"
@@ -65,20 +77,4 @@ object GenericSelectionTool {
   }
 
   val highlightedColorisation = Colorisation(Some(new Color(99, 130, 191).brighter), None)
-  def apply[N](
-    nodes: Expression[Iterable[N]],
-    selection: ModifiableExpression[Set[N]],
-    moveOperation: (Set[N], Point2D.Double) => IO[Unit],
-    offsetSnap: (N, Point2D.Double) => Point2D.Double,
-    touchable: N => Expression[Touchable],
-    paint: (N => Colorisation, Set[N], Point2D.Double) => Expression[GraphicalContent],
-    customKeyBindings: List[KeyBinding]): ModelEditorToolConstructor = env => new GenericSelectionTool(
-    env.viewport,
-    nodes,
-    selection,
-    moveOperation,
-    offsetSnap,
-    touchable,
-    paint,
-    customKeyBindings)
 }

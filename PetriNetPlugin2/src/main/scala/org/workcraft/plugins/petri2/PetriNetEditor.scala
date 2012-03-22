@@ -105,7 +105,7 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
         treeSequence((a.map(a => arcImage(a).map(_.graphicalContent.applyColorisation(Colorisation.Empty))) ++
           comp.map(c => ((c match {
             case t: Transition => VisualTransition.image(net.label(t), settings)
-            case p: Place => {println (marking); VisualPlace.image(constant(marking(p)), net.label(p), settings)}
+            case p: Place => VisualPlace.image(constant(marking(p)), net.label(p), settings)
           }) <**> componentTransform(c))(_.transform(_).cgc.applyColorisation(c match {
             case t: Transition => colorisation(t)
             case p: Place => Colorisation.Empty

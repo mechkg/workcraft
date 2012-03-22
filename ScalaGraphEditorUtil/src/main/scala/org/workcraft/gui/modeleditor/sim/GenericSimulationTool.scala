@@ -21,6 +21,11 @@ import scalaz.Scalaz._
 import org.workcraft.gui.modeleditor.tools.ModelEditorToolInstance
 import org.workcraft.gui.modeleditor.tools.ToolEnvironment
 import org.workcraft.scala.effects.IO
+import javax.swing.JPanel
+import javax.swing.JLabel
+import javax.swing.Timer
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
 
 class GenericSimulationToolInstance[Event, State](
   viewport: Viewport,
@@ -32,30 +37,38 @@ class GenericSimulationToolInstance[Event, State](
 
   val hitTester = HitTester.create(eventSources, touchable)
   val mouseListener = Some(new GenericSimulationToolMouseListener(node => ioPure.pure { hitTester.hitTest(node) }, sim))
-  
+
   def keyBindings = List()
 
-  def userSpaceContent = (sim.currentState <|*|> sim.enabled) >>= { case (state, enabled) => (paint(ev => if (enabled(ev)) GenericSimulationTool.highlightedColorisation else Colorisation.Empty, state)) }
+  def userSpaceContent = (sim.currentState <|**|> (sim.enabled, GenericSimulationTool.col)) >>= { case (state, enabled, col) => (paint(ev => if (enabled(ev)) col else Colorisation.Empty, state)) }
 
   def screenSpaceContent = constant(GraphicalContent.Empty)
-  def interfacePanel = None
+  val interfacePanel = Some(new SimControlPanel(sim.trace, (e:Event) => sim.toString(e)))
 }
 
-case class GenericSimulationTool[Event, State] (
+case class GenericSimulationTool[Event, State](
   eventSources: Expression[Iterable[Event]],
   touchable: Event => Expression[Touchable],
   sim: IO[SimulationModel[Event, State]],
   paint: ((Event => Colorisation), State) => Expression[GraphicalContent]) extends ModelEditorTool {
   def button = GenericSimulationTool.button
-  def createInstance(env: ToolEnvironment) = sim >>= (sim => ioPure.pure { new GenericSimulationToolInstance (env.viewport, env. hasFocus, eventSources, touchable, sim, paint) })
+  def createInstance(env: ToolEnvironment) = sim >>= (sim => ioPure.pure { new GenericSimulationToolInstance(env.viewport, env.hasFocus, eventSources, touchable, sim, paint) })
 }
 
 object GenericSimulationTool {
   val button = new Button {
-      override def hotkey = Some(KeyEvent.VK_M)
-      override def icon = Some(GUI.createIconFromSvgUsingSettingsSize("images/icons/svg/start.svg").unsafePerformIO)
-      override def label = "Simulation tool"
-    }
-  
-  val highlightedColorisation = Colorisation (Some(new Color(240, 180, 40)), None)
+    override def hotkey = Some(KeyEvent.VK_M)
+    override def icon = Some(GUI.createIconFromSvgUsingSettingsSize("images/icons/svg/start-green.svg").unsafePerformIO)
+    override def label = "Simulation tool"
+  }
+
+  val t = Variable.create(0.0)
+
+  new Timer(30, new ActionListener {
+    def actionPerformed(e: ActionEvent) = t.set(scala.math.sin(System.currentTimeMillis() / 200.0)).unsafePerformIO
+  }).start()
+
+  val col = t.map(t => Colorisation(Some(new Color(80 + (40 * t).toInt, 200 + (40 * t).toInt, 80 + (40 * t).toInt)), None))
+
+  val highlightedColorisation = Colorisation(Some(new Color(240, 180, 40)), None)
 }

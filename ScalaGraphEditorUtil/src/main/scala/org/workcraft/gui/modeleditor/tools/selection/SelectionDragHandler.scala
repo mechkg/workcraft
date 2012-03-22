@@ -8,9 +8,6 @@ import java.awt.geom.Rectangle2D
 import org.workcraft.scala.Expressions._
 import org.workcraft.exceptions.NotSupportedException
 import org.workcraft.gui.modeleditor.tools.selection.GenericSelectionToolMouseListener.SelectionMode
-import org.workcraft.util.Geometry
-import pcollections.HashTreePSet
-import pcollections.PSet
 import org.workcraft.scala.grapheditor.tools.HitTester
 import org.workcraft.dependencymanager.advanced.user.Variable
 import scalaz._

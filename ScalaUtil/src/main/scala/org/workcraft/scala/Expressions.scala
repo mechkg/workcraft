@@ -19,6 +19,7 @@ import org.workcraft.dependencymanager.util.listeners.Listener
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase.ValueHandleTuple
 import org.workcraft.dependencymanager.advanced.user.AutoRefreshExpression
 import org.workcraft.dependencymanager.advanced.core.EvaluationContext
+import org.workcraft.dependencymanager.advanced.user.SwingAutoRefreshExpression
 
 object Expressions {
   case class Expression[+T](jexpr: JExpression[_ <: T]) {
@@ -126,9 +127,11 @@ object Expressions {
   def newVar[T](x: T): IO[Variable[T]] = ioPure.pure(Variable.create(x))
   
   def evanescentAutoRefresh[T] (expr: Expression[T], update: T => IO[Unit]) = new AutoRefreshHandle (new AutoRefreshExpression {
-    override def onEvaluate (context: EvaluationContext) = {
-      update(context.resolve(expr)).unsafePerformIO      
-    }
+    override def onEvaluate (context: EvaluationContext) = update(context.resolve(expr)).unsafePerformIO      
+  })
+  
+  def swingAutoRefresh[T] (expr: Expression[T], update: T => IO[Unit]) = new AutoRefreshHandle (new SwingAutoRefreshExpression {
+    override def onEvaluate (context: EvaluationContext) = update(context.resolve(expr)).unsafePerformIO 
   })
   
   object DisposableAutoRefreshExpression {
@@ -155,4 +158,17 @@ object Expressions {
   class AutoRefreshHandle (private val ref: AnyRef)
   
   def manualDisposeAutoRefresh[T] (expr: Expression[T], update: T => IO[Unit]): DisposableAutoRefreshExpression[T]  = new DisposableAutoRefreshExpression(expr, update)
+  
+  def treeFold[A](z: A)(f: (A, A) => A, l: List[A]): A = l match {
+    case Nil => z
+    case x :: Nil => f(z, x)
+    case q @ (x :: xs) => treeFold(z)(f, q.grouped(2).map({
+      case List(a, b) => f(a, b)
+      case List(a) => a
+      case _ => throw new RuntimeException("Should not happen")
+    }).toList)
+  }
+
+  def treeSequence[A](l: List[Expression[A]]): Expression[List[A]] =
+    treeFold[Expression[List[A]]](constant(List()))((q, p) => (q <**> p)(_ ++ _), l.map(_.lwmap(List(_))))  
 }

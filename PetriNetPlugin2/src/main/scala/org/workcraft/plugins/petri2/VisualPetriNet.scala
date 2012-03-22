@@ -11,6 +11,8 @@ import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.gui.CommonVisualSettings
 import org.workcraft.graphics.Touchable
 import java.awt.geom.Rectangle2D
+import java.awt.Color
+import org.workcraft.graphics.VisualCurveProperties
 
 object VisualPlace {
   def image (tokens: Expression[Int], label: Expression[String], settings: CommonVisualSettings) : Expression[BoundedColorisableGraphicalContent] =
@@ -29,6 +31,10 @@ object VisualPlace {
     })
   
   val touchable = CommonVisualSettings.settings.map(settings => Touchable.fromCircle(settings.size/2))
+}
+
+object VisualArc {
+    val properties = VisualCurveProperties(Color.BLACK, Some(org.workcraft.graphics.Arrow(0.2, 0.4)), new BasicStroke(0.05f))
 }
 
 object VisualTransition {

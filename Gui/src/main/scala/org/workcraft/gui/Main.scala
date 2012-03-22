@@ -13,6 +13,7 @@ import org.pushingpixels.substance.api.SubstanceConstants.TabContentPaneBorderKi
 import org.workcraft.logging.Logger._
 import org.workcraft.logging.Logger
 import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 import javax.swing.WindowConstants
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
@@ -66,7 +67,7 @@ object Main {
     var pluginManager = loadPlugins(false)
     var globalServices = new GlobalServiceManager(pluginManager)
 
-    def reconfigure() = {
+    val reconfigure = ioPure.pure {
       pluginManager = loadPlugins(true)
       globalServices = new GlobalServiceManager(pluginManager)
     }

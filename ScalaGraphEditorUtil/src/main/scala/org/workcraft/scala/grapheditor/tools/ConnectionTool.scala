@@ -5,10 +5,7 @@ import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.effects.IO._
 import org.workcraft.scala.Expressions._
 import java.awt.geom.Point2D
-import org.workcraft.gui.graph.tools.AbstractTool
 import java.awt.Color
-import org.workcraft.gui.graph.tools.GraphEditorMouseListener
-import org.workcraft.gui.graph.tools.GraphEditorKeyListener
 import org.workcraft.graphics.Colorisation
 import org.workcraft.graphics.Touchable
 import org.workcraft.graphics.GraphicalContent

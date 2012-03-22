@@ -1,0 +1,23 @@
+package org.workcraft.gui.services
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.Expressions._
+import org.workcraft.services.Service
+import org.workcraft.services.ModelServiceProvider
+import org.workcraft.gui.MainWindow
+import org.workcraft.services.GlobalScope
+
+object GuiToolService extends Service[GlobalScope, GuiTool]
+
+sealed abstract class ToolClass(val sectionName: String)
+
+object ToolClass {
+  object Verification extends ToolClass ("Verification")
+  object Synthesis extends ToolClass ("Synthesis")
+  case class Custom (sectionName: String)
+}
+
+trait GuiTool {
+  val description: String
+  val classification: ToolClass
+  def run (mainWindow: MainWindow): Expression[Option[IO[Unit]]]
+}

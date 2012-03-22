@@ -3,23 +3,25 @@ package org.workcraft.plugins.petri.tools
 import java.awt.Component
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-
 import javax.swing.JButton
 import javax.swing.JSlider
 import javax.swing.Timer
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ChangeListener
-
-import org.workcraft.util.GUI
-
 import org.workcraft.swing.Swing
 import org.workcraft.swing.Swing._
+import SimulationControlPanel._
+import org.workcraft.gui.GUI
+
+import scalaz.Scalaz._
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 
 object SimulationControlPanel {
   type SimulationControl[M[_], State] = SimulationModel[M, Unit, State] {
   }
 }
-import SimulationControlPanel._
+
 
 // unsafe class -- all the methods including the constructor are side-effectful
 class SimulationControlPanel[State](simControl : SimulationControl[Swing, State]) {
@@ -27,7 +29,7 @@ class SimulationControlPanel[State](simControl : SimulationControl[Swing, State]
 
   val resetButton = new JButton("Reset")
   val speedSlider = new JSlider(-1000, 1000, 0)
-  val autoPlayButton = GUI.createIconButton(GUI.createIconFromSVG("images/icons/svg/start.svg"), "Automatic simulation")
+  val autoPlayButton = (GUI.createIconFromSvg("images/icons/svg/start.svg", 16, 16, None) >>= (GUI.createIconButton(_, "Automatic simulation"))).unsafePerformIO
   val stopButton = new JButton("Stop")
   val backButton = new JButton("Step <")
   val stepButton = new JButton("Step >")

@@ -12,6 +12,9 @@ import scala.collection.immutable.PagedSeq
 import scala.util.parsing.input.PagedSeqReader
 import java.awt.geom.Point2D
 import java.io.File
+import org.workcraft.scala.effects.IO._
+import org.workcraft.scala.effects.IO
+import org.workcraft.dom.visual.connections.Polyline
 
 sealed trait PnTokens
 
@@ -39,7 +42,7 @@ object PnTokens {
 class PnLexer extends Scanners with RegexParsers {
   override type Elem = Char
   override type Token = PnTokens.Token
-  
+
   import PnTokens._
 
   def places = "Places:".r ^^^ Places
@@ -47,8 +50,8 @@ class PnLexer extends Scanners with RegexParsers {
   def arcs = "Arcs:".r ^^^ Arcs
   def layout = "Layout:".r ^^^ Layout
   def marking = "Marking:".r ^^^ Marking
-  def name = PetriNetSnapshot.namePattern.r.map(Name(_))
-  
+  def name = PetriNet.namePattern.r.map(Name(_))
+
   def number = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?".r.map(Number(_))
 
   def lb = "\\(".r.map(_ => LeftBracket)
@@ -78,14 +81,14 @@ class PnFormatParser extends Parsers {
   override type Elem = PnTokens.Token
 
   import PnTokens._
-  
-  def isInt (s: String) = s.matches("[0-9]+")
+
+  def isInt(s: String) = s.matches("[0-9]+")
 
   def name = acceptMatch("valid place/transition name", { case Name(s) => s })
 
   def double = acceptMatch("double-precision coordinate", { case Number(v) => v.toDouble })
 
-  def integer = acceptMatch("non-negative integer", {case Number(v) if isInt(v) => v.toInt; })
+  def integer = acceptMatch("non-negative integer", { case Number(v) if isInt(v) => v.toInt; })
 
   def arc = (LeftBracket ~> (name ~ name) <~ RightBracket) map (r => (r._1, r._2))
 
@@ -104,64 +107,66 @@ class PnFormatParser extends Parsers {
     case Marking => (marking*) map (mrk => PartialResult(Nil, Nil, Nil, Nil, mrk))
   }).flatMap(p => (section | Eof ^^^ (PartialResult(Nil, Nil, Nil, Nil, Nil))) map (p + _))
 
-  def parse(in: File): Either[String, VisualPetriNet] = section(lexer.scanner(in)) match {
-    case Success(a, b) => {
-      val allNames = a.places ++ a.transitions
-      val distinctNames = allNames.distinct
+  def parse(in: File): IO[Either[String, VisualPetriNet]] = ioPure.pure {
+    section(lexer.scanner(in)) match {
+      case Success(a, b) => {
+        val allNames = a.places ++ a.transitions
+        val distinctNames = allNames.distinct
 
-      if (allNames.length != distinctNames.length)
-        Left("Duplicate names found: " + (allNames -- distinctNames).mkString(", "))
-      else {
-        val places = a.places.map(name => (new Place, name))
-        val placeLabelling = places.toMap
-        val placeLookup = places.map(_.swap).toMap
-
-        val transitions = a.transitions.map(name => (new Transition, name))
-        val transitionLabelling = transitions.toMap
-        val transitionLookup = transitions.map(_.swap).toMap
-
-        def componentLookup(name: String) = List(placeLookup.get(name), transitionLookup.get(name)).flatten match {
-          case Nil => None
-          case a :: Nil => Some(a)
-        }
-
-        val arcs = a.arcs.map(a => a match {
-          case (from, to) =>
-            if (placeLookup.contains(from) && transitionLookup.contains(to))
-              Right(new ConsumerArc(placeLookup(from), transitionLookup(to)))
-            else if (placeLookup.contains(to) && transitionLookup.contains(from))
-              Right(new ProducerArc(transitionLookup(from), placeLookup(to)))
-            else
-              Left(a)
-        })
-
-        val arcErrors = arcs.flatMap({ case Right(_) => None; case Left(e) => Some(e.toString()) })
-
-        if (!arcErrors.isEmpty)
-          Left("Following arcs refer to undefined names:\n" + arcErrors.mkString(" "))
+        if (allNames.length != distinctNames.length)
+          Left("Duplicate names found: " + (allNames -- distinctNames).mkString(", "))
         else {
-          val goodArcs = arcs.flatMap({ case Right(a) => Some(a); case Left(_) => None })
+          val places = a.places.map(name => (new Place, name))
+          val placeLabelling = places.toMap
+          val placeLookup = places.map(_.swap).toMap
 
-          val layout = a.layout.foldRight(Map[Component, Point2D.Double]())((entry, map) => {
-            val (name, (x, y)) = entry
-            componentLookup(name) match {
-              case Some(c) => map + (c -> new Point2D.Double(x, y))
-              case None => map
-            }
-          }).withDefaultValue(new Point2D.Double(0, 0))
+          val transitions = a.transitions.map(name => (new Transition, name))
+          val transitionLabelling = transitions.toMap
+          val transitionLookup = transitions.map(_.swap).toMap
 
-          val marking = a.marking.foldRight(Map[Place, Int]())((entry, map) => {
-            val (name, tokens) = entry
-            placeLookup.get(name) match {
-              case Some(c) => map + (c -> tokens)
-              case None => map
-            }
-          }).withDefaultValue(0)
+          def componentLookup(name: String) = List(placeLookup.get(name), transitionLookup.get(name)).flatten match {
+            case Nil => None
+            case a :: Nil => Some(a)
+          }
 
-          Right(VisualPetriNet(PetriNetSnapshot(marking, placeLabelling ++ transitionLabelling, places.map(_._1), transitions.map(_._1), goodArcs), layout))
+          val arcs = a.arcs.map(a => a match {
+            case (from, to) =>
+              if (placeLookup.contains(from) && transitionLookup.contains(to))
+                Right(new ConsumerArc(placeLookup(from), transitionLookup(to)))
+              else if (placeLookup.contains(to) && transitionLookup.contains(from))
+                Right(new ProducerArc(transitionLookup(from), placeLookup(to)))
+              else
+                Left(a)
+          })
+
+          val arcErrors = arcs.flatMap({ case Right(_) => None; case Left(e) => Some(e.toString()) })
+
+          if (!arcErrors.isEmpty)
+            Left("Following arcs refer to undefined names:\n" + arcErrors.mkString(" "))
+          else {
+            val goodArcs = arcs.flatMap({ case Right(a) => Some(a); case Left(_) => None })
+
+            val layout = a.layout.foldRight(Map[Component, Point2D.Double]())((entry, map) => {
+              val (name, (x, y)) = entry
+              componentLookup(name) match {
+                case Some(c) => map + (c -> new Point2D.Double(x, y))
+                case None => map
+              }
+            }).withDefaultValue(new Point2D.Double(0, 0))
+
+            val marking = a.marking.foldRight(Map[Place, Int]())((entry, map) => {
+              val (name, tokens) = entry
+              placeLookup.get(name) match {
+                case Some(c) => map + (c -> tokens)
+                case None => map
+              }
+            }).withDefaultValue(0)
+
+            Right(VisualPetriNet(PetriNet(marking, placeLabelling ++ transitionLabelling, places.map(_._1), transitions.map(_._1), goodArcs), layout, Map().withDefaultValue(Polyline(List()))))
+          }
         }
       }
+      case err => Left(err.toString)
     }
-    case err => Left(err.toString)
-  }  
+  }
 }

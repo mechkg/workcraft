@@ -6,6 +6,8 @@ import scalaz._
 import Scalaz._
 import java.io.File
 import java.io.FileOutputStream
+import org.workcraft.tasks.Task
+import org.workcraft.tasks.TaskControl
 
 object ExporterService extends GlobalService[Exporter]
 
@@ -18,14 +20,17 @@ trait Exporter {
   def export(model: ModelServiceProvider): Either[ServiceNotAvailableException, ExportJob]
 }
 
-trait ExportJob {
-  def job(stream: OutputStream): IO[Unit]
+sealed trait ExportError
+
+object ExportError {
+  case class Exception (exception: Throwable) extends ExportError
+  case class Message (message: String) extends ExportError
 }
 
-class FileExportJob (val file: File, exportJob: ExportJob) {
-  val job = ioPure.pure {new FileOutputStream(file)} >>= (os => exportJob.job(os) >>=| ioPure.pure {os.close()})
-} 
-
-object FileExportJob {
-  def apply (file: File, exportJob: ExportJob) = new FileExportJob (file, exportJob)
+trait ExportJob {
+  def job(stream: File): IO[Option[ExportError]]
+  
+  def asTask(file: File) = new Task[File, ExportError] {
+    def runTask(tc: TaskControl) = tc.descriptionUpdate ("Exporting " + file.getPath) >>=| (job(file) map {case None => Right(file); case Some(error) => Left(Some(error))})
+  } 
 }

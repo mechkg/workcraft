@@ -30,6 +30,7 @@
     <module>PluginManager</module>
     <module>Graphics</module>
     <module>PetriNetPlugin2</module>
+    <module>LolaPlugin</module>
     <module>ScalaUtil</module>
 <!--    <module>DependencyManager</module> -->
     <module>BooleanFormulae</module>

@@ -50,10 +50,7 @@ object Test {
   def main(args: Array[String]) : Unit = {
     var cancelled = false
     
-    val tc = new TaskControl() {
-      val cancelRequest = cancelled.pure
-      val progressUpdate = Test.progressUpdate(_)
-    }
+     
     
     val myComplexTask = for {
       _ <- ioTask (statusUpdate ("step 1"));
@@ -64,6 +61,6 @@ object Test {
       z <- step3
     } yield z
     
-    myComplexTask.runTask(tc).unsafePerformIO
+    myComplexTask.runTask(TaskControl(cancelled.pure, Test.progressUpdate(_), _ => ioPure.pure {} )).unsafePerformIO
   }
 }

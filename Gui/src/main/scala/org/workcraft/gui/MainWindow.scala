@@ -59,17 +59,22 @@ class MainWindow(
 
   val toolboxWindow = new JPanel(new BorderLayout)
   toolboxWindow.add(new NotAvailablePanel(), BorderLayout.CENTER)
+  
+  var editorInFocus: ModifiableExpression[Option[DockableWindow[ModelEditorPanel]]] = Variable.create[Option[DockableWindow[ModelEditorPanel]]](None)
+  val interfacePanel = editorInFocus >>= (_.traverse(_.content.toolbox.selectedTool.map(_.interfacePanel)).map(_.join))
 
+  val toolControlWindow = new ToolInterfaceWindow(interfacePanel)
+  
   val propEdWindow = new PropertyEditorWindow
 
   val placeholderDockable = dockingRoot.createRootWindow("", "DocumentPlaceholder", new DocumentPlaceholder, DockableWindowConfiguration(false, false, false))
   val loggerDockable = createUtilityWindow("Log", "Log", loggerWindow, placeholderDockable, DockingConstants.SOUTH_REGION, 0.8)
   val toolboxDockable = createUtilityWindow("Toolbox", "Toolbox", toolboxWindow, placeholderDockable, DockingConstants.EAST_REGION, 0.8)
-  val propEdDockable = createUtilityWindow("Properties", "PropEd", propEdWindow, toolboxDockable, DockingConstants.NORTH_REGION, 0.8)
+  val toolControlDockable = createUtilityWindow("Tool controls", "ToolControls", toolControlWindow, toolboxDockable, DockingConstants.NORTH_REGION, 0.8)
+  val propEdDockable = createUtilityWindow("Properties", "PropEd", propEdWindow, toolControlDockable, DockingConstants.CENTER_REGION, 0.8)
 
   var openEditors = List[DockableWindow[ModelEditorPanel]]()
-  var editorInFocus: ModifiableExpression[Option[DockableWindow[ModelEditorPanel]]] = Variable.create[Option[DockableWindow[ModelEditorPanel]]](None)
-
+  
   val menu = new MainMenu(this, List(loggerDockable, toolboxDockable, propEdDockable), globalServices, { case (m, b) => newModel(m, b) }, reconfigure)
   this.setJMenuBar(menu)
 

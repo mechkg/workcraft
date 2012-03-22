@@ -110,6 +110,15 @@ object types {
       places.map.map { case (pid, p) => (ExplicitPlacePlace(pid): Place, p.initialMarking) } |+|
         (arcs.map.toList >>= { case (aid, arc @ ImplicitPlaceArc(_, _, m)) => List((ImplicitPlace(aid.downCast), m)); case _ => List() }).toMap
     }
+    
+    def setInitialMarking(marking : Map[Place, Int]) : MathStg = {
+      marking.foldLeft(this){case (s, (p, m)) => s.setInitialMarking(p,m)}
+    }
+    
+    def setInitialMarking(p : Place, m : Int) : MathStg = p match {
+      case ImplicitPlace(aid) => copy(arcs = Col.update(aid.upCast[Arc]){case ImplicitPlaceArc (a,b,_) => ImplicitPlaceArc (a,b,m)} ~> arcs)
+      case ExplicitPlacePlace(pid) => copy (places = Col.update(pid){case ExplicitPlace(_,n) => ExplicitPlace(m,n)} ~> places)
+    }
   }
 
   sealed trait StgNode

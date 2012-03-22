@@ -10,18 +10,6 @@ import org.workcraft.dependencymanager.advanced.core.EvaluationContext
 import org.workcraft.dependencymanager.advanced.core.Expression
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.core.Expressions
-import org.workcraft.dom.Node
-import org.workcraft.dom.visual.GraphicalContent
-import org.workcraft.gui.graph.Viewport
-import org.workcraft.gui.graph.tools.Colorisation
-import org.workcraft.gui.graph.tools.Colorisator
-import org.workcraft.gui.graph.tools.DecorationProvider
-import org.workcraft.gui.graph.tools.DummyKeyListener
-import org.workcraft.gui.graph.tools.GraphEditorKeyListener
-import org.workcraft.gui.graph.tools.GraphEditorMouseListener
-import org.workcraft.gui.graph.tools.GraphEditorTool
-import org.workcraft.gui.graph.tools.HierarchicalColorisator
-import org.workcraft.util.GUI
 /*@Deprecated // this needs to be thrown  out
 public class SelectionTool implements GraphEditorTool, DecorationProvider[Colorisator] {
 

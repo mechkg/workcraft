@@ -92,11 +92,7 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Mode
       case ArcConnectable(a) => vstg.touchableC(ArcVisualEntity(a))(s)
     }}
     
-    def paint : Expression[GraphicalContent] = env.map{ case (vstg, s) => {
-      vstg.visualEntities.map(vstg.visual(_)(s).bcgc.cgc).
-      foldl(ColorisableGraphicalContent.Empty)(_.compose(_)).applyColorisation(Colorisation.Empty)
-    }
-    }
+    def paint : Expression[GraphicalContent] = env.map{ case (vstg, s) => vstg.image(s) }
 
     val connectionTool = GenericConnectionTool.apply[StgConnectable](visualStg.map(_.stgConnectables), (connectableTouchable(_)).map(_.map(_.touchable)), deepCenters, connectionController, _ => paint)
     

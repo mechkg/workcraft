@@ -106,9 +106,9 @@ class SimulationTraceTable[State]
     if(!traces.branch.trace.isEmpty) { // If we have a branch-trace, use that. Otherwise, use the main trace.
       if (traces.branch.step < traces.branch.trace.size) {
 	val event = traces.branch.trace(traces.branch.step)
-				
-	if(!model.canFire(event).unsafePerformIO)
-	  return false
+    
+	if(!model.canFire(event).unsafePerformIO) {println("can't fire " + event) ; 
+	  return false}
 	model.fire(event).unsafePerformIO
 
 	traces = (TraceStep.step compose TracePair.branch).mod(traces, _ + 1)
@@ -134,13 +134,12 @@ class SimulationTraceTable[State]
 	
     def userRequestedFire(event : String) = {
       val nextEvent = getNextEvent
-		
+      println("firing " + event + " (next event : " + nextEvent + ")")
       if (!event.equals(nextEvent)) {
 	traces = TracePair.branch.mod(traces, branch => {
 	  TraceStep(Trace(branch.trace.list.take(branch.step) :+ event), branch.step)
 	})
       }
-		
       quietStep
     }
 

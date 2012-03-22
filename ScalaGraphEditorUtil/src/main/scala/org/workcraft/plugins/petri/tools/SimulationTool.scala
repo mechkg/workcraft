@@ -43,8 +43,11 @@ import org.workcraft.graphics.GraphicalContent
 import org.workcraft.gui.modeleditor.tools.Button
 import org.workcraft.scala.effects.IO
 import org.workcraft.graphics.Colorisation
+import org.workcraft.gui.modeleditor.tools.ToolEnvironment
+import org.workcraft.gui.modeleditor.tools.ModelEditorTool2Activation
 
 case class SimColors(fg: Color, bg: Color)
+
 
 object SimulationTool {
 
@@ -54,8 +57,9 @@ object SimulationTool {
         def icon = Some(GUI.createIconFromSvgUsingSettingsSize("images/icons/svg/start-green.svg").unsafePerformIO)
       }
   
-  def apply[Event](simControl: SimControl[Swing, Event], hitTester: Point2D.Double => Swing[Option[Event]], colors: IO[SimColors]): ModelEditorTool.ModelEditorToolConstructor =
-    env => 
+  def apply[Event](simControl: SimControl[Swing, Event], hitTester: Point2D.Double => Swing[Option[Event]], colors: IO[SimColors]): 
+  (ToolEnvironment => ModelEditorTool2Activation, Event => IO[Colorisation]) =
+    (env =>
     new ModelEditorTool {
 
       override def keyBindings = List(
@@ -64,7 +68,7 @@ object SimulationTool {
 
       override def mouseListener = Some(new DummyMouseListener {
         override def buttonPressed(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double) =
-          (hitTester(position) >>= (_.traverse_(simControl.fire(_)))).unsafeRun
+          (hitTester(position) >>= (_.traverse_(x => simControl.fire(x)))).unsafeRun
       })
 
       override def screenSpaceContent: Expression[GraphicalContent] = env.hasFocus >>= {
@@ -76,22 +80,19 @@ object SimulationTool {
 
       override def interfacePanel = None
 
-      def mkColorisation(col: Color, back: Color) = new Colorisation(Some(col), Some(back))
 
-      val nextTransitionColorisation = colors map { case SimColors(fg, bg) => (bg, fg) }
-      val enabledTransitionColorisation = colors map { case SimColors(fg, bg) => (fg, bg) }
-
-      // TODO: make it somehow register dependency on the enabledness
-      def getColorisation(event: Event) : IO[Option[(Color, Color)]] = {
-        simControl.getNextEvent.unsafeRun >>= (nextEvent => 
-        if (event == nextEvent)
-          nextTransitionColorisation.map(Some(_))
-        else simControl.canFire(event).unsafeRun >>= {
-          case true => enabledTransitionColorisation.map(Some(_))
-          case false => IO.ioPure.pure(None)
-        })
-      }
 
       override def userSpaceContent : Expression[GraphicalContent] = constant(GraphicalContent.Empty)
-    }
+    }, (event : Event) => {
+      def mkColorisation(col: Color, back: Color) = new Colorisation(Some(col), Some(back))
+      val nextTransitionColorisation = colors map { case SimColors(fg, bg) => mkColorisation(bg, fg) }
+      val enabledTransitionColorisation = colors map { case SimColors(fg, bg) => mkColorisation(fg, bg) }
+        simControl.getNextEvent.unsafeRun >>= (nextEvent => 
+        if (event == nextEvent)
+          nextTransitionColorisation
+        else simControl.canFire(event).unsafeRun >>= {
+          case true => enabledTransitionColorisation
+          case false => IO.ioPure.pure(Colorisation.Empty)
+        })
+      })
 }

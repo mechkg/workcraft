@@ -11,6 +11,9 @@ import org.workcraft.dom.visual.connections.Polyline
 import scalaz.Scalaz
 import Scalaz.ma
 import Scalaz.mab
+import org.workcraft.graphics.GraphicalContent
+import org.workcraft.graphics.ColorisableGraphicalContent
+import org.workcraft.graphics.Colorisation
 
 object StgVisualStuff {
 
@@ -89,4 +92,9 @@ class StgVisualStuff(visualStg: VisualStg) {
   def touchableC(n: VisualEntity) = visual(n).map(_.touchable)
 
   def touchable(n: VisualEntity) = touchableC(n).map(_.touchable)
+  
+  def image : CommonVisualSettings => GraphicalContent = s => {
+      visualStg.visualEntities.map(visualStg.visual(_)(s).bcgc.cgc).
+      foldLeft(ColorisableGraphicalContent.Empty)(_.compose(_)).applyColorisation(Colorisation.Empty)
+    }
 }

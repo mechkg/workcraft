@@ -22,7 +22,7 @@
 package org.workcraft.interop;
 import org.workcraft.serialisation.Format;
 
-import checkers.nullness.quals.Nullable;
+
 
 public interface Exporter {
 	
@@ -45,7 +45,7 @@ public interface Exporter {
 	public ExportJob getExportJob(ModelServices modelServices) throws ServiceNotAvailableException;
 	
 	public class Util {
-		public static @Nullable ExportJob tryGetExportJob(Exporter exporter, ModelServices modelServices) {
+		public static  ExportJob tryGetExportJob(Exporter exporter, ModelServices modelServices) {
 			try { return exporter.getExportJob(modelServices); }
 			catch (ServiceNotAvailableException ex) { return null; }
 		}

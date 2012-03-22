@@ -6,11 +6,10 @@ import java.awt.geom.Point2D
 import java.awt.geom.Rectangle2D
 import org.workcraft.graphics.Java2DDecoration._
 import org.workcraft.graphics.VisualCurveProperties
-import org.workcraft.graphics.ParametricCurve
 import org.workcraft.graphics.Geometry.complexMultiply
 import org.workcraft.graphics.Geometry.complexInverse
-
 import org.workcraft.graphics.Java2DDecoration._
+import org.workcraft.graphics.ParametricCurve
 
 /**
  * A connection control point coordinate, in a coordinate system where the first connected component is at (0, 0) and the second one is at (1, 0)

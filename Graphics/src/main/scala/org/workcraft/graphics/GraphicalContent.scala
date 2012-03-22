@@ -2,8 +2,9 @@ package org.workcraft.graphics
 import java.awt.Graphics2D
 import java.awt.geom.AffineTransform
 import java.awt.Color
-
 import org.workcraft.graphics.j.ColorisingGraphics2DStub
+import scalaz.Semigroup
+import scalaz.Scalaz._
 
 trait GraphicalContent {
   def draw(graphics: Graphics2D)
@@ -44,4 +45,5 @@ object GraphicalContent {
   def cloneGraphics(g: Graphics2D) = g.create.asInstanceOf[Graphics2D]
   def apply(f: Graphics2D => Unit) = new GraphicalContent { def draw(graphics: Graphics2D) = f(graphics) }
   val Empty = apply(_ => {})
+  implicit def gcSemigroup : Semigroup[GraphicalContent] = semigroup((a,b) => a.compose(b))
 }

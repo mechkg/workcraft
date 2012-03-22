@@ -129,8 +129,7 @@ object EditableProperties {
   )
   
   def getTransSignalName(transId : Id[Transition]) (stg : MathStg) = {
-    val trans = stg.transitions.unsafeLookup(transId)
-    trans._1 match {
+    stg.transitions(transId)._1 match {
       case DummyLabel(name) => name
       case SignalLabel(sig, _) => stg.signals.unsafeLookup(sig).name
     }

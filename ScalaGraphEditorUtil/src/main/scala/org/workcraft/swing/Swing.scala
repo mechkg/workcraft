@@ -1,9 +1,9 @@
 package org.workcraft.swing
 
 import scalaz.Monad
-import scalaz.effects.IO
-import scalaz.effects.IORef
-import scalaz.effects.STRef
+
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 
 class Swing[A] (run : IO[A]) {
   // assumes that it will be executed on the Swing thread.
@@ -13,13 +13,14 @@ class Swing[A] (run : IO[A]) {
 
 object Swing {
   
-  class SwingRef[A](ref : IORef[A]) {
-    def read = liftIO(ref.read)
-    def write(v : A) = liftIO(ref.write(v))
-    def mod(f: A => A) = liftIO(ref.mod(f))
+  class SwingRef[A] private[swing] (iv : A) {
+    var cv = iv
+    def read : Swing[A] = liftIO(ioPure.pure(cv))
+    def write(v : A) : Swing[Unit] = liftIO(ioPure.pure(cv = v))
+    def mod(f: A => A) : Swing[Unit] = liftIO(ioPure.pure{cv = f(cv)})
   }
 
-  def newRef[A] (a : A) : Swing[SwingRef[A]] = liftIO(IO.ioPure.pure(new SwingRef(new IORef[A](new STRef(a)))))
+  def newRef[A] (a : A) : Swing[SwingRef[A]] = liftIO(IO.ioPure.pure(new SwingRef(a)))
   
 
   def liftIO[A](run : IO[A]) = new Swing(run)

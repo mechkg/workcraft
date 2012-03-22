@@ -11,7 +11,7 @@ import pcollections.TreePVector
 import pcollections.PCollection
 import org.workcraft.graphics.Touchable
 
-trait HitTester[N] {
+trait HitTester[+N] {
   def hitTest(point : Point2D.Double) : Option[N]
   def boxHitTest(boxStart : Point2D.Double, boxEnd : Point2D.Double) : List[N]
 }
@@ -20,5 +20,9 @@ object HitTester {
   def create[T](nodes: Expression[_ <: Iterable[T]], touchable: T => Expression[Touchable]): HitTester[T] = {
     val transformedTouchableProvider = eval[T, Touchable](((_ : Expression[Touchable]).jexpr)compose touchable)
     new HitMan.Flat[T](eval(nodes.jexpr).toList, transformedTouchableProvider(_)).getHitTester
+  }
+  
+  def create[T](nodes : List[T], touchable : T => Touchable) : HitTester[T] = {
+    new HitMan.Flat[T](nodes, touchable).getHitTester
   }
 }

@@ -30,17 +30,17 @@ import org.workcraft.interop.ModelService;
 import org.workcraft.interop.ModelServices;
 import org.workcraft.interop.ServiceNotAvailableException;
 
-import checkers.nullness.quals.Nullable;
+
 
 public class WorkspaceEntry 
 {
 	public static final ModelService<Expression<Boolean>> CHANGED_STATUS_SERVICE = ModelService.createServiceUnchecked("Document 'changed' status notifier");
-	private final @Nullable ModelServices modelServices;
+	private final  ModelServices modelServices;
 	
 	private boolean temporary = true;
 	private final Workspace workspace;
 
-	public WorkspaceEntry(Workspace workspace, @Nullable ModelServices modelServices) {
+	public WorkspaceEntry(Workspace workspace,  ModelServices modelServices) {
 		this.workspace = workspace;
 		this.modelServices = modelServices;
 	}

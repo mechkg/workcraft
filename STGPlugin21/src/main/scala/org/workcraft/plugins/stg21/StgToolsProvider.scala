@@ -12,7 +12,6 @@ import org.workcraft.gui.modeleditor.tools.NodeGeneratorTool
 import org.workcraft.scala.Util._
 import org.workcraft.scala.Expressions._
 import org.workcraft.gui.graph.tools.GraphEditorToolUtil
-import org.workcraft.gui.modeleditor.tools.ModelEditorTool.ModelEditorToolConstructor
 import org.workcraft.graphics.GraphicalContent
 
 case class StgToolsProvider(visualStg : ModifiableExpression[VisualStg]) {
@@ -27,13 +26,13 @@ case class StgToolsProvider(visualStg : ModifiableExpression[VisualStg]) {
   )
   import org.workcraft.gui.modeleditor.tools._
   def mkNodeGeneratorTool(generator : (Point2D.Double => State[VisualStg, Any], java.lang.String, java.lang.String, Int), graphicalContent : Expression[GraphicalContent])
-     : ModelEditorToolConstructor = {
+     : ModelEditorTool = {
     val (g, iconPath, name, hotkey) = generator
     NodeGeneratorTool(Button(name, iconPath, Some(hotkey)).unsafePerformIO, graphicalContent,
 	  (where : Point2D.Double) => visualStg.update(g(where)~>_))
   }
   
-  def nodeGeneratorTools(graphicalContent : Expression[GraphicalContent]) : List[ModelEditorToolConstructor] = generators.map(mkNodeGeneratorTool(_,graphicalContent))
+  def nodeGeneratorTools(graphicalContent : Expression[GraphicalContent]) : List[ModelEditorTool] = generators.map(mkNodeGeneratorTool(_,graphicalContent))
   
 /*  
 	private Expression<? extends String> transitionName(final STG stg, final VisualSignalTransition vst) {

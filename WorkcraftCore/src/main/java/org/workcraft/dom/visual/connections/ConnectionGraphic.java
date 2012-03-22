@@ -27,6 +27,6 @@ import org.workcraft.dom.visual.DrawableNew;
 import org.workcraft.dom.visual.ReflectiveTouchable;
 
 public interface ConnectionGraphic extends DrawableNew, ReflectiveTouchable {
-	public Expression<? extends ParametricCurve> curve();
+	//public Expression<? extends ParametricCurve> curve();
 	public ControlPointScaler scaler();
 }

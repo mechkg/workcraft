@@ -25,81 +25,73 @@ import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.event.KeyEvent
 import java.awt.geom.Point2D
-
 import javax.swing.Icon
 import javax.swing.JPanel
-
-import org.workcraft.dependencymanager.advanced.core.{Expression => JExpression};
-
 import org.workcraft.scala.Expressions._
-
 import scalaz._
 import Scalaz._
-
 import org.workcraft.swing.Swing
+import org.workcraft.swing.Swing._
+import org.workcraft.gui.modeleditor.tools.ModelEditorTool
+import org.workcraft.gui.modeleditor.tools.DummyMouseListener
+import org.workcraft.gui.modeleditor.MouseButton
+import org.workcraft.gui.modeleditor.Modifier
+import org.workcraft.gui.modeleditor.KeyBinding
+import org.workcraft.gui.modeleditor.KeyEventType
+import org.workcraft.gui.GUI
+import org.workcraft.graphics.GraphicalContent
+import org.workcraft.gui.modeleditor.tools.Button
+import org.workcraft.scala.effects.IO
+import org.workcraft.graphics.Colorisation
+import org.workcraft.gui.modeleditor.tools.ToolEnvironment
+import org.workcraft.gui.modeleditor.tools.ModelEditorToolInstance
 
-case class SimColors (fg : Color, bg : Color)
-/*
-class SimulationTool[Node, Event]
-    ( simControl : SimControl[Swing, Event]
-      , simStateControl : SimStateControl[Swing]
-      , hitTester : Point2D => Option[Event]
-      , nodeEventExtractor : Node => Option[Event]
-      , interfacePanel : JPanel
-      , colors : Expression[SimColors])
-    extends AbstractTool {
+case class SimColors(fg: Color, bg: Color)
 
-    override def deactivated = simStateControl.reset.unsafePerformIO
-    override def activated = simStateControl.rememberInitialState.unsafePerformIO
 
-    override def keyListener = new DummyKeyListener {
-      override def keyPressed(e : GraphEditorKeyEvent) = {
-	if (e.getKeyCode() == KeyEvent.VK_OPEN_BRACKET)
-	  simControl.unfire.unsafePerformIO
-	if (e.getKeyCode() == KeyEvent.VK_CLOSE_BRACKET)
-	  simControl.fire(simControl.getNextEvent.unsafePerformIO).unsafePerformIO
+object SimulationTool {
+
+  lazy val button = new Button {
+        def label = "Simulation"
+        def hotkey = Some(KeyEvent.VK_M)
+        def icon = Some(GUI.createIconFromSvgUsingSettingsSize("images/icons/svg/start-green.svg").unsafePerformIO)
       }
-    }
+  
+  def apply[Event](simControl: SimControl[Swing, Event], hitTester: Point2D.Double => Swing[Option[Event]], colors: IO[SimColors]): 
+  (ToolEnvironment => ModelEditorToolInstance, Event => IO[Colorisation]) =
+    (env =>
+    new ModelEditorToolInstance {
 
-    override def mouseListener = new DummyMouseListener {
-      override def mousePressed(e : GraphEditorMouseEvent) = 
-	hitTester(e.getPosition()) map (simControl.fire(_).unsafePerformIO)
-    }
+      override def keyBindings = List(
+        KeyBinding("Unfire", KeyEvent.VK_OPEN_BRACKET, KeyEventType.KeyTyped, Set.empty, simControl.unfire.unsafeRun),
+        KeyBinding("Fire", KeyEvent.VK_CLOSE_BRACKET, KeyEventType.KeyTyped, Set.empty, (simControl.getNextEvent >>= ((e: Event) => simControl.fire(e))).unsafeRun))
 
-    override def screenSpaceContent(view : Viewport, hasFocus : JExpression[java.lang.Boolean]) : JExpression[_ <: GraphicalContent] = (Expression(hasFocus) >>= (focused => 
-     if(focused) GUI.editorMessage(view, Color.BLACK, "Simulation: click on the highlighted transitions to fire them")
-     else constant[GraphicalContent](GraphicalContent.EMPTY)
-    )).jexpr
+      override def mouseListener = Some(new DummyMouseListener {
+        override def buttonPressed(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double) =
+          (hitTester(position) >>= (_.traverse_(x => simControl.fire(x)))).unsafeRun
+      })
 
-    override def getButton = new Button {
-      def getLabel = "Simulation"
-      def getHotKeyCode = KeyEvent.VK_M
-      def getIcon = GUI.createIconFromSVG("images/icons/svg/start-green.svg")
-    }
-
-    override def getInterfacePanel = interfacePanel
-
-    def mkColorisation (col : Color, back : Color) = new Colorisation {
-      override def getColorisation = col
-      override def getBackground = back
-    }
-
-    val nextTransitionColorisation = colors map { case SimColors(fg, bg) => (bg, fg) }
-    val enabledTransitionColorisation = colors map { case SimColors(fg, bg) => (fg, bg) }
-    
-    // TODO: make it somehow register dependency on the enabledness
-    def getColorisation(node : Node) = nodeEventExtractor(node) match {
-      case Some(event) => {
-    	val nextEvent = simControl.getNextEvent.unsafePerformIO
-    	if(event.equals(nextEvent))
-    	  nextTransitionColorisation
-    	else if(simControl.canFire(event).unsafePerformIO)
-    	  enabledTransitionColorisation
-    	else constant(Colorisation.EMPTY)
+      override def screenSpaceContent: Expression[GraphicalContent] = env.hasFocus >>= {
+        case true => GUI.editorMessage(env.viewport, Color.BLACK, "Simulation: click on the highlighted transitions to fire them")
+        case false => constant[GraphicalContent](GraphicalContent.Empty)
       }
-      case None => constant(Colorisation.EMPTY)
-    }
 
-    override def userSpaceContent(viewport : Viewport, hasFocus : JExpression[java.lang.Boolean]) : JExpression[_ <: GraphicalContent] = constant(GraphicalContent.EMPTY).jexpr
+
+      override def interfacePanel = None
+
+
+
+      override def userSpaceContent : Expression[GraphicalContent] = constant(GraphicalContent.Empty)
+    }, (event : Event) => {
+      def mkColorisation(col: Color, back: Color) = new Colorisation(Some(col), Some(back))
+      val nextTransitionColorisation = colors map { case SimColors(fg, bg) => mkColorisation(bg, fg) }
+      val enabledTransitionColorisation = colors map { case SimColors(fg, bg) => mkColorisation(fg, bg) }
+        simControl.getNextEvent.unsafeRun >>= (nextEvent => 
+        if (event == nextEvent)
+          nextTransitionColorisation
+        else simControl.canFire(event).unsafeRun >>= {
+          case true => enabledTransitionColorisation
+          case false => IO.ioPure.pure(Colorisation.Empty)
+        })
+      })
 }
-*/

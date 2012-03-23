@@ -18,7 +18,7 @@ case class ProducerArc private[petri2] (from: Transition, to: Place) extends Arc
 case class ConsumerArc private[petri2] (from: Place, to: Transition) extends Arc
 
 case class PetriNet(marking: Map[Place, Int], labelling: Map[Component, String], places: List[Place], transitions: List[Transition], arcs: List[Arc]) {
-  val names = labelling.toList.map({ case (a, b) => (b, a) }).toMap
+  val names = labelling.toList.map(_.swap).toMap
   
   def produces (t: Transition) = incidence._1(t)
   def consumes (t: Transition) = incidence._2(t)

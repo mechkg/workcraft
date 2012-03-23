@@ -15,7 +15,9 @@ class Toolbox(val env: ToolEnvironment, val tools: NonEmptyList[ModelEditorTool]
   val selectedTool: Expression[ModelEditorTool] = selected.expr
   val selectedToolInstance = selectedInstance.expr
   
-  def selectTool(tool: ModelEditorTool) = ((tool.createInstance(env)) >>= (i => selectedInstance.set(i))) >>=| selected.set(tool) 
+  def selectTool(tool: ModelEditorTool) = ((tool.createInstance(env)) >>= (i => selectedInstance.set(i))) >>=| selected.set(tool)
+  
+  def selectToolWithInstance (tool: ModelEditorTool, instance: (ToolEnvironment => IO[ModelEditorToolInstance])) = (instance(env) >>= ( i => selectedInstance.set(i))) >>=| selected.set(tool)
 
   private val hotkeys = tools.list.flatMap(t => t.button.hotkey.map((t, _))).groupBy(_._2).mapValues(_.map(_._1))
   private val cyclicHotkeyIterator = hotkeys.mapValues(Stream.continually(_).flatten.iterator)

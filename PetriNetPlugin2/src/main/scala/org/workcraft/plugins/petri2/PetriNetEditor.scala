@@ -27,11 +27,18 @@ import org.workcraft.scala.effects.IO._
 import org.workcraft.scala.effects.IO
 import org.workcraft.scala.grapheditor.tools.GenericConnectionTool
 import org.workcraft.scala.grapheditor.tools.GenericSelectionTool
-import org.workcraft.services.Undo
-import org.workcraft.services.UndoAction
 import scalaz.Scalaz._
 import scalaz._
 import org.workcraft.gui.modeleditor.sim.GenericSimulationTool
+import org.workcraft.services.Service
+import org.workcraft.services.EditorScope
+import org.workcraft.gui.modeleditor.UndoService
+import org.workcraft.gui.modeleditor.Undo
+import org.workcraft.gui.modeleditor.UndoAction
+import org.workcraft.gui.modeleditor.PropertyService
+import org.workcraft.gui.modeleditor.ShowTraceService
+import org.workcraft.gui.modeleditor.ShowTrace
+import org.workcraft.gui.modeleditor.tools.ToolEnvironment
 
 case class EditorState(description: String, net: VisualPetriNet, selection: Set[Node])
 
@@ -173,9 +180,9 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
       case (_: Transition, _: Transition) => Left(new InvalidConnectionException("Arcs between transitions are invalid"))
     }
   }
-  
-  private def simulationTool = 
-    GenericSimulationTool[Transition, Map[Place, Int]](net.transitions, touchable(_), net.saveState.eval.map(vpn => new PetriNetSimulation(vpn.net)), imageForSimulation(_,_))
+
+  private val simulationTool =
+    GenericSimulationTool[Transition, Map[Place, Int]](net.transitions, touchable(_), net.saveState.eval.map(vpn => new PetriNetSimulation(vpn.net)), imageForSimulation(_, _))
 
   private def connectionTool =
     GenericConnectionTool[Component](net.components, touchable(_), componentPosition(_), connectionManager, imageC(_))
@@ -215,7 +222,26 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
     case _ => ioPure.pure {}
   })
 
-  val undo = Some(Undo(
-    undoStack.map({ case top :: _ => Some(UndoAction(top.description, popUndo)); case x => None }),
-    redoStack.map({ case top :: _ => Some(UndoAction(top.description, popRedo)); case x => None })))
+  def implementation[T](service: Service[EditorScope, T]) = service match {
+    case UndoService => Some(Undo(
+      undoStack.map({ case top :: _ => Some(UndoAction(top.description, popUndo)); case x => None }),
+      redoStack.map({ case top :: _ => Some(UndoAction(top.description, popRedo)); case x => None })))
+
+    case PropertyService => Some(props)
+    
+    case ShowTraceService => None /* Some(new ShowTrace {
+      def show(trace: List[String]) = (simulationTool, (env: ToolEnvironment) => net.saveState.eval.map(_.net) >>= ( net => { 
+        val events = trace.map(s => net.names.get(s) match {
+          case Some(t:Transition) => t
+          case _ => throw new RuntimeException ("No transition named " + s)
+        })
+        
+        val sim = new PetriNetSimulation(net)
+        
+        events.map(sim.fire(_)).sequence
+        
+        new GenericSimulationToolInstance(env.viewport, env.hasFocus, )        
+      })       
+    })*/
+  }
 }

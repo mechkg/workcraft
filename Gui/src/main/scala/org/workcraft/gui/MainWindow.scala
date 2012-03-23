@@ -39,6 +39,7 @@ import org.workcraft.gui.modeleditor.tools.ToolboxPanel
 import org.workcraft.gui.propertyeditor.PropertyEditorWindow
 import org.workcraft.scala.Expressions._
 import org.workcraft.dependencymanager.advanced.user.Variable
+import org.workcraft.gui.modeleditor.PropertyService
 
 class MainWindow(
   val globalServices: () => GlobalServiceManager,
@@ -59,12 +60,12 @@ class MainWindow(
 
   val toolboxWindow = new JPanel(new BorderLayout)
   toolboxWindow.add(new NotAvailablePanel(), BorderLayout.CENTER)
-  
+
   var editorInFocus: ModifiableExpression[Option[DockableWindow[ModelEditorPanel]]] = Variable.create[Option[DockableWindow[ModelEditorPanel]]](None)
-  val interfacePanel = editorInFocus >>= (_.traverse(_.content.toolbox.selectedToolInstance.map(_.interfacePanel)).map(_.join))
+  val interfacePanel = editorInFocus.expr >>= (_.traverse(_.content.toolbox.selectedToolInstance.map(_.interfacePanel)).map(_.join))
 
   val toolControlWindow = new ToolInterfaceWindow(interfacePanel)
-  
+
   val propEdWindow = new PropertyEditorWindow
 
   val placeholderDockable = dockingRoot.createRootWindow("", "DocumentPlaceholder", new DocumentPlaceholder, DockableWindowConfiguration(false, false, false))
@@ -74,7 +75,7 @@ class MainWindow(
   val propEdDockable = createUtilityWindow("Properties", "PropEd", propEdWindow, toolControlDockable, DockingConstants.CENTER_REGION, 0.8)
 
   var openEditors = List[DockableWindow[ModelEditorPanel]]()
-  
+
   val menu = new MainMenu(this, List(loggerDockable, toolboxDockable, propEdDockable), globalServices, { case (m, b) => newModel(m, b) }, reconfigure)
   this.setJMenuBar(menu)
 
@@ -116,23 +117,26 @@ class MainWindow(
 
   private def applyIconManager(implicit logger: () => Logger[IO]) = MainWindowIconManager.apply(this, logger)
 
-  def newModel(newModelImpl: NewModelImpl, editorRequested: Boolean) = 
-    newModelImpl.create >>= ( model => if (editorRequested) openEditor(model) else IO.Empty)
-  
+  def newModel(newModelImpl: NewModelImpl, editorRequested: Boolean) =
+    newModelImpl.create >>= (model => if (editorRequested) openEditor(model) else IO.Empty)
 
   def setFocus(editorDockable: Option[DockableWindow[ModelEditorPanel]]): IO[Unit] = ioPure.pure {
     toolboxWindow.removeAll()
     editorDockable match {
-      case Some(editor) => {
-        toolboxWindow.add(new ToolboxPanel(editor.content.toolbox), BorderLayout.CENTER)
-        propEdWindow.propertyObject.setValue(editor.content.editor.props.map(Some(_)))
+      case Some(editorWindow) => {
+        toolboxWindow.add(new ToolboxPanel(editorWindow.content.toolbox), BorderLayout.CENTER)
+
+        editorWindow.content.editor.implementation(PropertyService) match {
+          case Some(props) => propEdWindow.propertyObject.setValue(props.map(Some(_)))
+          case None => propEdWindow.propertyObject.setValue(constant(None))
+        }
       }
       case None => {
         toolboxWindow.add(new NotAvailablePanel)
-        propEdWindow.propertyObject.setValue(constant(None))        
+        propEdWindow.propertyObject.setValue(constant(None))
       }
     }
-    
+
     editorInFocus.set(editorDockable).unsafePerformIO
   }
 
@@ -156,9 +160,9 @@ class MainWindow(
 
   def closeEditor(editorDockable: DockableWindow[ModelEditorPanel]) {
     // TODO: Ask to save etc.
-    
+
     openEditors -= editorDockable
-    
+
     if (openEditors.isEmpty)
       DockingManager.dock(placeholderDockable, editorDockable, DockingConstants.CENTER_REGION)
 

@@ -4,11 +4,10 @@ import org.workcraft.scala.effects.IO
 import org.workcraft.scala.Expressions._
 
 trait SimulationModel[Event, State] {
-  def currentState: Expression[State]
+  def state: Expression[State]
   def enabled: Expression[Event => Boolean]
   
-  val trace: Expression[Trace[Event, State]]
-  
-  def toString (e: Event) : String
-  def fire(event : Event) : IO[Unit]
+  def setState (state: State): IO[Unit]
+  def fire(event : Event): IO[Unit]
+  def name (e: Event) : String
 }

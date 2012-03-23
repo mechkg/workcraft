@@ -6,7 +6,6 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 import org.workcraft.exceptions.InvalidConnectionException
 import scalaz._
 import Scalaz._
-import org.workcraft.scala.Scalaz
 import org.workcraft.scala.Expressions._
 import org.workcraft.graphics.GraphicalContent
 import java.awt.event.InputEvent
@@ -23,10 +22,13 @@ import org.workcraft.gui.modeleditor.tools.{ DummyMouseListener => DML }
 import org.workcraft.graphics.Graphics
 import java.awt.geom.Point2D
 import org.workcraft.gui.modeleditor.tools.DummyMouseListener
+import org.workcraft.scala.effects.IO
+import org.workcraft.scala.effects.IO._
 
 class GenericSimulationToolMouseListener[Event](
   hitTester: Point2D.Double => IO[Option[Event]],
-  sim: SimulationModel[Event, _]) extends DummyMouseListener {
+  enabled: IO[Event => Boolean],
+  fire: Event => IO[Unit]) extends DummyMouseListener {
   private val mouseOverObject: ModifiableExpression[Option[Event]] = Variable.create[Option[Event]](None)
 
   override def mouseMoved(modifiers: Set[Modifier], position: Point2D.Double): IO[Unit] =
@@ -35,7 +37,7 @@ class GenericSimulationToolMouseListener[Event](
   override def buttonPressed(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double): IO[Unit] = button match {
     case LeftButton => mouseOverObject.eval >>= {
       case None => IO.Empty
-      case Some(event) => sim.enabled.eval >>= (e => if (e(event)) sim.fire(event) else IO.Empty)
+      case Some(event) => enabled >>= (e => if (e(event)) fire(event) else IO.Empty)
     }
     case _ => IO.Empty
   }

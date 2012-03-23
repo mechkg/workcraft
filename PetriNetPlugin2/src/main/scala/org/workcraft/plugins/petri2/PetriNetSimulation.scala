@@ -8,17 +8,13 @@ import org.workcraft.gui.modeleditor.sim.Trace
 
 class PetriNetSimulation(net: PetriNet) extends SimulationModel[Transition, Map[Place, Int]] {
   private val curState = Variable.create(net.marking)
-  private val tr = Variable.create(Trace[Transition, Map[Place, Int]](Nil))
-  val trace = tr.expr
 
-  val currentState = curState.expr
+  val state = curState.expr
   val enabled = curState.map(marking => ((t: Transition) => net.consumes(t).forall(p => marking(p) > 0)))
 
-  def fire(t: Transition) = curState.update(marking => marking ++ net.produces(t).map(p => (p, marking(p) + 1)) ++ net.consumes(t).map(p => (p, marking(p) - 1))) >>=|
-    saveState >>= (state => tr.update(trr => Trace(trr.events ++ List((t, state)))))
+  def fire(t: Transition) = curState.update(marking => marking ++ net.produces(t).map(p => (p, marking(p) + 1)) ++ net.consumes(t).map(p => (p, marking(p) - 1))) 
     
-  def toString (e: Transition) = net.labelling(e)
+  def name (e: Transition) = net.labelling(e)
 
-  def loadState(state: Map[Place, Int]) = curState.set(state)
-  def saveState: IO[Map[Place, Int]] = curState.eval
+  def setState(state: Map[Place, Int]) = curState.set(state)
 }

@@ -25,80 +25,122 @@ import javax.swing.JButton
 import info.clearthought.layout.TableLayout
 import info.clearthought.layout.TableLayoutConstants
 import javax.swing.JScrollPane
+import java.awt.BasicStroke
+import org.workcraft.scala.effects.IO
+import java.awt.event.MouseAdapter
+import javax.swing.UIManager
+import java.awt.event.MouseEvent
 
-case class Trace[Event, State](events: List[(Event, State)])
-
-class CurvedBorder(color: Color, radius: Int) extends AbstractBorder {
+class CurvedBorder(color: Color, radius: Int, thickness: Int) extends AbstractBorder {
   override def paintBorder(c: Component, g: Graphics, x: Int, y: Int,
     w: Int, h: Int) {
+    
     g.setColor(color)
-    g.drawRoundRect(x, y, w - 1, h - 1, radius, radius)
+    g.asInstanceOf[Graphics2D].setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+    g.asInstanceOf[Graphics2D].setStroke(new BasicStroke(thickness))
+            
+    g.drawRoundRect(x+ thickness/2, y + thickness/2, w - thickness * 2, h - thickness * 2, radius -thickness, radius -thickness)
+    
   }
 
   override def getBorderInsets(c: Component) = new Insets(radius, radius, radius, radius)
 
   override def getBorderInsets(c: Component, i: Insets) = {
-    i.left = radius
-    i.right = radius
-    i.bottom = radius
-    i.top = radius
+    i.left = radius + thickness
+    i.right = radius + thickness
+    i.bottom = radius + thickness
+    i.top = radius + thickness
     i
   }
 
   override val isBorderOpaque = true
 }
 
-class EventButton[Event, State](event: Event, state: State, toString: Event => String) extends JLabel(toString(event)) {
-  this.setPreferredSize(new Dimension(100, 22))
-  this.setHorizontalAlignment(SwingConstants.CENTER)
-  this.setBorder(new CurvedBorder(Color.black, 20))
-}
-
-class TracePanel[Event, State](trace: Trace[Event, State], toString: Event => String) extends JPanel {
-  this.setBackground(this.getBackground().brighter())
-  this.setLayout(new GridBagLayout)
-
-  val c = new GridBagConstraints
-  c.weightx = 1
-  c.weighty = 0
-  c.gridx = 0
-  c.fill = GridBagConstraints.HORIZONTAL
-  c.insets = new Insets(1, 1, 1, 1)
-
-  var i = 0
-
-  trace.events.foreach { case (event, state) => { println(event); c.gridy = i; add(new EventButton(event, state, toString), c); i += 1 } }
-
-  c.weighty = 1
-  c.gridy = i
-
-  add(new JPanel, c)
-}
-
-class SimControlPanel[Event, State](t: Expression[Trace[Event, State]], toString: Event => String) extends JPanel {
-  val sz = Array(
-      Array (30, 0.5, 0.5, 30),
-      Array (20, TableLayoutConstants.FILL)
-      )
+class EventButton[Event, State](label: String, selected: Boolean, goto: IO[Unit]) extends JLabel(label) {
   
+  val border = if (selected) 2 else 1 
+  val borderRadius = 20
+  
+  var mouseIn = false
+  val borderColor = Color.black
+  
+  val bgColor1 = UIManager.getColor("Label.background")
+  val bgColor2 = UIManager.getColor("Label.background").brighter()
+
+  this.setPreferredSize(new Dimension(120, 30))
+  this.setHorizontalAlignment(SwingConstants.CENTER)
+  this.setVerticalAlignment(SwingConstants.CENTER)
+  this.setToolTipText("Click to jump to this state")
+  
+  override def paint (g: Graphics) {
+    val g2d = g.asInstanceOf[Graphics2D]
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+    
+    val w = this.getWidth
+    val h = this.getHeight
+    
+    g2d.setColor(if (mouseIn || selected) bgColor2 else bgColor1)
+    g2d.fillRoundRect(border/2, border/2, w - border * 2, h - border*2, borderRadius, borderRadius)
+    
+    g2d.setColor(borderColor)
+    g2d.setStroke (new BasicStroke(border))
+    g2d.drawRoundRect(border/2, border/2, w - border * 2, h - border*2, borderRadius, borderRadius)
+    
+    super.paint(g)
+  } 
+  
+  
+  this.addMouseListener(new MouseAdapter {
+    override def mouseEntered(e: MouseEvent) = { mouseIn = true; repaint() }
+    override def mouseExited(e: MouseEvent) = { mouseIn = false; repaint() }
+    override def mouseClicked (e: MouseEvent) = { if (e.getButton() == 1) goto.unsafePerformIO }
+  })
+}
+
+class TracePanel[Event, State](trace: Trace[Event, State], toString: Event => String, goto: Int => IO[Unit]) extends JPanel {
+  this.setBorder(BorderFactory.createLineBorder(Color.black))
+  this.setBackground(this.getBackground().brighter())
+  this.setLayout(null)
+
+  val q = new EventButton("initial state", 0 == trace.current, goto(0))
+  q.setBounds(5, 5, 120, 30)
+  add(q)
+
+  trace.events.indices.foreach { i =>
+    trace.events(i) match {
+      case (event, state) => {
+        val q = new EventButton(toString(event), i == trace.current-1, goto(i+1))
+        q.setBounds(5, 5 + (i+1) * 35, 120, 30)
+        add(q)
+      }
+    }
+  }
+
+  setPreferredSize(new Dimension(100, trace.events.length * 25))
+}
+
+class SimControlPanel[Event, State](t: Expression[Trace[Event, State]], toString: Event => String, goto: Int => IO[Unit]) extends JPanel {
+  val sz = Array(
+    Array(30, 0.5, 0.5, 30),
+    Array(20, TableLayoutConstants.FILL))
+
   setLayout(new TableLayout(sz))
 
   val refresh = swingAutoRefresh(t, (trace: Trace[Event, State]) => ioPure.pure {
-    
+
     val kojo = new JScrollPane
-    
+
     removeAll()
-    
+
     val l = new JButton("\u25c4")
     l.setFocusable(false)
     val r = new JButton("\u25ba")
     r.setFocusable(false)
-    add (l, "0 0 C C")
-    add(new TracePanel[Event, State](trace, toString), "1 0 1 1")
+    add(l, "0 0 C C")
+    add(new TracePanel[Event, State](trace, toString, goto), "1 0 1 1")
     //add(new TracePanel[Event, State](trace, toString), "2 0 2 1")
-    add (r, "3 0 C C")
-    
-    
+    add(r, "3 0 C C")
+
     revalidate()
   })
 }

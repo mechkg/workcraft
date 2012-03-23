@@ -23,17 +23,16 @@ import org.workcraft.services.ExporterService
 import org.workcraft.services.ExportJob
 import org.workcraft.services.Format
 import org.workcraft.services.DefaultFormatService
-
 import org.workcraft.scala.Expressions._
 import org.workcraft.scala.effects.IO
-
 import scalaz._
 import Scalaz._
+import org.workcraft.gui.modeleditor.UndoService
 
 class EditMenu(mainWindow: MainWindow) extends ReactiveMenu("Edit") {
 
   // Must be lazy because Scala allows to read uninitialized values
-  lazy val items = mainWindow.editorInFocus >>= (_.flatMap(_.content.editor.undo) match {
+  lazy val items = mainWindow.editorInFocus >>= (_.flatMap(_.content.editor.implementation(UndoService)) match {
     case Some(undo) => {
       (undo.undo <**> undo.redo) ( (undo, redo) =>
       (undo match {

@@ -18,6 +18,7 @@ import java.io.File
 import org.workcraft.tasks.DiscardingSynchronousListener
 import org.workcraft.tasks.Task._
 import org.workcraft.services.ExportError
+import org.workcraft.gui.modeleditor.ShowTraceService
 
 sealed trait LolaDeadlockResult
 
@@ -49,19 +50,18 @@ object LolaDeadlockTool extends GuiTool {
   import LolaDeadlockResult._
   import LolaError._
   import LolaChainError._
-  
 
   val description = "Check for deadlocks using LoLA"
   val classification = ToolClass.Verification
 
-  def run(mainWindow: MainWindow) = mainWindow.editorInFocus.expr.map(_.flatMap(_.content.model.implementation(PetriNetService)) match {
+  def run(mainWindow: MainWindow) = mainWindow.editorInFocus.expr.map(editorWindow => editorWindow.flatMap(_.content.model.implementation(PetriNetService)) match {
     case Some(pn) => Some({
 
       val input = File.createTempFile("workcraft", ".lola")
       val output = File.createTempFile("workcraft", ".lolapath")
 
       val exportTask = new LolaExportJob(pn).asTask(input).mapError2(LolaChainError.LolaExportError(_))
-      val deadlockTask = new LolaDeadlockTask("e:/lola-1.16/src/lola-deadlock.exe", input, output).mapError2(LolaChainError.LolaRunError(_))
+      val deadlockTask = new LolaDeadlockTask("/home/mech/lola-1.16/src/lola-deadlock", input, output).mapError2(LolaChainError.LolaRunError(_))
 
       val megaTask = exportTask flatMap (_ => deadlockTask)
 
@@ -79,10 +79,26 @@ object LolaDeadlockTool extends GuiTool {
             case Undefined(reason) => ioPure.pure { JOptionPane.showMessageDialog(mainWindow, "Unhandled exception in LoLA:\n" + reason, "Error", JOptionPane.ERROR_MESSAGE) }
           }
         }
-        case Right(Found) => ioPure.pure { JOptionPane.showMessageDialog(mainWindow, "A deadlock!") }
+        case Right(Found) => ioPure.pure { scala.io.Source.fromFile(output).getLines.toList.tail } >>= { trace =>
+          editorWindow.flatMap(_.content.editor.implementation(ShowTraceService)) match {
+            case Some(service) => {
+              ioPure.pure {
+                JOptionPane.showConfirmDialog(mainWindow, "The net has a deadlock state!\nWould you like to examine the event trace that leads to the deadlock state?",
+                  "Verification result", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE) == JOptionPane.YES_OPTION
+              } >>=| /*(if (_) service.show(trace) >>= {
+                  case (tool, instance) => editorWindow match {
+                    case Some(window) => mainWindow.setFocus(Some(window)) >>=| window.content.toolbox.selectToolWithInstance(tool, instance)
+                    case None => IO.Empty
+                  }
+                } else */ IO.Empty
+            }
+            case None => ioPure.pure { JOptionPane.showMessageDialog(mainWindow, "The net has a deadlock!\n\nUnfortunately, this model does not support interactive trace replays :-(\n\nWitness trace: " + trace.mkString(", "), "Verification result", JOptionPane.INFORMATION_MESSAGE) }
+          }
+        }
         case Right(NotFound) => ioPure.pure { JOptionPane.showMessageDialog(mainWindow, "The net is deadlock free.") }
       }
     })
+    // TODO: Delete temp files
 
     case None => None
   })

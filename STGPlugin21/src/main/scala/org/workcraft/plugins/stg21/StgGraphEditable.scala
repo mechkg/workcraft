@@ -16,6 +16,7 @@ import org.workcraft.scala.grapheditor.tools.GenericSelectionTool
 import org.workcraft.exceptions.NotImplementedException
 import org.workcraft.scala.Scalaz._
 import org.workcraft.scala.Expressions._
+import org.workcraft.services.Service
 import org.workcraft.graphics.stg.RichGraphicalContent
 import java.awt.BasicStroke
 import java.awt.Color
@@ -46,8 +47,9 @@ import org.workcraft.plugins.petri.tools.SimulationTool
 import org.workcraft.gui.modeleditor.KeyBinding
 import org.workcraft.gui.modeleditor.ToolMouseListener
 import javax.swing.JPanel
-
 import org.workcraft.graphics.Java2DDecoration._
+import org.workcraft.services.EditorScope
+import org.workcraft.gui.modeleditor.PropertyService
 
 class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends ModelEditor {
   val undo = None
@@ -138,6 +140,11 @@ class StgGraphEditable(visualStg : ModifiableExpression[VisualStg]) extends Mode
     for(s <- (selection : Expression[Set[VisualEntity]]);
       props <- s.toList.traverse(e => EditableProperties.objProperties(e)(visualStg))
     ) yield (props.flatten)
+  }
+  
+  def implementation[T] (service: Service[EditorScope, T]) = service match {
+    case PropertyService => Some(props)
+    case _ => None
   }
 }
 

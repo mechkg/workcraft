@@ -72,6 +72,7 @@ class ModelEditorPanel (val model: ModelServiceProvider, val editor: ModelEditor
     case None => DummyMouseListener
   }*/
   
+   
   val toolbox = Toolbox(ToolEnvironment(view, hasfocus), editor.tools).unsafePerformIO
   
   val mListener = new ModelEditorMouseListener (view, hasfocus, toolbox.selectedToolMouseListener,() => {requestFocus()}.pure[IO])

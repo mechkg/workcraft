@@ -6,6 +6,8 @@ trait GlobalScope extends Scope
 
 trait ModelScope extends Scope
 
+trait EditorScope extends Scope
+
 trait Service[S <: Scope, ImplT]
 
 /*trait ServiceProvider[S <: Scope] {
@@ -24,6 +26,10 @@ object GlobalServiceProvider {
 
 trait ModelServiceProvider {
   def implementation[T](service: Service[ModelScope,T]): Option[T]
+}
+
+trait EditorServiceProvider {
+  def implementation[T](service: Service[EditorScope,T]): Option[T]
 }
 
 object ModelServiceProvider {

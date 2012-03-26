@@ -61,7 +61,7 @@ object LolaDeadlockTool extends GuiTool {
       val output = File.createTempFile("workcraft", ".lolapath")
 
       val exportTask = new LolaExportJob(pn).asTask(input).mapError2(LolaChainError.LolaExportError(_))
-      val deadlockTask = new LolaDeadlockTask("/home/mech/lola-1.16/src/lola-deadlock", input, output).mapError2(LolaChainError.LolaRunError(_))
+      val deadlockTask = new LolaDeadlockTask("e:/lola-1.16/src/lola-deadlock", input, output).mapError2(LolaChainError.LolaRunError(_))
 
       val megaTask = exportTask flatMap (_ => deadlockTask)
 
@@ -85,13 +85,15 @@ object LolaDeadlockTool extends GuiTool {
               ioPure.pure {
                 JOptionPane.showConfirmDialog(mainWindow, "The net has a deadlock state!\nWould you like to examine the event trace that leads to the deadlock state?",
                   "Verification result", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE) == JOptionPane.YES_OPTION
-              } >>=| /*(if (_) service.show(trace) >>= {
-                  case (tool, instance) => editorWindow match {
-                    case Some(window) => mainWindow.setFocus(Some(window)) >>=| window.content.toolbox.selectToolWithInstance(tool, instance)
-                    case None => IO.Empty
-                  }
-                } else */ IO.Empty
+              } >>= (if (_) service.show(trace) match {
+                case (tool, instance) => {
+                  val window = editorWindow.get
+                  mainWindow.setFocus(Some(window)) >>=| window.content.toolbox.selectToolWithInstance(tool, instance)
+                }
+              }
+              else IO.Empty)
             }
+
             case None => ioPure.pure { JOptionPane.showMessageDialog(mainWindow, "The net has a deadlock!\n\nUnfortunately, this model does not support interactive trace replays :-(\n\nWitness trace: " + trace.mkString(", "), "Verification result", JOptionPane.INFORMATION_MESSAGE) }
           }
         }

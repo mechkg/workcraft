@@ -11,18 +11,16 @@ import org.flexdock.docking.DockingManager
 case class DockableWindowConfiguration[A <: JComponent](
   val closeButton: Boolean = true,
   val minimiseButton: Boolean = false,
-  val maximiseButton: Boolean = true, 
-  val onMinimiseClicked: DockableWindow[A] => Unit = (_:DockableWindow[A]) => {},
-  val onMaximiseClicked: DockableWindow[A] => Unit = (w:DockableWindow[A]) => w.toggleMaximised,
-  val onCloseClicked: DockableWindow[A] => Unit = (w:DockableWindow[A]) => w.close    
-)
+  val maximiseButton: Boolean = true,
+  val onMinimiseClicked: DockableWindow[A] => Unit = (_: DockableWindow[A]) => {},
+  val onMaximiseClicked: DockableWindow[A] => Unit = (w: DockableWindow[A]) => w.toggleMaximised,
+  val onCloseClicked: DockableWindow[A] => Unit = (w: DockableWindow[A]) => w.close)
 
 class DockableWindow[A <: JComponent](
   val title: String,
   val persistentId: String,
   val content: A,
-  val configuration: DockableWindowConfiguration[A]
-  ) extends AbstractDockable(persistentId) {
+  val configuration: DockableWindowConfiguration[A]) extends AbstractDockable(persistentId) {
 
   val contentPanel = new DockableWindowContentPanel(this)
 
@@ -43,7 +41,7 @@ class DockableWindow[A <: JComponent](
             foreach(tabbedPane.setTabComponentAt(_, new DockableTab(dockable)))
         }
 
-        case _ => {dockable.showHeader}
+        case _ => { dockable.showHeader }
       }
     })
   }
@@ -63,8 +61,20 @@ class DockableWindow[A <: JComponent](
 
   var isMaximised = false
   var isClosed = DockingManager.isDocked(this)
-  
+
   def toggleMaximised = { DockingManager.toggleMaximized(this); isMaximised = !isMaximised; updateHeaders(getDockingPort) }
-  def close = { DockingManager.close(this); isClosed = true}
-  def display { DockingManager.display(this); isClosed = false}
+  def close = { DockingManager.close(this); isClosed = true }
+  def display { DockingManager.display(this); isClosed = false }
+
+  def ensureTabSelected = {
+    (getComponent().getParent(), isMaximised) match {
+      case (tabbedPane: JTabbedPane, false) => {
+
+        Range(0, tabbedPane.getComponentCount).find(getComponent() == tabbedPane.getComponentAt(_)).
+          foreach(tabbedPane.setSelectedIndex(_))
+      }
+
+      case _ => {}
+    }
+  }
 }

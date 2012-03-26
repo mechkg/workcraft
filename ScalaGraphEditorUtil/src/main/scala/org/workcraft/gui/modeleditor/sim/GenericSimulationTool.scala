@@ -27,7 +27,22 @@ import javax.swing.Timer
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 
-case class Trace[Event, State](initialState: State, events: Seq[(Event, State)], current: Int)
+case class Trace[Event](events: Seq[Event])
+
+case class StateAnnotatedTrace[Event, State](initialState: State, events: Seq[(Event, State)])
+
+case class MarkedTrace[Event, State](trace: StateAnnotatedTrace[Event, State], position: Int) {
+  def goto(position: Int, applyState: State => IO[Unit]) = {
+    applyState(if (position > 0) trace.events(position - 1)._2 else trace.initialState) >>=| ioPure.pure { MarkedTrace(trace, position) }
+  }
+
+  def !(e: Event, s: State) = MarkedTrace(StateAnnotatedTrace(trace.initialState, trace.events.take(position) :+ (e, s)), position + 1)
+}
+
+object Trace {
+  def annotateWithState[Event, State](t: Trace[Event], state: IO[State], fire: Event => IO[Unit]) =
+    state >>= (initialState => t.events.traverse(e => (fire(e) >>=| state).map((e, _))).map(StateAnnotatedTrace(initialState, _)))
+}
 
 class GenericSimulationToolInstance[Event, State](
   viewport: Viewport,
@@ -35,17 +50,14 @@ class GenericSimulationToolInstance[Event, State](
   eventSources: Expression[Iterable[Event]],
   touchable: Event => Expression[Touchable],
   sim: SimulationModel[Event, State],
-  val trace: ModifiableExpression[Trace[Event, State]],
-  paint: ((Event => Colorisation), State) => Expression[GraphicalContent]) extends ModelEditorToolInstance {
+  val trace: ModifiableExpression[MarkedTrace[Event, State]],
+  paint: ((Event => Colorisation), State) => Expression[GraphicalContent],
+  hintMessage: Option[String],
+  deadlockMessage: Option[String]) extends ModelEditorToolInstance {
 
-  def fire(e: Event): IO[Unit] = for {
-    _ <- sim.fire(e);
-    state <- sim.state.eval;
-    _ <- trace.update(t => Trace(t.initialState, t.events.take(t.current) :+ (e, state), t.current + 1))
-  } yield {}
+  def fire(event: Event): IO[Unit] = sim.fire(event) >>=| sim.state.eval >>= (state => trace.update(_ ! (event, state)))
 
-  def gotoState(tpos: Int): IO[Unit] = (trace.eval >>= ((tr: Trace[Event, State]) => sim.setState(
-    if (tpos > 0) tr.events(tpos - 1)._2 else tr.initialState))) >>=| trace.update(tr => Trace(tr.initialState, tr.events, tpos))
+  def gotoState(position: Int) = trace.eval >>= (_.goto(position, sim.setState(_))) >>= (t => trace.set(t))
 
   val hitTester = HitTester.create(eventSources, touchable)
   val mouseListener = Some(new GenericSimulationToolMouseListener(node => ioPure.pure { hitTester.hitTest(node) }, sim.enabled.eval, (e: Event) => fire(e)))
@@ -54,22 +66,38 @@ class GenericSimulationToolInstance[Event, State](
 
   def userSpaceContent = (sim.state <|**|> (sim.enabled, GenericSimulationTool.col)) >>= { case (state, enabled, col) => (paint(ev => if (enabled(ev)) col else Colorisation.Empty, state)) }
 
-  def screenSpaceContent = constant(GraphicalContent.Empty)
-  val interfacePanel = Some(new SimControlPanel[Event, State](trace, (e: Event) => sim.name(e), gotoState(_)))
+  def screenSpaceContent = (sim.enabled <|*|> eventSources) >>= {
+    case (enabled, events) => if (events.forall(enabled(_) == false) && deadlockMessage.isDefined)
+      GUI.editorMessage(viewport, Color.RED, deadlockMessage.get)
+    else if (hintMessage.isDefined)
+      GUI.editorMessage(viewport, Color.BLACK, hintMessage.get)
+    else
+      constant(GraphicalContent.Empty)
+  }
 
-  def loadTrace(t: Trace[Event, State]) = trace.set(t)
+  val interfacePanel = Some(new SimControlPanel[Event, State](trace, (e: Event) => sim.name(e), gotoState(_)))
 }
 
 case class GenericSimulationTool[Event, State](
   eventSources: Expression[Iterable[Event]],
   touchable: Event => Expression[Touchable],
   sim: IO[SimulationModel[Event, State]],
-  paint: ((Event => Colorisation), State) => Expression[GraphicalContent]) extends ModelEditorTool {
+  paint: ((Event => Colorisation), State) => Expression[GraphicalContent],
+  hintMessage: Option[String] = None,
+  deadlockMessage: Option[String] = None) extends ModelEditorTool {
+
   def button = GenericSimulationTool.button
-  def createInstance(env: ToolEnvironment) = sim >>= (sim => ioPure.pure {
-    val trace = Variable.create(Trace[Event, State](sim.state.unsafeEval, Seq(), 0))
-    new GenericSimulationToolInstance(env.viewport, env.hasFocus, eventSources, touchable, sim, trace, paint)
-  })
+
+  def createInstance(env: ToolEnvironment) = for {
+    sim <- sim;
+    initialState <- sim.state.eval;
+    trace <- newVar(MarkedTrace(StateAnnotatedTrace[Event, State](initialState, Seq()), 0))
+  } yield new GenericSimulationToolInstance(env.viewport, env.hasFocus, eventSources, touchable, sim, trace, paint, hintMessage, deadlockMessage)
+
+  def createInstanceWithGivenTrace(env: ToolEnvironment, trace: MarkedTrace[Event, State]) = for {
+    sim <- sim;
+    trace <- newVar(trace)
+  } yield new GenericSimulationToolInstance(env.viewport, env.hasFocus, eventSources, touchable, sim, trace, paint, hintMessage, deadlockMessage)
 }
 
 object GenericSimulationTool {

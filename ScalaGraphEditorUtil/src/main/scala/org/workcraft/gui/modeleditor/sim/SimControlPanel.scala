@@ -71,6 +71,7 @@ class EventButton[Event, State](label: String, selected: Boolean, goto: IO[Unit]
   this.setHorizontalAlignment(SwingConstants.CENTER)
   this.setVerticalAlignment(SwingConstants.CENTER)
   this.setToolTipText("Click to jump to this state")
+  this.setFocusable(false)
   
   override def paint (g: Graphics) {
     val g2d = g.asInstanceOf[Graphics2D]
@@ -97,38 +98,42 @@ class EventButton[Event, State](label: String, selected: Boolean, goto: IO[Unit]
   })
 }
 
-class TracePanel[Event, State](trace: Trace[Event, State], toString: Event => String, goto: Int => IO[Unit]) extends JPanel {
+class TracePanel[Event, State](trace: MarkedTrace[Event, State], name: Event => String, gotoState: Int => IO[Unit]) extends JPanel {
   this.setBorder(BorderFactory.createLineBorder(Color.black))
   this.setBackground(this.getBackground().brighter())
   this.setLayout(null)
-
-  val q = new EventButton("initial state", 0 == trace.current, goto(0))
+  
+  setFocusable(false)
+  
+  val q = new EventButton("initial state", 0 == trace.position, gotoState(0))
   q.setBounds(5, 5, 120, 30)
   add(q)
 
-  trace.events.indices.foreach { i =>
-    trace.events(i) match {
+  trace.trace.events.indices.foreach { i =>
+    trace.trace.events(i) match {
       case (event, state) => {
-        val q = new EventButton(toString(event), i == trace.current-1, goto(i+1))
+        val q = new EventButton(name(event), i == trace.position-1, gotoState(i+1))
         q.setBounds(5, 5 + (i+1) * 35, 120, 30)
         add(q)
       }
     }
   }
 
-  setPreferredSize(new Dimension(100, trace.events.length * 25))
+  setPreferredSize(new Dimension(100, trace.trace.events.length * 25))
 }
 
-class SimControlPanel[Event, State](t: Expression[Trace[Event, State]], toString: Event => String, goto: Int => IO[Unit]) extends JPanel {
+class SimControlPanel[Event, State](t: Expression[MarkedTrace[Event, State]], toString: Event => String, goto: Int => IO[Unit]) extends JPanel {
   val sz = Array(
     Array(30, 0.5, 0.5, 30),
     Array(20, TableLayoutConstants.FILL))
 
   setLayout(new TableLayout(sz))
+  setFocusable(false)
 
-  val refresh = swingAutoRefresh(t, (trace: Trace[Event, State]) => ioPure.pure {
+  val refresh = swingAutoRefresh(t, (trace: MarkedTrace[Event, State]) => ioPure.pure {
 
     val kojo = new JScrollPane
+    kojo.setFocusable(false)
 
     removeAll()
 

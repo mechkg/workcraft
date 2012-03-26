@@ -39,6 +39,8 @@ import org.workcraft.gui.modeleditor.PropertyService
 import org.workcraft.gui.modeleditor.ShowTraceService
 import org.workcraft.gui.modeleditor.ShowTrace
 import org.workcraft.gui.modeleditor.tools.ToolEnvironment
+import org.workcraft.gui.modeleditor.sim.Trace
+import org.workcraft.gui.modeleditor.sim.MarkedTrace
 
 case class EditorState(description: String, net: VisualPetriNet, selection: Set[Node])
 
@@ -182,7 +184,7 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
   }
 
   private val simulationTool =
-    GenericSimulationTool[Transition, Map[Place, Int]](net.transitions, touchable(_), net.saveState.eval.map(vpn => new PetriNetSimulation(vpn.net)), imageForSimulation(_, _))
+    GenericSimulationTool[Transition, Map[Place, Int]](net.transitions, touchable(_), net.saveState.eval.map(vpn => new PetriNetSimulation(vpn.net)), imageForSimulation(_, _), Some("Click on the highlighted transitions to fire them"), Some("The net is in a deadlock state: no transitions can be fired"))
 
   private def connectionTool =
     GenericConnectionTool[Component](net.components, touchable(_), componentPosition(_), connectionManager, imageC(_))
@@ -228,20 +230,19 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
       redoStack.map({ case top :: _ => Some(UndoAction(top.description, popRedo)); case x => None })))
 
     case PropertyService => Some(props)
-    
-    case ShowTraceService => None /* Some(new ShowTrace {
-      def show(trace: List[String]) = (simulationTool, (env: ToolEnvironment) => net.saveState.eval.map(_.net) >>= ( net => { 
-        val events = trace.map(s => net.names.get(s) match {
-          case Some(t:Transition) => t
-          case _ => throw new RuntimeException ("No transition named " + s)
-        })
-        
-        val sim = new PetriNetSimulation(net)
-        
-        events.map(sim.fire(_)).sequence
-        
-        new GenericSimulationToolInstance(env.viewport, env.hasFocus, )        
-      })       
-    })*/
+
+    case ShowTraceService => Some(new ShowTrace {
+      def show(trace: List[String]) = (simulationTool, (env: ToolEnvironment) => net.saveState.eval.map(_.net) >>= (net => {
+
+        val eventTrace = Trace(trace.map(s => net.names.get(s) match {
+          case Some(t: Transition) => t
+          case _ => throw new RuntimeException("No transition named " + s)
+        }))
+
+        val sim = PetriNetSimulation(net)
+
+        Trace.annotateWithState[Transition, Map[Place, Int]](eventTrace, sim.state.eval, sim.fire(_)) >>= (trace => simulationTool.createInstanceWithGivenTrace(env, MarkedTrace(trace, 0)))
+      }))
+    })
   }
 }

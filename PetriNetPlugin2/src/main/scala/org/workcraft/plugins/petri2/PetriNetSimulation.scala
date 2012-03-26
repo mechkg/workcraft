@@ -4,9 +4,8 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 import org.workcraft.scala.Expressions._
 import org.workcraft.scala.effects.IO
 import scalaz.Scalaz._
-import org.workcraft.gui.modeleditor.sim.Trace
 
-class PetriNetSimulation(net: PetriNet) extends SimulationModel[Transition, Map[Place, Int]] {
+case class PetriNetSimulation(net: PetriNet) extends SimulationModel[Transition, Map[Place, Int]] {
   private val curState = Variable.create(net.marking)
 
   val state = curState.expr

@@ -15,7 +15,8 @@ class ToolInterfaceWindow(interfacePanel : Expression[Option[JPanel]]) extends J
   content.setBorder(null)
   content.setViewportView(new DisabledPanel())
   add(content, BorderLayout.CENTER)
-  val gavno = swingAutoRefresh[Option[JPanel]](interfacePanel, p => IO.ioPure.pure {
+  setFocusable(false)
+  val refresh = swingAutoRefresh[Option[JPanel]](interfacePanel, p => IO.ioPure.pure {
     content.setViewportView(p.getOrElse(new DisabledPanel))
     content.revalidate
     })

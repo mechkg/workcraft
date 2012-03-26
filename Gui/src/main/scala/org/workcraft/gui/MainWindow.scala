@@ -74,6 +74,11 @@ class MainWindow(
   val toolControlDockable = createUtilityWindow("Tool controls", "ToolControls", toolControlWindow, toolboxDockable, DockingConstants.NORTH_REGION, 0.8)
   val propEdDockable = createUtilityWindow("Properties", "PropEd", propEdWindow, toolControlDockable, DockingConstants.CENTER_REGION, 0.8)
 
+  val tabSwitcher = swingAutoRefresh(interfacePanel, (i: Option[JPanel]) => ioPure.pure {
+    if (i.isDefined) toolControlDockable.ensureTabSelected
+    else propEdDockable.ensureTabSelected
+  })
+
   var openEditors = List[DockableWindow[ModelEditorPanel]]()
 
   val menu = new MainMenu(this, List(loggerDockable, toolboxDockable, propEdDockable), globalServices, { case (m, b) => newModel(m, b) }, reconfigure)

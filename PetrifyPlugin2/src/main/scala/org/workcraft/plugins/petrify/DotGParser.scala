@@ -110,7 +110,7 @@ object DotGParser extends Parsers with RegexParsers {
   def graphElement: Parser[GraphElement] = signalTransition | (name ^^ (PlaceOrDummy(_)))
 
   def line = (graphElement ~ (graphElement*)) <~ (emptyline*)
-
+  
   def graph = (".graph" ~ (emptyline+)) ~> (line+) ^^ (s => PartialDotG(graph = s.foldLeft(Map[GraphElement, List[GraphElement]]())((map, line) => map + line)))
 
   def model = (".model" ~> """.+""".r <~ (emptyline+)) ^^ (s => { println ("model"); PartialDotG(model = Some(s)) })

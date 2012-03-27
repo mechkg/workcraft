@@ -1,5 +1,5 @@
 package org.workcraft.gui.propertyeditor
-
+/*
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -161,3 +161,4 @@ class SettingsEditorDialog(owner: MainWindow) extends JDialog(owner) {
 object SettingsEditorDialog {
   private val serialVersionUID: Long = 1L
 }
+  */

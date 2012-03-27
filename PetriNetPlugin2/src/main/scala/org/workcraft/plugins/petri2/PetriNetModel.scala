@@ -23,10 +23,12 @@ import org.workcraft.services.ModelScope
 import org.workcraft.services.Service
 import scalaz.Scalaz._
 import org.workcraft.services.ModelServiceProvider
+import org.workcraft.services.LayoutService
 
 class PetriNetModel(val net: EditablePetriNet) extends ModelServiceProvider {
   def implementation[T](service: Service[ModelScope, T]) = service match {
     case EditorService => Some(new PetriNetEditor(net))
+    case LayoutService => Some(PetriNetLayout(net))
     case PetriNetService => Some(net.saveState.map(_.net).eval)
     case VisualPetriNetService => Some(net.saveState.eval)
     case DefaultFormatService => Some(Format.WorkcraftPetriNet)

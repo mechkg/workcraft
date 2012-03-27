@@ -40,6 +40,11 @@ case class PetriNet(marking: Map[Place, Int], labelling: Map[Component, String],
         case p: ProducerArc => (prod + (p.to -> (p.from :: prod(p.to))), cons)
       }
     })
+
+  lazy val postset: Map[Component, List[Component]] =
+    arcs.foldLeft((Map[Component, List[Component]]().withDefault(_ => List())))({
+      case (map, arc) => (map + (arc.from -> (arc.to :: map(arc.from))))
+    })
 }
 
 object PetriNet {

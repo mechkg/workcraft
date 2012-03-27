@@ -16,7 +16,7 @@ import org.workcraft.plugins.petri2.PetriNet
 import org.workcraft.tasks.ExternalProcess
 import java.io.File
 import org.workcraft.tasks.DiscardingSynchronousListener
-import org.workcraft.tasks.Task._
+
 import org.workcraft.services.ExportError
 import org.workcraft.gui.modeleditor.ShowTraceService
 
@@ -61,7 +61,7 @@ object LolaDeadlockTool extends GuiTool {
       val output = File.createTempFile("workcraft", ".lolapath")
 
       val exportTask = new LolaExportJob(pn).asTask(input).mapError2(LolaChainError.LolaExportError(_))
-      val deadlockTask = new LolaDeadlockTask("e:/lola-1.16/src/lola-deadlock", input, output).mapError2(LolaChainError.LolaRunError(_))
+      val deadlockTask = new LolaDeadlockTask("./tools/lola-deadlock", input, output).mapError2(LolaChainError.LolaRunError(_))
 
       val megaTask = exportTask flatMap (_ => deadlockTask)
 

@@ -19,25 +19,6 @@
 	<groupId>org.scala-tools</groupId>
 	<artifactId>maven-scala-plugin</artifactId>
       </plugin>			
-      <plugin>
-	<artifactId>maven-assembly-plugin</artifactId>
-	<executions>
-	  <execution>
-	    <id>assembly</id>
-	    <phase>package</phase>
-	    <goals>
-	      <goal>single</goal>
-	    </goals>
-	    <configuration>
-	      <descriptorRefs>
-		<descriptorRef>
-		  jar-with-dependencies
-		</descriptorRef>
-	      </descriptorRefs>
-	    </configuration>
-	  </execution>
-	</executions>
-      </plugin>
          <plugin>
              <groupId>org.apache.maven.plugins</groupId>
              <artifactId>maven-compiler-plugin</artifactId>

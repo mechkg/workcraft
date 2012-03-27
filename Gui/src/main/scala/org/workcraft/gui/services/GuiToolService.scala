@@ -12,6 +12,7 @@ sealed abstract class ToolClass(val sectionName: String)
 
 object ToolClass {
   object Verification extends ToolClass ("Verification")
+  object Layout extends ToolClass ("Layout")
   object Synthesis extends ToolClass ("Synthesis")
   case class Custom (sectionName: String)
 }

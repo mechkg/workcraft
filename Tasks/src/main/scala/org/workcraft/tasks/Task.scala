@@ -27,6 +27,10 @@ trait Task[+O, +E] {
       }
     }
   }
+  
+  def >>= [O2, E2 >: E](f: O => Task[O2, E2]) = flatMap(f)
+  
+  def >>=| [O2, E2 >: E] (t: Task[O2, E2]) = flatMap(_ => t)
 
   def mapError[E2 >: E](f: E => E2) = {
     val outer = this
@@ -82,9 +86,5 @@ object Task {
   
   implicit def ioTask[E] (action: IO[Unit]) = new Task[Unit, E] {
     def runTask(tc: TaskControl) = action >>= (x => Right(()).pure[IO])
-  }
-  
-  def forward[E, O] (result: Either[Option[E],O], action: IO[Unit]) = new Task[O,E] {
-    def runTask(tc: TaskControl) = action >>= (x => result.pure[IO])
   }
 }

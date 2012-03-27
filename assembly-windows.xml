@@ -6,35 +6,11 @@
 		<format>zip</format>
 	</formats>
 	<dependencySets>
-	<dependencySet>
-		<useTransitiveDependencies>false</useTransitiveDependencies>
-		<includes>
-			<include>*:*Plugin</include>
-		</includes>
-
-		<scope>compile</scope>
-		<outputDirectory>plugins</outputDirectory>
-		<outputFileNameMapping>${artifact.artifactId}-${artifact.version}.${artifact.extension}</outputFileNameMapping>
-	</dependencySet>
 
 	<dependencySet>
 		<useTransitiveDependencies>false</useTransitiveDependencies>
 		<includes>
 			<include>*:*</include>
-		</includes>
-		<excludes>
-			<exclude>*:*Plugin</exclude>
-			<exclude>*:*WorkcraftCore</exclude>
-		</excludes>
-		<scope>compile</scope>
-		<outputDirectory>lib</outputDirectory>
-		<outputFileNameMapping>${artifact.artifactId}-${artifact.version}.${artifact.extension}</outputFileNameMapping>
-	</dependencySet>
-
-	<dependencySet>
-		<useTransitiveDependencies>false</useTransitiveDependencies>
-		<includes>
-			<include>*:WorkcraftCore</include>
 		</includes>
 		<scope>compile</scope>
 		<outputDirectory>.</outputDirectory>

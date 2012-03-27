@@ -37,7 +37,7 @@ class PluginManager(val version: UUID, val packages: Traversable[String], val ma
     val classesToProcess = finder.searchClassPath()
 
     unsafeInfo("Processing " + classesToProcess.size + " class file(s)")
-
+    
     val results = PluginProcessor.processClasses(classesToProcess)
 
     unsafeInfo("Found " + results.plugins.size + " plugin(s)")

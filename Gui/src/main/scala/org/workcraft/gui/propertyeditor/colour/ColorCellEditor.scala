@@ -14,10 +14,10 @@ import org.workcraft.scala.effects.IO
 
 
 object ColorCellEditor extends GenericEditorProvider[Color] {
-  override  def createEditor(initialValue:Color, accept:IO[Unit], cancel:IO[Unit]):GenericCellEditor[Color] = {
+  override  def createEditor(initialValue:Color, accept:IO[Unit], cancel: IO[Unit]):GenericCellEditor[Color] = {
     return new GenericCellEditorImplementation(initialValue, accept, cancel)
   }
-  class GenericCellEditorImplementation(initialValue:Color, accept:IO[Unit], cancel:IO[Unit]) extends GenericCellEditor[Color] {
+  class GenericCellEditorImplementation(initialValue:Color, accept:IO[Unit], cancel: IO[Unit]) extends GenericCellEditor[Color] {
     
     val button : JButton = new JButton()
     button.setBorderPainted(false)

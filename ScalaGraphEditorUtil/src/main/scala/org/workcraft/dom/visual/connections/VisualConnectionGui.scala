@@ -18,37 +18,50 @@ import java.awt.geom.Path2D
 import java.awt.geom.AffineTransform
 import java.awt.BasicStroke
 import org.workcraft.graphics.Geometry.buildConnectionCurveInfo
-import org.workcraft.dom.visual.connections.VisualConnectionContext
-import org.workcraft.dom.visual.connections.StaticVisualConnectionData
-import org.workcraft.dom.visual.connections.Polyline
-import org.workcraft.dom.visual.connections.Bezier
-import org.workcraft.dom.visual.connections.ConnectionGui
-import org.workcraft.dom.visual.connections.BezierGui
+import org.workcraft.graphics.BoundedColorisableGraphicalContent
+import org.workcraft.graphics.GraphicalContent
+import org.workcraft.graphics.Java2DDecoration._
+import org.workcraft.graphics.Colorisation
 
 object VisualConnectionGui {
 
   val HitThreshold = 0.2
-  
-	def drawArrowHead(g: Graphics2D, color: Color, headPosition: Point2D, orientation: Double, length: Double, width: Double) = {
-		val arrowShape = new Path2D.Double()
-		arrowShape.moveTo(-length, -width / 2)
-		arrowShape.lineTo(-length, width / 2)
-		arrowShape.lineTo(0,0)
-		arrowShape.closePath()
 
-		val arrowBounds = arrowShape.getBounds2D()
-		arrowBounds.setRect(arrowBounds.getMinX()+0.05f, arrowBounds.getMinY(), arrowBounds.getWidth(), arrowBounds.getHeight())
+  def drawArrowHead(g: Graphics2D, color: Color, headPosition: Point2D, orientation: Double, length: Double, width: Double) = {
+    val arrowShape = new Path2D.Double()
+    arrowShape.moveTo(-length, -width / 2)
+    arrowShape.lineTo(-length, width / 2)
+    arrowShape.lineTo(0, 0)
+    arrowShape.closePath()
 
-		val arrowTransform = new AffineTransform()
-		arrowTransform.translate(headPosition.getX(), headPosition.getY())
-		arrowTransform.rotate(orientation)
+    val arrowTransform = new AffineTransform()
+    arrowTransform.translate(headPosition.getX(), headPosition.getY())
+    arrowTransform.rotate(orientation)
 
-		val transformedArrowShape = arrowTransform.createTransformedShape(arrowShape)
+    val transformedArrowShape = arrowTransform.createTransformedShape(arrowShape)
 
-		g.setColor(color)
-		g.setStroke(new BasicStroke(width.toFloat))
-		g.fill(transformedArrowShape)		
-	}  
+    g.setColor(color)
+    g.setStroke(new BasicStroke(width.toFloat))
+    g.fill(transformedArrowShape)
+  }
+
+  def arrowHead(color: Color, headPosition: Point2D, orientation: Double, length: Double, width: Double) = {
+    val arrowShape = new Path2D.Double()
+    arrowShape.moveTo(-length, -width / 2)
+    arrowShape.lineTo(-length, width / 2)
+    arrowShape.lineTo(0, 0)
+    arrowShape.closePath()
+
+    val arrowTransform = new AffineTransform()
+    arrowTransform.translate(headPosition.getX(), headPosition.getY())
+    arrowTransform.rotate(orientation)
+
+    val transformedArrowShape = arrowTransform.createTransformedShape(arrowShape)
+
+    BoundedColorisableGraphicalContent(
+      ColorisableGraphicalContent(colorisation => GraphicalContent(g => { g.setColor(Coloriser.colorise(color, colorisation.foreground)); g.setStroke(new BasicStroke(width.toFloat)); g.fill(transformedArrowShape) })),
+      BoundingBox(transformedArrowShape.getBounds2D()))
+  }
 
   case class ExprConnectionGui(
     shape: Expression[Touchable], graphicalContent: Expression[ColorisableGraphicalContent], parametricCurve: Expression[org.workcraft.graphics.ParametricCurve])
@@ -72,10 +85,9 @@ object VisualConnectionGui {
         g.setStroke(connProps.stroke)
         g.draw(connectionShape)
 
-        connProps.arrow.foreach ( arrow =>
+        connProps.arrow.foreach(arrow =>
           drawArrowHead(g, color, cInfo.arrowHeadPosition, cInfo.arrowOrientation,
-            arrow.length, arrow.width)
-            )
+            arrow.length, arrow.width))
       }
     }
   }

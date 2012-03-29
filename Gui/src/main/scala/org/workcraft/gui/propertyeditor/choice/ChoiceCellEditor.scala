@@ -11,7 +11,7 @@ import pcollections.PVector
 import org.workcraft.scala.effects.IO
 
 
-class ChoiceCellEditor[T](initialValue:T, choice:List[(String, T)], accept:IO[Unit]) extends GenericCellEditor[T] {
+class ChoiceCellEditor[T](initialValue:T, choice:List[(String, T)], editingStopped:IO[Unit]) extends GenericCellEditor[T] {
   
    val comboBox = new JComboBox()
    comboBox.setEditable(false)
@@ -23,7 +23,7 @@ class ChoiceCellEditor[T](initialValue:T, choice:List[(String, T)], accept:IO[Un
         comboBox.setSelectedItem(comboBoxItem)
    }
    comboBox.addItemListener(new ItemListener{
-     override def itemStateChanged(event : ItemEvent) = accept.unsafePerformIO
+     override def itemStateChanged(event : ItemEvent) = editingStopped.unsafePerformIO
    })
   
   override  def component:Component = {

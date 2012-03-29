@@ -13,12 +13,12 @@ import javax.swing.JComponent
 trait EditableProperty {
   val name: String
   def renderer(isSelected: Boolean, hasFocus: Boolean): JComponent
-  def createEditor(close: IO[Unit]): SimpleCellEditor
+  def createEditor(accept: IO[Unit], cancel: IO[Unit]): SimpleCellEditor
 }
 
 object EditableProperty {
   def apply[T](propertyName: String, editor: GenericEditorProvider[T], _renderer: RendererProvider[T], value: T, _commit: T => IO[Unit]): EditableProperty = {
-    withValidation(propertyName, editor, _renderer, value, (t: T) => ioPure.pure { try { _commit(t).unsafePerformIO; None } catch { case e: Throwable => Some(e.toString)}})
+    withValidation(propertyName, editor, _renderer, value, (t: T) => ioPure.pure { try {_commit(t).unsafePerformIO; None } catch { case e: Throwable => Some(e.toString)}})
   }
 
   def withValidation[T](propertyName: String, editor: GenericEditorProvider[T], _renderer: RendererProvider[T], value: T, _commit: T => IO[Option[String]]): EditableProperty =
@@ -30,12 +30,11 @@ object EditableProperty {
         panel
       }
 
-      override def createEditor(close: IO[Unit]) = new SimpleCellEditor {
-        val ge: GenericCellEditor[T] = editor.createEditor(value, ioPure.pure { commit } >>=| close, close)
-
+      override def createEditor(accept: IO[Unit], cancel: IO[Unit]) = new SimpleCellEditor {
+        val ge: GenericCellEditor[T] = editor.createEditor(value, accept, cancel)
+        
         override def getComponent = ge.component
-        override def commit = _commit(ge.getValue)
-
+        override def commit = _commit( ge.getValue )
       }
 
       override val name = propertyName

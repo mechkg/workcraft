@@ -15,6 +15,7 @@ object BooleanCellEditor extends GenericEditorProvider[Boolean] {
     val checkBox = new JCheckBox()
     checkBox.setOpaque(false)
     checkBox.setFocusable(false)
+    checkBox.setSelected(initialValue)
     checkBox.addItemListener(new ItemListener {
       override def itemStateChanged(e: ItemEvent) {
         accept.unsafePerformIO

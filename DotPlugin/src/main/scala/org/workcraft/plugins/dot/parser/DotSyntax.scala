@@ -16,10 +16,15 @@ object Dot extends DotParser {
       case n @ _ => println(n); None
     }
 
-  def parse(input: File) = phrase(dot)(new lexical.Scanner(new PagedSeqReader(PagedSeq.fromFile(input)))) match {
+  // Ugly hack for dot's idiotic backslash line wraps -- too sleepy to figure out how to do that properly
+  def parse(input: File) = phrase(dot)(new lexical.Scanner(scala.io.Source.fromFile(input).getLines.toList.mkString("").replace("\\\n",""))) match {
+    case Success(result, _) => Right(result)
+    case err => Left(err.toString)
+  }
+  /*def parse(input: File) = phrase(dot)(new lexical.Scanner(new PagedSeqReader(PagedSeq.fromFile(input)))) match {
     case Success(result, _) => Right(result)
     case err => Left(err.toString) 
-  }
+  }*/
   
   def parseTask (file: File) = new Task[Graph, String] {
     def runTask(tc: TaskControl) = tc.descriptionUpdate ("Reading " + file.getPath) >>=| ( ioPure.pure { parse(file) } map {case Right(result) => Right(result); case Left(error) => Left(Some(error))})

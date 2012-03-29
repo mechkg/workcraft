@@ -29,7 +29,7 @@ class DotExportJob(layout: LayoutSpec) extends ExportJob {
     val out = new PrintStream(new BufferedOutputStream(new FileOutputStream(file)))
     try {
       out.println("digraph work {");
-      out.println("graph [nodesep=\"2.0\", ranksep=\"1.0\", rotate=\"90\", overlap=\"false\", splines=\"true\"];");
+      out.println("graph [nodesep=\"" + layout.nodeSeparation + "\", ranksep=\"" + layout.rankSeparation + "\", overlap=\"false\", splines=\"true\"];");
       out.println("node [shape=box];");
 
       val nodeToId = layout.nodes.zipWithIndex.toMap

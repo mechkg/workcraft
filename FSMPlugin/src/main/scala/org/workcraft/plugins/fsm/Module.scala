@@ -19,8 +19,15 @@ import javax.swing.JOptionPane
 import org.workcraft.gui.tasks.ModalTaskDialog
 import scalaz.Scalaz._
 
+object NewFSM extends NewModelImpl {
+  def name = "Finite State Machine"
+  def create = EditableFSM.create(VisualFSM.Minimal).map(new FSMModel(_))
+}
+
 object FSMServiceProvider extends GlobalServiceProvider {
   def implementations[T](service: Service[GlobalScope, T]) = service match {
+    case NewModelService => List(NewFSM)
+
     //case ExporterService => List(DotGExporter)
     //case GuiToolService => List(LolaDeadlockTool) 
     case _ => Nil

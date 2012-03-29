@@ -7,6 +7,7 @@ import java.awt.geom.Rectangle2D
 import java.awt.geom.Point2D
 import org.workcraft.services.LayoutSpec
 import org.workcraft.services.Layout
+import org.workcraft.services.LayoutOrientation
 
 object PetriNetLayout {
   class PetriNetLayoutNode extends LayoutNode
@@ -22,6 +23,6 @@ object PetriNetLayout {
     
     val apply = (l : List[(LayoutNode, Point2D.Double)]) => l.map { case (n, p) => net.layout.update ( _ + (nodeToComponent(n) -> p) ) }.sequence >| {}
     
-    Layout(LayoutSpec(nodeToComponent.map(_._1).toList, size, outgoingArcs), apply)
+    Layout(LayoutSpec(nodeToComponent.map(_._1).toList, size, outgoingArcs, 2, 3, LayoutOrientation.LeftToRight), apply)
   })
 }

@@ -44,7 +44,8 @@ class PropertyEditorTable extends JTable with PropertyEditor {
     cellEditors = new ArrayList[AbstractTableCellEditor]()
     for (val p <- o) {
       cellEditors.add(new AbstractTableCellEditor {
-        val editor = p.createEditor(ioPure.pure(cancelCellEditing))
+        val editor = p.createEditor(ioPure.pure(stopCellEditing), ioPure.pure{cancelCellEditing})
+        
         override def getCellEditorValue = null
         override def stopCellEditing: Boolean = {
           editor.commit.unsafePerformIO match {

@@ -14,7 +14,7 @@ object ToolClass {
   object Verification extends ToolClass ("Verification")
   object Layout extends ToolClass ("Layout")
   object Synthesis extends ToolClass ("Synthesis")
-  case class Custom (sectionName: String)
+  case class Custom (secName: String) extends ToolClass(secName)
 }
 
 trait GuiTool {

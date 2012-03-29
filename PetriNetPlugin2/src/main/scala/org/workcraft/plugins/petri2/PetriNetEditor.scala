@@ -172,7 +172,7 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
     (_, x) => x,
     touchable(_),
     imageForSelection(_, _, _),
-    List(KeyBinding("Delete selection", KeyEvent.VK_DELETE, KeyEventType.KeyPressed, Set(), pushUndo("delete nodes") >>=| selection.eval >>= (sel => selection.update(_ -- sel) >>=| net.deleteNodes(sel)))))
+    List(KeyBinding("Delete selection", KeyEvent.VK_DELETE, KeyEventType.KeyPressed, Set(), pushUndo("delete nodes") >>=| selection.eval >>= (sel => selection.update(_ -- sel) >>=| net.deleteNodes(sel) >| None))))
 
   private val connectionManager = new ConnectionManager[Component] {
     def connect(node1: Component, node2: Component): Either[InvalidConnectionException, IO[Unit]] = (node1, node2) match {

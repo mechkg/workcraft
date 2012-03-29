@@ -66,11 +66,11 @@ class DotParser extends StdTokenParsers with ImplicitConversions {
    
   //a_list      :   ID [ '=' ID ] [ ',' ] [ a_list ]
   lazy val  a_list = rep1sep (a_part, ",")
-  lazy val  a_part = log( 
+  lazy val  a_part =  
     (ID ~ opt("=" ~> a_value) ^^ { 
       case n ~ Some((q,v)) => Attr(n,Some(v),q)
       case n ~ None => Attr(n, None, false)
-      } ))("a_part")
+      } )
    
   lazy val a_value =
     accept("string", { case StringLit(v) => (true,v)}) |

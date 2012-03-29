@@ -37,6 +37,8 @@ object BoundedColorisableGraphicalContent {
  * means that it is just CGC
  *
  * That's like saying 3 is not a rational number because it's merely an integer
+ * 
+ * 3 is 3/1, not 3/NULL
  *
   val Empty = BoundedColorisableGraphicalContent(ColorisableGraphicalContent.Empty, None)
 */

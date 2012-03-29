@@ -19,7 +19,7 @@ object ChoiceProperty {
   def apply[T](name: String, choice: List[(String, T)], property: ModifiableExpression[T]): Expression[EditableProperty] = property.map(value => {
 
     val e = new GenericEditorProvider[T] {
-      override def createEditor(initialValue: T, accept: IO[Unit], cancel: IO[Unit]): GenericCellEditor[T] =
+      override def createEditor(initialValue: T, accept: IO[Unit], cancel:IO[Unit]): GenericCellEditor[T] =
         new ChoiceCellEditor[T](initialValue, choice, accept)
     }
 

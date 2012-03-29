@@ -84,6 +84,7 @@ class ModelEditorPanel (val model: ModelServiceProvider, val editor: ModelEditor
   addFocusListener(FocusListener)
   
   val kListener = new ModelEditorKeyListener(
+      this,
       ModelEditorKeyListener.defaultBindings(this), 
       toolbox.selectedToolKeyBindings,
       toolbox.hotkeyBindings,

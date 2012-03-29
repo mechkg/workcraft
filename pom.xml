@@ -32,6 +32,7 @@
     <module>DotPlugin</module>
     <module>PetriNetPlugin2</module>
     <module>LolaPlugin</module>
+    <module>FSMPlugin</module>
     <module>PetrifyPlugin2</module>
     <module>ScalaUtil</module>
     <module>DependencyManager</module>

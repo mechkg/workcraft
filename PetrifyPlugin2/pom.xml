@@ -43,5 +43,10 @@
     	<artifactId>Tasks</artifactId>
     	<version>2.2-SNAPSHOT</version>
     </dependency>
+    <dependency>
+    	<groupId>org.workcraft</groupId>
+    	<artifactId>FSMPlugin</artifactId>
+    	<version>2.2-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 </project>

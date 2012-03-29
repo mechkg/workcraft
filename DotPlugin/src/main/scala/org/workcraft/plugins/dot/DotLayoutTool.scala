@@ -17,6 +17,7 @@ import javax.swing.JOptionPane
 import org.workcraft.services.LayoutService
 import org.workcraft.plugins.dot.parser.Attr
 import java.awt.geom.Point2D
+import java.awt.geom.AffineTransform
 
 sealed trait DotError
 
@@ -33,9 +34,11 @@ object DotLayoutTool extends GuiTool {
   val description = "Layout using dot"
   val classification = ToolClass.Layout
   
-  def parsePos (pos: Option[String]) = {
+  def parsePos (pos: Option[String], transform: AffineTransform) = {
     val Array(x, y) = pos.map(_.value).getOrElse("0,0").split(",").map(_.toDouble)
-    new Point2D.Double (x / 72.0, y / 72.0)
+    val res = new Point2D.Double (x / 72.0, y / 72.0)
+    transform.transform(res, res)
+    res
   }
 
   def run(mainWindow: MainWindow) = mainWindow.editorInFocus.expr.map(editorWindow => editorWindow.flatMap(_.content.model.implementation(LayoutService)) match {
@@ -54,7 +57,7 @@ object DotLayoutTool extends GuiTool {
           val nodeToId = layout.spec.nodes.zipWithIndex.toMap
           val idToNode = nodeToId.map(_.swap).toMap
 
-          layout.apply(graph.statements.map { case Node(id, _, attrs @ _ *) => Some((idToNode(id.toInt), parsePos(attrs.find(_.name == "pos").map(_.value.get))) ); case _ => None }.flatten.toList)
+          layout.apply(graph.statements.map { case Node(id, _, attrs @ _ *) => Some((idToNode(id.toInt), parsePos(attrs.find(_.name == "pos").map(_.value.get), layout.spec.orientation.transform))); case _ => None }.flatten.toList)
         }
 
       }

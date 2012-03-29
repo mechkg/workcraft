@@ -63,8 +63,8 @@ object SimulationTool {
     new ModelEditorToolInstance {
 
       override def keyBindings = List(
-        KeyBinding("Unfire", KeyEvent.VK_OPEN_BRACKET, KeyEventType.KeyTyped, Set.empty, simControl.unfire.unsafeRun),
-        KeyBinding("Fire", KeyEvent.VK_CLOSE_BRACKET, KeyEventType.KeyTyped, Set.empty, (simControl.getNextEvent >>= ((e: Event) => simControl.fire(e))).unsafeRun))
+        KeyBinding("Unfire", KeyEvent.VK_OPEN_BRACKET, KeyEventType.KeyTyped, Set.empty, simControl.unfire.unsafeRun >| None),
+        KeyBinding("Fire", KeyEvent.VK_CLOSE_BRACKET, KeyEventType.KeyTyped, Set.empty, (simControl.getNextEvent >>= ((e: Event) => simControl.fire(e))).unsafeRun >| None))
 
       override def mouseListener = Some(new DummyMouseListener {
         override def buttonPressed(button: MouseButton, modifiers: Set[Modifier], position: Point2D.Double) =

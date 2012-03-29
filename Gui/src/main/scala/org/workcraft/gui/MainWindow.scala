@@ -40,6 +40,8 @@ import org.workcraft.gui.propertyeditor.PropertyEditorWindow
 import org.workcraft.scala.Expressions._
 import org.workcraft.dependencymanager.advanced.user.Variable
 import org.workcraft.gui.modeleditor.PropertyService
+import java.awt.event.FocusListener
+import java.awt.event.FocusEvent
 
 class MainWindow(
   val globalServices: () => GlobalServiceManager,
@@ -130,11 +132,14 @@ class MainWindow(
     editorDockable match {
       case Some(editorWindow) => {
         toolboxWindow.add(new ToolboxPanel(editorWindow.content.toolbox), BorderLayout.CENTER)
+        toolboxWindow.revalidate()
 
         editorWindow.content.editor.implementation(PropertyService) match {
           case Some(props) => propEdWindow.propertyObject.setValue(props.map(Some(_)))
           case None => propEdWindow.propertyObject.setValue(constant(None))
         }
+        
+        propEdWindow.revalidate()
       }
       case None => {
         toolboxWindow.add(new NotAvailablePanel)
@@ -150,7 +155,14 @@ class MainWindow(
       case None => ioPure.pure { JOptionPane.showMessageDialog(this, "The model type that you have chosen does not support visual editing :(", "Warning", JOptionPane.WARNING_MESSAGE) }
       case Some(editor) => {
         val editorPanel = new ModelEditorPanel(model, editor)(implicitLogger)
+        
         val editorDockable = dockingRoot.createWindow("Untitled", "unused", editorPanel, DockableWindowConfiguration(onCloseClicked = closeEditor), if (openEditors.isEmpty) placeholderDockable else (openEditors.head), DockingConstants.CENTER_REGION)
+        
+        editorPanel.addFocusListener(new FocusListener {
+          override def focusGained(e: FocusEvent) = setFocus(Some(editorDockable)).unsafePerformIO
+          override def focusLost(e: FocusEvent) = {}
+        })
+        
 
         if (openEditors.isEmpty) {
           openEditors = List(editorDockable)

@@ -10,6 +10,9 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 import java.awt.event.InputEvent
 import org.workcraft.logging.Logger
 import org.workcraft.logging.MessageClass
+import java.awt.Window
+import javax.swing.JOptionPane
+import javax.swing.JPanel
 
 sealed trait Modifier
 
@@ -54,27 +57,32 @@ object KeyEvent {
   }
 }
 
-case class KeyBinding(description: String, keyCode: Int, eventType: KeyEventType, modifiers: Set[Modifier], action: IO[Unit])
+case class KeyBinding(description: String, keyCode: Int, eventType: KeyEventType, modifiers: Set[Modifier], action: IO[Option[String]])
 
 case class HotkeyBinding(keyCode: Int, action: IO[Unit])
 
-class ModelEditorKeyListener(editorKeys: List[KeyBinding], toolKeys: Expression[List[KeyBinding]], hotkeys: List[HotkeyBinding], logger: () => Logger[IO]) extends KeyListener {
+class ModelEditorKeyListener(editorWindow: JPanel, editorKeys: List[KeyBinding], toolKeys: Expression[List[KeyBinding]], hotkeys: List[HotkeyBinding], logger: () => Logger[IO]) extends KeyListener {
   import Modifier._
   import KeyEventType._
 
   def handlers(event: KeyEvent) = for {
     toolKeys <- toolKeys
-  } yield (editorKeys ++ hotkeys.map(k => KeyBinding("Tool hotkey: " + k.keyCode.toChar, k.keyCode, KeyPressed, Set(), k.action)) ++ toolKeys)
+  } yield (editorKeys ++ hotkeys.map(k => KeyBinding("Tool hotkey: " + k.keyCode.toChar, k.keyCode, KeyPressed, Set(), k.action >| None)) ++ toolKeys)
     .filter(h => (h.keyCode == event.keyCode && h.modifiers == event.modifiers && h.eventType == event.eventType))
 
   def handleEvent(event: KeyEvent) = {
+    def execute (io: IO[Option[String]]) = io.unsafePerformIO match {
+      case Some(s) => JOptionPane.showMessageDialog(editorWindow, s, "Error", JOptionPane.ERROR_MESSAGE)
+      case _ => {}
+    }
+    
     val h = handlers(event).unsafeEval
     h match {
       case Nil => {}
-      case head::Nil => head.action.unsafePerformIO
+      case head::Nil => execute(head.action)
       case _ => {
         logger().log("Key conflict! \"" + KeyEvent.show(event) + "\" is bound to: " + h.map(_.description).map("\"" + _ + "\"").reduceLeft(_ + " and " + _), MessageClass.Warning).unsafePerformIO
-        h.foreach(k => { println("Executing " + k.description); k.action.unsafePerformIO })
+        h.foreach(k => { println("Executing " + k.description); execute(k.action) })
       }
     }
   }
@@ -89,10 +97,10 @@ object ModelEditorKeyListener {
   import KeyEventType._
   
   def defaultBindings(editor: ModelEditorPanel) = List(
-    KeyBinding("Viewport pan left", JKeyEvent.VK_LEFT, KeyPressed, Set(Control), editor.view.pan(20, 0)),
-    KeyBinding("Viewport pan right", JKeyEvent.VK_RIGHT, KeyPressed, Set(Control), editor.view.pan(-20, 0)),
-    KeyBinding("Viewport pan up", JKeyEvent.VK_UP, KeyPressed, Set(Control), editor.view.pan(0, 20)),
-    KeyBinding("Viewport pan down", JKeyEvent.VK_DOWN, KeyPressed, Set(Control), editor.view.pan(0, -20)),
-    KeyBinding("Viewport zoom in", JKeyEvent.VK_EQUALS, KeyPressed, Set(), editor.view.zoom(1)),
-    KeyBinding("Viewport zoom out", JKeyEvent.VK_MINUS, KeyPressed, Set(), editor.view.zoom(-1)))
+    KeyBinding("Viewport pan left", JKeyEvent.VK_LEFT, KeyPressed, Set(Control), editor.view.pan(20, 0) >| None),
+    KeyBinding("Viewport pan right", JKeyEvent.VK_RIGHT, KeyPressed, Set(Control), editor.view.pan(-20, 0) >| None),
+    KeyBinding("Viewport pan up", JKeyEvent.VK_UP, KeyPressed, Set(Control), editor.view.pan(0, 20) >| None),
+    KeyBinding("Viewport pan down", JKeyEvent.VK_DOWN, KeyPressed, Set(Control), editor.view.pan(0, -20) >| None),
+    KeyBinding("Viewport zoom in", JKeyEvent.VK_EQUALS, KeyPressed, Set(), editor.view.zoom(1) >| None),
+    KeyBinding("Viewport zoom out", JKeyEvent.VK_MINUS, KeyPressed, Set(), editor.view.zoom(-1) >| None))
 }

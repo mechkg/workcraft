@@ -22,7 +22,7 @@ import scalaz.Scalaz._
 object PetrifyServiceProvider extends GlobalServiceProvider {
   def implementations[T](service: Service[GlobalScope, T]) = service match {
     case ExporterService => List(DotGExporter)
-    //case GuiToolService => List(LolaDeadlockTool) 
+    case GuiToolService => List(StateGraphTool)
     case _ => Nil
   }
 }

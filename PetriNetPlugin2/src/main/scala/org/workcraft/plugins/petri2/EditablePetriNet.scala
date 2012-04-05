@@ -32,6 +32,8 @@ class EditablePetriNet private (
   val layout: Variable[Map[Component, Point2D.Double]],
   val visualArcs: Variable[Map[Arc, StaticVisualConnectionData]]) {
 
+  import PetriNet._
+
   val nodes: Expression[List[Node]] = (places.expr <***> (transitions, arcs))((p, t, a) => a ++ t ++ p)
 
   val components: Expression[List[Component]] = (places.expr <**> transitions)((p, t) => p ++ t)
@@ -40,11 +42,6 @@ class EditablePetriNet private (
 
   def tokens(place: Place) = marking.map(_(place))
   def label(c: Component) = labelling.map(_(c))
-
-  private def newPlace = ioPure.pure { new Place }
-  private def newTransition = ioPure.pure { new Transition }
-  private def newProducerArc(from: Transition, to: Place) = ioPure.pure { new ProducerArc(from, to) }
-  private def newConsumerArc(from: Place, to: Transition) = ioPure.pure { new ConsumerArc(from, to) }
 
   private var placeNameCounter = 0
   private var transitionNameCounter = 0

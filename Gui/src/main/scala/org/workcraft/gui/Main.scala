@@ -65,11 +65,11 @@ object Main {
     checkConfig
 
     var pluginManager = loadPlugins(false)
-    var globalServices = new GlobalServiceManager(pluginManager)
+    var globalServices = new GlobalServiceManager(pluginManager.plugins(classOf[Module]).map(_.singleton).toList)
 
     val reconfigure = ioPure.pure {
       pluginManager = loadPlugins(true)
-      globalServices = new GlobalServiceManager(pluginManager)
+      globalServices = new GlobalServiceManager(pluginManager.plugins(classOf[Module]).map(_.singleton).toList)
     }
 
     unsafeInfo("Starting GUI")

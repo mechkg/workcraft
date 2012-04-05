@@ -45,7 +45,7 @@ class CancelRequestMonitorThread(process: ProcessHandle, cancelRequest: IO[Boole
       process.cancel
       return
     } else
-      Thread.sleep(50)
+      Thread.sleep(10)
 }
 
 case class ProcessHandle private[tasks] (private[tasks] val process: Process) {
@@ -115,7 +115,7 @@ object ExternalProcess {
 
       val handle = ProcessHandle(process)
 
-      new CancelRequestMonitorThread(handle, cancelRequest)
+      new CancelRequestMonitorThread(handle, cancelRequest).start()
 
       val returnValue = process.waitFor()
 

@@ -151,7 +151,9 @@ object DotGParser extends Parsers with RegexParsers {
 }
 
 object Test extends App {
-
   println("""(?m)$""".matches("\n"))
-  println(DotGParser.parseDotG(new File("e:/winpetrify/stgshka.g")))
+  DotGParser.parseDotG(new File("e:/winpetrify/stgshka.g")) match {
+    case Left(err) => println (err)
+    case Right(dotg) => println (PetriNetBuilder.buildPetriNet(dotg).unsafePerformIO)
+  }
 }

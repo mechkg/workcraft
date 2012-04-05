@@ -45,8 +45,10 @@ object PetriNetBuilder {
 
   // Builds a Petri Net from a .g file AST
   def buildPetriNet(dotg: DotG): IO[PetriNet] = {
-    dotg.graph.toList.foldLeft(ioPure.pure { PetriNet.Empty }) {
-      case (net, (element, postset)) => {
+    val z = ioPure.pure { (Map[(Transition, Transition), Place](), PetriNet.Empty) }
+
+    val buildNet = dotg.graph.toList.foldLeft(z) {
+      case (state, (element, postset)) => state >>= { case (implicitPlaces, net) => {
         // For each line in the STG graph, first create the components (transitions and places) referred to in this line:
         // -- if a reference is a SignalTransition, build a Petri Net compatible name (e.g. a+/2 -> a_plus_2) and add a transition
         //    (or return existing one if it is already known)
@@ -56,18 +58,17 @@ object PetriNetBuilder {
         // Gather the list of components coresponding to the references in the STG and the state of the Petri Net so far.
 
         val createComponents: IO[(List[Component], PetriNet)] = {
-          val z = net.map((List[Component](), _))
+          val z = ioPure.pure { (List[Component](), net) }
           (element :: postset).foldLeft(z) {
             case (result, element) => result >>= {
               case (comps, net) => getOrCreate(dotg.dummy, element, net).map { case (newComp, newNet) => (newComp :: comps, newNet) }
             }
           }
-        }
+        }.map { case (components, net) => (components.reverse, net) }
 
         // create arcs from the first component in the list to the rest of the components and add them to the net
         // if both components are transitions, an implicit place needs to be created explicitly in the Petri Net
-        val createArcs: IO[(Map[(Transition, Transition), Place], PetriNet)] = createComponents >>= {
-          case (components, net) => {
+        val createArcs: IO[(Map[(Transition, Transition), Place], PetriNet)] = createComponents >>= { case (components, net) => {
             def ensureUniqueName(name: String, net: PetriNet): String = {
               def findFreeName(suffix: Int): String = {
                 val candidate = name + "_" + suffix
@@ -76,7 +77,8 @@ object PetriNetBuilder {
               if (net.names.contains(name)) findFreeName(0) else name
             }
 
-            val z = ioPure.pure { ((Map[(Transition, Transition), Place](), net)) }
+            val z = ioPure.pure { (implicitPlaces, net) }
+
             components.tail.foldLeft(z) {
               case (result, comp) => (components.head, comp) match {
                 case (p: Place, t: Transition) => result >>= { case (implicitPlaces, net) => newConsumerArc(p, t).map(arc => (implicitPlaces, net.copy(arcs = arc :: net.arcs))) }
@@ -97,41 +99,44 @@ object PetriNetBuilder {
                 case _ => throw new RuntimeException("The STG specification contains an invalid arc between places")
               }
             }
-          }
+        }
+      }
+      
+      createArcs
+    }
+    }
+  }
+
+    val applyMarking: IO[PetriNet] = buildNet map {
+      case (implicitPlaces, net) => {
+        def elementName(g: GraphElement) = g match {
+          case x: SignalTransition => signalTransitionName(x)
+          case PlaceOrDummy(name) => name
+        }
+        def findPlace(net: PetriNet, name: String): Place = net.names(name) match {
+          case p: Place => p
+          case _ => throw new RuntimeException(name + " is used as a place but is a transition")
+        }
+        def findTransition(net: PetriNet, name: String): Transition = net.names(name) match {
+          case t: Transition => t
+          case _ => throw new RuntimeException(name + " is used as a transition but is a place")
         }
 
-        val applyMarking: IO[PetriNet] = createArcs map { case (implicitPlaces, net) => {
-            def elementName(g: GraphElement) = g match {
-              case x: SignalTransition => signalTransitionName(x)
-              case PlaceOrDummy(name) => name
-            }
-	  def findPlace (net: PetriNet, name: String): Place = net.names(name) match {
-		  case p: Place => p
-		  case _ => throw new RuntimeException ( name + " is used as a place but is a transition")
-		}
-	  def findTransition (net: PetriNet, name: String): Transition = net.names(name) match {
-		  case t: Transition => t
-		  case _ => throw new RuntimeException ( name + " is used as a transition but is a place")
-		}
-	
+        dotg.marking.foldLeft(net) {
+          case (net, (ref, marking)) => ref match {
+            case PlaceRef.ExplicitPlace(name) => net.copy(marking = net.marking + (findPlace(net, name) -> marking))
 
-            dotg.marking.foldLeft(net) {
-              case (net, (ref, marking)) => ref match {
-                case PlaceRef.ExplicitPlace(name) => net.copy (marking = net.marking + (findPlace(net, name) -> marking))
-						      
-                case PlaceRef.ImplicitPlace(el1, el2) => {
-                  val t1 = findTransition(net, elementName(el1))
-                  val t2 = findTransition(net, elementName(el2))
-                  val p = implicitPlaces((t1, t2))
-                  net.copy(marking = net.marking + (p -> marking))
-                }
-              }
+            case PlaceRef.ImplicitPlace(el1, el2) => {
+              val t1 = findTransition(net, elementName(el1))
+              val t2 = findTransition(net, elementName(el2))
+              val p = implicitPlaces((t1, t2))
+              net.copy(marking = net.marking + (p -> marking))
             }
           }
         }
-
-  applyMarking
       }
     }
+
+    applyMarking
   }
 }

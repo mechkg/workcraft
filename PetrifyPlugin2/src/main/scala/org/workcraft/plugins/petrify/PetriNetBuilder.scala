@@ -93,7 +93,7 @@ object PetriNetBuilder {
                   } yield {
                     val (implicitPlaces, net) = result
                     ((implicitPlaces + ((t1, t2) -> p)), net.copy(arcs = arc1 :: arc2 :: net.arcs, places = p :: net.places,
-                      labelling = net.labelling + (p -> name)))
+								  labelling = net.labelling + (p -> name)))
                   }
                 }
                 case _ => throw new RuntimeException("The STG specification contains an invalid arc between places")

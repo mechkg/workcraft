@@ -63,38 +63,6 @@ object DotGParser extends Parsers with RegexParsers {
         marking ++ other.marking)
   }
 
-  /*  class PetriNetBuilder(parseResult: DotG) {
-    import Direction._
-    import GraphElement._
-    import PlaceRef._
-
-    def isDummy(name: String) = parseResult.dummy.contains(name)
-
-    def stName(t: SignalTransition) = t.name + "_" + (t.direction match {
-      case Plus => "plus"
-      case Minus => "minus"
-      case Toggle => "toggle"
-    }) + (if (t.instance == 0) "" else "_" + t.instance)
-    
-    def getOrCreateTransition (name: String, net: PetriNet) = net.names.get(name) match {
-      case Some(t:Transition) => (t, net)
-      case None => (new Transition, net.copy (transitions = net.transitions + t))
-    }
-
-    def buildPetriNet: PetriNet = parseResult.graph.foldLeft(PetriNet.Empty) {
-      case (net, (elem, postset)) => {
-        
-        val src = elem match {
-          case t:SignalTransition => stName(t)
-          case PlaceOrDummy(name) => if (isDummy(name)) Some(name) else None          
-        }
-        
-                
-        
-      }
-    }
-  }*/
-
   import Direction._
   import GraphElement._
   import PlaceRef._
@@ -140,18 +108,23 @@ object DotGParser extends Parsers with RegexParsers {
 
   def stgFile = phrase((emptyline*) ~> stg <~ (emptyline*))
 
-  def parseDotG(file: File) = parse(stgFile, (new BufferedReader(new FileReader(file)))) match {
-    case Success(r, _) => Right(r)
-    case err => Left(err.toString)
+  def parseDotG(file: File): IO[Either[String, DotG]] = ioPure.pure {
+    parse(stgFile, (new BufferedReader(new FileReader(file)))) match {
+      case Success(r, _) => Right(r)
+      case err => Left(err.toString)
+    }
   }
 
   def parseTask(file: File) = new Task[DotG, String] {
-    def runTask(tc: TaskControl) = tc.descriptionUpdate("Reading " + file.getPath) >>=| (ioPure.pure { parseDotG(file) } map { case Right(result) => Right(result); case Left(error) => Left(Some(error)) })
+    def runTask(tc: TaskControl) =
+      (tc.descriptionUpdate("Reading " + file.getPath) >>=| (parseDotG(file))).map {
+	case Left(err) => Left(Some(err))
+	case Right(dotg) => Right(dotg)
+      }
   }
 }
 
 object Test extends App {
-  println("""(?m)$""".matches("\n"))
   DotGParser.parseDotG(new File("e:/winpetrify/stgshka.g")) match {
     case Left(err) => println (err)
     case Right(dotg) => println (PetriNetBuilder.buildPetriNet(dotg).unsafePerformIO)

@@ -118,15 +118,15 @@ object DotGParser extends Parsers with RegexParsers {
   def parseTask(file: File) = new Task[DotG, String] {
     def runTask(tc: TaskControl) =
       (tc.descriptionUpdate("Reading " + file.getPath) >>=| (parseDotG(file))).map {
-	case Left(err) => Left(Some(err))
-	case Right(dotg) => Right(dotg)
+        case Left(err) => Left(Some(err))
+        case Right(dotg) => Right(dotg)
       }
   }
 }
 
 object Test extends App {
   DotGParser.parseDotG(new File("e:/winpetrify/stgshka.g")) match {
-    case Left(err) => println (err)
-    case Right(dotg) => println (PetriNetBuilder.buildPetriNet(dotg).unsafePerformIO)
+    case Left(err) => println(err)
+    case Right(dotg) => println(PetriNetBuilder.buildPetriNet(dotg).unsafePerformIO)
   }
 }

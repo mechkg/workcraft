@@ -1,6 +1,6 @@
 package org.workcraft.gui
+import java.awt.Window
 import org.workcraft.logging.StandardStreamLogger
-import org.workcraft.pluginmanager.PluginManager
 import java.util.UUID
 import org.workcraft.services.GlobalServiceManager
 import org.workcraft.services.Module
@@ -24,9 +24,7 @@ object Main {
 
   implicit val logger = () => currentLogger
 
-  val version = UUID.fromString("dd10f600-4769-11e1-b86c-0800200c9a66")
   val configDirPath = System.getProperty("user.home") + File.separator + ".workcraft"
-  val pluginPackages = List("org.workcraft.plugins")
 
   def configFilePath(fileName: String) = configDirPath + File.separator + fileName
 
@@ -44,33 +42,11 @@ object Main {
     unsafeInfo("Configuration directory OK")
   }
 
-  private def shutdown(mainWindow: MainWindow)(implicit logger: () => Logger[IO]) = {
-    currentLogger = new StandardStreamLogger
-    unsafeInfo("Shutting down")
-
-    GuiConfiguration.save(configFilePath("gui.conf"), mainWindow.guiConfiguration)
-
-    mainWindow.setVisible(false)
-
-    unsafeInfo("Have a nice day!")
-    System.exit(0)
-  }
-
-  def loadPlugins(reconfigure: Boolean) = new PluginManager(version, pluginPackages, configFilePath("manifest"), reconfigure)
-
-  def main(args: Array[String]) = {
+  def main(configDescription: String, globalServices: GlobalServiceManager, args: Array[String]) = {
     unsafeInfo("Welcome to Workcraft 2.2: Return of The Deadlock")
-    unsafeInfo("This build's version ID is " + version.toString())
+    unsafeInfo("This build is using " + configDescription)
 
     checkConfig
-
-    var pluginManager = loadPlugins(false)
-    var globalServices = new GlobalServiceManager(pluginManager.plugins(classOf[Module]).map(_.singleton).toList)
-
-    val reconfigure = ioPure.pure {
-      pluginManager = loadPlugins(true)
-      globalServices = new GlobalServiceManager(pluginManager.plugins(classOf[Module]).map(_.singleton).toList)
-    }
 
     unsafeInfo("Starting GUI")
     val guiConfiguration = GuiConfiguration.load(configFilePath("gui.conf"))
@@ -81,22 +57,29 @@ object Main {
     JDialog.setDefaultLookAndFeelDecorated(true)
     UIManager.put(SubstanceLookAndFeel.TABBED_PANE_CONTENT_BORDER_KIND, TabContentPaneBorderKind.SINGLE_FULL)
 
-    SwingUtilities.invokeLater(new Runnable {
+    var mainWindow:MainWindow = null
+
+    SwingUtilities.invokeAndWait(new Runnable {
       def run = {
-
-        val mainWindow = new MainWindow(() => globalServices, reconfigure, shutdown, guiConfiguration)
-
-        mainWindow.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE)
-        mainWindow.addWindowListener(new WindowAdapter() {
-          override def windowClosing(e: WindowEvent) = shutdown(mainWindow)
-        })
+        mainWindow = new MainWindow(globalServices, guiConfiguration)
 
         currentLogger = mainWindow.loggerWindow
 
         unsafeInfo("Now in GUI mode. Welcome to Workcraft 2.2: Return of The Deadlock!")
 
         mainWindow.setVisible(true)
-      }
-    })
+      }})
+
+    mainWindow.synchronized {
+      mainWindow.wait()
+    }
+
+    currentLogger = new StandardStreamLogger
+    
+    unsafeInfo("Shutting down")
+
+    GuiConfiguration.save(configFilePath("gui.conf"), mainWindow.guiConfiguration)
+	
+    unsafeInfo("Have a nice day!")
   }
 }

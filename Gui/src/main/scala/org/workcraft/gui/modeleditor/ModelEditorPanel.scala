@@ -1,4 +1,6 @@
 package org.workcraft.gui.modeleditor
+import java.awt.event.HierarchyEvent
+import java.awt.event.HierarchyListener
 import javax.swing.JPanel
 import org.workcraft.dependencymanager.advanced.core.ExpressionBase
 import org.workcraft.dependencymanager.advanced.core.GlobalCache
@@ -36,12 +38,12 @@ class ModelEditorPanel (val model: ModelServiceProvider, val editor: ModelEditor
   
   object Repainter {
     class Image
-    def start = {
-      val repainter = graphicalContent.map(_ => { ModelEditorPanel.this.repaint(); new Image })
-      new Timer(30, new ActionListener {
-        override def actionPerformed(e: ActionEvent) = repainter.unsafeEval
-      }).start 
-    }
+
+    val repainter = graphicalContent.map(_ => { ModelEditorPanel.this.repaint(); new Image })
+
+    val timer = new Timer(30, new ActionListener {
+         override def actionPerformed(e: ActionEvent) = repainter.unsafeEval
+      })
   }
 
   object Resizer extends ComponentAdapter {
@@ -145,8 +147,21 @@ class ModelEditorPanel (val model: ModelServiceProvider, val editor: ModelEditor
 
   })
   
-  Repainter.start
-  
+   addComponentListener(new ComponentAdapter {
+     override def componentShown (e:ComponentEvent) = { println ("shown!"); Repainter.timer.start; }
+     override def componentHidden (e:ComponentEvent) = { println ("hidden"); Repainter.timer.stop; }
+   })
+
+  addHierarchyListener ( new HierarchyListener {
+    override def hierarchyChanged (e: HierarchyEvent) = 
+      if ((e.getChangeFlags & HierarchyEvent.SHOWING_CHANGED) != 0) {
+	if (isShowing)
+	  Repainter.timer.start
+	else
+	  Repainter.timer.stop
+      }
+  })
+
   override def paint(g: Graphics) = {
     val g2d = g.asInstanceOf[Graphics2D] // woohoo
     graphicalContent.unsafeEval.draw(g2d)

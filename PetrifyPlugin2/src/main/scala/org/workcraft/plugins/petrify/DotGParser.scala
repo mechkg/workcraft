@@ -96,9 +96,9 @@ object DotGParser extends Parsers with RegexParsers {
   def outputs = (".outputs" ~> (name+) <~ (emptyline+)) ^^ (s => DotG(outputs = s))
   def internal = (".internal" ~> (name+) <~ (emptyline+)) ^^ (s => DotG(internal = s))
 
-  def m = (placeRef ~ (("=" ~> number)?)) ^^ { case a ~ b => (a -> b.getOrElse(0)) }
+  def m = log((placeRef ~ (("=" ~> number)?)) ^^ { case a ~ b => (a -> b.getOrElse(1)) })("placeRef")
 
-  def implicitPlaceRef = "<" ~> (graphElement <~ ",") ~ graphElement <~ ">" ^^ { case from ~ to => ImplicitPlace(from, to) }
+  def implicitPlaceRef = log( "<" ~> (graphElement <~ ",") ~ graphElement <~ ">" ^^ { case from ~ to => ImplicitPlace(from, to) })("implicitPlaceRef")
 
   def placeRef = implicitPlaceRef | (name ^^ (ExplicitPlace(_)))
 
@@ -125,8 +125,8 @@ object DotGParser extends Parsers with RegexParsers {
 }
 
 object Test extends App {
-  DotGParser.parseDotG(new File("e:/winpetrify/stgshka.g")) match {
-    case Left(err) => println(err)
-    case Right(dotg) => println(PetriNetBuilder.buildPetriNet(dotg).unsafePerformIO)
-  }
+  (DotGParser.parseDotG(new File("e:/winpetrify/stgshka.g")) >>= {
+    case Left(err) => ioPure.pure { println(err) }
+    case Right(dotg) => PetriNetBuilder.buildPetriNet(dotg).map(println(_))
+  }).unsafePerformIO
 }

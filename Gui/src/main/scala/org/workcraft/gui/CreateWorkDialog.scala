@@ -32,7 +32,7 @@ import java.awt.Font
 import org.workcraft.scala.effects.IO
 import org.workcraft.scala.effects.IO._
 
-class CreateWorkDialog private (models: List[NewModelImpl]) extends JDialog {
+class CreateWorkDialog private (models: List[NewModelImpl], owner: Window) extends JDialog(owner) {
   class ListElement(val newModel: NewModelImpl) {
     override def toString = newModel.name
   }
@@ -157,7 +157,7 @@ object CreateWorkDialog {
       JOptionPane.showMessageDialog(parentWindow, "Workcraft was unable to find any plug-ins that could create a new model.\n\nReconfiguring Workcraft (Utility->Reconfigure) might fix this.\n\nIf you are running Workcraft from a development environment such as Eclipse,\nplease make sure to add the plug-in classes to the classpath in run configuration. ", "Warning", JOptionPane.WARNING_MESSAGE)
       None
     } else {
-      val dialog = new CreateWorkDialog(models)
+      val dialog = new CreateWorkDialog(models, parentWindow)
       GUI.centerAndSizeToParent(dialog, parentWindow)
       dialog.setVisible(true)
       dialog.choice.map((_,dialog.chkOpen.isSelected()))

@@ -44,12 +44,18 @@ import java.awt.event.FocusListener
 import java.awt.event.FocusEvent
 
 class MainWindow(
-  val globalServices: () => GlobalServiceManager,
-  reconfigure: IO[Unit],
-  shutdown: MainWindow => Unit,
+  val globalServices: GlobalServiceManager,
   configuration: Option[GuiConfiguration]) extends JFrame {
   val loggerWindow = new LoggerWindow
   implicit val implicitLogger: () => Logger[IO] = () => loggerWindow
+
+
+  setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE)
+
+  addWindowListener(new WindowAdapter() {
+    override def windowClosing(e: WindowEvent) = exit.unsafePerformIO
+  })
+
 
   applyIconManager
 
@@ -83,7 +89,7 @@ class MainWindow(
 
   var openEditors = List[DockableWindow[ModelEditorPanel]]()
 
-  val menu = new MainMenu(this, List(loggerDockable, toolboxDockable, propEdDockable), globalServices, { case (m, b) => newModel(m, b) }, reconfigure)
+  val menu = new MainMenu(this, List(loggerDockable, toolboxDockable, propEdDockable), globalServices, { case (m, b) => newModel(m, b) })
   this.setJMenuBar(menu)
 
   def closeUtilityWindow(window: DockableWindow[_ <: JComponent]) = {
@@ -187,5 +193,11 @@ class MainWindow(
     DockingManager.undock(editorDockable)
   }
 
-  def exit = ioPure.pure { shutdown(this) }
+  def exit = ioPure.pure { 
+    setVisible(false) 
+    dispose()
+    this.synchronized {
+      notify()
+    }
+  }
 }

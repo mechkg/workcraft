@@ -11,6 +11,7 @@ import java.io.File
 import org.workcraft.scala.effects.IO._
 import org.workcraft.scala.effects.IO
 import org.workcraft.dom.visual.connections.Polyline
+import org.workcraft.dom.visual.connections.StaticVisualConnectionData 
 import java.io.BufferedReader
 import java.io.FileReader
 import scalaz._
@@ -52,13 +53,13 @@ object LlnetParser extends Parsers with RegexParsers {
     }
   }
 
-  case class Llnet (format: Int, blocks: List[FinalBlockSpec], places: List[FinalPlaceSpec], 
-                    transitions: List[FinalTransitionSpec], producerArcs: List[ArcSpec],
-                    consumerArcs: List[ArcSpec])
+  case class Llnet (format: Int, blocks: List[FinalBlockSpec], places: List[FinalPlaceSpec],
+                    transitions: List[FinalTransitionSpec], producerArcs: List[FinalArcSpec],
+                    consumerArcs: List[FinalArcSpec])
 
   case class FinalBlockSpec (num: Int, name: String, pos: (Int,Int), 
                         namePos: Option[(Int,Int)], meaning: Option[String], meaningPos: Option[(Int,Int)], 
-                        reference: Option[String], blocks: Option[String]) 
+                        reference: Option[String], blocks: Option[String])
 
   case class FinalTransitionSpec (num: Int, name: String, pos: (Int,Int), namePos: Option[(Int,Int)],
                         meaning: Option[String], meaningPos: Option[(Int,Int)], referece: Option[String],
@@ -67,13 +68,15 @@ object LlnetParser extends Parsers with RegexParsers {
   case class FinalPlaceSpec (num: Int, name: String, pos: (Int,Int), namePos: Option[(Int,Int)],
                         meaning: Option[String], meaningPos: Option[(Int,Int)], initialMarking: Int,
                         currentMarking: Int, capacity: Option[Int] , reference: Option[String],
-                        entry: Option[Boolean], exit: Option[Boolean], blocks: Option[String] )
+                        entry: Option[Boolean], exit: Option[Boolean], blocks: Option[String])
 
+  case class FinalArcSpec ( from: Int, to: Int, weight: Int, weightPos: Option[(Int,Int)] = None,
+			   visibility: Option[Int] = None, anchorPoint: Option[(Int,Int)] = None )
 
 
   case class PlaceSpec (num: Option[Int] = None, name: Option[String] = None, pos: Option[(Int,Int)] = None, namePos: Option[(Int,Int)] = None,
-                        meaning: Option[String] = None, meaningPos: Option[(Int,Int)] = None, initialMarking: Option[Int] = Some(0),
-                        currentMarking: Option[Int] = Some(0), capacity: Option[Int] = None, reference: Option[String] = None,
+                        meaning: Option[String] = None, meaningPos: Option[(Int,Int)] = None, initialMarking: Option[Int] = None,
+                        currentMarking: Option[Int] = None, capacity: Option[Int] = None, reference: Option[String] = None,
                         entry: Option[Boolean] = None, exit: Option[Boolean] = None, blocks: Option[String] = None) {
 
 
@@ -84,7 +87,7 @@ object LlnetParser extends Parsers with RegexParsers {
                                       capacity + other.capacity, reference + other.reference, entry + other.entry,
                                       exit + other.exit, blocks + other.blocks)
 
-                         def finalise = FinalPlaceSpec(num.get, name.get, pos.get, namePos, meaning, meaningPos, initialMarking.get, currentMarking.get, capacity, 
+                         def finalise = FinalPlaceSpec(num.get, name.get, pos.get, namePos, meaning, meaningPos, initialMarking.getOrElse(0), currentMarking.getOrElse(0), capacity, 
                                                        reference, entry, exit, blocks)
                         }
 
@@ -101,13 +104,15 @@ object LlnetParser extends Parsers with RegexParsers {
                         }
 
 
-  case class ArcSpec ( producer: Option[Boolean] = None, from: Option[Int] = None, to: Option[Int] = None, weight: Option[Int] = None, weightPos: Option[(Int,Int)] = None,
+  case class ArcSpec ( from: Option[Int] = None, to: Option[Int] = None, weight: Option[Int] = None, weightPos: Option[(Int,Int)] = None,
                        visibility: Option[Int] = None, anchorPoint: Option[(Int,Int)] = None ) {
 
                          def + (other: ArcSpec) = 
-                           ArcSpec( producer + other.producer, from + other.from, 
-                                    to + other.to, weight + other.weight, weightPos + other.weightPos,
-                                    visibility + other.visibility, anchorPoint + other.anchorPoint)
+                           ArcSpec( from + other.from,  to + other.to, weight + other.weight, 
+				   weightPos + other.weightPos, visibility + other.visibility, 
+				   anchorPoint + other.anchorPoint)
+
+			 def finalise = FinalArcSpec (from.get, to.get, weight.getOrElse(1), weightPos, visibility, anchorPoint)
                         }
 
   case class BlockSpec ( num: Option[Int] = None, name: Option[String] = None, pos: Option[(Int,Int)] = None, 
@@ -127,7 +132,7 @@ object LlnetParser extends Parsers with RegexParsers {
   val EOI: Parser[Any] = new Parser[Any] {
        def apply(in: Input) = {
            if (in.atEnd) new Success( "EOI", in )
-           else Failure("End of Input expected", in)
+           else Failure("end of file expected", in)
       }
   }
 
@@ -141,19 +146,19 @@ object LlnetParser extends Parsers with RegexParsers {
 
   def str = "\".*?\"".r
 
-  def header = ("PEP" ~ (endofline) ~ ("PetriBox"|"PTNet") ~ (endofline) ~ "FORMAT_N") ~> integer <~ (endofline)
+  def header = ("PEP" ~ (endofline) ~ ("PetriBox"|"PTNet") ~ (endofline) ~ "FORMAT_N") ~> opt(integer) <~ (endofline) ^^ (_.getOrElse(1))
 
   def fixedSpecs = (opt(integer) ~ opt (str) ~ position)
 
   def placeSpec =  fixedSpecs flatMap { 
-    case num_ ~ name_ ~ pos_ => placeOptSpec ^^ (PlaceSpec (num = num_, name = name_, pos = Some(pos_)) + _) 
+    case num_ ~ name_ ~ pos_ => placeOptSpec ^^ (PlaceSpec (num = num_, name = name_, pos = Some(pos_)) + _)
   }
     
-  def placeOptSpec: Parser[PlaceSpec] =
-   ( ("n" ~> position) flatMap ( pos => placeOptSpec ^^ (PlaceSpec(namePos = Some(pos)) + _)) )     |
+  def placeOptSpec: Parser[PlaceSpec] =  
+   ( ("n" ~> position) flatMap ( pos => placeOptSpec ^^ (PlaceSpec(namePos = Some(pos))+ _)) )      |
    ( ("b" ~> str) flatMap ( s => placeOptSpec ^^ (PlaceSpec(meaning = Some(s)) + _) ))              |
    ( ("a" ~> position) flatMap ( pos => placeOptSpec ^^ (PlaceSpec(meaningPos = Some(pos)) + _)) )  |
-   ( ("M" ~> integer) flatMap ( im => placeOptSpec ^^ (PlaceSpec(initialMarking = Some(im)) + _)) ) |
+   ( ("M" ~> integer) flatMap ( im => placeOptSpec ^^ (PlaceSpec(initialMarking = Some(im)) + _)))  |
    ( ("m" ~> integer) flatMap ( m => placeOptSpec ^^ (PlaceSpec(currentMarking = Some(m)) + _)) )   |
    ( ("k" ~> integer) flatMap ( c =>  placeOptSpec ^^ (PlaceSpec(capacity = Some(c)) + _)) )        |
    ( ("R" ~> str) flatMap ( s =>  placeOptSpec ^^ (PlaceSpec(reference = Some(s)) + _)) )           |
@@ -189,9 +194,10 @@ object LlnetParser extends Parsers with RegexParsers {
 
   def transitions = ("TR" ~ endofline) ~> (transitionSpec+)
 
-  def consumerArcSpec = ((integer <~ ">") ~ integer) flatMap { case from ~ to => arcOptSpec ^^ (ArcSpec (Some(false), Some(from), Some(to)) + _) }
+  def consumerArcSpec = ((integer <~ ">") ~ integer) flatMap { case from ~ to => arcOptSpec ^^ (ArcSpec (Some(from), Some(to)) + _) }
 
-  def producerArcSpec = ((integer <~ "<") ~ integer) flatMap { case to ~ from => arcOptSpec ^^ (ArcSpec (Some(true), Some(from), Some(to)) + _) }
+  // this makes no sense! why use '<' and '>' if they don't actually show the arc direction?
+  def producerArcSpec = ((integer <~ "<") ~ integer) flatMap { case from ~ to => arcOptSpec ^^ (ArcSpec (Some(from), Some(to)) + _) }
 
   def arcOptSpec: Parser[ArcSpec] =
    ( ("w" ~> integer) flatMap ( w => arcOptSpec ^^ (ArcSpec(weight = Some(w)) + _)) )           |
@@ -223,33 +229,80 @@ object LlnetParser extends Parsers with RegexParsers {
 
   def blocks = ("BL" ~ endofline) ~> (blockSpec+)
 
-  def text = (("TX" ~ endofline) ~> ("N" ~> position ~ str)+) ^^ (_.map { case pos ~ text => Text(pos, text) })
+  def text = (("TX" ~ endofline) ~> ("N" ~> position ~ str <~ endofline)+) ^^ (_.map { case pos ~ text => Text(pos, text) })
 
   def withAutoNum[A] (elements: List[A], nameBase: String)(implicit hasNum: HasNumName[A]) =
    elements.zipWithIndex.map { case (element, index) => hasNum.auto(element, (index+1), nameBase+(index+1)) }
 
-  def llnet = header ~ opt(blockDefaults) ~ opt(placeDefaults) ~ opt(transitionDefaults) ~
-              opt(arcDefaults) ~ blocks ~ places ~ transitions ~ producerArcs ~ consumerArcs ~ opt(text) ^^ 
-              { case format ~ blockDefaults ~ placeDefaults ~ transitionDefaults ~ 
-                     arcDefaults ~ blocks ~ places ~ transitions ~ producerArcs ~ consumerArcs ~ text => {
-                        val blocksWithDefaults = if (blockDefaults.isDefined) blocks.map (blockDefaults.get + _) else blocks
+  def formatN1 = opt(placeDefaults) ~ opt(transitionDefaults) ~
+              opt(arcDefaults) ~ places ~ transitions ~ producerArcs ~ consumerArcs ~ opt(text) ^^ 
+              { case placeDefaults ~ transitionDefaults ~ 
+                     arcDefaults ~ places ~ transitions ~ producerArcs ~ consumerArcs ~ text => {
                         val placesWithDefaults =  if (placeDefaults.isDefined) places.map (placeDefaults.get + _) else places
                         val transitionsWithDefaults = if (transitionDefaults.isDefined) transitions.map (transitionDefaults.get + _) else transitions
                         val producerArcsWithDefaults = if (arcDefaults.isDefined) producerArcs.map(arcDefaults.get + _) else producerArcs
                         val consumerArcsWithDefaults = if (arcDefaults.isDefined) consumerArcs.map(arcDefaults.get + _) else consumerArcs
 
-                        Llnet (format, withAutoNum(blocksWithDefaults, "block").map(_.finalise), withAutoNum(placesWithDefaults, "p").map(_.finalise), 
-                               withAutoNum(transitionsWithDefaults, "t").map(_.finalise), producerArcsWithDefaults, consumerArcsWithDefaults)
+                        Llnet (1, List(), withAutoNum(placesWithDefaults, "p").map(_.finalise), 
+                               withAutoNum(transitionsWithDefaults, "t").map(_.finalise), producerArcsWithDefaults.map(_.finalise), consumerArcsWithDefaults.map(_.finalise))
                      }
               }
 
-  def parseLlnet(file: File) = parse(phrase(llnet), (new BufferedReader(new FileReader(file)))) match {
-    case Success(r, _) => Right(r)
-    case err => Left(err.toString)
+  def formatN2 = failure ("FORMAT_N2 is not supported")
+
+  def llnet = header flatMap {
+    case 1 => formatN1
+    case 2 => formatN2
+    case 3 => failure ("Expected FORMAT_N or FORMAT_N2")
   }
+
+  def parseLlnet(file: File) = 
+    ioPure.pure {
+      parse(phrase(llnet), (new BufferedReader(new FileReader(file)))) match {
+	case Success(r, _) => Right(r)
+	case err => Left(err.toString)
+      }
+    }
+				    
 }
 
-object Test extends App {
-  println("""(?m)\n""".matches("\n"))
-  println(LlnetParser.parseLlnet(new File("e:/tmp/llnet2")))
+
+object PetriNetBuilder {
+  import LlnetParser._
+  import PetriNet._
+  def buildPetriNet (llnet: Llnet): IO[VisualPetriNet] = {
+    for {
+      places <- llnet.places.traverse(p => newPlace.map((p.num, p.name, p.initialMarking, p.pos,  _)));
+      val placeMap = places.map ( p => (p._1, p._5)).toMap;
+      transitions <- llnet.transitions.traverse (t => newTransition.map ((t.num, t.name, t.pos,  _ )));
+      val transitionMap = transitions.map( t => (t._1, t._4)).toMap;
+      parcs <- llnet.producerArcs.traverse ( a => newProducerArc ( transitionMap(a.from), placeMap(a.to) ) )
+      carcs <- llnet.consumerArcs.traverse ( a => newConsumerArc ( placeMap(a.from), transitionMap(a.to) ) )
+    } yield {
+
+      val scale = 20
+
+      val netWithPlaces = places.foldLeft(VisualPetriNet.Empty) {
+	case (VisualPetriNet(net, layout, varcs), (num, name, marking, pos, place)) => 
+	  VisualPetriNet (net.copy (places = place :: net.places, labelling = net.labelling + (place -> name), 
+				    marking = net.marking + (place -> marking)), 
+			  layout + (place -> new Point2D.Double (pos._1.toDouble / scale, pos._2.toDouble / scale)),
+			  varcs)
+      }
+
+      val netWithTransitions = transitions.foldLeft(netWithPlaces) { 
+	case (VisualPetriNet(net, layout, varcs), (num, name, pos, t)) => 
+	  VisualPetriNet(net.copy (transitions = t :: net.transitions, labelling = net.labelling + (t -> name)),
+			 layout + (t -> new Point2D.Double (pos._1.toDouble / scale, pos._2.toDouble / scale)),
+			 varcs)
+      }
+
+      (parcs ++ carcs).foldLeft(netWithTransitions) {
+	case (VisualPetriNet(net, layout, varcs), arc) => 
+	  VisualPetriNet(net.copy (arcs = arc :: net.arcs), 
+			 layout, 
+			 varcs + (arc -> new Polyline(List())))
+      }
+    }
+  }
 }

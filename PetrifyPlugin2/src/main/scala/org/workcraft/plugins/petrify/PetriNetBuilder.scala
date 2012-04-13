@@ -137,6 +137,9 @@ object PetriNetBuilder {
       }
     }
 
-    applyMarking
+    applyMarking.map ( net => {
+      val markingWithDefaultZeroes = net.places.foldLeft (net.marking) ( (marking, place) => if (!marking.contains(place)) marking + (place -> 0) else marking)
+      net.copy (marking = markingWithDefaultZeroes)
+    })
   }
 }

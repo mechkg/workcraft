@@ -19,7 +19,7 @@ object PetriNetServiceProvider extends GlobalServiceProvider {
   def implementations[T](service: Service[GlobalScope, T]) = service match {
     case NewModelService => List(NewPetriNet)
     case ExporterService => List(PnExporter)
-    case FileOpenService => List(PnFileOpen)
+    case FileOpenService => List(PnFileOpen, LlnetFileOpen)
     case _ => Nil
   }
 }

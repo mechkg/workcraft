@@ -1,5 +1,6 @@
 package org.workcraft.plugins.petri2
 import java.awt.geom.Point2D
+import org.workcraft.dom.visual.connections.Polyline
 import org.workcraft.scala.effects.IO
 import org.workcraft.scala.effects.IO._
 import org.workcraft.dom.visual.connections.StaticVisualConnectionData
@@ -75,4 +76,11 @@ case class VisualPetriNet(net: PetriNet, layout: Map[Component, Point2D.Double],
 
 object VisualPetriNet {
   val Empty = VisualPetriNet(PetriNet.Empty, Map(), Map())
+
+  def withDefaultLayout (net: PetriNet): VisualPetriNet = 
+    VisualPetriNet (
+      net,
+      (net.places ++ net.transitions).foldLeft(Map[Component, Point2D.Double]())( (map, place) => map + (place -> new Point2D.Double(0,0))),
+      net.arcs.foldLeft(Map[Arc, StaticVisualConnectionData]()) ( (map, arc) => map + (arc -> new Polyline(List())))
+    )
 }

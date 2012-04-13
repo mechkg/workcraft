@@ -34,7 +34,7 @@ object FSMServiceProvider extends GlobalServiceProvider {
   }
 }
 
-class PetrifyModule extends Module {
+class FSMModule extends Module {
   def name = "Finite State Machine"
   def serviceProvider = FSMServiceProvider
 }

@@ -29,7 +29,7 @@ import java.awt.Insets
 import java.awt.Dimension
 
 object GUI {
-  def loadImageFromResource(path: String): Either[Throwable, BufferedImage] = ClassLoader.getSystemResource(path) match {
+  def loadImageFromResource(path: String): Either[Throwable, BufferedImage] = this.getClass().getClassLoader().getResource(path) match {
     case null => Left(new IOException("Resource not found: " + path))
     case url => try { Right(ImageIO.read(url)) } catch { case e => Left(e) }
   }
@@ -57,7 +57,7 @@ object GUI {
   }
 
   def createIconFromImage(resourcePath: String): IO[Option[ImageIcon]] = ioPure.pure {
-    val res = ClassLoader.getSystemResource(resourcePath)
+    val res = this.getClass().getClassLoader().getResource(resourcePath)
     if (res == null)
       None
     else
@@ -73,7 +73,7 @@ object GUI {
     val parser = XMLResourceDescriptor.getXMLParserClassName()
     val f = new SAXSVGDocumentFactory(parser)
 
-    val document = f.createDocument(ClassLoader.getSystemResource(path).toString())
+    val document = f.createDocument(this.getClass().getClassLoader().getResource(path).toString())
 
     val userAgentAdapter = new UserAgentAdapter()
     val bridgeContext = new BridgeContext(userAgentAdapter)

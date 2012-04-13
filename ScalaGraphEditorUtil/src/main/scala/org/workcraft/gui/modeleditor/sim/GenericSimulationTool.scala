@@ -1,4 +1,6 @@
 package org.workcraft.gui.modeleditor.sim
+import java.util.TimerTask
+import javax.swing.SwingUtilities
 
 import org.workcraft.scala.effects.IO._
 import org.workcraft.scala.Expressions._
@@ -23,7 +25,7 @@ import org.workcraft.gui.modeleditor.tools.ToolEnvironment
 import org.workcraft.scala.effects.IO
 import javax.swing.JPanel
 import javax.swing.JLabel
-import javax.swing.Timer
+import java.util.Timer
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 
@@ -110,9 +112,12 @@ object GenericSimulationTool {
 
   val t = Variable.create(0.0)
 
-  new Timer(30, new ActionListener {
-    def actionPerformed(e: ActionEvent) = t.set(scala.math.sin(System.currentTimeMillis() / 200.0)).unsafePerformIO
-  }).start()
+  // new Timer(30, new ActionListener {
+  //   def actionPerformed(e: ActionEvent) = t.set(scala.math.sin(System.currentTimeMillis() / 200.0)).unsafePerformIO
+  // }).start()
+
+//  val tt = new Timer(true)
+//  tt.scheduleAtFixedRate(new TimerTask { def run =SwingUtilities.invokeLater ( new Runnable { def run = t.set(scala.math.sin(System.currentTimeMillis() / 200.0)).unsafePerformIO })}, 0, 30)
 
   val col = t.map(t => Colorisation(Some(new Color(80 + (40 * t).toInt, 200 + (40 * t).toInt, 80 + (40 * t).toInt)), None))
 

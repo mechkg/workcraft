@@ -1,0 +1,19 @@
+For release 2.2M1
+-----------------
+
+- Remember opened file names and save them to the same location on Ctrl-S, also show the file name in the editor title
+- Punf/MPSat interface
+- LoLA file parser
+- LoLA reversibility check
+
+For release 2.2M2
+-----------------
+
+- Connection shape editing
+- Settings editor (external tool paths etc)
+- Llnet file writer
+
+For release 2.2M3
+-----------------
+
+?

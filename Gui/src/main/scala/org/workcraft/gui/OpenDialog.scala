@@ -74,7 +74,7 @@ object OpenDialog {
 
               None
             }
-            case Right(model) => ioPure.pure { Some(model) }
+            case Right(model) => ioPure.pure { Some(model)  }
           }
           case None => ioPure.pure { None }
         }

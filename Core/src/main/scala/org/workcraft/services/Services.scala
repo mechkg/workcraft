@@ -26,6 +26,16 @@ object GlobalServiceProvider {
 
 trait ModelServiceProvider {
   def implementation[T](service: Service[ModelScope,T]): Option[T]
+
+  def ++ (x: ModelServiceProvider): ModelServiceProvider = {
+    val outer = this
+    new Object with ModelServiceProvider {
+      def implementation[S](service: Service[ModelScope, S]) = {
+	val impl = x.implementation(service)
+	if (impl.isDefined) impl else outer.implementation(service)
+      }
+    }
+  }
 }
 
 trait EditorServiceProvider {

@@ -35,13 +35,13 @@ import org.workcraft.services.ModelServiceProvider
 class ModelEditorPanel (val model: ModelServiceProvider, val editor: ModelEditor) (implicit logger: () => Logger[IO]) extends JPanel {
   val panelDimensions = Variable.create((0, 0, getWidth, getHeight))
   val viewDimensions = panelDimensions.map { case (x,y,w,h) => (x + 15,y + 15, w - 15, h - 15) }
-  
+
   object Repainter {
     class Image
 
     val repainter = graphicalContent.map(_ => { ModelEditorPanel.this.repaint(); new Image })
 
-    val timer = new Timer(30, new ActionListener {
+    val timer = new Timer(20, new ActionListener {
          override def actionPerformed(e: ActionEvent) = repainter.unsafeEval
       })
   }

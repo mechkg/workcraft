@@ -42,6 +42,7 @@ import org.workcraft.dependencymanager.advanced.user.Variable
 import org.workcraft.gui.modeleditor.PropertyService
 import java.awt.event.FocusListener
 import java.awt.event.FocusEvent
+import java.io.File
 
 class MainWindow(
   val globalServices: GlobalServiceManager,
@@ -76,29 +77,32 @@ class MainWindow(
 
   val propEdWindow = new PropertyEditorWindow
 
-  val placeholderDockable = dockingRoot.createRootWindow("", "DocumentPlaceholder", new DocumentPlaceholder, DockableWindowConfiguration(false, false, false))
-  val loggerDockable = createUtilityWindow("Log", "Log", loggerWindow, placeholderDockable, DockingConstants.SOUTH_REGION, 0.8)
-  val toolboxDockable = createUtilityWindow("Toolbox", "Toolbox", toolboxWindow, placeholderDockable, DockingConstants.EAST_REGION, 0.8)
-  val toolControlDockable = createUtilityWindow("Tool controls", "ToolControls", toolControlWindow, toolboxDockable, DockingConstants.NORTH_REGION, 0.8)
-  val propEdDockable = createUtilityWindow("Properties", "PropEd", propEdWindow, toolControlDockable, DockingConstants.CENTER_REGION, 0.8)
+  val placeholderDockable = dockingRoot.createRootWindow(constant(""), "DocumentPlaceholder", new DocumentPlaceholder, DockableWindowConfiguration(false, false, false))
+  val loggerDockable = createUtilityWindow(constant("Log"), "Log", loggerWindow, placeholderDockable, DockingConstants.SOUTH_REGION, 0.8)
+  val toolboxDockable = createUtilityWindow(constant("Toolbox"), "Toolbox", toolboxWindow, placeholderDockable, DockingConstants.EAST_REGION, 0.8)
+  val toolControlDockable = createUtilityWindow(constant("Tool controls"), "ToolControls", toolControlWindow, toolboxDockable, DockingConstants.NORTH_REGION, 0.8)
+  val propEdDockable = createUtilityWindow(constant("Properties"), "PropEd", propEdWindow, toolControlDockable, DockingConstants.CENTER_REGION, 0.8)
 
   val tabSwitcher = swingAutoRefresh(interfacePanel, (i: Option[JPanel]) => ioPure.pure {
     if (i.isDefined) toolControlDockable.ensureTabSelected
     else propEdDockable.ensureTabSelected
   })
 
+  val fileMapping = new FileMappingManager
+
   var openEditors = List[DockableWindow[ModelEditorPanel]]()
 
   val menu = new MainMenu(this, List(loggerDockable, toolboxDockable, propEdDockable), globalServices, { case (m, b) => newModel(m, b) })
   this.setJMenuBar(menu)
 
+
+  def createUtilityWindow(title: Expression[String], persistentId: String, content: JComponent, relativeTo: DockableWindow[_], relativeRegion: String, split: Double): DockableWindow[_ <: JComponent] =
+    dockingRoot.createWindowWithSetSplit(title, persistentId, content, DockableWindowConfiguration(maximiseButton = false, onCloseClicked = closeUtilityWindow), relativeTo, relativeRegion, split)
+
   def closeUtilityWindow(window: DockableWindow[_ <: JComponent]) = {
     window.close
     menu.windowsMenu.update(window)
   }
-
-  def createUtilityWindow(title: String, persistentId: String, content: JComponent, relativeTo: DockableWindow[_], relativeRegion: String, split: Double): DockableWindow[_ <: JComponent] =
-    dockingRoot.createWindowWithSetSplit(title, persistentId, content, DockableWindowConfiguration(maximiseButton = false, onCloseClicked = closeUtilityWindow), relativeTo, relativeRegion, split)
 
   private def applyGuiConfiguration(configOption: Option[GuiConfiguration]) = SwingUtilities.invokeLater(new Runnable {
     def run = {
@@ -131,8 +135,8 @@ class MainWindow(
   private def applyIconManager(implicit logger: () => Logger[IO]) = MainWindowIconManager.apply(this, logger)
 
   def newModel(newModelImpl: NewModelImpl, editorRequested: Boolean) =
-    newModelImpl.create >>= (model => if (editorRequested) openEditor(model) else IO.Empty)
-
+    newModelImpl.create >>= (model => (fileMapping.update(model, None) >>=| (if (editorRequested) openEditor(model) else IO.Empty)))
+  
   def setFocus(editorDockable: Option[DockableWindow[ModelEditorPanel]]): IO[Unit] = ioPure.pure {
     toolboxWindow.removeAll()
     editorDockable match {
@@ -162,7 +166,7 @@ class MainWindow(
       case Some(editor) => {
         val editorPanel = new ModelEditorPanel(model, editor)(implicitLogger)
         
-        val editorDockable = dockingRoot.createWindow("Untitled", "unused", editorPanel, DockableWindowConfiguration(onCloseClicked = closeEditor), if (openEditors.isEmpty) placeholderDockable else (openEditors.head), DockingConstants.CENTER_REGION)
+        val editorDockable = dockingRoot.createWindow(fileMapping.lastSavedAs(model).map(_.map(_.getName).getOrElse("New model")), "unused", editorPanel, DockableWindowConfiguration(onCloseClicked = closeEditor), if (openEditors.isEmpty) placeholderDockable else (openEditors.head), DockingConstants.CENTER_REGION)
         
         editorPanel.addFocusListener(new FocusListener {
           override def focusGained(e: FocusEvent) = setFocus(Some(editorDockable)).unsafePerformIO
@@ -183,8 +187,9 @@ class MainWindow(
 
   def closeEditor(editorDockable: DockableWindow[ModelEditorPanel]) {
     // TODO: Ask to save etc.
+    fileMapping.remove(editorDockable.content.model)
 
-    openEditors -= editorDockable
+    openEditors = openEditors.filterNot (_ == editorDockable)    
 
     if (openEditors.isEmpty)
       DockingManager.dock(placeholderDockable, editorDockable, DockingConstants.CENTER_REGION)

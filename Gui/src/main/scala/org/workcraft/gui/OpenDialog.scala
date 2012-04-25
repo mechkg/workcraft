@@ -54,7 +54,7 @@ object OpenDialog {
     }
   })
 
-  def open(parentWindow: Window, globalServices: GlobalServiceManager): IO[Option[ModelServiceProvider]] = {
+  def open(parentWindow: Window, globalServices: GlobalServiceManager): IO[Option[(File, ModelServiceProvider)]] = {
     val importers = globalServices.implementations(FileOpenService)
 
     if (importers.isEmpty) ioPure.pure {
@@ -74,7 +74,7 @@ object OpenDialog {
 
               None
             }
-            case Right(model) => ioPure.pure { Some(model)  }
+            case Right(model) => ioPure.pure { Some((file, model))  }
           }
           case None => ioPure.pure { None }
         }

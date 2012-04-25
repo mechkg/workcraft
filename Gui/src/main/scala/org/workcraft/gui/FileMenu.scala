@@ -29,6 +29,7 @@ import org.workcraft.scala.Expressions._
 import scalaz.Scalaz._
 import org.workcraft.services.ExportError
 import javax.swing.JOptionPane
+import IOUtils._
 
 class FileMenu(services: GlobalServiceManager, mainWindow: MainWindow, newModel: ((NewModelImpl, Boolean)) => IO[Unit]) extends ReactiveMenu("File") {
   def handleExportError(error: Option[ExportError]): IO[Unit] = error match {
@@ -36,20 +37,45 @@ class FileMenu(services: GlobalServiceManager, mainWindow: MainWindow, newModel:
     case Some(error) => ioPure.pure { JOptionPane.showMessageDialog(mainWindow, error match { case ExportError.Exception(e) => e.toString(); case ExportError.Message(m) => m }, "Error", JOptionPane.ERROR_MESSAGE) }
   }
 
+  def unsupportedFormatWarning (errorMessage: String): IO[Unit] = ioPure.pure {
+    JOptionPane.showMessageDialog(mainWindow, 
+				  "Workcraft is unable to save this file in its current format.\nPlease use the Save As command and save it using one of the supported formats.\n\nWorkcraft is unable to use the current format for the following reason:\n" + errorMessage, "Unsupported format", JOptionPane.WARNING_MESSAGE)
+  }
+
+  def doSaveAs(model: ModelServiceProvider): IO[Unit] = 
+    SaveDialog.saveAs(mainWindow, model, services) >>= {
+      case Some((file, job)) => job >>= {
+	case Some(error) => handleExportError(Some(error))
+	case None => mainWindow.fileMapping.update (model, Some(file))
+      }
+      case None => IO.Empty
+    }
+
   // Must be lazy because Scala allows to read uninitialized values
   lazy val items = mainWindow.editorInFocus.map(editor => {
     val newWork = menuItem("New work", Some('N'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK)),
       CreateWorkDialog.show(services.implementations(NewModelService), mainWindow) >>= { case Some(choice) => newModel(choice); case None => IO.Empty })
 
-    val open = menuItem("Open file...", Some('O'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK)), OpenDialog.open(mainWindow, services) >>= { case Some(model) => mainWindow.openEditor(model); case None => IO.Empty })
+    val open = menuItem("Open file...", Some('O'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK)),
+			OpenDialog.open(mainWindow, services) >>= {
+			  case Some((file, model)) => mainWindow.fileMapping.update(model, Some(file)) >>=| mainWindow.openEditor(model);
+			  case None => IO.Empty })
 
     val save = editor match {
       case Some(e) => {
-        val save = menuItem("Save", Some('S'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)), SaveDialog.saveAs(mainWindow, e.content.model, services) >>= {
-          case Some(job) => job >>= handleExportError
-          case None => IO.Empty
-        })
-        val saveAs = menuItem("Save as...", Some('a'), None, SaveDialog.saveAs(mainWindow, e.content.model, services) >>= { case Some(job) => job >>= handleExportError; case None => IO.Empty })
+        val save = menuItem("Save", Some('S'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)), 
+			    mainWindow.fileMapping.lastSavedAs(e.content.model).eval >>= {
+			      case Some(file) => guessFormatFromExtension(file) match {
+				case Some(format) => IOUtils.export (e.content.model, format, file, services) match {
+				  case Left(err) => unsupportedFormatWarning(err)
+				  case Right(job) => job >>= handleExportError
+				}
+				case None => doSaveAs (e.content.model)
+			      }
+			      case None => doSaveAs (e.content.model)
+			    })
+
+        val saveAs = menuItem("Save as...", Some('a'), None, doSaveAs(e.content.model))
         List(save, saveAs)
       }
       case None => {

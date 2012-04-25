@@ -12,6 +12,7 @@ import org.flexdock.plaf.common.border.ShadowBorder
 import org.flexdock.docking.props.PropertyManager
 import javax.swing.JTabbedPane
 import javax.swing.SwingConstants
+import org.workcraft.scala.Expressions._
 
 class DockingRoot(val id: String) extends JPanel {
   val pm = DockingManager.getLayoutManager().asInstanceOf[PerspectiveManager]
@@ -28,7 +29,7 @@ class DockingRoot(val id: String) extends JPanel {
   setLayout(new BorderLayout)
   add(rootDockingPort, BorderLayout.CENTER)
 
-  def createWindowWithSetSplit[A <: JComponent](title: String, persistentId: String, content: A, configuration: DockableWindowConfiguration[A],
+  def createWindowWithSetSplit[A <: JComponent](title: Expression[String], persistentId: String, content: A, configuration: DockableWindowConfiguration[A],
     neighbour: DockableWindow[_], relativeRegion: String = DockingConstants.CENTER_REGION, split: Double = 0.5) = {
     val window = new DockableWindow[A](title, persistentId, content, configuration)
     DockingManager.registerDockable(window)
@@ -38,7 +39,7 @@ class DockingRoot(val id: String) extends JPanel {
     window
   }
 
-  def createWindow[A <: JComponent](title: String, persistentId: String, content: A, configuration: DockableWindowConfiguration[A],
+  def createWindow[A <: JComponent](title: Expression[String], persistentId: String, content: A, configuration: DockableWindowConfiguration[A],
     neighbour: DockableWindow[_], relativeRegion: String = DockingConstants.CENTER_REGION) = {
     val window = new DockableWindow[A](title, persistentId, content, configuration)
     DockingManager.registerDockable(window)
@@ -47,7 +48,7 @@ class DockingRoot(val id: String) extends JPanel {
     window
   }
 
-  def createRootWindow[A <: JComponent](title: String, persistentId: String, content: A, configuration: DockableWindowConfiguration[A]) = {
+  def createRootWindow[A <: JComponent](title: Expression[String], persistentId: String, content: A, configuration: DockableWindowConfiguration[A]) = {
     val window = new DockableWindow[A](title, persistentId, content, configuration)
     DockingManager.registerDockable(window)
     DockingManager.dock(window, rootDockingPort, DockingConstants.CENTER_REGION)

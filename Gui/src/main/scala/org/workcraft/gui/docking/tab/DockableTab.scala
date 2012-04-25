@@ -7,6 +7,9 @@ import javax.swing.JLabel
 import javax.swing.Box
 import java.awt.Dimension
 import javax.swing.JComponent
+import org.workcraft.scala.Expressions._
+import org.workcraft.scala.effects.IO._
+import scalaz.Scalaz._
 
 class DockableTab[A <: JComponent](window: DockableWindow[A]) extends JPanel {
   setOpaque(false)
@@ -19,12 +22,15 @@ class DockableTab[A <: JComponent](window: DockableWindow[A]) extends JPanel {
   buttonsPanel.setOpaque(false)
   buttonsPanel.setFocusable(false)
 
-  val trimmedTitle = if (window.title.length > 64)
-    window.title.substring(0, 31) + "..." + window.title.substring(window.title.length() - 32, window.title.length());
-  else
-    window.title
+  val trimmedTitle = window.title.map ( title => if (title.length > 64)
+    title.substring(0, 31) + "..." + title.substring(title.length() - 32, title.length());
+						 else
+						   title)
 
-  val label = new JLabel(trimmedTitle)
+  val label = new JLabel(trimmedTitle.unsafeEval)
+
+  val refresh = swingAutoRefresh (trimmedTitle, (title:String) => ioPure.pure { label.setText(title)} )
+
   label.setFocusable(false)
 
   if (window.configuration.maximiseButton) {

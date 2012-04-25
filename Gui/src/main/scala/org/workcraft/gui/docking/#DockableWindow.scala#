@@ -26,8 +26,6 @@ class DockableWindow[A <: JComponent](
 
   val contentPanel = new DockableWindowContentPanel(this)
 
-  val refresh = swingAutoRefresh (title, (t:String) => ioPure.pure {setTabText(t)})
-
   def getComponent = contentPanel
 
   override val getDragSources = scala.collection.JavaConversions.asJavaList(List(contentPanel))

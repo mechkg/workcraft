@@ -65,7 +65,7 @@ object SaveDialog {
 
   def export(parentWindow: Window, model: ModelServiceProvider, format: Format, exporter: ExportJob): IO[Option[IO[Option[ExportError]]]] = chooseFile (None, parentWindow, format).map(_.map(exporter.job(_)))
 
-  def saveAs(parentWindow: Window, model: ModelServiceProvider, globalServices: GlobalServiceManager): IO[Option[IO[Option[ExportError]]]] = model.implementation(DefaultFormatService) match {
+  def saveAs(parentWindow: Window, model: ModelServiceProvider, globalServices: GlobalServiceManager): IO[Option[(File, IO[Option[ExportError]])]] = model.implementation(DefaultFormatService) match {
     case None => ioPure.pure {
       JOptionPane.showMessageDialog(parentWindow, "Current model does not define a default file format.\nTry using export and choosing a specific format instead.", "Error", JOptionPane.ERROR_MESSAGE)
       None
@@ -89,7 +89,7 @@ object SaveDialog {
 
       } else
         // TODO: handle more than one exporter
-        chooseFile(None, parentWindow, format).map(_.map(applicable.head.job(_)))
+        chooseFile(None, parentWindow, format).map(_.map( f => (f, applicable.head.job(f))))
     }
   }
 }     

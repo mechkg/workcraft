@@ -13,6 +13,8 @@ import javax.swing.JLabel
 import java.awt.Font
 import javax.swing.JComponent
 import javax.swing.BorderFactory
+import org.workcraft.scala.Expressions._
+import org.workcraft.scala.effects.IO._
 
 class DockableWindowContentPanel[A <: JComponent](val window: DockableWindow[A]) extends JPanel {
   object Header extends JPanel {
@@ -90,7 +92,10 @@ class DockableWindowContentPanel[A <: JComponent](val window: DockableWindow[A])
       buttonPanel.setPreferredSize(new Dimension((UIManager.getIcon("InternalFrame.closeIcon").getIconWidth() + 4) * buttons, UIManager.getIcon("InternalFrame.closeIcon").getIconHeight() + 4))
     }
 
-    val label = new JLabel(" " + window.title)
+    val label = new JLabel(window.title.unsafeEval)
+
+    val refresh = swingAutoRefresh (window.title, (title:String) => ioPure.pure { label.setText(title) })
+
     label.setOpaque(false);
     label.setForeground(UIManager.getColor("InternalFrame.activeTitleForeground"));
     label.setFont(label.getFont().deriveFont(Font.BOLD));

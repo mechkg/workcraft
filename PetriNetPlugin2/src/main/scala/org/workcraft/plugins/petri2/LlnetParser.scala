@@ -144,7 +144,7 @@ object LlnetParser extends Parsers with RegexParsers {
 
   def position = (integer <~ "@") ~ integer ^^ { case x ~ y => (x,y) }
 
-  def str = "\".*?\"".r
+  def str = "\".*?\"".r ^^ { s => s.substring(1, s.length-1) }
 
   def header = ("PEP" ~ (endofline) ~ ("PetriBox"|"PTNet") ~ (endofline) ~ "FORMAT_N") ~> opt(integer) <~ (endofline) ^^ (_.getOrElse(1))
 

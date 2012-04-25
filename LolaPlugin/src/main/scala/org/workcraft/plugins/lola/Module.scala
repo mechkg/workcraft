@@ -22,7 +22,7 @@ import scalaz.Scalaz._
 object LolaServiceProvider extends GlobalServiceProvider {
   def implementations[T](service: Service[GlobalScope, T]) = service match {
     case ExporterService => List(LolaExporter)
-    case GuiToolService => List(LolaDeadlockTool) 
+    case GuiToolService => List(LolaDeadlockTool, LolaReversibilityTool) 
     case _ => Nil
   }
 }

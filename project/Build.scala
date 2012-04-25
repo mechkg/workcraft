@@ -44,7 +44,7 @@ object Workcraft extends Build {
   lazy val gui = Project(id = "gui", base = file ("Gui"))
   .settings (libraryDependencies := Seq ( "org.streum" %% "configrity" % "0.9.0", "org.apache.xmlgraphics" % "batik-svg-dom" % "1.7", "org.apache.xmlgraphics" % "batik-svggen" % "1.7",
                                           "org.apache.xmlgraphics" % "batik-bridge" % "1.7", "tablelayout" % "TableLayout" % "20050920", "org.flexdock" % "flexdock" % "1.1.1",
-                                          "commons-logging" % "commons-logging" % "1.1", "com.github.insubstantial" % "substance" % "7.1", "com.github.insubstantial" % "trident" % "7.1")
+                                          "commons-logging" % "commons-logging" % "1.1", "com.github.insubstantial" % "substance" % "7.1", "com.github.insubstantial" % "trident" % "7.1", "com.google.guava" % "guava" % "11.0.2")
              , resolvers := repos)
   .dependsOn (core, graphics, logger)
   .settings (resourceDirectory in Compile <<= baseDirectory { _ / "src" / "main" / "resources" })

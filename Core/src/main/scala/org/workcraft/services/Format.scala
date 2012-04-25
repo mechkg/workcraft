@@ -8,4 +8,6 @@ object Format {
   case object WorkcraftPetriNet extends Format("Petri Net in Workcraft format", ".pn")
   case object Dot extends Format("GraphViz dot", ".dot")
   case object Llnet extends Format("Petri Net in PEP tool format", ".ll_net")
+
+  val knownFormats = List(DotG, LolaPetriNet, WorkcraftPetriNet, Dot, Llnet)
 }

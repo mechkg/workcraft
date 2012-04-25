@@ -21,8 +21,9 @@ class DataAccumulator {
   
   def collectStderr = ioPure.pure {
     val length = stderrData.foldLeft(0)(_+_.length)
+    println ("length = " + length)
     val result = new Array[Byte](length)
-    stderrData.foldLeft(0)( (offset, chunk) => { System.arraycopy(chunk, 0, result, offset, chunk.length); offset+chunk.length} )
+    stderrData.foldLeft(0)( (offset, chunk) => {println (offset + " " + chunk.length); System.arraycopy(chunk, 0, result, offset, chunk.length); offset+chunk.length} )
     result
   }  
 }

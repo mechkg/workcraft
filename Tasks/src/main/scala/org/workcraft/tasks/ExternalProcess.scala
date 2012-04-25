@@ -32,9 +32,11 @@ class StreamReaderThread(stream: InputStream, read: Array[Byte] => IO[Unit]) ext
       }
 }
 
-class ProcessWaiterThread(process: ProcessHandle, doWhenFinished: (Int, Boolean) => IO[Unit]) extends Thread {
+class ProcessWaiterThread(stdoutReader: Thread, stdinReader: Thread, process: ProcessHandle, doWhenFinished: (Int, Boolean) => IO[Unit]) extends Thread {
   override def run = {
     val exitValue = process.process.waitFor()
+    stdoutReader.join()
+    stdinReader.join()
     doWhenFinished(exitValue, process.cancelled).unsafePerformIO
   }
 }
@@ -90,13 +92,15 @@ object ExternalProcess {
     try {
       val process = processBuilder.start()
 
-      new StreamReaderThread(process.getInputStream(), listener.stdout(_)).start()
-      new StreamReaderThread(process.getErrorStream(), listener.stderr(_)).start()
+      val stdoutReader = new StreamReaderThread(process.getInputStream(), listener.stdout(_))
+      stdoutReader.start()
+      val stderrReader = new StreamReaderThread(process.getErrorStream(), listener.stderr(_))
+      stderrReader.start()
 
       val handle = ProcessHandle(process)
 
       new CancelRequestMonitorThread(handle, cancelRequest)
-      new ProcessWaiterThread(handle, listener.finished(_, _)).start()
+      new ProcessWaiterThread(stdoutReader, stderrReader, handle, listener.finished(_, _)).start()
 
       Right(handle)
     } catch {
@@ -110,14 +114,19 @@ object ExternalProcess {
     try {
       val process = processBuilder.start()
 
-      new StreamReaderThread(process.getInputStream(), listener.stdout(_)).start()
-      new StreamReaderThread(process.getErrorStream(), listener.stderr(_)).start()
+      val stdoutReader = new StreamReaderThread(process.getInputStream(), listener.stdout(_))
+      stdoutReader.start()
+      val stderrReader = new StreamReaderThread(process.getErrorStream(), listener.stderr(_))
+      stderrReader.start()
 
       val handle = ProcessHandle(process)
 
       new CancelRequestMonitorThread(handle, cancelRequest).start()
 
       val returnValue = process.waitFor()
+
+      stdoutReader.join()
+      stderrReader.join()
 
       Right((returnValue, handle.cancelled))
     } catch {

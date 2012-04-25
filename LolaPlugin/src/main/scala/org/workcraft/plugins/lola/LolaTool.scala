@@ -102,8 +102,8 @@ class LolaTask(lolaCommand: String, input: File, output: File) extends Task[Lola
     case Left(cause) => ioPure.pure { Left(Some(LolaError.CouldNotStart(cause))) }
     case Right((exitValue, cancelled, stdout, stderr)) => ioPure.pure {
       if (cancelled) Left(None) else exitValue match {
-// 0 = specified state or deadlock found/net or place unbounded/home marking exists/net is reversible/predicate is live etc.
-// 1 = the opposite verification result as a thumb rule, if the outcome of a verification result can be supported by a counterexample or witness path, that case corresponds to return value 0
+	// 0 = specified state or deadlock found/net or place unbounded/home marking exists/net is reversible/predicate is live etc.
+	// 1 = the opposite verification result as a thumb rule, if the outcome of a verification result can be supported by a counterexample or witness path, that case corresponds to return value 0
         case 0 => Right(LolaResult.Positive(loadTrace))
         case 1 => Right(LolaResult.Negative(loadTrace))
         case 2 => Left(Some(LolaError.OutOfMemory))

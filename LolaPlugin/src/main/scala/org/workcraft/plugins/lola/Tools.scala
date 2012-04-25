@@ -38,10 +38,8 @@ object LolaVerificationResult {
 
   def showTrace (mainWindow: MainWindow, editorWindow: DockableWindow[ModelEditorPanel], trace: List[String]): IO[Unit] =
     editorWindow.content.editor.implementation(ShowTraceService) match {
-      case Some(service) => service.show(trace) match {
-	case (tool, instance) => ioPure.pure {
+      case Some(service) => service.show(trace) match {	case (tool, instance) => 
 	  mainWindow.setFocus(Some(editorWindow)) >>=| editorWindow.content.toolbox.selectToolWithInstance(tool, instance) }
-      }
       case None => ioPure.pure { JOptionPane.showMessageDialog(mainWindow, "Unfortunately, this model does not support interactive trace replays :-(\n\nWitness trace: " + trace.mkString(", "), "Verification result", JOptionPane.INFORMATION_MESSAGE) }
     }
 

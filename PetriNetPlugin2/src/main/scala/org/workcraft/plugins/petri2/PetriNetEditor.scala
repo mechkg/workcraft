@@ -160,6 +160,18 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
     case a: Arc => arcImage(a).map(_.shape.touchable)
   }
 
+  def toggleSelectionMarking (selection: Set[Node]) : IO[Unit] = net.marking.eval >>= ( marking => selection.traverse_ {
+    case p:Place if (marking(p) == 0) => net.marking.update (_ + (p -> 1))
+    case p:Place if (marking(p) == 1) => net.marking.update (_ + (p -> 0))
+    case _ => IO.Empty
+  })
+
+  def toggleMarking (node: Node) : IO[Unit] = net.marking.eval >>= ( marking => node match {
+    case p:Place if (marking(p) == 0) => net.marking.update (_ + (p -> 1))
+    case p:Place if (marking(p) == 1) => net.marking.update (_ + (p -> 0))
+    case _ => IO.Empty
+  })
+
   def move(nodes: Set[Node], offset: Point2D.Double): IO[Unit] = pushUndo("move nodes") >>=| nodes.map({
     case c: Component => net.layout.update(l => l + (c -> (l(c) + offset)))
     case _ => IO.Empty
@@ -172,7 +184,11 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
     (_, x) => x,
     touchable(_),
     imageForSelection(_, _, _),
-    List(KeyBinding("Delete selection", KeyEvent.VK_DELETE, KeyEventType.KeyPressed, Set(), pushUndo("delete nodes") >>=| selection.eval >>= (sel => selection.update(_ -- sel) >>=| net.deleteNodes(sel) >| None))))
+    List(
+      KeyBinding("Delete selection", KeyEvent.VK_DELETE, KeyEventType.KeyPressed, Set(), pushUndo("delete nodes") >>=| selection.eval >>= (sel => selection.update(_ -- sel) >>=| net.deleteNodes(sel) >| None)),
+      KeyBinding("Toggle marking", KeyEvent.VK_SPACE, KeyEventType.KeyPressed, Set(), pushUndo("toggle marking") >>=| (selection.eval >>= (sel => toggleSelectionMarking(sel))) >| None)
+    ),
+    Some (toggleMarking(_)))
 
   private val connectionManager = new ConnectionManager[Component] {
     def connect(node1: Component, node2: Component): Either[InvalidConnectionException, IO[Unit]] = (node1, node2) match {

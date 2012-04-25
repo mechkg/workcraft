@@ -131,7 +131,8 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
         case Right(io) => (pushUndo("delete nodes") >>=| selection.update(_ -- sel) >>=| io) >| None
         case Left(message) => ioPure.pure { (Some(message)) }
       }
-    })))
+    })),
+    None)
 
   private val connectionManager = new ConnectionManager[State] {
     def connect(node1: State, node2: State): Either[InvalidConnectionException, IO[Unit]] = Right(pushUndo("create arc") >>=| fsm.createArc(node1, node2) >| Unit)

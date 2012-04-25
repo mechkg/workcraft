@@ -15,6 +15,7 @@ import java.awt.Component
 import java.awt.Insets
 import java.awt.Graphics2D
 import java.awt.RenderingHints
+import java.awt.BorderLayout
 import java.awt.GridBagLayout
 import java.awt.GridBagConstraints
 import org.workcraft.scala.Expressions._
@@ -127,24 +128,24 @@ class SimControlPanel[Event, State](t: Expression[MarkedTrace[Event, State]], to
     Array(30, 0.5, 0.5, 30),
     Array(20, TableLayoutConstants.FILL))
 
-  setLayout(new TableLayout(sz))
+//  setLayout(new TableLayout(sz))
+  setLayout (new BorderLayout())
   setFocusable(false)
 
   val refresh = swingAutoRefresh(t, (trace: MarkedTrace[Event, State]) => ioPure.pure {
-
     val kojo = new JScrollPane
     kojo.setFocusable(false)
 
     removeAll()
 
-    val l = new JButton("\u25c4")
+/*    val l = new JButton("\u25c4")
     l.setFocusable(false)
     val r = new JButton("\u25ba")
     r.setFocusable(false)
-    add(l, "0 0 C C")
-    add(new TracePanel[Event, State](trace, toString, goto), "1 0 1 1")
+    add(l, "0 0 C C")*/
+    add(new TracePanel[Event, State](trace, toString, goto), BorderLayout.CENTER)//"0 0 3 1")
     //add(new TracePanel[Event, State](trace, toString), "2 0 2 1")
-    add(r, "3 0 C C")
+//    add(r, "3 0 C C")
 
     revalidate()
   })

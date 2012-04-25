@@ -2,6 +2,7 @@ For release 2.2M1
 -----------------
 
 + Remember opened file names and save them to the same location on Ctrl-S, also show the file name in the editor title
++ Toggle marking on double click and space
 - Punf/MPSat interface
 - LoLA file parser
 - LoLA reversibility check

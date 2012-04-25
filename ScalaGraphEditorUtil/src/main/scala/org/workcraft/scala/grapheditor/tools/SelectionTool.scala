@@ -34,12 +34,13 @@ class GenericSelectionToolInstance[N](
   offsetSnap: (N, Point2D.Double) => Point2D.Double,
   touchable: N => Expression[Touchable],
   paint: (N => Colorisation, Set[N], Point2D.Double) => Expression[GraphicalContent],
-  customKeyBindings: List[KeyBinding]) extends ModelEditorToolInstance {
+  customKeyBindings: List[KeyBinding],
+  doubleClickHandler: Option[N => IO[Unit]]) extends ModelEditorToolInstance {
 
   private val currentOffset = Variable.create(new Point2D.Double(0, 0))
 
   private val mouseListener_ = new GenericSelectionToolMouseListener(selection, HitTester.create(nodes, touchable),
-    new MoveDragHandler(currentOffset, offsetSnap, (selection.expr <**> currentOffset)(moveOperation(_, _)).eval.join))
+    new MoveDragHandler(currentOffset, offsetSnap, (selection.expr <**> currentOffset)(moveOperation(_, _)).eval.join), doubleClickHandler)
 
   def keyBindings = customKeyBindings
   def mouseListener = Some(mouseListener_)
@@ -63,10 +64,11 @@ case class GenericSelectionTool[N] (
   offsetSnap: (N, Point2D.Double) => Point2D.Double,
   touchable: N => Expression[Touchable],
   paint: (N => Colorisation, Set[N], Point2D.Double) => Expression[GraphicalContent],
-  customKeyBindings: List[KeyBinding]) extends ModelEditorTool {
+  customKeyBindings: List[KeyBinding],
+  doubleClickHandler: Option[N => IO[Unit]]) extends ModelEditorTool {
   
   def button = GenericSelectionTool.button
-  def createInstance (env: ToolEnvironment) = ioPure.pure { new GenericSelectionToolInstance (env.viewport, nodes, selection, moveOperation, offsetSnap, touchable, paint, customKeyBindings) }
+  def createInstance (env: ToolEnvironment) = ioPure.pure { new GenericSelectionToolInstance (env.viewport, nodes, selection, moveOperation, offsetSnap, touchable, paint, customKeyBindings, doubleClickHandler) }
 }
 
 object GenericSelectionTool {

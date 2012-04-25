@@ -37,14 +37,15 @@ object GenericSelectionToolMouseListener {
 
  
 
-  def mouseListener[Node](selection: ModifiableExpression[Set[Node]], hitTester: HitTester[Node], nodeDragHandler: DragHandler[Node]) =
-    new GenericSelectionToolMouseListener(selection, hitTester, nodeDragHandler)
+  def mouseListener[Node](selection: ModifiableExpression[Set[Node]], hitTester: HitTester[Node], nodeDragHandler: DragHandler[Node], doubleClickHandler: Option[Node => IO[Unit]]) =
+    new GenericSelectionToolMouseListener(selection, hitTester, nodeDragHandler, doubleClickHandler)
 }
 
 class GenericSelectionToolMouseListener[Node](
   selection: ModifiableExpression[Set[Node]],
   hitTester: HitTester[Node],
-  nodeDragHandler: DragHandler[Node]) extends DummyMouseListener {
+  nodeDragHandler: DragHandler[Node],
+  doubleClickHandler: Option[Node => IO[Unit]]) extends DummyMouseListener {
 
   import GenericSelectionToolMouseListener._
 
@@ -61,15 +62,21 @@ class GenericSelectionToolMouseListener[Node](
       IO.Empty
     else if (button == LeftButton) {
       hitTester.hitTest(position) match {
-        case Some(node) => (modifiers.contains(Modifier.Shift), modifiers.contains(Modifier.Control)) match {
-          case (false, false) => selection.set(Set(node))
-          case (true, false) => selection.update(_ + node)
-          case (false, true) => selection.update(_ - node)
-          case (true, true) => IO.Empty // both Shift and Control are down, such action is undefined
-        }
-        case None if (modifiers.isEmpty) => selection.set(Set[Node]())
-        case _ => IO.Empty
-      }
+        case Some(node) => if (clickCount == 1)
+	  (modifiers.contains(Modifier.Shift), modifiers.contains(Modifier.Control)) match {
+            case (false, false) => selection.set(Set(node))
+            case (true, false) => selection.update(_ + node)
+            case (false, true) => selection.update(_ - node)
+            case (true, true) => IO.Empty // both Shift and Control are down, such action is undefined
+          } else if (clickCount == 2) {
+	    doubleClickHandler match {
+	      case Some(handler) => handler(node)
+	      case _ => IO.Empty
+	    }
+	  } else IO.Empty
+          case None if (modifiers.isEmpty) => selection.set(Set[Node]())
+          case _ => IO.Empty
+	}
     } else IO.Empty
   }
 

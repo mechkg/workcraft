@@ -81,5 +81,7 @@ object Main {
     GuiConfiguration.save(configFilePath("gui.conf"), mainWindow.guiConfiguration)
 	
     unsafeInfo("Have a nice day!")
+
+    System.exit(0)
   }
 }

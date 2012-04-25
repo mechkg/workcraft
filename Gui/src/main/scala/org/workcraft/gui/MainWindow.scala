@@ -163,7 +163,7 @@ class MainWindow(
   def openEditor(model: ModelServiceProvider): IO[Unit] = {
     model.implementation(EditorService) match {
       case None => ioPure.pure { JOptionPane.showMessageDialog(this, "The model type that you have chosen does not support visual editing :(", "Warning", JOptionPane.WARNING_MESSAGE) }
-      case Some(editor) => {
+      case Some(editor) => fileMapping.update (model, None) >>=| ioPure.pure {
         val editorPanel = new ModelEditorPanel(model, editor)(implicitLogger)
         
         val editorDockable = dockingRoot.createWindow(fileMapping.lastSavedAs(model).map(_.map(_.getName).getOrElse("New model")), "unused", editorPanel, DockableWindowConfiguration(onCloseClicked = closeEditor), if (openEditors.isEmpty) placeholderDockable else (openEditors.head), DockingConstants.CENTER_REGION)
@@ -180,8 +180,9 @@ class MainWindow(
         } else
           openEditors ::= editorDockable
 
-        setFocus(Some(editorDockable))
-      }
+	editorDockable
+
+      } >>= (e => setFocus(Some(e)))
     }
   }
 

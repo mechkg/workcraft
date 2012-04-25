@@ -43,7 +43,7 @@ object StateGraphTool extends GuiTool {
       ModalTaskDialog.runTask(mainWindow, "Generating state graph using petrify", chain) >>= {
         case Left(None) => ioPure.pure { JOptionPane.showMessageDialog(mainWindow, "Cancelled") }
         case Left(Some(error)) => ioPure.pure { JOptionPane.showMessageDialog(mainWindow, error, "Error", JOptionPane.ERROR_MESSAGE) }
-        case Right(dotg) => EditableFSM.create(VisualFSM(FsmBuilder.buildFSM(dotg), Map[State, Point2D.Double]().withDefaultValue(new Point2D.Double(0, 0)), Map[Arc, StaticVisualConnectionData]().withDefaultValue(new Polyline(List())))).map(editable => mainWindow.openEditor(new FSMModel(editable)))
+        case Right(dotg) => EditableFSM.create(VisualFSM(FsmBuilder.buildFSM(dotg), Map[State, Point2D.Double]().withDefaultValue(new Point2D.Double(0, 0)), Map[Arc, StaticVisualConnectionData]().withDefaultValue(new Polyline(List())))) >>= (editable => mainWindow.openEditor(new FSMModel(editable)))
       }
     })
     case None => None

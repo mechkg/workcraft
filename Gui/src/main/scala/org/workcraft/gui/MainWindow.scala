@@ -180,9 +180,9 @@ class MainWindow(
         } else
           openEditors ::= editorDockable
 
-	editorDockable
+	(editorDockable, editorPanel)
 
-      } >>= (e => setFocus(Some(e)))
+      } >>= { case (dockable, panel) => setFocus(Some(dockable)) }// >>=| panel.fitView }
     }
   }
 

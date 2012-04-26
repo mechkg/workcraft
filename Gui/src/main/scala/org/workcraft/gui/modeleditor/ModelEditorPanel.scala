@@ -24,6 +24,7 @@ import java.awt.geom.AffineTransform
 import java.awt.RenderingHints
 import java.awt.Graphics
 import java.awt.Graphics2D
+import java.awt.geom.Rectangle2D
 import org.workcraft.gui.CommonVisualSettings
 import org.workcraft.gui.modeleditor.tools.ToolboxPanel
 import org.workcraft.logging.Logger
@@ -165,6 +166,11 @@ class ModelEditorPanel (val model: ModelServiceProvider, val editor: ModelEditor
   override def paint(g: Graphics) = {
     val g2d = g.asInstanceOf[Graphics2D] // woohoo
     graphicalContent.unsafeEval.draw(g2d)
+  }
+
+  def fitView: IO[Unit] = {
+    ioPure.pure { println ("BLA BLA") } >>=|
+    view.fitAround (new Rectangle2D.Double (-5, -5, 10, 10))
   }
 }
 

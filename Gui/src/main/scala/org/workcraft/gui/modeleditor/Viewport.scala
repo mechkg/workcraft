@@ -19,6 +19,11 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
   val scale = Variable.create(0.0625)
   val origin = new Point2D.Double(0.0, 0.0)
 
+  val minZoom = 0.01
+  val maxZoom = 1.0
+
+  def clampZoom (z: Double) = scala.math.min(scala.math.max(z, minZoom), maxZoom)
+
   def transform: Expression[AffineTransform] = for {
     view <- viewTransform;
     proj <- projection
@@ -123,7 +128,7 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
   }).join
 
   def zoom(levels: Int): IO[Unit] =
-    scale.update(s => Math.min(Math.max(s * Math.pow(Viewport.scaleFactor, levels), 0.01), 1.0))
+    scale.update(s => clampZoom (s * Math.pow(Viewport.scaleFactor, levels)))
 
   def zoomTo(levels: Int, anchor: Point2D.Double): IO[Unit] = (for {
     screenToUser1 <- screenToUser.eval;
@@ -136,6 +141,37 @@ class Viewport(val dimensions: Expression[(Int, Int, Int, Int)]) {
   } yield {
    translationX.set(tx + anchorInNewSpace.getX - anchorInOldSpace.getX) >>=| translationY.set(ty + anchorInNewSpace.getY - anchorInOldSpace.getY)
   }).join
+
+
+  def fitZoom (rect: Rectangle2D.Double): IO[Unit] = visibleArea.eval >>= ( v => {
+    println (v)
+    
+    val currentAspect = v.getWidth / v.getHeight
+
+    println (currentAspect)
+
+
+    val scaleX = (1.0 / rect.getWidth) * 0.95 * currentAspect
+    val scaleY = (1.0 / rect.getHeight) * 0.95
+
+    println (scaleX)
+    println (scaleY)
+
+    val effsc = clampZoom (math.min(scaleX, scaleY))
+
+    println (effsc)
+    
+    scale.set(effsc)
+  })
+
+  def fitPan (rect: Rectangle2D.Double): IO[Unit] = visibleArea.eval >>= ( v => {
+    val offX = rect.getMinX - (v.getWidth - rect.getWidth) / 2
+    val offY = rect.getMinY - (v.getHeight - rect.getHeight) / 2
+
+    (translationX.set(offX)) >>=| (translationY.set(offY))
+  })
+
+  def fitAround (rect: Rectangle2D.Double) = fitZoom(rect) >>=| fitPan(rect)
 }
 
 object Viewport {

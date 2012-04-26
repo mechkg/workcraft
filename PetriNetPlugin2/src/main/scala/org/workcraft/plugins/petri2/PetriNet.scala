@@ -51,7 +51,7 @@ case class PetriNet(marking: Map[Place, Int], labelling: Map[Component, String],
 
 object PetriNet {
   val Empty = PetriNet(Map(), Map(), List(), List(), List())
-  val namePattern = "[0-9a-zA-Z_]*"
+  val namePattern = "[0-9a-zA-Z_]+"
   def isValidName(s: String) = s.matches(namePattern)
 
   implicit val _semigroup = semigroup[PetriNet](

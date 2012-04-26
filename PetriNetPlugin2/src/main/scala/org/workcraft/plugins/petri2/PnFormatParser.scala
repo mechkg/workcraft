@@ -84,17 +84,17 @@ class PnFormatParser extends Parsers {
 
   def isInt(s: String) = s.matches("[0-9]+")
 
-  def name = acceptMatch("valid place/transition name", { case Name(s) => s })
+  def name = log (acceptMatch("valid place/transition name", { case Name(s) => s })) ("name")
 
-  def double = acceptMatch("double-precision coordinate", { case Number(v) => v.toDouble })
+  def double = log (acceptMatch("double-precision coordinate", { case Number(v) => v.toDouble }))("double")
 
-  def integer = acceptMatch("non-negative integer", { case Number(v) if isInt(v) => v.toInt; })
+  def integer = log ( acceptMatch("non-negative integer", { case Number(v) if isInt(v) => v.toInt; })) ("integer")
 
-  def arc = (LeftBracket ~> (name ~ name) <~ RightBracket) map (r => (r._1, r._2))
+  def arc = log ( (LeftBracket ~> (name ~ name) <~ RightBracket) map (r => (r._1, r._2))) ("arc")
 
-  def position = (LeftBracket ~> (name ~ (double ~ double)) <~ RightBracket) map (r => (r._1, (r._2._1, r._2._2)))
+  def position = log ((LeftBracket ~> (name ~ (double ~ double)) <~ RightBracket) map (r => (r._1, (r._2._1, r._2._2)))) ("position")
 
-  def marking = (LeftBracket ~> (name ~ integer) <~ RightBracket) map (r => (r._1, r._2))
+  def marking = log ((LeftBracket ~> (name ~ integer) <~ RightBracket) map (r => (r._1, r._2))) ("marking")
 
   def section: Parser[PartialResult] = (acceptIf(e => e match {
     case _: Keyword => true

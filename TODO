@@ -3,13 +3,16 @@ For release 2.2M1
 
 + Remember opened file names and save them to the same location on Ctrl-S, also show the file name in the editor title
 + Toggle marking on double click and space
-- Punf/MPSat interface
-- LoLA file parser
-- LoLA reversibility check
++ LoLA reversibility check
 
 For release 2.2M2
 -----------------
 
+- FSM simulation
+- Enhanced workcraft file format using Andrey's graph algebra syntax
+- Auto fit view around opened models
+- Punf/MPSat interface
+- LoLA file parser
 - Connection shape editing
 - Settings editor (external tool paths etc)
 - Llnet file writer
@@ -17,4 +20,20 @@ For release 2.2M2
 For release 2.2M3
 -----------------
 
-?
+- Fix STG model
+
+For release 2.2
+-----------------
+
+- Add STG support: synthesis, (de)-composition etc.
+
+For release 2.3M1
+-----------------
+
+- Add some sort of workspace replacement/implementation
+
+For release 2.3
+-----------------
+
+- Circuit model
+- Circuit model tools

@@ -8,17 +8,29 @@ For release 2.2M1
 For release 2.2M2
 -----------------
 
+- Ctrl+Up loses focus
+- Support pan using RMB
+- FSM self-loop arcs
+- FSM labels on arcs
 - FSM simulation
-- Enhanced workcraft file format using Andrey's graph algebra syntax
+- LoLA find path to irreversible state
+- Fix file name bug
 - Auto fit view around opened models
+
+For release 2.2M3
+-----------------
+
+- Non-det FSM to det FSM
+- Regex to FSM
+
+For release 2.2M4
+-----------------
+- Enhanced workcraft file format using Andrey's graph algebra syntax
 - Punf/MPSat interface
 - LoLA file parser
 - Connection shape editing
 - Settings editor (external tool paths etc)
 - Llnet file writer
-
-For release 2.2M3
------------------
 
 - Fix STG model
 

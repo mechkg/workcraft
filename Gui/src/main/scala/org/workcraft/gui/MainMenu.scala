@@ -19,10 +19,13 @@ class MainMenu(
   val fileMenu = new FileMenu(services, mainWindow, newModel)
   val editMenu = new EditMenu(mainWindow)
   val windowsMenu = new UtilityWindowsMenu(utilityWindows)
-  val toolsMenu = new ToolsMenu(services, mainWindow)  
+  val toolsMenu = new ToolsMenu(services, mainWindow)
+  val aboutMenu = new AboutMenu(mainWindow)
   
   add(fileMenu)
   add(editMenu)
   add(windowsMenu)
   add(toolsMenu)
+  add(aboutMenu)
+
 }

@@ -43,6 +43,7 @@ import org.workcraft.gui.modeleditor.PropertyService
 import java.awt.event.FocusListener
 import java.awt.event.FocusEvent
 import java.io.File
+import java.awt.Color
 
 class MainWindow(
   val globalServices: GlobalServiceManager,
@@ -77,7 +78,7 @@ class MainWindow(
 
   val propEdWindow = new PropertyEditorWindow
 
-  val placeholderDockable = dockingRoot.createRootWindow(constant(""), "DocumentPlaceholder", new DocumentPlaceholder, DockableWindowConfiguration(false, false, false))
+  val placeholderDockable = dockingRoot.createRootWindow(constant(""), "DocumentPlaceholder", new DocumentPlaceholder(new Color(255,255,255)), DockableWindowConfiguration(false, false, false))
   val loggerDockable = createUtilityWindow(constant("Log"), "Log", loggerWindow, placeholderDockable, DockingConstants.SOUTH_REGION, 0.8)
   val toolboxDockable = createUtilityWindow(constant("Toolbox"), "Toolbox", toolboxWindow, placeholderDockable, DockingConstants.EAST_REGION, 0.8)
   val toolControlDockable = createUtilityWindow(constant("Tool controls"), "ToolControls", toolControlWindow, toolboxDockable, DockingConstants.NORTH_REGION, 0.8)
@@ -135,7 +136,7 @@ class MainWindow(
   private def applyIconManager(implicit logger: () => Logger[IO]) = MainWindowIconManager.apply(this, logger)
 
   def newModel(newModelImpl: NewModelImpl, editorRequested: Boolean) =
-    newModelImpl.create >>= (model => (fileMapping.update(model, None) >>=| (if (editorRequested) openEditor(model) else IO.Empty)))
+    newModelImpl.create >>= (model => (fileMapping.update(model, None) >>=| (if (editorRequested) openEditor(model, None) else IO.Empty)))
   
   def setFocus(editorDockable: Option[DockableWindow[ModelEditorPanel]]): IO[Unit] = ioPure.pure {
     toolboxWindow.removeAll()
@@ -160,10 +161,10 @@ class MainWindow(
     editorInFocus.set(editorDockable).unsafePerformIO
   }
 
-  def openEditor(model: ModelServiceProvider): IO[Unit] = {
+  def openEditor(model: ModelServiceProvider, source: Option[File]): IO[Unit] = {
     model.implementation(EditorService) match {
       case None => ioPure.pure { JOptionPane.showMessageDialog(this, "The model type that you have chosen does not support visual editing :(", "Warning", JOptionPane.WARNING_MESSAGE) }
-      case Some(editor) => fileMapping.update (model, None) >>=| ioPure.pure {
+      case Some(editor) => fileMapping.update (model, source) >>=| ioPure.pure {
         val editorPanel = new ModelEditorPanel(model, editor)(implicitLogger)
         
         val editorDockable = dockingRoot.createWindow(fileMapping.lastSavedAs(model).map(_.map(_.getName).getOrElse("New model")), "unused", editorPanel, DockableWindowConfiguration(onCloseClicked = closeEditor), if (openEditors.isEmpty) placeholderDockable else (openEditors.head), DockingConstants.CENTER_REGION)

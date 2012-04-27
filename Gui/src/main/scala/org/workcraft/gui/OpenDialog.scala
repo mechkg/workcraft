@@ -41,7 +41,7 @@ object OpenDialog {
 
   def openFile(parentWindow: Window, file: File, importers: List[FileOpen]): IO[Option[FileOpenJob]] = importers.map(_.open(file)).sequence >>= (_.flatten match {
     case Nil => ioPure.pure {
-      JOptionPane.showMessageDialog(parentWindow, "No import plug-ins could recognise this file.", "Error", JOptionPane.ERROR_MESSAGE)
+      JOptionPane.showMessageDialog(parentWindow, "No import plug-in could recognise this file.", "Cannot open file", JOptionPane.ERROR_MESSAGE)
       None
     }
     case one :: Nil => ioPure.pure { Some(one) }

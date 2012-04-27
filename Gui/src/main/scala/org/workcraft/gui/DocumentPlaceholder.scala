@@ -6,10 +6,10 @@ import java.awt.image.BufferedImage
 import java.io.IOException
 import javax.swing.JPanel
 
-class DocumentPlaceholder extends JPanel {
+class DocumentPlaceholder (background: Color) extends JPanel {
 	lazy val logoImage = GUI.loadImageFromResource("images/logo.png")
 
-	setBackground(new Color(255,255,255))
+	setBackground(background)
 	setLayout(null)
 	
 	override def paint(g: Graphics) = {

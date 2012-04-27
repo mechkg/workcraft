@@ -58,7 +58,7 @@ class FileMenu(services: GlobalServiceManager, mainWindow: MainWindow, newModel:
 
     val open = menuItem("Open file...", Some('O'), Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK)),
 			OpenDialog.open(mainWindow, services) >>= {
-			  case Some((file, model)) => mainWindow.fileMapping.update(model, Some(file)) >>=| mainWindow.openEditor(model);
+			  case Some((file, model)) => mainWindow.openEditor(model, Some(file));
 			  case None => IO.Empty })
 
     val save = editor match {

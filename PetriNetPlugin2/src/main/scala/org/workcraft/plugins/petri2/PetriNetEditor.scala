@@ -192,12 +192,12 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
     Some (toggleMarking(_)))
 
   private val connectionManager = new ConnectionManager[Component] {
-    def connect(node1: Component, node2: Component): Either[InvalidConnectionException, IO[Unit]] = (node1, node2) match {
+    def connect(node1: Component, node2: Component): Expression[Either[InvalidConnectionException, IO[Unit]]] = constant((node1, node2) match {
       case (from: Place, to: Transition) => Right(pushUndo("create arc") >>=| net.createConsumerArc(from, to) >| Unit)
       case (from: Transition, to: Place) => Right(pushUndo("create arc") >>=| net.createProducerArc(from, to) >| Unit)
       case (_: Place, _: Place) => Left(new InvalidConnectionException("Arcs between places are invalid"))
       case (_: Transition, _: Transition) => Left(new InvalidConnectionException("Arcs between transitions are invalid"))
-    }
+    })
   }
 
   private val simToolMessage = (net.transitions.expr <**> net.transitionIncidence) ( (ts, ti) => {

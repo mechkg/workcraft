@@ -28,6 +28,12 @@ class EditableFSM(
 
   val incidentArcs: Expression[Map[State, List[Arc]]] = (arcs.expr <**> states)((arcs, states) => states.list.map(c => (c, arcs.filter(arc => (arc.to == c) || (arc.from == c)))).toMap)
 
+  val presetV = saveState.map (_.fsm.preset)
+  val postsetV = saveState.map (_.fsm.postset)
+
+  def preset(s: State) = presetV.map(_(s))
+  def postset(s: State) = postsetV.map(_(s))
+
   private def newState = ioPure.pure { new State }
 
   private def newArc(from: State, to: State) = ioPure.pure { new Arc(from, to) }

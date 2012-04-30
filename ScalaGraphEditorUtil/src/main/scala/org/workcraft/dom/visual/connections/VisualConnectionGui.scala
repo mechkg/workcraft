@@ -97,7 +97,7 @@ object VisualConnectionGui {
 	  val q = if (d.getX < 0)  (d * -1)  else d
 
 	  val labelPosition = new Point2D.Double(label.bounds.logical.getCenterX, 
-						 if ((q cross dd) < 0.1) label.bounds.logical.getMaxY
+						 if ((q cross dd) > -0.01) label.bounds.logical.getMaxY
 						 else label.bounds.logical.getMinY)
 
 	  val offset = p - labelPosition

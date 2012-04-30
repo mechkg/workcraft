@@ -102,4 +102,8 @@ object Java2DDecoration {
       lerp(b1, b2, t) * 9.0
     }
   }
+
+  def point (x: Double, y: Double) = new Point2D.Double(x, y)
+
+  implicit def pointFromTuple (t: (Double, Double)) = new Point2D.Double (t._1, t._2)
 }

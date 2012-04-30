@@ -51,18 +51,21 @@ class GenericConnectionToolImpl[N](centerProvider: N => Expression[Point2D.Doubl
         warningMessage.setValue(None)
         mouseOverObject >>= (mouseOverObject =>
           {
-            def zogo : (Color, Expression[Point2D.Double]) = (mouseOverObject match {
-              case None => (Color.BLUE, lastMouseCoords)
-              case Some(second) => connectionManager.connect(first, second) match {
-                case Left(err) => { warningMessage.setValue(Some(err.getMessage)); (Color.RED, lastMouseCoords) }
-                case Right(_) => (Color.GREEN, centerProvider(second))
+            def zogo : Expression[(Color, Point2D.Double)] = (mouseOverObject match {
+              case None => lastMouseCoords.map ((Color.BLUE, _))
+              case Some(second) => connectionManager.connect(first, second) >>= {
+                case Left(err) => { warningMessage.setValue(Some(err.getMessage)); lastMouseCoords.map((Color.RED,_)) }
+                case Right(_) => centerProvider(second).map((Color.GREEN,_))
               }})
-            val (color, p2) = zogo
+
             for(
+              ogoz <- zogo;
               p1 <- centerProvider(first);
-              p2 <- p2;
+              p2 = ogoz._2;
+	      color = ogoz._1;
               px <- viewport.pixelSizeInUserSpace
-            ) yield (Graphics.line(p1, p2, new BasicStroke(px.getX.toFloat), color).graphicalContent)
+            ) yield 
+	      (Graphics.line(p1, p2, new BasicStroke(px.getX.toFloat), color).graphicalContent)
           })
         }
       }
@@ -89,7 +92,7 @@ class GenericConnectionToolImpl[N](centerProvider: N => Expression[Point2D.Doubl
           mouseOverObject.eval >>= {
             case None => IO.Empty
             case Some(mouseOver) => {
-              connectionManager.connect(currentFirst, mouseOver) match {
+              connectionManager.connect(currentFirst, mouseOver).eval >>= {
                 case Right(connect) => {
                   connect >>=| (
                     if (modifiers.contains(Modifier.Control)) (first := mouseOverObject) >>=| mouseOverObject.set(None)

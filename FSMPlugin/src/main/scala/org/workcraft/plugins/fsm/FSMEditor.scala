@@ -4,12 +4,16 @@ import java.awt.event.KeyEvent
 import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
 import java.awt.Color
+import javax.swing.JOptionPane
 import org.workcraft.dependencymanager.advanced.user.Variable
+import org.workcraft.dom.visual.connections.Bezier
 import org.workcraft.dom.visual.connections.ConnectionGui
+import org.workcraft.dom.visual.connections.Polyline
+import org.workcraft.dom.visual.connections.RelativePoint
 import org.workcraft.dom.visual.connections.VisualConnectionContext
 import org.workcraft.dom.visual.connections.VisualConnectionGui
 import org.workcraft.exceptions.InvalidConnectionException
-import org.workcraft.graphics.Java2DDecoration.decoratePoint2D
+import org.workcraft.graphics.Java2DDecoration._
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.graphics.Colorisation
 import org.workcraft.graphics.GraphicalContent
@@ -70,11 +74,11 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
       }
     }
 
-  def imageForSimulation(colorisation: State => Colorisation, curState: (State, List[String])) =
+  def imageForSimulation(colorisation: Arc => Colorisation, curState: (State, List[String])) =
     (fsm.states.map(_.list) <|**|> (fsm.arcs, CommonVisualSettings.settings)) >>= {
       case (comp, a, settings) => {
-        treeSequence((a.map(a => arcImage(a, settings).map(_.graphicalContent.applyColorisation(Colorisation.Empty)))) ++
-          comp.map(c => (stateImage (c, settings) <**> stateTransform(c))(_.transform(_).cgc.applyColorisation(colorisation(c))))).map(_.foldLeft(GraphicalContent.Empty)(_.compose(_)))
+        treeSequence((a.map(a => arcImage(a, settings).map(_.graphicalContent.applyColorisation(colorisation(a))))) ++
+          comp.map(c => (stateImage (c, settings) <**> stateTransform(c))(_.transform(_).cgc.applyColorisation( if (c == curState._1) Colorisation(Some(Color.ORANGE), None) else Colorisation.Empty)))).map(_.foldLeft(GraphicalContent.Empty)(_.compose(_)))
       }
     }
 
@@ -86,19 +90,38 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
   def maybeShowEpsilon(s: String) = if (s.isEmpty) "ε" else s
 
   def arcImageWithOffset(a: Arc, offsetNodes: Set[Node], offsetValue: Point2D.Double, settings:CommonVisualSettings) = for {
-    visualArcs <- fsm.visualArcs;
+    //TODO: support this  visualArcs <- fsm.visualArcs; 
+    preset <- fsm.preset(a.from);
+    is <- fsm.initialState;
     t1 <- touchableWithOffset(a.from, offsetNodes, offsetValue, settings);
     t2 <- touchableWithOffset(a.to, offsetNodes, offsetValue, settings);
     ap1 <- statePositionWithOffset(a.from, offsetNodes, offsetValue);
     ap2 <- statePositionWithOffset(a.to, offsetNodes, offsetValue);
     labels <- fsm.arcLabels
   } yield {
-    VisualConnectionGui.getConnectionGui(
-      VisualArc.properties.copy(label = Some(label(maybeShowEpsilon(labels(a)), 
-						   settings.effectiveLabelFont, 
-						   settings.foregroundColor).boundedColorisableGraphicalContent)), 
-      VisualConnectionContext.makeContext(t1, ap1, t2, ap2), 
-      visualArcs(a))
+    val props = VisualArc.properties.copy(
+      label = Some(label(maybeShowEpsilon(labels(a)),
+			 settings.effectiveLabelFont,
+			 settings.foregroundColor).boundedColorisableGraphicalContent)) 
+
+    val podgon = 6
+    val podgonAdjustment = if (a.from == is) -1 else 1
+
+    if (a.from == a.to)
+      VisualConnectionGui.getConnectionGui(
+	props,
+	VisualConnectionContext.makeContext(t1, ap1 + point(-0.125, -0.75 * podgonAdjustment), t2, ap2 + point(0.125, -0.75 * podgonAdjustment)),
+	Bezier(RelativePoint(point(-podgon, -podgon * podgonAdjustment)), RelativePoint(point(1+podgon, -podgon * podgonAdjustment))))
+    else 
+      if (preset.exists (_._1 == a.to))
+	VisualConnectionGui.getConnectionGui(
+	  props,
+	  VisualConnectionContext.makeContext(t1, ap1, t2, ap2),
+	  Bezier(RelativePoint(point(0.5, -0.1)), RelativePoint(point(0.5, -0.1))))
+      else VisualConnectionGui.getConnectionGui(
+	props,
+	VisualConnectionContext.makeContext(t1, ap1, t2, ap2),
+	Polyline(List()))
   }
 
   def makeTransform(p: Point2D.Double) = AffineTransform.getTranslateInstance(p.getX, p.getY)
@@ -139,22 +162,29 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
     None)
 
   private val connectionManager = new ConnectionManager[State] {
-    def connect(node1: State, node2: State): Either[InvalidConnectionException, IO[Unit]] = Right(pushUndo("create arc") >>=| fsm.createArc(node1, node2) >| Unit)
+    def connect(node1: State, node2: State): Expression[Either[InvalidConnectionException, IO[Unit]]] =
+      fsm.saveState.map ( s =>
+	if (s.fsm.preset(node2).exists(_._1 == node1))
+	  Left(new InvalidConnectionException("There is already an arc between " + s.fsm.labels(node1) + " and " +
+					    s.fsm.labels(node2)))
+	else
+	  Right(pushUndo("create arc") >>=| fsm.createArc(node1, node2) >| Unit)
+		   )
   }
 
 
   private val simToolMessage = (fsm.incidentArcs <***> (fsm.finalStates, fsm.arcLabels)) (
     (ia, fs, al) =>
       {
-	val success = Some(("The input has been recognised :-)", Color.GREEN))
-	val failure = Some(("The input has not been recognised :-(", Color.RED))
+	val success = Some(("The input has been recognised :-)", Color.GREEN.darker))
+	val failure = Some(("The input has not been recognised :-(", Color.RED.darker))
 
 	s: (State, List[String]) => s match {
 	  case (q, Nil) =>
 	    if (fs.contains(q)) success
 	    else failure
 	  case (q, input@(x :: _)) => {
-	    if (ia(q).filter (arc => (arc.from == q && al(arc) == x)).isEmpty) failure
+	    if (ia(q).filter (arc => (arc.from == q && ((al(arc) == x) || (al(arc) == "")))).isEmpty) failure
 	    else Some(("Remaining input: " + input.map ("'"+_+"'").mkString(", "), Color.BLACK))
 	  }
 	}
@@ -162,10 +192,10 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
   )
       
   private val simulationTool =
-    GenericSimulationTool[State, (State, List[String])](
-      fsm.states.map(_.list), 
+    GenericSimulationTool[Arc, (State, List[String])](
+      fsm.arcs, 
       n => CommonVisualSettings.settings >>= (s => touchable(n, s)),
-      fsm.saveState.eval.map(fsm => FSMSimulation(fsm.fsm)), 
+      (fsm.saveState.eval <**> ioPure.pure { JOptionPane.showInputDialog(null, "Input to use for simulation:").split(",").toList })( (fsm, input) => FSMSimulation(fsm.fsm, input)),
       imageForSimulation(_, _),
       simToolMessage
       )

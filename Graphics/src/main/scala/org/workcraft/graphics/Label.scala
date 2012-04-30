@@ -6,7 +6,8 @@ import java.awt.geom.Point2D
 import Java2DDecoration._
 
 class Label private (val text: String, val font: Font, val color: Color) {
-  lazy val visualBounds = font.createGlyphVector(PodgonFontRenderContext, text).logicalBounds
+  lazy val visualBounds = font.createGlyphVector(PodgonFontRenderContext, text).visualBounds
+  lazy val logicalBounds = font.createGlyphVector(PodgonFontRenderContext, text).logicalBounds
 
   lazy val graphicalContent = GraphicalContent(g => {
     g.setFont(font)
@@ -24,9 +25,9 @@ class Label private (val text: String, val font: Font, val color: Color) {
     }
   }
   
-  lazy val boundedColorisableGraphicalContent = BoundedColorisableGraphicalContent(colorisableGraphicalContent, BoundingBox(visualBounds))
+  lazy val boundedColorisableGraphicalContent = BoundedColorisableGraphicalContent(colorisableGraphicalContent, BoundingBox(visualBounds, logicalBounds))
   
-  lazy val touchable = Touchable.fromRect(visualBounds)
+  lazy val touchable = Touchable.fromRect(logicalBounds)
 }
 
 object Label {

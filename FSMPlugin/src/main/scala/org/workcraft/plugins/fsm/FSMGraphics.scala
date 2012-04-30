@@ -49,7 +49,7 @@ object FSMGraphics {
 
     
     i2.compose(
-        if (labelImage.bounds.rect.width > size * 0.8)
+        if (labelImage.bounds.visual.width > size * 0.8)
           labelImage.alignSideways(i1, LabelPositioning.Bottom)
         else
         labelImage.align(i1, HorizontalAlignment.Center, VerticalAlignment.Center)

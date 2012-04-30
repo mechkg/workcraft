@@ -5,18 +5,21 @@ import java.awt.geom.AffineTransform
 
 import Java2DDecoration._
 
-case class BoundingBox(rect: Rectangle2D.Double) {
+class BoundingBox(val visual: Rectangle2D.Double, val logical: Rectangle2D.Double) {
   def union(other: BoundingBox) =
-    BoundingBox(rect.createUnionD(other.rect))
+    BoundingBox(visual.createUnionD(other.visual), logical.createUnionD(other.logical))
 
   def expand(x: Double, y: Double) =
-    BoundingBox(BoundingBox.expandRect(rect, x, y))
+    BoundingBox(BoundingBox.expandRect(visual, x, y), BoundingBox.expandRect(logical, x, y))
 
   def transform(transform: AffineTransform) =
-    BoundingBox(BoundingBox.transformRect(rect, transform))
+    BoundingBox(BoundingBox.transformRect(visual, transform), BoundingBox.transformRect(logical, transform))
 }
 
 object BoundingBox {
+  def apply(visual: Rectangle2D.Double) = new BoundingBox (visual, visual)
+  def apply(visual: Rectangle2D.Double, logical: Rectangle2D.Double) = new BoundingBox (visual, logical)
+
   def expandRect(rect: Rectangle2D, x: Double, y: Double) =
     {
       val result = new Rectangle2D.Double()

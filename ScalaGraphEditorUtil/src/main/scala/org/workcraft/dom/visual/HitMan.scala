@@ -70,7 +70,7 @@ object HitMan {
 
     def filterByBB(nodes: List[N], point: Point2D.Double): List[N] =
       nodes.filter(arg => tp.apply(arg) match {
-        case Some(touchable) => touchable.boundingBox.rect.contains(point)
+        case Some(touchable) => touchable.boundingBox.logical.contains(point)
         case None => false
       })
 
@@ -186,8 +186,8 @@ object HitMan {
     val rect: Rectangle2D.Double = createRectangle(p1, p2)
     nodes.filter(n => t(n) match {
       case Some(touchable) => if (p1.getX <= p2.getX)
-        rect.contains(touchable.boundingBox.rect)
-      else rect.intersects(touchable.boundingBox.rect)
+        rect.contains(touchable.boundingBox.logical)
+      else rect.intersects(touchable.boundingBox.logical)
       case None => false
     })
   }

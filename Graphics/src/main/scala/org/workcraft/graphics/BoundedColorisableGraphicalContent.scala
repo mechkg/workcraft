@@ -9,7 +9,7 @@ import Graphics._
 class BoundedColorisableGraphicalContent(val cgc: ColorisableGraphicalContent, val bounds: BoundingBox) {
   //def translateToZero = translate(new Point2D.Double(-bounds.pivot.getX, -bounds.pivot.getY()))
   
-  def centerToBoundingBox = translate(-bounds.rect.getCenterX(), -bounds.rect.getCenterY())
+  def centerToBoundingBox = translate(-bounds.visual.getCenterX(), -bounds.visual.getCenterY())
  
   def translate(offsetX: Double, offsetY: Double) = transform(AffineTransform.getTranslateInstance(offsetX, offsetY))
   
@@ -25,10 +25,10 @@ class BoundedColorisableGraphicalContent(val cgc: ColorisableGraphicalContent, v
       bounds.union(top.bounds))
       
 def align (to: BoundedColorisableGraphicalContent, horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment): BoundedColorisableGraphicalContent =
-    transform(alignTransform(bounds.rect, to.bounds.rect, horizontalAlignment, verticalAlignment))
+    transform(alignTransform(bounds.visual, to.bounds.visual, horizontalAlignment, verticalAlignment))
 
   def alignSideways (relativeTo: BoundedColorisableGraphicalContent, position: LabelPositioning): BoundedColorisableGraphicalContent =
-    transform(LabelPositioning.positionRelative(bounds.rect, relativeTo.bounds.rect, position))
+    transform(LabelPositioning.positionRelative(bounds.visual, relativeTo.bounds.visual, position))
 }
 
 object BoundedColorisableGraphicalContent {

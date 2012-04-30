@@ -15,7 +15,7 @@ object FSMLayout {
 
     val size = (n: LayoutNode) => (1.5, 1.5) // FIXME: should be CommonVisualSettings.size
 
-    val outgoingArcs = (n: LayoutNode) => vfsm.fsm.postset(nodeToComponent(n)).map(componentToNode(_))
+    val outgoingArcs = (n: LayoutNode) => vfsm.fsm.postset(nodeToComponent(n)).map( p => componentToNode(p._1))
 
     val apply = (l: List[(LayoutNode, Point2D.Double)]) => l.map { case (n, p) => efsm.layout.update(_ + (nodeToComponent(n) -> p)) }.sequence >| {}
 

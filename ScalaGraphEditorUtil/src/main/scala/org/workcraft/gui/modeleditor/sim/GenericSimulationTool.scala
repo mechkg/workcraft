@@ -54,8 +54,8 @@ class GenericSimulationToolInstance[Event, State](
   sim: SimulationModel[Event, State],
   val trace: ModifiableExpression[MarkedTrace[Event, State]],
   paint: ((Event => Colorisation), State) => Expression[GraphicalContent],
-  hintMessage: Option[String],
-  deadlockMessage: Option[String]) extends ModelEditorToolInstance {
+  message: Expression[State => Option[(String, Color)]]
+) extends ModelEditorToolInstance {
 
   def fire(event: Event): IO[Unit] = sim.fire(event) >>=| sim.state.eval >>= (state => trace.update(_ ! (event, state)))
 
@@ -68,14 +68,10 @@ class GenericSimulationToolInstance[Event, State](
 
   def userSpaceContent = (sim.state <|**|> (sim.enabled, GenericSimulationTool.col)) >>= { case (state, enabled, col) => (paint(ev => if (enabled(ev)) col else Colorisation.Empty, state)) }
 
-  def screenSpaceContent = (sim.enabled <|*|> eventSources) >>= {
-    case (enabled, events) => if (events.forall(enabled(_) == false) && deadlockMessage.isDefined)
-      GUI.editorMessage(viewport, Color.RED, deadlockMessage.get)
-    else if (hintMessage.isDefined)
-      GUI.editorMessage(viewport, Color.BLACK, hintMessage.get)
-    else
-      constant(GraphicalContent.Empty)
-  }
+  def screenSpaceContent = (message <|*|> sim.state) >>= { case (m, s) => m(s) match {
+    case Some ((message, color)) => GUI.editorMessage(viewport, color, message)
+    case None => constant(GraphicalContent.Empty)
+  }}
 
   val interfacePanel = Some(new SimControlPanel[Event, State](trace, (e: Event) => sim.name(e), gotoState(_)))
 }
@@ -85,8 +81,8 @@ case class GenericSimulationTool[Event, State](
   touchable: Event => Expression[Touchable],
   sim: IO[SimulationModel[Event, State]],
   paint: ((Event => Colorisation), State) => Expression[GraphicalContent],
-  hintMessage: Option[String] = None,
-  deadlockMessage: Option[String] = None) extends ModelEditorTool {
+  message: Expression[State => Option[(String, Color)]]
+) extends ModelEditorTool {
 
   def button = GenericSimulationTool.button
 
@@ -94,12 +90,12 @@ case class GenericSimulationTool[Event, State](
     sim <- sim;
     initialState <- sim.state.eval;
     trace <- newVar(MarkedTrace(StateAnnotatedTrace[Event, State](initialState, Seq()), 0))
-  } yield new GenericSimulationToolInstance(env.viewport, env.hasFocus, eventSources, touchable, sim, trace, paint, hintMessage, deadlockMessage)
+  } yield new GenericSimulationToolInstance(env.viewport, env.hasFocus, eventSources, touchable, sim, trace, paint, message)
 
   def createInstanceWithGivenTrace(env: ToolEnvironment, trace: MarkedTrace[Event, State]) = for {
     sim <- sim;
     trace <- newVar(trace)
-  } yield new GenericSimulationToolInstance(env.viewport, env.hasFocus, eventSources, touchable, sim, trace, paint, hintMessage, deadlockMessage)
+  } yield new GenericSimulationToolInstance(env.viewport, env.hasFocus, eventSources, touchable, sim, trace, paint, message)
 }
 
 object GenericSimulationTool {

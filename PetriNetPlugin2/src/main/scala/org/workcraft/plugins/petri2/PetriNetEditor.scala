@@ -3,6 +3,7 @@ package org.workcraft.plugins.petri2
 import java.awt.event.KeyEvent
 import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
+import java.awt.Color
 import org.workcraft.dependencymanager.advanced.user.Variable
 import org.workcraft.dom.visual.connections.ConnectionGui
 import org.workcraft.dom.visual.connections.VisualConnectionContext
@@ -64,7 +65,7 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
             }
           } else
             ioPure.pure(None)).join
-      } else ioPure.pure(Some("Names must be non-empty Latin alphanumeric strings not starting with a digit.")))
+      } else ioPure.pure(Some("Names must be non-empty Latin alphanumeric strings.")))
   }
 
   def tokens(p: Place) = ModifiableExpressionWithValidation[Int, String](
@@ -199,8 +200,22 @@ class PetriNetEditor(net: EditablePetriNet) extends ModelEditor {
     }
   }
 
+  private val simToolMessage = (net.transitions.expr <**> net.transitionIncidence) ( (ts, ti) => {
+    (marking:Map[Place, Int]) =>
+      if (ts.forall(t => ti._2(t).forall(marking(_) == 0 )))
+	Some(("The net is in a deadlock state: no transitions can be fired", Color.RED)) 
+      else 
+	Some(("Click on the highlighted transitions to fire them"), Color.BLACK)
+  })
+
   private val simulationTool =
-    GenericSimulationTool[Transition, Map[Place, Int]](net.transitions, touchable(_), net.saveState.eval.map(vpn => new PetriNetSimulation(vpn.net)), imageForSimulation(_, _), Some("Click on the highlighted transitions to fire them"), Some("The net is in a deadlock state: no transitions can be fired"))
+    GenericSimulationTool[Transition, Map[Place, Int]](
+      net.transitions, 
+      touchable(_), 
+      net.saveState.eval.map(vpn => new PetriNetSimulation(vpn.net)), 
+      imageForSimulation(_, _), 
+      simToolMessage
+      )
 
   private def connectionTool =
     GenericConnectionTool[Component](net.components, touchable(_), componentPosition(_), connectionManager, imageC(_))

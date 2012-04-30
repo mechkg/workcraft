@@ -3,6 +3,7 @@ package org.workcraft.plugins.fsm
 import java.awt.event.KeyEvent
 import java.awt.geom.AffineTransform
 import java.awt.geom.Point2D
+import java.awt.Color
 import org.workcraft.dependencymanager.advanced.user.Variable
 import org.workcraft.dom.visual.connections.ConnectionGui
 import org.workcraft.dom.visual.connections.VisualConnectionContext
@@ -69,24 +70,20 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
       }
     }
 
-  /*def imageForSimulation(colorisation: State => Colorisation, curState: State) =
-    (fsm.states <|**|> (net.arcs, CommonVisualSettings.settings)) >>= {
+  def imageForSimulation(colorisation: State => Colorisation, curState: (State, List[String])) =
+    (fsm.states.map(_.list) <|**|> (fsm.arcs, CommonVisualSettings.settings)) >>= {
       case (comp, a, settings) => {
-        treeSequence((a.map(a => arcImage(a).map(_.graphicalContent.applyColorisation(Colorisation.Empty))) ++
-          comp.map(c => ((c match {
-            case t: Transition => VisualTransition.image(net.label(t), settings)
-            case p: Place => VisualPlace.image(constant(marking(p)), net.label(p), settings)
-          }) <**> componentTransform(c))(_.transform(_).cgc.applyColorisation(c match {
-            case t: Transition => colorisation(t)
-            case p: Place => Colorisation.Empty
-          }))))).map(_.foldLeft(GraphicalContent.Empty)(_.compose(_)))
+        treeSequence((a.map(a => arcImage(a, settings).map(_.graphicalContent.applyColorisation(Colorisation.Empty)))) ++
+          comp.map(c => (stateImage (c, settings) <**> stateTransform(c))(_.transform(_).cgc.applyColorisation(colorisation(c))))).map(_.foldLeft(GraphicalContent.Empty)(_.compose(_)))
       }
-    }*/
+    }
 
   def stateImage(state: State, settings: CommonVisualSettings): Expression[BoundedColorisableGraphicalContent] =
     (fsm.labels.map(_(state)) <***> (fsm.initialState.map(_ == state), fsm.finalStates.map(_.contains(state))))((l, i, t) => FSMGraphics.stateImage(l, i, t, settings))
 
   def arcImage(a: Arc, settings: CommonVisualSettings): Expression[ConnectionGui] = arcImageWithOffset(a, Set(), new Point2D.Double(0, 0), settings)
+
+  def maybeShowEpsilon(s: String) = if (s.isEmpty) "ε" else s
 
   def arcImageWithOffset(a: Arc, offsetNodes: Set[Node], offsetValue: Point2D.Double, settings:CommonVisualSettings) = for {
     visualArcs <- fsm.visualArcs;
@@ -97,7 +94,7 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
     labels <- fsm.arcLabels
   } yield {
     VisualConnectionGui.getConnectionGui(
-      VisualArc.properties.copy(label = Some(label(labels(a), 
+      VisualArc.properties.copy(label = Some(label(maybeShowEpsilon(labels(a)), 
 						   settings.effectiveLabelFont, 
 						   settings.foregroundColor).boundedColorisableGraphicalContent)), 
       VisualConnectionContext.makeContext(t1, ap1, t2, ap2), 
@@ -145,8 +142,34 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
     def connect(node1: State, node2: State): Either[InvalidConnectionException, IO[Unit]] = Right(pushUndo("create arc") >>=| fsm.createArc(node1, node2) >| Unit)
   }
 
-  /*private val simulationTool =
-    GenericSimulationTool[Transition, Map[Place, Int]](net.transitions, touchable(_), net.saveState.eval.map(vpn => new PetriNetSimulation(vpn.net)), imageForSimulation(_, _), Some("Click on the highlighted transitions to fire them"), Some("The net is in a deadlock state: no transitions can be fired"))*/
+
+  private val simToolMessage = (fsm.incidentArcs <***> (fsm.finalStates, fsm.arcLabels)) (
+    (ia, fs, al) =>
+      {
+	val success = Some(("The input has been recognised :-)", Color.GREEN))
+	val failure = Some(("The input has not been recognised :-(", Color.RED))
+
+	s: (State, List[String]) => s match {
+	  case (q, Nil) =>
+	    if (fs.contains(q)) success
+	    else failure
+	  case (q, input@(x :: _)) => {
+	    if (ia(q).filter (arc => (arc.from == q && al(arc) == x)).isEmpty) failure
+	    else Some(("Remaining input: " + input.map ("'"+_+"'").mkString(", "), Color.BLACK))
+	  }
+	}
+      }
+  )
+      
+  private val simulationTool =
+    GenericSimulationTool[State, (State, List[String])](
+      fsm.states.map(_.list), 
+      n => CommonVisualSettings.settings >>= (s => touchable(n, s)),
+      fsm.saveState.eval.map(fsm => FSMSimulation(fsm.fsm)), 
+      imageForSimulation(_, _),
+      simToolMessage
+      )
+
 
   private def connectionTool =
     GenericConnectionTool[State](fsm.states.map(_.list), n => CommonVisualSettings.settings >>= (s => touchable(n, s)), statePosition(_), connectionManager, imageForConnection(_))
@@ -154,7 +177,7 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
   private def stateGeneratorTool =
     NodeGeneratorTool(Button("State", "images/icons/svg/place_empty.svg", Some(KeyEvent.VK_T)).unsafePerformIO, imageForConnection(_ => Colorisation(None, None)), pushUndo("create state") >>=| fsm.createState(_) >| Unit)
 
-  def tools = NonEmptyList(selectionTool, connectionTool, stateGeneratorTool)
+  def tools = NonEmptyList(selectionTool, connectionTool, stateGeneratorTool, simulationTool)
   def keyBindings = List()
 
   val undoStack = Variable.create(List[EditorState]())

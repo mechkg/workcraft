@@ -24,7 +24,7 @@ class BoundedColorisableGraphicalContent(val cgc: ColorisableGraphicalContent, v
       cgc.compose(top.cgc),
       bounds.union(top.bounds))
       
-def align (to: BoundedColorisableGraphicalContent, horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment): BoundedColorisableGraphicalContent =
+  def align (to: BoundedColorisableGraphicalContent, horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment): BoundedColorisableGraphicalContent =
     transform(alignTransform(bounds.visual, to.bounds.visual, horizontalAlignment, verticalAlignment))
 
   def alignSideways (relativeTo: BoundedColorisableGraphicalContent, position: LabelPositioning): BoundedColorisableGraphicalContent =

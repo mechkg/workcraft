@@ -40,6 +40,14 @@ class EditablePetriNet private (
 
   val incidentArcs: Expression[Map[Component, List[Arc]]] = (arcs.expr <**> components)((arcs, components) => components.map(c => (c, arcs.filter(arc => (arc.to == c) || (arc.from == c)))).toMap)
 
+  val transitionIncidence: Expression[(Map[Transition, List[Place]], Map[Transition, List[Place]])] =
+    arcs.map (_.foldLeft((Map[Transition, List[Place]]().withDefault(_ => List()), Map[Transition, List[Place]]().withDefault(_ => List())))({
+      case ((prod, cons), arc) => arc match {
+        case c: ConsumerArc => (prod, cons + (c.to -> (c.from :: cons(c.to))))
+          case p: ProducerArc => (prod + (p.from -> (p.to :: prod(p.from))), cons)
+	}
+    }))
+
   def tokens(place: Place) = marking.map(_(place))
   def label(c: Component) = labelling.map(_(c))
 

@@ -12,10 +12,15 @@ class Arc(val from: State, val to: State) extends Node
 case class FSM(states: NonEmptyList[State], arcs: List[Arc], finalStates: Set[State], initialState: State, labels: Map[State, String], arcLabels: Map[Arc, String]) {
   lazy val names = labels.map(_.swap).toMap
 
-  lazy val postset: Map[State, List[State]] =
-    arcs.foldLeft((Map[State, List[State]]().withDefault(_ => List())))({
-      case (map, arc) => (map + (arc.from -> (arc.to :: map(arc.from))))
-    })
+  lazy val postset: Map[State, List[(State, String)]] =
+    arcs.foldLeft((Map[State, List[(State, String)]]().withDefault(_ => List()))) {
+      case (map, arc) => (map + (arc.from -> ((arc.to, arcLabels(arc)) :: map(arc.from))))
+    }
+
+  lazy val preset: Map[State, List[(State, String)]] =
+    arcs.foldLeft((Map[State, List[(State, String)]]().withDefault(_ => List()))) {
+      case (map, arc) => (map + (arc.to -> ((arc.from, arcLabels(arc)) :: map(arc.to))))
+    }
 }
 
 object FSM {

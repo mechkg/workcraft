@@ -1,4 +1,5 @@
 package org.workcraft.plugins.petri2
+import java.awt.Font
 
 import org.workcraft.scala.Expressions._
 import scalaz._
@@ -34,7 +35,7 @@ object VisualPlace {
 }
 
 object VisualArc {
-    val properties = VisualCurveProperties(Color.BLACK, Some(org.workcraft.graphics.Arrow(0.2, 0.4)), new BasicStroke(0.05f))
+    val properties = VisualCurveProperties(Color.BLACK, Some(org.workcraft.graphics.Arrow(0.2, 0.4)), new BasicStroke(0.05f), None)
 }
 
 object VisualTransition {

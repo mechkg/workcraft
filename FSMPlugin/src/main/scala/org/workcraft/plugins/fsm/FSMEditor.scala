@@ -12,6 +12,7 @@ import org.workcraft.graphics.Java2DDecoration.decoratePoint2D
 import org.workcraft.graphics.BoundedColorisableGraphicalContent
 import org.workcraft.graphics.Colorisation
 import org.workcraft.graphics.GraphicalContent
+import org.workcraft.graphics.Graphics.label
 import org.workcraft.gui.modeleditor.tools.ConnectionManager
 import org.workcraft.gui.modeleditor.tools.Button
 import org.workcraft.gui.modeleditor.tools.NodeGeneratorTool
@@ -55,7 +56,7 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
   def imageForConnection(colorisation: State => Colorisation) =
     (fsm.states.map(_.list) <|**|> (fsm.arcs, CommonVisualSettings.settings)) >>= {
       case (states, arcs, settings) => {
-        treeSequence((arcs.map(a => arcImage(a).map(_.graphicalContent.applyColorisation(Colorisation.Empty))) ++
+        treeSequence((arcs.map(a => arcImage(a, settings).map(_.graphicalContent.applyColorisation(Colorisation.Empty))) ++
           states.map(s => (stateImage(s, settings) <**> stateTransform(s))(_.transform(_).cgc.applyColorisation(colorisation(s)))))).map(_.foldLeft(GraphicalContent.Empty)(_.compose(_)))
       }
     }
@@ -63,7 +64,7 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
   def imageForSelection(colorisation: Node => Colorisation, offsetNodes: Set[Node], offsetValue: Point2D.Double) =
     (fsm.states.map(_.list) <|**|> (fsm.arcs, CommonVisualSettings.settings)) >>= {
       case (comp, a, settings) => {
-        treeSequence((a.map(a => arcImageWithOffset(a, offsetNodes, offsetValue).map(_.graphicalContent.applyColorisation(colorisation(a)))) ++
+        treeSequence((a.map(a => arcImageWithOffset(a, offsetNodes, offsetValue, settings).map(_.graphicalContent.applyColorisation(colorisation(a)))) ++
           comp.map(c => (stateImage(c, settings) <**> stateTransformWithOffset(c, offsetNodes, offsetValue))(_.transform(_).cgc.applyColorisation(colorisation(c)))))).map(_.foldLeft(GraphicalContent.Empty)(_.compose(_)))
       }
     }
@@ -85,16 +86,22 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
   def stateImage(state: State, settings: CommonVisualSettings): Expression[BoundedColorisableGraphicalContent] =
     (fsm.labels.map(_(state)) <***> (fsm.initialState.map(_ == state), fsm.finalStates.map(_.contains(state))))((l, i, t) => FSMGraphics.stateImage(l, i, t, settings))
 
-  def arcImage(a: Arc): Expression[ConnectionGui] = arcImageWithOffset(a, Set(), new Point2D.Double(0, 0))
+  def arcImage(a: Arc, settings: CommonVisualSettings): Expression[ConnectionGui] = arcImageWithOffset(a, Set(), new Point2D.Double(0, 0), settings)
 
-  def arcImageWithOffset(a: Arc, offsetNodes: Set[Node], offsetValue: Point2D.Double) = for {
+  def arcImageWithOffset(a: Arc, offsetNodes: Set[Node], offsetValue: Point2D.Double, settings:CommonVisualSettings) = for {
     visualArcs <- fsm.visualArcs;
-    t1 <- touchableWithOffset(a.from, offsetNodes, offsetValue);
-    t2 <- touchableWithOffset(a.to, offsetNodes, offsetValue);
+    t1 <- touchableWithOffset(a.from, offsetNodes, offsetValue, settings);
+    t2 <- touchableWithOffset(a.to, offsetNodes, offsetValue, settings);
     ap1 <- statePositionWithOffset(a.from, offsetNodes, offsetValue);
-    ap2 <- statePositionWithOffset(a.to, offsetNodes, offsetValue)
+    ap2 <- statePositionWithOffset(a.to, offsetNodes, offsetValue);
+    labels <- fsm.arcLabels
   } yield {
-    VisualConnectionGui.getConnectionGui(VisualArc.properties, VisualConnectionContext.makeContext(t1, ap1, t2, ap2), visualArcs(a))
+    VisualConnectionGui.getConnectionGui(
+      VisualArc.properties.copy(label = Some(label(labels(a), 
+						   settings.effectiveLabelFont, 
+						   settings.foregroundColor).boundedColorisableGraphicalContent)), 
+      VisualConnectionContext.makeContext(t1, ap1, t2, ap2), 
+      visualArcs(a))
   }
 
   def makeTransform(p: Point2D.Double) = AffineTransform.getTranslateInstance(p.getX, p.getY)
@@ -107,11 +114,11 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
 
   def statePositionWithOffset(c: State, offsetNodes: Set[Node], offsetValue: Point2D.Double) = statePosition(c).lwmap(pos => if (offsetNodes.contains(c)) pos + offsetValue else pos)
 
-  def touchable(n: Node) = touchableWithOffset(n, Set(), new Point2D.Double())
+  def touchable(n: Node, settings: CommonVisualSettings) = touchableWithOffset(n, Set(), new Point2D.Double(), settings)
 
-  def touchableWithOffset(n: Node, offsetNodes: Set[Node], offsetValue: Point2D.Double) = n match {
+  def touchableWithOffset(n: Node, offsetNodes: Set[Node], offsetValue: Point2D.Double, settings: CommonVisualSettings) = n match {
     case s: State => (FSMGraphics.stateTouchable <**> stateTransformWithOffset(s, offsetNodes, offsetValue))((touchable, xform) => touchable.transform(xform))
-    case a: Arc => arcImage(a).map(_.shape.touchable)
+    case a: Arc => arcImage(a, settings).map(_.shape.touchable)
   }
 
   def move(nodes: Set[Node], offset: Point2D.Double): IO[Unit] = pushUndo("move nodes") >>=| nodes.map({
@@ -124,7 +131,7 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
     selection,
     move,
     (_, x) => x,
-    touchable(_),
+    n => CommonVisualSettings.settings >>= (s => touchable(n, s)),
     imageForSelection(_, _, _),
     List(KeyBinding("Delete selection", KeyEvent.VK_DELETE, KeyEventType.KeyPressed, Set(), selection.eval >>= { sel =>
       fsm.deleteNodes(sel) >>= {
@@ -142,7 +149,7 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
     GenericSimulationTool[Transition, Map[Place, Int]](net.transitions, touchable(_), net.saveState.eval.map(vpn => new PetriNetSimulation(vpn.net)), imageForSimulation(_, _), Some("Click on the highlighted transitions to fire them"), Some("The net is in a deadlock state: no transitions can be fired"))*/
 
   private def connectionTool =
-    GenericConnectionTool[State](fsm.states.map(_.list), touchable(_), statePosition(_), connectionManager, imageForConnection(_))
+    GenericConnectionTool[State](fsm.states.map(_.list), n => CommonVisualSettings.settings >>= (s => touchable(n, s)), statePosition(_), connectionManager, imageForConnection(_))
 
   private def stateGeneratorTool =
     NodeGeneratorTool(Button("State", "images/icons/svg/place_empty.svg", Some(KeyEvent.VK_T)).unsafePerformIO, imageForConnection(_ => Colorisation(None, None)), pushUndo("create state") >>=| fsm.createState(_) >| Unit)

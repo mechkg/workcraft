@@ -46,6 +46,8 @@ object Java2DDecoration {
 
     def dot(other: Point2D) = pt.getX() * other.getX() + pt.getY() * other.getY()
 
+    def cross(other: Point2D) = pt.getX * other.getY - other.getX * pt.getY
+
     def rotate90CCW = new Point2D.Double(-pt.getY, pt.getX)
     
     def length = pt.distance(0, 0)

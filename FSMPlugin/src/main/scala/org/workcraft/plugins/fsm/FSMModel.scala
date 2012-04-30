@@ -1,3 +1,4 @@
+
 package org.workcraft.plugins.fsm
 
 import java.awt.geom.Point2D

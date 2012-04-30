@@ -75,7 +75,7 @@ object VisualConnectionGui {
       override def boundingBox = BoundingBox(curve.boundingBox)
     }, curve.pointOnCurve(0.5))
 
-  def makeGraphicalContent(cInfo: PartialCurveInfo, connProps: VisualCurveProperties, connectionShape: Shape) = {
+  def makeGraphicalContent(cInfo: PartialCurveInfo, curve: org.workcraft.graphics.ParametricCurve, connProps: VisualCurveProperties, connectionShape: Shape) = {
     new ColorisableGraphicalContent {
       override def draw(r: DrawRequest) {
         val g = r.graphics
@@ -88,6 +88,25 @@ object VisualConnectionGui {
         connProps.arrow.foreach(arrow =>
           drawArrowHead(g, color, cInfo.arrowHeadPosition, cInfo.arrowOrientation,
             arrow.length, arrow.width))
+
+	connProps.label.foreach ( label => {
+	  val p = curve.pointOnCurve(0.5)
+	  val d = curve.derivativeAt(0.5)
+	  val dd = curve.secondDerivativeAt(0.5)
+
+	  val q = if (d.getX < 0)  (d * -1)  else d
+
+	  val labelPosition = new Point2D.Double(label.bounds.rect.getCenterX, 
+						 if ((q cross dd) < 0.1) label.bounds.rect.getMaxY
+						 else label.bounds.rect.getMinY)
+
+	  val offset = p - labelPosition
+
+	  val transform = AffineTransform.getTranslateInstance(offset.getX, offset.getY)
+	  transform.concatenate(AffineTransform.getRotateInstance(q.getX, q.getY, labelPosition.getX, labelPosition.getY))
+
+	  label.transform(transform).cgc.draw(r)
+	})
       }
     }
   }
@@ -99,7 +118,7 @@ object VisualConnectionGui {
     }
     val curveInfo = buildConnectionCurveInfo(properties.arrow, context.c1.touchable, context.c2.touchable, curve, 0)
     val visiblePath = curve.shape(curveInfo.tStart, curveInfo.tEnd)
-    val gc = makeGraphicalContent(curveInfo, properties, visiblePath)
+    val gc = makeGraphicalContent(curveInfo, curve, properties, visiblePath)
     val touchable = makeConnectionTouchable(curve, curveInfo)
 
     new ConnectionGui(touchable, gc, curve)

@@ -23,7 +23,7 @@ trait ParametricCurve {
 
 case class Arrow(width: Double, length: Double)
 
-case class VisualCurveProperties(color: Color, arrow: Option[Arrow], stroke: Stroke)
+case class VisualCurveProperties(color: Color, arrow: Option[Arrow], stroke: Stroke, label: Option[BoundedColorisableGraphicalContent])
 
 case class PartialCurveInfo(tStart: Double, tEnd: Double, arrowHeadPosition: Point2D.Double, arrowOrientation: Double)
 
@@ -77,8 +77,8 @@ object Geometry {
     var t = 0.0
     var pt = new Point2D.Double
 
-    arrow match {
-      case Some(Arrow(width, length)) => {
+    arrow.foreach {
+      case Arrow(width, length) => {
         val arrowLengthSq = length * length
 
         while (dt > 1e-6) {

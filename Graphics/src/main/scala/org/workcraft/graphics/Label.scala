@@ -6,7 +6,7 @@ import java.awt.geom.Point2D
 import Java2DDecoration._
 
 class Label private (val text: String, val font: Font, val color: Color) {
-  lazy val visualBounds = font.createGlyphVector(PodgonFontRenderContext, text).visualBounds
+  lazy val visualBounds = font.createGlyphVector(PodgonFontRenderContext, text).logicalBounds
 
   lazy val graphicalContent = GraphicalContent(g => {
     g.setFont(font)

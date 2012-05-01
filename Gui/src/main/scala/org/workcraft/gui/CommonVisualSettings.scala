@@ -20,7 +20,7 @@ case class CommonVisualSettings (
 	labelFont:Font = new Font("SansSerif", Font.PLAIN, 1),
 	labelFontSize: Double = 0.5,
 	sansSerifFont:Font = new Font("SansSerif", Font.PLAIN, 1),
-	editorMessageFont:Font = new Font("SansSerif", Font.PLAIN, 12)
+	editorMessageFont:Font = new Font("SansSerif", Font.PLAIN, 18)
 	) {
   def effectiveLabelFont = labelFont.deriveFont(labelFontSize.toFloat)
 }

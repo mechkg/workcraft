@@ -185,11 +185,20 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
 	    else failure
 	  case (q, input@(x :: _)) => {
 	    if (ia(q).filter (arc => (arc.from == q && ((al(arc).replace(" ", "").split(",").toList.contains(x)) || (al(arc) == "")))).isEmpty) failure
-	    else Some(("Remaining input: " + input.map ("'"+_+"'").mkString(", "), Color.BLACK))
+	    else Some(("Remaining input: " + input.mkString(", "), Color.BLACK))
 	  }
 	}
       }
   )
+
+  val ss = fsm.finalStates.map ( fs => 
+    (s: (State, List[String])) => 
+      if (fs.contains(s._1))
+	Some(("Input trace (in final state): " + s._2.mkString(", "), Color.GREEN.darker))
+      else
+	Some(("Input trace: " + s._2.mkString(", "), Color.BLACK)))
+
+  private val simToolMessageGen = ss
       
   private val simulationTool =
     GenericSimulationTool[Arc, (State, List[String])](
@@ -200,6 +209,15 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
       simToolMessage
       )
 
+  private val simulationToolGen =
+    GenericSimulationTool[Arc, (State, List[String])](
+      fsm.arcs, 
+      n => CommonVisualSettings.settings >>= (s => touchable(n, s)),
+      fsm.saveState.eval.map (s => FSMSimulationGen(s.fsm)),
+      imageForSimulation(_, _),
+      simToolMessageGen
+      )
+
 
   private def connectionTool =
     GenericConnectionTool[State](fsm.states.map(_.list), n => CommonVisualSettings.settings >>= (s => touchable(n, s)), statePosition(_), connectionManager, imageForConnection(_))
@@ -207,7 +225,7 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
   private def stateGeneratorTool =
     NodeGeneratorTool(Button("State", "images/icons/svg/place_empty.svg", Some(KeyEvent.VK_T)).unsafePerformIO, imageForConnection(_ => Colorisation(None, None)), pushUndo("create state") >>=| fsm.createState(_) >| Unit)
 
-  def tools = NonEmptyList(selectionTool, connectionTool, stateGeneratorTool, simulationTool)
+  def tools = NonEmptyList(selectionTool, connectionTool, stateGeneratorTool, simulationTool, simulationToolGen)
   def keyBindings = List()
 
   val undoStack = Variable.create(List[EditorState]())

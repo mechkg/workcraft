@@ -15,7 +15,7 @@ case class FSMSimulation(fsm: FSM, input: List[String]) extends SimulationModel 
 
       in match {
 	case Nil => arcs.exists(a => fsm.arcLabels(a._2) == "")
-	case x => arcs.exists( a => (fsm.arcLabels(a._2) == x.head) || (fsm.arcLabels(a._2) == ""))
+	case x => arcs.exists( a => (fsm.arcLabels(a._2).replace(" ","").split(",").toList.contains(x.head)) || (fsm.arcLabels(a._2) == ""))
       }
     }
   }

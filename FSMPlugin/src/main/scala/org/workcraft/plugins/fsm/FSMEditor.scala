@@ -184,7 +184,7 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
 	    if (fs.contains(q)) success
 	    else failure
 	  case (q, input@(x :: _)) => {
-	    if (ia(q).filter (arc => (arc.from == q && ((al(arc) == x) || (al(arc) == "")))).isEmpty) failure
+	    if (ia(q).filter (arc => (arc.from == q && ((al(arc).replace(" ", "").split(",").toList.contains(x)) || (al(arc) == "")))).isEmpty) failure
 	    else Some(("Remaining input: " + input.map ("'"+_+"'").mkString(", "), Color.BLACK))
 	  }
 	}
@@ -195,7 +195,7 @@ class FSMEditor(fsm: EditableFSM) extends ModelEditor {
     GenericSimulationTool[Arc, (State, List[String])](
       fsm.arcs, 
       n => CommonVisualSettings.settings >>= (s => touchable(n, s)),
-      (fsm.saveState.eval <**> ioPure.pure { JOptionPane.showInputDialog(null, "Input to use for simulation:").split(",").toList })( (fsm, input) => FSMSimulation(fsm.fsm, input)),
+      (fsm.saveState.eval <**> ioPure.pure { JOptionPane.showInputDialog(null, "Input to use for simulation:").replace(" ","").split(",").toList })( (fsm, input) => FSMSimulation(fsm.fsm, input)),
       imageForSimulation(_, _),
       simToolMessage
       )

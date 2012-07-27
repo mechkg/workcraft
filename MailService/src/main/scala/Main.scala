@@ -200,14 +200,14 @@ object MailSender {
 object MailService extends App {
   import org.workcraft.plugins.lola._
   import org.workcraft.plugins.lola.LolaError._
-  import org.workcraft.plugins.lola.LolaDeadlockResult._
+  import org.workcraft.plugins.lola.LolaResult._
   import org.workcraft.tasks.TaskControl
                                                         
-  val modules = List(new org.workcraft.plugins.petri2.PetriNetModule, new org.workcraft.plugins.lola.LolaModule)
+  val modules = List(new org.workcraft.plugins.petri2.PetriNetModule, new org.workcraft.plugins.lola.LolaModule, new org.workcraft.plugins.petrify.PetrifyModule)
   val globalServices = new GlobalServiceManager (modules)
 
   def timeOut (seconds: Double): IO[Boolean] = {
-    val time = System.currentTimeMillis + (seconds / 1000.0).toInt
+    val time = System.currentTimeMillis + (seconds * 1000.0).toInt
 
     ioPure.pure {
       if (System.currentTimeMillis > time) true else false
@@ -218,7 +218,7 @@ object MailService extends App {
   
   def closing = "\nTruthfully yours,\nWorkcraft."
 
-  def lolaReport (timeout: Double, output:File, result: Either[Option[LolaError], LolaDeadlockResult]): String = result match {
+  def lolaReport (timeout: Double, output:File, result: Either[Option[LolaError], LolaResult]): String = result match {
     case Left(None) => "Verification time limit set by my master " + "(%.2f seconds)".format(timeout) + " has been exceeded, so I had killed LoLA."
     case Left(Some(error)) => error match {
         case CouldNotStart(reason) => "I could not start LoLA because of this silly error: " + reason.toString
@@ -228,11 +228,11 @@ object MailService extends App {
         case StateOverflow => "LoLA exceeded the state space limit. This net's state space is too large to be analysed by LoLA."
         case Undefined(reason) => "Unhandled exception was thrown in LoLA: " + reason
      }
-    case Right(Found) => { 
-      val trace = scala.io.Source.fromFile(output).getLines.toList.tail.mkString(", ")
+    case Right(Positive(trace)) => { 
+      //      val trace = scala.io.Source.fromFile(output).getLines.toList.tail.mkString(", ")
       "This net has a deadlock state. The event trace that leads into this state is as follows:\n" + trace + "."
     }
-    case Right(NotFound) => {
+    case Right(Negative(_)) => {
       "This net is deadlock free."
     }
   }
@@ -247,7 +247,7 @@ object MailService extends App {
     (IOUtils.convert (file, Format.LolaPetriNet, lolaIn, globalServices) >>= {
       case Left(error) => ioPure.pure { error }
       case Right(file) => {
-        val task = new LolaDeadlockTask ("e:/lola-1.16/src/lola-deadlock", lolaIn, lolaOut)
+        val task = new LolaTask ("/home/mech/tools/lola-1.16/src/lola-deadlock", lolaIn, lolaOut)
         task.runTask (TaskControl (timeOut (timeout), _ => IO.Empty, _ => IO.Empty)) map (result => lolaReport (timeout, lolaOut, result))
        }
     }).unsafePerformIO + "\n"
@@ -261,12 +261,12 @@ object MailService extends App {
 
         letter.append (opening(sender))
                 
-        if (body.contains("petri net") && body.contains ("deadlock")) {
+        if (body.toLowerCase.contains("petri net") && body.toLowerCase.contains ("deadlock")) {
          val files = attachments.listFiles
          if (files.isEmpty) letter.append ("You have asked me to check some Petri Nets for deadlocks, but you seem to have forgotten to attach the files.\n")
          else {
            letter.append ("You have asked me to check some Petri Nets for deadlocks. This is what I have got:\n\n")
-           files.foreach(file => letter.append(verifyPetriNetDeadlockWithLola(0.1, file)))
+           files.foreach(file => letter.append(verifyPetriNetDeadlockWithLola(3.0, file)))
          }
        } else {
          letter.append ("I could not understand your request. At the moment, I understand the words \"petri net\" and \"deadlock\". Please explain your request using those words. For example:\n\nMy Dear Workcraft, could you be so kind as to check the petri nets that I have sent you for deadlocks.\n\nThat is a joke. Just \"petri net deadlock\" will do. Although the former will also be accepted.\n")

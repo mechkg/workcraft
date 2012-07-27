@@ -72,5 +72,5 @@ object Workcraft extends Build {
   lazy val mailservice = Project (id = "mailservice", base = file ("MailService"))
   .settings (assemblySettings:_*)
   .settings (libraryDependencies := Seq ("javax.mail" % "mail" % "1.4.5", "com.google.guava" % "guava" % "11.0.2"))
-  .dependsOn(core, pnplugin, lolaplugin)
+  .dependsOn(core, pnplugin, lolaplugin, petrifyplugin)
 }
